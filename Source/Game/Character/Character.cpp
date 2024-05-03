@@ -13,9 +13,22 @@ void Character::DrawDebug()
 {
     if (ImGui::TreeNode("Collision"))
     {
-        for (CollisionCylinderData& data : collisionCylinderData_)
+        if (ImGui::TreeNode("Cylinder"))
         {
-            data.DrawDebug();
+            for (CollisionCylinderData& data : collisionCylinderData_)
+            {
+                data.DrawDebug();
+            }
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Sphere"))
+        {
+            for (CollisionSphereData& data : collisionSphereData_)
+            {
+                data.DrawDebug();
+            }
+            ImGui::TreePop();
         }
 
         ImGui::TreePop();
@@ -29,6 +42,18 @@ void Character::UpdateCollisionCylinderData(const float& scaleFactor)
     // jointPositionがない場合、
     // 位置には (0, 0, 0) が入るため、その子たちは別途更新必要
     for (CollisionCylinderData& data : collisionCylinderData_)
+    {
+        data.SetJointPosition(GetJointPosition(data.GetName(), scaleFactor));
+    }
+}
+
+// ----- 球判定用データ更新 -----
+void Character::UpdateCollisionSphereData(const float& scaleFactor)
+{
+    // 各データの位置をjointPositionで更新。
+    // jointPositionがない場合、
+    // 位置には (0, 0, 0) が入るため、その子たちは別途更新必要
+    for (CollisionSphereData& data : collisionSphereData_)
     {
         data.SetJointPosition(GetJointPosition(data.GetName(), scaleFactor));
     }
@@ -86,14 +111,45 @@ Character::CollisionCylinderData& Character::GetCollisionCylinderData(const std:
     return CollisionCylinderData();
 }
 
+// ----- 球判定情報登録 -----
+void Character::RegisterCollisionSphereData(const CollisionSphereData& data)
+{
+    collisionSphereData_.emplace_back(data);
+}
+
+// ----- 球判定情報取得 -----
+Character::CollisionSphereData& Character::GetCollisionSphereData(const std::string& name)
+{
+    for (CollisionSphereData& data : collisionSphereData_)
+    {
+        if (data.GetName() != name) continue;
+
+        return data;
+    }
+
+    // 見つからなかった
+    return CollisionSphereData();
+}
+
 // ----- ImGui用 -----
 void Character::CollisionCylinderData::DrawDebug()
 {
     if (ImGui::TreeNode(GetName().c_str()))
     {
         ImGui::DragFloat3("offsetPosition", &offsetPosition_.x);
-        ImGui::DragFloat("radius", &radius_);
-        ImGui::DragFloat("height", &height_);
+        ImGui::DragFloat("radius", &radius_, 0.01f);
+        ImGui::DragFloat("height", &height_, 0.01f);
+        ImGui::TreePop();
+    }
+}
+
+// ----- ImGui用 -----
+void Character::CollisionSphereData::DrawDebug()
+{
+    if (ImGui::TreeNode(GetName().c_str()))
+    {
+        ImGui::DragFloat3("offsetPosition", &offsetPosition_.x);
+        ImGui::DragFloat("radius", &radius_, 0.01f);
         ImGui::TreePop();
     }
 }

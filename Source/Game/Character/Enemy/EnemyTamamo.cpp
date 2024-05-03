@@ -87,7 +87,7 @@ void EnemyTamamo::Initialize()
 {
     GetTransform()->SetPositionZ(25);
 
-    CollisionCylinderData data[] =
+    CollisionCylinderData cylinderData[] =
     {
         { "R:C_Spine_2", 0.7f, 1.5f, { 0, -1, 0 } }, // おなか
         { "R:C_Neck_1", 0.4f, 1.5f, { 0, -1, 0 } }, // くび前
@@ -98,10 +98,23 @@ void EnemyTamamo::Initialize()
         { "R:R_Leg_2", 0.3f, 1.5f, { 0, -1, 0 } },  // 右後足
         { "R:L_Leg_2", 0.3f, 1.5f, { 0, -1, 0 } },  // 左後足
     };
-
-    for (int i = 0; i < _countof(data); ++i)
+    CollisionSphereData sphereData[] =
     {
-        RegisterCollisionCylinderData(data[i]);
+        { "R:C_Head_1", 0.66f, {}, {1,0,0,1} }, // 顔
+        { "R:R_Arm_1", 0.4f, {}, {1,0,0,1} }, // 右肩
+        { "R:R_Arm_2", 0.4f, {}, {1,0,0,1} }, // 右ひじ
+        { "R:L_Arm_1", 0.4f, {}, {1,0,0,1} }, // 左肩
+        { "R:L_Arm_2", 0.4f, {}, {1,0,0,1} }, // 左ひじ
+
+    };
+
+    for (int i = 0; i < _countof(cylinderData); ++i)
+    {
+        RegisterCollisionCylinderData(cylinderData[i]);
+    }
+    for (int i = 0; i < _countof(sphereData); ++i)
+    {
+        RegisterCollisionSphereData(sphereData[i]);
     }
 
 }
@@ -116,6 +129,9 @@ void EnemyTamamo::Update(const float& elapsedTime)
 {
     // 円柱判定用データ更新
     UpdateCollisionCylinderData(0.01f);
+
+    // 球判定用データ更新
+    UpdateCollisionSphereData(0.01f);
 
     // behaviorTree更新
     UpdateNode(elapsedTime);
@@ -135,6 +151,9 @@ void EnemyTamamo::DrawDebug()
 {
     if (ImGui::TreeNode("Tamamo"))
     {
+        ImGui::Checkbox("Cylinder", &isCylinder_);
+        ImGui::Checkbox("Sphere", &isSphere_);
+
         Character::DrawDebug();
 
         if (ImGui::BeginMenu("Battle,Attack,Radius"))
@@ -161,9 +180,19 @@ void EnemyTamamo::DebugRender(DebugRenderer* debugRenderer)
 {
     DirectX::XMFLOAT3 position = GetTransform()->GetPosition();
 
-    for (auto& data : GetCollisionCylinderData())
+    if (isCylinder_)
     {
-        debugRenderer->DrawCylinder(data.GetPosition(), data.GetRadius(), data.GetHeight(), data.GetColor());
+        for (auto& data : GetCollisionCylinderData())
+        {
+            debugRenderer->DrawCylinder(data.GetPosition(), data.GetRadius(), data.GetHeight(), data.GetColor());
+        }
+    }
+    if (isSphere_)
+    {
+        for (auto& data : GetCollisionSphereData())
+        {
+            debugRenderer->DrawSphere(data.GetPosition(), data.GetRadius(), data.GetColor());
+        }
     }
 
     // 戦闘範囲

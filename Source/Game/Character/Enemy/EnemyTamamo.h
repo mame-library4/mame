@@ -39,5 +39,8 @@ public:
 
 private:
     DirectX::XMFLOAT3 tailPosition = {};
+
+    bool isCylinder_ = true;
+    bool isSphere_ = true;
 };
 

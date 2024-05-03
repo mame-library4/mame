@@ -18,10 +18,7 @@ public:
     {
     public:
         // ---------- コンストラクタ ----------
-        CollisionCylinderData(const std::string& name, const float& radius, const float& height)
-            : name_(name), radius_(radius), height_(height) 
-        {}
-        CollisionCylinderData(const std::string& name, const float& radius, const float& height, const DirectX::XMFLOAT3& offsetPosition)
+        CollisionCylinderData(const std::string& name, const float& radius, const float& height, const DirectX::XMFLOAT3& offsetPosition = {})
             : name_(name), radius_(radius), height_(height), offsetPosition_(offsetPosition)
         {}
         CollisionCylinderData() = default;
@@ -59,8 +56,49 @@ public:
         DirectX::XMFLOAT4   color_          = {};   // 色
     };
 
+    // ----- 球判定用データ -----
+    struct CollisionSphereData
+    {
+    public:
+        // ---------- コンストラクタ ----------
+        CollisionSphereData(const std::string& name, const float& radius, const DirectX::XMFLOAT3& offsetPosition = {}, const DirectX::XMFLOAT4& color = {1,1,1,1})
+            : name_(name), radius_(radius), offsetPosition_(offsetPosition), color_(color)
+        {}
+        CollisionSphereData() = default;
+
+        // ---------- ImGui用 ----------
+        void DrawDebug();
+
+        // ---------- 名前 ----------
+        [[nodiscard]] const std::string GetName() const { return name_; }
+
+        // ---------- 半径 ----------
+        [[nodiscard]] const float GetRadius() const { return radius_; }
+        void SetRadius(const float& radius) { radius_ = radius; }
+
+        // ---------- 位置 ----------
+        [[nodiscard]] const DirectX::XMFLOAT3 GetPosition() const { return jointPosition_ + offsetPosition_; }
+        void SetJointPosition(const DirectX::XMFLOAT3& position) { jointPosition_ = position; }
+        void SetOffsetPosition(const DirectX::XMFLOAT3& position) { offsetPosition_ = position; }
+
+        // ---------- 色 ----------
+        [[nodiscard]] const DirectX::XMFLOAT4 GetColor() const { return color_; }
+        void SetColor(const DirectX::XMFLOAT4& color) { color_ = color; }
+        void SetColor(const float& r, const float& g, const float& b, const float& a) { color_ = { r, g, b, a }; }
+
+    private:
+        std::string         name_ = "";   // 名前
+        float               radius_ = 0.0f; // 半径
+        DirectX::XMFLOAT3   jointPosition_ = {};   // ジョイント位置
+        DirectX::XMFLOAT3   offsetPosition_ = {};   // オフセット位置
+        DirectX::XMFLOAT4   color_ = {};   // 色
+    };
+
     // ----- 円柱判定用データ更新 -----
     void UpdateCollisionCylinderData(const float& scaleFactor);
+
+    // ----- 球判定用データ更新 -----
+    void UpdateCollisionSphereData(const float& scaleFactor);
 
 
     void CollisionCharacterVsStage();
@@ -81,12 +119,21 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const float GetHealth() const { return health_; }
     void SetHealth(const float& health) { health_ = health; }
 
-    // ---------- Collision用 ----------
+    // -------------------- Collision用 --------------------
+    
+    // ---------- Cylinder ----------
     void RegisterCollisionCylinderData(const CollisionCylinderData& data);
     [[nodiscard]] const int GetCollisionCylinderDataCount() const { return collisionCylinderData_.size(); }
     CollisionCylinderData& GetCollisionCylinderData(const std::string& name);
     CollisionCylinderData& GetCollisionCylinderData(const int& index) { return collisionCylinderData_.at(index); }
     std::vector<CollisionCylinderData> GetCollisionCylinderData() { return collisionCylinderData_; }
+
+    // ---------- Sphere ----------
+    void RegisterCollisionSphereData(const CollisionSphereData& data);
+    [[nodiscard]] const int GetCollisionSphereDataCount() const { return collisionSphereData_.size(); }
+    CollisionSphereData& GetCollisionSphereData(const std::string& name);
+    CollisionSphereData& GetCollisionSphereData(const int& index) { return collisionSphereData_.at(index); }
+    std::vector<CollisionSphereData> GetCollisionSphereData() { return collisionSphereData_; }
 
 #pragma endregion [Get, Set] Function
 
@@ -98,6 +145,7 @@ private:
     float               health_     = 1.0f; // 体力
 
     // ---------- Collision用 ----------
-    std::vector<CollisionCylinderData> collisionCylinderData_;
+    std::vector<CollisionCylinderData>  collisionCylinderData_;
+    std::vector<CollisionSphereData>    collisionSphereData_;
 };
 

@@ -593,7 +593,7 @@ void GltfModel::FetchMeshes(ID3D11Device* device, const tinygltf::Model& gltfMod
                 // TODO:‚±‚±‚Ìˆ—
                 // if 1‚ğ0‚É‚µ‚½‚çfbxƒrƒ…ƒA[‚Ç‚¤‚è‚É‚Å‚é...
                 // ‚Ç‚Á‚¿‚ª‚¢‚¢‚ñ‚Å‚µ‚å‚¤‚Ë
-#if 1
+#if 0
                 const tinygltf::Accessor& gltfAccessor{ gltfModel.accessors.at(gltfAttribute.second) };
                 const tinygltf::BufferView& gltfBufferView{ gltfModel.bufferViews.at(gltfAccessor.bufferView) };
 
