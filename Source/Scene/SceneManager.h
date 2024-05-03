@@ -1,0 +1,38 @@
+#pragma once
+#include "BaseScene.h"
+#include <d3d11.h>
+
+class SceneManager
+{
+private:
+    SceneManager() {}
+    ~SceneManager() {}
+
+public:
+    static SceneManager& Instance()
+    {
+        static SceneManager instance;
+        return instance;
+    }
+
+    void Initialize();
+    void Update(const float& elapesdTime);  // 更新処理
+        
+    void ShadowRender(ID3D11DeviceContext* deviceContext);
+    void DeferredRender(ID3D11DeviceContext* deviceContext);
+    void ForwardRender(ID3D11DeviceContext* deviceContext);
+    void UserInterfaceRender(ID3D11DeviceContext* deviceContext);
+
+    void DrawDebug();
+
+    void Clear();   // シーンクリア
+
+    // シーン切り替え
+    void ChangeScene(BaseScene* scene);
+
+    BaseScene* GetCurrentScene()const { return currentScene; }
+
+private:
+    BaseScene* currentScene = nullptr;
+    BaseScene* nextScene = nullptr;
+};

@@ -1,0 +1,12 @@
+.vs/
+External/
+Release/
+Resources/
+x64/
+Resource.rc
+resource.h
+3dgp.rc
+icon1.ico
+Mame.aps
+Mame.sln
+Mame.vcxproj.user
