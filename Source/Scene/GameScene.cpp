@@ -13,7 +13,7 @@ void GameScene::CreateResource()
     // プレイヤー生成
     PlayerManager::Instance().GetPlayer() = std::make_unique<Player>();
 
-    stageNormal_[0] = std::make_unique<StageNormal>("./Resources/Model/Stage/shrine.gltf");
+    stageNormal_[0] = std::make_unique<StageNormal>("./Resources/Model/Stage/shrine.glb");
     stageNormal_[1] = std::make_unique<StageNormal>("./Resources/Model/Stage/torii.glb");
     stageNormal_[2] = std::make_unique<StageNormal>("./Resources/Model/Stage/circle.glb");
 
@@ -44,10 +44,9 @@ void GameScene::Initialize()
     // 敵初期化
     EnemyManager::Instance().Initialize();
 
-    stageNormal_[2]->GetTransform()->SetPositionZ(35);
-
+    stageNormal_[0]->GetTransform()->SetPositionZ(35);
     stageNormal_[1]->GetTransform()->SetPositionY(-100);
-
+    stageNormal_[2]->GetTransform()->SetPositionZ(35);
 }
 
 // ----- 終了化 -----
@@ -142,21 +141,20 @@ void GameScene::DrawDebug()
     // 敵ImGui
     EnemyManager::Instance().DrawDebug();
 
-    if (ImGui::TreeNode("stage1"))
-    {
-        stageNormal_[1]->DrawDebug();
-        ImGui::TreePop();
-    }
-
-    if (ImGui::TreeNode("stage2"))
-    {
-        stageNormal_[2]->DrawDebug();
-        ImGui::TreePop();
-    }
-
     if (ImGui::TreeNode("jinja"))
     {
         stageNormal_[0]->DrawDebug();
         ImGui::TreePop();
     }
+    if (ImGui::TreeNode("torii"))
+    {
+        stageNormal_[1]->DrawDebug();
+        ImGui::TreePop();
+    }
+    if (ImGui::TreeNode("stage"))
+    {
+        stageNormal_[2]->DrawDebug();
+        ImGui::TreePop();
+    }
+
 }

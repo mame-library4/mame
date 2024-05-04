@@ -330,9 +330,7 @@ void GltfModel::Animate(size_t animationIndex, float time, std::vector<Node>& an
             {
                 if (loopback)
                 {
-                    //if(time>=1.0f)
-                    //if (timelines.at(keyframeCount - 1) != 0)
-                        time = fmodf(time, timelines.at(keyframeCount - 1));
+                    time = fmodf(time, timelines.at(keyframeCount - 1));
                 }
                 else
                 {
@@ -831,10 +829,6 @@ void GltfModel::FetchTexture(ID3D11Device* device, const tinygltf::Model& gltfMo
 // アニメーションの取得
 void GltfModel::FetchAnimation(const tinygltf::Model& gltfModel)
 {
-    // TODO:アニメーション
-    // アニメーションキーフレーム問題(fmodfあのままのコードの場合動かなかったので対処したが他に方法があれば。。)
-    // アニメーションがつぶれてるから、fetchAnimationのskinとかボーンとか取るところミスってる可能性大(もしかしたら、transformとかかも、、)
-
     for (std::vector<tinygltf::Skin>::const_reference transmissionSkin : gltfModel.skins)
     {
         Skin& skin{ skins_.emplace_back() };

@@ -75,6 +75,9 @@ EnemyTamamo::EnemyTamamo()
 #pragma endregion 戦闘
 
 #pragma endregion BehaviorTree設定
+
+    // collisionData登録
+    RegisterCollisionData();
 }
 
 // ----- デストラクタ -----
@@ -86,37 +89,6 @@ EnemyTamamo::~EnemyTamamo()
 void EnemyTamamo::Initialize()
 {
     GetTransform()->SetPositionZ(25);
-
-    CollisionCylinderData cylinderData[] =
-    {
-        { "R:C_Spine_2", 0.7f, 1.5f, { 0, -1, 0 } }, // おなか
-        { "R:C_Neck_1", 0.4f, 1.5f, { 0, -1, 0 } }, // くび前
-        { "R:C_Spine_5", 0.4f, 1.5f, { 0, -1, 0 } }, // くび後ろ
-        { "R:C_Tail_1", 0.4f, 1.5f, { 0, -1.5, 0 } }, // おしり
-        { "R:R_Arm_2", 0.3f, 1.5f, { 0, -1, 0 } },  // 右前足
-        { "R:L_Arm_2", 0.3f, 1.5f, { 0, -1, 0 } },  // 左前足
-        { "R:R_Leg_2", 0.3f, 1.5f, { 0, -1, 0 } },  // 右後足
-        { "R:L_Leg_2", 0.3f, 1.5f, { 0, -1, 0 } },  // 左後足
-    };
-    CollisionSphereData sphereData[] =
-    {
-        { "R:C_Head_1", 0.66f, {}, {1,0,0,1} }, // 顔
-        { "R:R_Arm_1", 0.4f, {}, {1,0,0,1} }, // 右肩
-        { "R:R_Arm_2", 0.4f, {}, {1,0,0,1} }, // 右ひじ
-        { "R:L_Arm_1", 0.4f, {}, {1,0,0,1} }, // 左肩
-        { "R:L_Arm_2", 0.4f, {}, {1,0,0,1} }, // 左ひじ
-
-    };
-
-    for (int i = 0; i < _countof(cylinderData); ++i)
-    {
-        RegisterCollisionCylinderData(cylinderData[i]);
-    }
-    for (int i = 0; i < _countof(sphereData); ++i)
-    {
-        RegisterCollisionSphereData(sphereData[i]);
-    }
-
 }
 
 // ----- 終了化 -----
@@ -202,6 +174,52 @@ void EnemyTamamo::DebugRender(DebugRenderer* debugRenderer)
     debugRenderer->DrawCylinder(position, nearAttackRadius_, 0.5f, { 1,0,0,1 });
     debugRenderer->DrawCylinder(position, farAttackRadius_, 0.5f, { 1,0,1,1 });
 
-    debugRenderer->DrawSphere(tailPosition, 2, { 0,0,1,1 });
+}
 
+// ----- collisionData登録 -----
+void EnemyTamamo::RegisterCollisionData()
+{
+    CollisionCylinderData cylinderData[] =
+    {
+        { "R:C_Spine_2", 0.7f, 1.5f, { 0, -1, 0 } }, // おなか
+        { "R:C_Neck_1", 0.4f, 1.5f, { 0, -1, 0 } }, // くび前
+        { "R:C_Spine_5", 0.4f, 1.5f, { 0, -1, 0 } }, // くび後ろ
+        { "R:C_Tail_1", 0.4f, 1.5f, { 0, -1.5, 0 } }, // おしり
+        { "R:R_Arm_2", 0.3f, 1.5f, { 0, -1, 0 } },  // 右前足
+        { "R:L_Arm_2", 0.3f, 1.5f, { 0, -1, 0 } },  // 左前足
+        { "R:R_Leg_2", 0.3f, 1.5f, { 0, -1, 0 } },  // 右後足
+        { "R:L_Leg_2", 0.3f, 1.5f, { 0, -1, 0 } },  // 左後足
+    };
+    CollisionSphereData sphereData[] =
+    {
+        { "R:C_Head_1",     0.66f,  {},             { 1, 0, 0, 1 } }, // 顔
+        { "R:C_Spine_3",    0.4f,   { 0, 0, 0.2 },  { 1, 0, 0, 1 } }, // 腰
+        { "R:C_Spine_6",    0.66f,  { 0, -0.1, 0 }, { 1, 0, 0, 1 } }, // くび
+        { "R:C_Hip",        0.5f,   {},             { 1, 0, 0, 1 } }, // おしり
+        { "R:R_Arm_1",      0.4f,   {},             { 1, 0, 0, 1 } }, // 右肩
+        { "R:R_Arm_2",      0.4f,   {},             { 1, 0, 0, 1 } }, // 右ひじ
+        { "R:R_Arm_3",      0.4f,   {},             { 1, 0, 0, 1 } }, // 右手
+        { "R:L_Arm_1",      0.4f,   {},             { 1, 0, 0, 1 } }, // 左肩
+        { "R:L_Arm_2",      0.4f,   {},             { 1, 0, 0, 1 } }, // 左ひじ
+        { "R:L_Arm_3",      0.4f,   {},             { 1, 0, 0, 1 } }, // 左手
+        { "R:R_Leg_2",      0.4f,   {},             { 1, 0, 0, 1 } }, // 右足付け根
+        { "R:R_Leg_3",      0.4f,   {},             { 1, 0, 0, 1 } }, // 右ひざ
+        { "R:R_Foot",       0.4f,   {},             { 1, 0, 0, 1 } }, // 右足
+        { "R:L_Leg_2",      0.4f,   {},             { 1, 0, 0, 1 } }, // 左足付け根
+        { "R:L_Leg_3",      0.4f,   {},             { 1, 0, 0, 1 } }, // 左ひざ
+        { "R:L_foot",       0.4f,   {},             { 1, 0, 0, 1 } }, // 左足
+        { "R:C_Tail_3",     0.7f,   {},             { 1, 0, 0, 1 } }, // 尻尾
+        { "R:C_Tail_5",     1.1f,   {},             { 1, 0, 0, 1 } }, // 尻尾
+        { "R:C_Tail_8",     1.8f,   {},             { 1, 0, 0, 1 } }, // 尻尾
+
+    };
+
+    for (int i = 0; i < _countof(cylinderData); ++i)
+    {
+        RegisterCollisionCylinderData(cylinderData[i]);
+    }
+    for (int i = 0; i < _countof(sphereData); ++i)
+    {
+        RegisterCollisionSphereData(sphereData[i]);
+    }
 }

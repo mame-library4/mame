@@ -38,8 +38,9 @@ public:
     void DebugRender(DebugRenderer* debugRenderer);
 
 private:
-    DirectX::XMFLOAT3 tailPosition = {};
+    void RegisterCollisionData(); // collisionData“o˜^
 
+private:
     bool isCylinder_ = true;
     bool isSphere_ = true;
 };
