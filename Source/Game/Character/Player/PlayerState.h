@@ -160,4 +160,16 @@ namespace PlayerState
     };
 
 #pragma endregion 強攻撃
+
+    // ----- ダメージ食らい -----
+    class DamageState : public State<Player>
+    {
+    public:
+        DamageState(Player* player) : State(player, "DamageState") {}
+        ~DamageState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+    };
 }

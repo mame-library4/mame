@@ -13,18 +13,26 @@ void Character::DrawDebug()
 {
     if (ImGui::TreeNode("Collision"))
     {
-        if (ImGui::TreeNode("Cylinder"))
+        if (ImGui::TreeNode("DamageDetection"))
         {
-            for (CollisionCylinderData& data : collisionCylinderData_)
+            for (DamageDetectionData& data : damageDetectionData_)
             {
                 data.DrawDebug();
             }
             ImGui::TreePop();
         }
-
-        if (ImGui::TreeNode("Sphere"))
+        if (ImGui::TreeNode("AttackDetection"))
         {
-            for (CollisionSphereData& data : collisionSphereData_)
+            for (AttackDetectionData& data : attackDetectionData_)
+            {
+                //if (data.GetIsActive() == false) continue;
+                data.DrawDebug();
+            }
+            ImGui::TreePop();
+        }
+        if (ImGui::TreeNode("CollisionDetection"))
+        {
+            for (CollisionDetectionData& data : collisionDetectionData_)
             {
                 data.DrawDebug();
             }
@@ -35,27 +43,26 @@ void Character::DrawDebug()
     }
 }
 
-// ----- 円柱判定用データ更新 -----
-void Character::UpdateCollisionCylinderData(const float& scaleFactor)
+// ----- Collision更新 -----
+void Character::UpdateCollisions(const float& scaleFactor)
 {
-    // 各データの位置をjointPositionで更新。
-    // jointPositionがない場合、
-    // 位置には (0, 0, 0) が入るため、その子たちは別途更新必要
-    for (CollisionCylinderData& data : collisionCylinderData_)
+    // くらい判定更新
+    for (DamageDetectionData& data : damageDetectionData_)
     {
-        data.SetJointPosition(GetJointPosition(data.GetName(), scaleFactor));
+        // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
+        data.SetJointPosition(GetJointPosition(data.GetName(), scaleFactor, data.GetOffsetPosition()));
     }
-}
-
-// ----- 球判定用データ更新 -----
-void Character::UpdateCollisionSphereData(const float& scaleFactor)
-{
-    // 各データの位置をjointPositionで更新。
-    // jointPositionがない場合、
-    // 位置には (0, 0, 0) が入るため、その子たちは別途更新必要
-    for (CollisionSphereData& data : collisionSphereData_)
+    // 攻撃判定更新
+    for (AttackDetectionData& data : attackDetectionData_)
     {
-        data.SetJointPosition(GetJointPosition(data.GetName(), scaleFactor));
+        // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
+        data.SetJointPosition(GetJointPosition(data.GetName(), scaleFactor, data.GetOffsetPosition()));
+    }
+    // 押し出し判定更新
+    for (CollisionDetectionData& data : collisionDetectionData_)
+    {        
+        // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
+        data.SetJointPosition(GetJointPosition(data.GetName(), scaleFactor, data.GetOffsetPosition()));
     }
 }
 
@@ -73,62 +80,14 @@ void Character::CollisionCharacterVsStage()
     }
 }
 
-DirectX::XMFLOAT3 Character::SetTargetPosition(const DirectX::XMFLOAT3& pos)
+DirectX::XMFLOAT3 Character::SetTargetPosition()
 {
-    // kokoshuuseisinaakannkamo
+    // ステージの中で移動先を決める
     DirectX::XMFLOAT3 stagePos = GameScene::stageCenter_;
-    DirectX::XMFLOAT3 vec = pos - stagePos;
-    float length = XMFloat3Length(vec);
-    if (length > GameScene::stageRadius_)
-    {
-        vec = XMFloat3Normalize(vec);
-        // kokoshuuseisinaakannkamo
-        return vec * GameScene::stageRadius_;
-    }
-    else
-    {
-        return pos;
-    }
-}
-
-// ----- 円柱判定情報登録 -----
-void Character::RegisterCollisionCylinderData(const CollisionCylinderData& data)
-{
-    collisionCylinderData_.emplace_back(data);
-}
-
-// ----- 円柱判定情報取得 -----
-Character::CollisionCylinderData& Character::GetCollisionCylinderData(const std::string& name)
-{
-    for (CollisionCylinderData& data : collisionCylinderData_)
-    {
-        if (data.GetName() != name) continue;
-
-        return data;
-    }
-
-    // 見つからなかった
-    return CollisionCylinderData();
-}
-
-// ----- 球判定情報登録 -----
-void Character::RegisterCollisionSphereData(const CollisionSphereData& data)
-{
-    collisionSphereData_.emplace_back(data);
-}
-
-// ----- 球判定情報取得 -----
-Character::CollisionSphereData& Character::GetCollisionSphereData(const std::string& name)
-{
-    for (CollisionSphereData& data : collisionSphereData_)
-    {
-        if (data.GetName() != name) continue;
-
-        return data;
-    }
-
-    // 見つからなかった
-    return CollisionSphereData();
+    int length = rand() % static_cast<int>(GameScene::stageRadius_);
+    DirectX::XMFLOAT3 direction = { static_cast<float>(rand() % 21 - 10), 0, static_cast<float>(rand() % 21 - 10) };
+    DirectX::XMFLOAT3 vec = stagePos + XMFloat3Normalize(direction) * length;
+    return vec;
 }
 
 // ----- ImGui用 -----
@@ -153,3 +112,114 @@ void Character::CollisionSphereData::DrawDebug()
         ImGui::TreePop();
     }
 }
+
+// ---------- くらい判定 ----------
+#pragma region くらい判定
+// ----- 登録 -----
+void Character::RegisterDamageDetectionData(const DamageDetectionData& data)
+{
+    damageDetectionData_.emplace_back(data);
+}
+
+// ----- データ取得 ( 名前検索 ) -----
+Character::DamageDetectionData& Character::GetDamageDetectionData(const std::string& name)
+{
+    // 名前でデータを探す
+    for (DamageDetectionData& data : damageDetectionData_)
+    {
+        if (data.GetName() != name) continue;
+
+        return data;
+    }
+
+    // 見つからなかった
+    return DamageDetectionData();
+}
+
+// ----- データ取得 ( 登録番号 ) -----
+Character::DamageDetectionData& Character::GetDamageDetectionData(const int& index)
+{
+    return damageDetectionData_.at(index);
+}
+
+// ----- ImGui用 -----
+void Character::DamageDetectionData::DrawDebug()
+{
+    collisionSphereData_.DrawDebug();
+}
+
+#pragma endregion くらい判定
+
+// ---------- 攻撃判定 ----------
+#pragma region 攻撃判定
+// ----- 登録 -----
+void Character::RegisterAttackDetectionData(const AttackDetectionData& data)
+{
+    attackDetectionData_.emplace_back(data);
+}
+
+// ----- データ取得 ( 名前検索 ) -----
+Character::AttackDetectionData& Character::GetAttackDetectionData(const std::string& name)
+{
+    // 名前でデータを探す
+    for (AttackDetectionData& data : attackDetectionData_)
+    {
+        if (data.GetName() != name) continue;
+
+        return data;
+    }
+
+    // 見つからなかった
+    return AttackDetectionData();
+}
+
+// ----- データ取得 ( 登録番号 ) -----
+Character::AttackDetectionData& Character::GetAttackDetectionData(const int& index)
+{
+    return attackDetectionData_.at(index);
+}
+
+// ----- ImGui用 -----
+void Character::AttackDetectionData::DrawDebug()
+{
+    collisionSphereData_.DrawDebug();
+}
+
+#pragma endregion 攻撃判定
+
+// ---------- 押し出し判定 ----------
+#pragma region 押し出し判定
+void Character::RegisterCollisionDetectionData(const CollisionDetectionData& data)
+{
+    collisionDetectionData_.emplace_back(data);
+}
+
+// ----- データ取得 ( 名前検索 ) -----
+Character::CollisionDetectionData& Character::GetCollisionDetectionData(const std::string& name)
+{
+    // 名前でデータを探す
+    for (CollisionDetectionData& data : collisionDetectionData_)
+    {
+        if (data.GetName() != name) continue;
+
+        return data;
+    }
+
+    // 見つからなかった
+    return CollisionDetectionData();
+}
+
+// ----- データ取得 ( 登録番号 ) -----
+Character::CollisionDetectionData& Character::GetCollisionDetectionData(const int& index)
+{
+    return collisionDetectionData_.at(index);
+}
+
+// ----- ImGui用 -----
+void Character::CollisionDetectionData::DrawDebug()
+{
+    collisionSphereData_.DrawDebug();
+}
+
+#pragma endregion 押し出し判定
+

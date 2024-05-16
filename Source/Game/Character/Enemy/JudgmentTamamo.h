@@ -77,6 +77,14 @@ public:
     const bool Judgment() override;
 };
 
+// K”öUŒ‚”»’è
+class TailSwipeJudgment : public JudgmentBase
+{
+public:
+    TailSwipeJudgment(Enemy* owner) : JudgmentBase(owner) {}
+    const bool Judgment() override;
+};
+
 #pragma endregion ‹ß‹——£
 
 

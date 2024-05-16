@@ -22,6 +22,7 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::LightAttack2State(this));         // 弱攻撃2
         GetStateMachine()->RegisterState(new PlayerState::StrongAttack0State(this));        // 強攻撃0
         GetStateMachine()->RegisterState(new PlayerState::StrongAttack1State(this));        // 強攻撃1       
+        GetStateMachine()->RegisterState(new PlayerState::DamageState(this));               // ダメージ
 
         // 一番初めのステートを設定する
         GetStateMachine()->SetState(static_cast<UINT>(STATE::Idle));
@@ -37,7 +38,16 @@ Player::~Player()
 void Player::Initialize()
 {
     // 押し出し判定用変数設定
-    RegisterCollisionCylinderData({ "collide", 0.25f, 1.5f });
+    RegisterCollisionDetectionData({ "collide", 0.25f });
+
+    // 当たり判定用設定
+    RegisterDamageDetectionData({ "head", 0.15f, 10, { 0, 1.4f, 0 } });
+    RegisterDamageDetectionData({ "body", 0.25f, 10, { 0, 1.0f, 0 } });
+    RegisterDamageDetectionData({ "foot", 0.25f, 10, { 0, 0.5f, 0 } });
+
+    // 体力設定
+    SetMaxHealth(100.0f);
+    SetHealth(GetMaxHealth());
 
     Object::PlayAnimation(animationIndex_, true, speed_);
 }
@@ -49,16 +59,24 @@ void Player::Finalize()
 // ----- 更新 -----
 void Player::Update(const float& elapsedTime)
 {
-    GetCollisionCylinderData("collide").SetJointPosition(GetTransform()->GetPosition());
+    GetCollisionDetectionData("collide").SetJointPosition(GetTransform()->GetPosition());
+    GetDamageDetectionData("head").SetPosition(GetTransform()->GetPosition());
+    GetDamageDetectionData("body").SetPosition(GetTransform()->GetPosition());
+    GetDamageDetectionData("foot").SetPosition(GetTransform()->GetPosition());
 
     Object::Update(elapsedTime);
 
-    Camera::Instance().SetTarget(GetTransform()->GetPosition());
+    Camera::Instance().SetTarget(GetTransform()->GetPosition() + offset_);
 
     GetStateMachine()->Update(elapsedTime);
 
+    // 吹っ飛ばす処理
+    UpdateForce(elapsedTime);
+
     // ステージの外に出ないようにする
     CollisionCharacterVsStage();
+
+    //GetTransform()->SetPositionY(0.0f);
 }
 
 // ----- 描画 -----
@@ -72,6 +90,11 @@ void Player::DrawDebug()
 {
     if (ImGui::TreeNode("Player"))
     {
+        ImGui::DragFloat3("offset", &offset_.x);
+
+        ImGui::Checkbox("Collision", &isCollisionSphere_);
+        ImGui::Checkbox("Damage", &isDamageSphere_);
+
         Character::DrawDebug();
         Object::DrawDebug();
 
@@ -91,9 +114,19 @@ void Player::DebugRender(DebugRenderer* debugRenderer)
 {
     DirectX::XMFLOAT3 position = GetTransform()->GetPosition();
 
-    for (auto& data : GetCollisionCylinderData())
+    if (isCollisionSphere_)
     {
-        debugRenderer->DrawCylinder(data.GetPosition(), data.GetRadius(), data.GetHeight(), data.GetColor());
+        for (auto& data : GetCollisionDetectionData())
+        {
+            debugRenderer->DrawSphere(data.GetPosition(), data.GetRadius(), data.GetColor());
+        }
+    }
+    if (isDamageSphere_)
+    {
+        for (auto& data : GetDamageDetectionData())
+        {
+            debugRenderer->DrawSphere(data.GetPosition(), data.GetRadius(), data.GetColor());
+        }
     }
 }
 
@@ -166,4 +199,29 @@ void Player::ResetFlags()
 {
     SetNextInput(Player::NextInput::None);  // 先行入力管理フラグ
     SetIsAvoidance(false);                  // 回避入力判定用フラグ
+}
+
+// ----- 吹っ飛ばす処理 -----
+void Player::UpdateForce(const float& elapsedTime)
+{
+    // パワーが無いときは処理しない
+    if (blowPower_ <= 0) return;
+
+    blowPower_ -= elapsedTime * 2.0f;
+    blowPower_ = std::max(blowPower_, 0.0f); // 0.0f以下にならないように修正
+
+    // 吹っ飛び方向にどれだけ、吹っ飛ばすかを計算する
+    DirectX::XMFLOAT3 direction = {};
+    direction = XMFloat3Normalize(blowDirection_) * blowPower_;
+    
+    // 吹っ飛ばす。
+    GetTransform()->AddPosition(direction);
+}
+
+// ----- 吹っ飛ばす方向と力を設定する -----
+void Player::AddForce(const DirectX::XMFLOAT3& direction, const float& power)
+{
+    // Y方向には吹っ飛ばさない
+    blowDirection_ = { direction.x, 0, direction.z };
+    blowPower_ = power;
 }

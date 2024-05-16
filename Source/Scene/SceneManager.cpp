@@ -35,32 +35,32 @@ void SceneManager::Update(const float& elapsedTime)
     }
 }
 
-void SceneManager::ShadowRender(ID3D11DeviceContext* deviceContext)
+void SceneManager::ShadowRender()
 {
     if (!currentScene) return;
 
-    currentScene->ShadowRender(deviceContext);
+    currentScene->ShadowRender();
 }
 
-void SceneManager::DeferredRender(ID3D11DeviceContext* deviceContext)
+void SceneManager::DeferredRender()
 {
     if (!currentScene) return;
 
-    currentScene->DeferredRender(deviceContext);
+    currentScene->DeferredRender();
 }
 
-void SceneManager::ForwardRender(ID3D11DeviceContext* deviceContext)
+void SceneManager::ForwardRender()
 {
     if (!currentScene) return;
 
-    currentScene->ForwardRender(deviceContext);
+    currentScene->ForwardRender();
 }
 
-void SceneManager::UserInterfaceRender(ID3D11DeviceContext* deviceContext)
+void SceneManager::UserInterfaceRender()
 {
     if (!currentScene) return;
 
-    currentScene->UserInterfaceRender(deviceContext);
+    currentScene->UserInterfaceRender();
 }
 
 // デバッグ用

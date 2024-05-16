@@ -489,3 +489,31 @@ namespace PlayerState
 }
 
 #pragma endregion 強攻撃
+
+// ----- ダメージ -----
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void DamageState::Initialize()
+    {
+        // アニメーション再生 
+        owner_->PlayAnimation(Player::Animation::Damage1, false);
+        //owner_->PlayAnimation(Player::Animation::Damage0, false);
+    }
+
+    // ----- 更新 -----
+    void DamageState::Update(const float& elapsedTime)
+    {
+        // アニメーション終了
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+    }
+
+    // ----- 終了化 -----
+    void DamageState::Finalize()
+    {
+    }
+}

@@ -50,20 +50,21 @@ EnemyTamamo::EnemyTamamo()
     behaviorTree_->AddNode("Battle", "Attack", 0, BehaviorTree::SelectRule::Priority, new AttackJudgment(this), nullptr); // 攻撃 (中間ノード)
     
     // ----- 距離近い -----
-    behaviorTree_->AddNode("Attack", "Near", 1, BehaviorTree::SelectRule::Random, new NearAttackJudgment(this), nullptr); // 近距離 (中間ノード)
+    behaviorTree_->AddNode("Attack", "Near", 1, BehaviorTree::SelectRule::Priority, new NearAttackJudgment(this), nullptr); // 近距離 (中間ノード)
     
-    behaviorTree_->AddNode("Near", "Bite",   0, BehaviorTree::SelectRule::None, nullptr, new BiteAction(this)); // 嚙みつき
-    behaviorTree_->AddNode("Near", "Slash",  0, BehaviorTree::SelectRule::None, nullptr, new SlashAction(this)); // ひっかき
-    behaviorTree_->AddNode("Near", "Tail",   0, BehaviorTree::SelectRule::None, nullptr, new TailSwipeAction(this)); // 尻尾
+    behaviorTree_->AddNode("Near", "Bite",   1, BehaviorTree::SelectRule::None, nullptr, new BiteAction(this)); // 嚙みつき
+    behaviorTree_->AddNode("Near", "Slash",  1, BehaviorTree::SelectRule::None, nullptr, new SlashAction(this)); // ひっかき
+    behaviorTree_->AddNode("Near", "Tail",   0, BehaviorTree::SelectRule::None, new TailSwipeJudgment(this), new TailSwipeAction(this)); // 尻尾
     // behaviorTree_->AddNode("Near", "Spin",   1, BehaviorTree::SelectRule::None, nullptr, nullptr); // 回転
     // behaviorTree_->AddNode("Near", "Pounce", 1, BehaviorTree::SelectRule::None, nullptr, nullptr); // 飛びつき
     
     // ----- 距離遠い -----
-    behaviorTree_->AddNode("Attack", "Far", 1, BehaviorTree::SelectRule::Random, new FarAttackJudgment(this), nullptr); // 遠距離 (中間ノード)
+    behaviorTree_->AddNode("Attack", "Far", 2, BehaviorTree::SelectRule::Priority, new FarAttackJudgment(this), nullptr); // 遠距離 (中間ノード)
     
-    behaviorTree_->AddNode("Far", "Spine",  0, BehaviorTree::SelectRule::None, nullptr, nullptr); // 棘
-    behaviorTree_->AddNode("Far", "Tackle", 0, BehaviorTree::SelectRule::None, nullptr, nullptr); // 突進
-    behaviorTree_->AddNode("Far", "Pounce", 0, BehaviorTree::SelectRule::None, nullptr, nullptr); // 飛びつき
+    behaviorTree_->AddNode("Far", "Slam",  0, BehaviorTree::SelectRule::None, nullptr, new SlamAction(this)); // たたきつけ
+    behaviorTree_->AddNode("Far", "Spine",  1, BehaviorTree::SelectRule::None, nullptr, nullptr); // 棘
+    behaviorTree_->AddNode("Far", "Tackle", 1, BehaviorTree::SelectRule::None, nullptr, nullptr); // 突進
+    behaviorTree_->AddNode("Far", "Pounce", 1, BehaviorTree::SelectRule::None, nullptr, nullptr); // 飛びつき
 
     // --- 叫ぶ系 -----
     behaviorTree_->AddNode("Attack", "Shout", 0, BehaviorTree::SelectRule::Priority, new ShoutJudgment(this), nullptr); // 叫ぶ系判定 (中間ノード)
@@ -88,7 +89,20 @@ EnemyTamamo::~EnemyTamamo()
 // ----- 初期化 -----
 void EnemyTamamo::Initialize()
 {
+    // サイズを設定
+    GetTransform()->SetScaleFactor(1.5f);
+
     GetTransform()->SetPositionZ(25);
+
+    // 回転速度設定
+    SetRotateSpeed(5.0f);
+
+    // 歩行速度設定
+    SetWalkSpeed(3.0f);
+
+    // 体力設定
+    SetMaxHealth(3000.0f);
+    SetHealth(GetMaxHealth());
 }
 
 // ----- 終了化 -----
@@ -99,11 +113,8 @@ void EnemyTamamo::Finalize()
 // ----- 更新処理 -----
 void EnemyTamamo::Update(const float& elapsedTime)
 {
-    // 円柱判定用データ更新
-    UpdateCollisionCylinderData(0.01f);
-
-    // 球判定用データ更新
-    UpdateCollisionSphereData(0.01f);
+    // Collisionデータ更新
+    UpdateCollisions(0.01f);
 
     // behaviorTree更新
     UpdateNode(elapsedTime);
@@ -121,12 +132,19 @@ void EnemyTamamo::Render()
 // ----- ImGui用 -----
 void EnemyTamamo::DrawDebug()
 {
-    if (ImGui::TreeNode("Tamamo"))
+    if (ImGui::Begin("Tamamo"))
     {
-        ImGui::Checkbox("Cylinder", &isCylinder_);
-        ImGui::Checkbox("Sphere", &isSphere_);
+        ImGui::Checkbox("DamageSphere", &isDamageSphere_);
+        ImGui::Checkbox("AttackSphere", &isAttackSphere_);
+        ImGui::Checkbox("collision", &isCollisionSphere_);
 
         Character::DrawDebug();
+
+        if (ImGui::TreeNode("Move"))
+        {
+            ImGui::DragFloat("WalkSpeed", &walkSpeed_);
+            ImGui::TreePop();
+        }
 
         if (ImGui::BeginMenu("Battle,Attack,Radius"))
         {
@@ -143,7 +161,7 @@ void EnemyTamamo::DrawDebug()
 
         Object::DrawDebug();
 
-        ImGui::TreePop();
+        ImGui::End();
     }
 }
 
@@ -152,17 +170,27 @@ void EnemyTamamo::DebugRender(DebugRenderer* debugRenderer)
 {
     DirectX::XMFLOAT3 position = GetTransform()->GetPosition();
 
-    if (isCylinder_)
+    if (isCollisionSphere_)
     {
-        for (auto& data : GetCollisionCylinderData())
+        for (auto& data : GetCollisionDetectionData())
         {
-            debugRenderer->DrawCylinder(data.GetPosition(), data.GetRadius(), data.GetHeight(), data.GetColor());
+            debugRenderer->DrawSphere(data.GetPosition(), data.GetRadius(), data.GetColor());
         }
     }
-    if (isSphere_)
+    if (isDamageSphere_)
     {
-        for (auto& data : GetCollisionSphereData())
+        for (auto& data : GetDamageDetectionData())
         {
+            debugRenderer->DrawSphere(data.GetPosition(), data.GetRadius(), data.GetColor());
+        }
+    }
+    if (isAttackSphere_)
+    {
+        for (auto& data : GetAttackDetectionData())
+        {
+            // 現在アクティブではないでの表示しない
+            if (data.GetIsActive() == false) continue;
+
             debugRenderer->DrawSphere(data.GetPosition(), data.GetRadius(), data.GetColor());
         }
     }
@@ -176,50 +204,149 @@ void EnemyTamamo::DebugRender(DebugRenderer* debugRenderer)
 
 }
 
+// ----- 全攻撃判定設定 -----
+void EnemyTamamo::SetAllAttackFlag(const bool& activeFlag)
+{
+    for (int i = 0; i < GetAttackDetectionDataCount(); ++i)
+    {
+        GetAttackDetectionData(i).SetIsActive(activeFlag);
+    }
+}
+
+// ----- 噛みつき攻撃判定設定 -----
+void EnemyTamamo::SetBiteAttackFlag(const bool& activeFlag)
+{
+    // 全ての攻撃判定を消す
+    SetAllAttackFlag();
+
+    // 必要な攻撃判定を設定する
+    GetAttackDetectionData("R:C_Tongue_1").SetIsActive(activeFlag);
+    GetAttackDetectionData("R:C_Head_1").SetIsActive(activeFlag);
+}
+
+// ----- ひっかき攻撃判定設定 -----
+void EnemyTamamo::SetSlashAttackFlag(const bool& activeFlag)
+{
+    // 全ての攻撃判定を消す
+    SetAllAttackFlag();
+
+    // 必要な攻撃判定を設定する
+    GetAttackDetectionData("R:R_Arm_2").SetIsActive(activeFlag);
+    GetAttackDetectionData("R:R_Middle_Finger_2").SetIsActive(activeFlag);
+}
+
+// ----- 尻尾攻撃判定設定 -----
+void EnemyTamamo::SetTailSwipeAttackFlag(const bool& activeFlag)
+{
+    // 全ての攻撃判定を消す
+    SetAllAttackFlag();
+
+    // 必要な攻撃判定を設定する
+    GetAttackDetectionData("R:C_Tail_3").SetIsActive(activeFlag);
+    GetAttackDetectionData("R:C_Tail_5").SetIsActive(activeFlag);
+    GetAttackDetectionData("R:C_Tail_8").SetIsActive(activeFlag);
+}
+
+// ----- たたきつけ攻撃判定設定 -----
+void EnemyTamamo::SetSlamAttackFlag(const bool& activeFlag)
+{
+    // 全ての攻撃判定を消す
+    SetAllAttackFlag();
+
+    // 必要な攻撃判定を設定する
+    GetAttackDetectionData("R:R_Arm_2").SetIsActive(activeFlag);
+    GetAttackDetectionData("R:R_Middle_Finger_2").SetIsActive(activeFlag);
+    GetAttackDetectionData("R:L_Arm_2").SetIsActive(activeFlag);
+    GetAttackDetectionData("R:L_Middle_Finger_2").SetIsActive(activeFlag);
+}
+
 // ----- collisionData登録 -----
 void EnemyTamamo::RegisterCollisionData()
 {
-    CollisionCylinderData cylinderData[] =
+    // 押し出し判定
+    CollisionDetectionData collisionDetectionData[] =
     {
-        { "R:C_Spine_2", 0.7f, 1.5f, { 0, -1, 0 } }, // おなか
-        { "R:C_Neck_1", 0.4f, 1.5f, { 0, -1, 0 } }, // くび前
-        { "R:C_Spine_5", 0.4f, 1.5f, { 0, -1, 0 } }, // くび後ろ
-        { "R:C_Tail_1", 0.4f, 1.5f, { 0, -1.5, 0 } }, // おしり
-        { "R:R_Arm_2", 0.3f, 1.5f, { 0, -1, 0 } },  // 右前足
-        { "R:L_Arm_2", 0.3f, 1.5f, { 0, -1, 0 } },  // 左前足
-        { "R:R_Leg_2", 0.3f, 1.5f, { 0, -1, 0 } },  // 右後足
-        { "R:L_Leg_2", 0.3f, 1.5f, { 0, -1, 0 } },  // 左後足
-    };
-    CollisionSphereData sphereData[] =
-    {
-        { "R:C_Head_1",     0.66f,  {},             { 1, 0, 0, 1 } }, // 顔
-        { "R:C_Spine_3",    0.4f,   { 0, 0, 0.2 },  { 1, 0, 0, 1 } }, // 腰
-        { "R:C_Spine_6",    0.66f,  { 0, -0.1, 0 }, { 1, 0, 0, 1 } }, // くび
-        { "R:C_Hip",        0.5f,   {},             { 1, 0, 0, 1 } }, // おしり
-        { "R:R_Arm_1",      0.4f,   {},             { 1, 0, 0, 1 } }, // 右肩
-        { "R:R_Arm_2",      0.4f,   {},             { 1, 0, 0, 1 } }, // 右ひじ
-        { "R:R_Arm_3",      0.4f,   {},             { 1, 0, 0, 1 } }, // 右手
-        { "R:L_Arm_1",      0.4f,   {},             { 1, 0, 0, 1 } }, // 左肩
-        { "R:L_Arm_2",      0.4f,   {},             { 1, 0, 0, 1 } }, // 左ひじ
-        { "R:L_Arm_3",      0.4f,   {},             { 1, 0, 0, 1 } }, // 左手
-        { "R:R_Leg_2",      0.4f,   {},             { 1, 0, 0, 1 } }, // 右足付け根
-        { "R:R_Leg_3",      0.4f,   {},             { 1, 0, 0, 1 } }, // 右ひざ
-        { "R:R_Foot",       0.4f,   {},             { 1, 0, 0, 1 } }, // 右足
-        { "R:L_Leg_2",      0.4f,   {},             { 1, 0, 0, 1 } }, // 左足付け根
-        { "R:L_Leg_3",      0.4f,   {},             { 1, 0, 0, 1 } }, // 左ひざ
-        { "R:L_foot",       0.4f,   {},             { 1, 0, 0, 1 } }, // 左足
-        { "R:C_Tail_3",     0.7f,   {},             { 1, 0, 0, 1 } }, // 尻尾
-        { "R:C_Tail_5",     1.1f,   {},             { 1, 0, 0, 1 } }, // 尻尾
-        { "R:C_Tail_8",     1.8f,   {},             { 1, 0, 0, 1 } }, // 尻尾
+        { "R:C_Tongue_1",   0.4f,   { 0, 0, 15 },   }, // 顔 ( 舌 )
+        { "R:C_Head_1",     0.5f,   {},             }, // 顔
+        { "R:C_Spine_6",    1.1f,   { 0, -10, -20 } }, // くび
+        { "R:C_Hip",        1.0f,   { 0, -20, 10 }  }, // おしり
+
+        { "R:R_Arm_2",      0.25f,  { 0, 30, 0 }    }, // 右ひじ
+        { "R:R_Arm_3",      0.25f,  { 0, -15, 0 }   }, // 右手首
+        { "R:R_Hand",       0.3f,   { 0, 0, -20 }   }, // 右手
+
+        { "R:L_Arm_2",      0.25f,  { 0, -30, 0 }   }, // 左ひじ
+        { "R:L_Arm_3",      0.25f,  { 0, 15, 0 }    }, // 左手首
+        { "R:L_Hand",       0.3f,   { 0, 0, 20 }    }, // 左手         
+
+        { "R:R_Leg_2",      0.25f,  {0,45,20},      }, // 右足付け根
+        { "R:R_Leg_3",      0.25f,  {0,20,-10},     }, // 右ひざ
+        { "R:R_Foot",       0.3f,   {0,0,-15},      }, // 右足
+
+        { "R:L_Leg_2",      0.25f,  {0,-45,-20},    }, // 左足付け根
+        { "R:L_Leg_3",      0.25f,  {0,-20,10},     }, // 左ひざ
+        { "R:L_foot",       0.3f,   {0,0,15},       }, // 左足
+
+        { "R:C_Tail_3",     0.65f,  {},             }, // 尻尾
+        { "R:C_Tail_5",     1.25f,  {},             }, // 尻尾
+        { "R:C_Tail_8",     2.5f,   {},             }, // 尻尾
 
     };
+    // くらい判定
+    DamageDetectionData damageDetectionData[] =
+    {// { 名前, 半径, ダメージ量, offsetPosition }
+        { "R:C_Tongue_1",   0.66f, 10, { 0, 0, 15 }    }, // 顔 ( 舌 )
+        { "R:C_Head_1",     0.7f,  10, {}              }, // 顔
+        { "R:C_Spine_6",    1.3f,  10, { 0, -10, -20 } }, // くび
+        { "R:C_Hip",        1.0f,  10, { 0, -20, 10 }  }, // おしり
 
-    for (int i = 0; i < _countof(cylinderData); ++i)
+        { "R:R_Arm_2",      0.4f,  10, { 0, 30, 0 }    }, // 右ひじ
+        { "R:R_Arm_3",      0.4f,  10, { 0, -15, 0 }   }, // 右手首
+        { "R:R_Hand",       0.4f,  10, { 0, 0, -20 }   }, // 右手
+        
+        { "R:L_Arm_2",      0.4f,  10, { 0, -30, 0 }   }, // 左ひじ
+        { "R:L_Arm_3",      0.4f,  10, { 0, 15, 0 }    }, // 左手首
+        { "R:L_Hand",       0.4f,  10, { 0, 0, 20 }    }, // 左手         
+        
+        { "R:R_Leg_2",      0.4f,  10, {0,45,20},      }, // 右足付け根
+        { "R:R_Leg_3",      0.4f,  10, {0,20,-10},     }, // 右ひざ
+        { "R:R_Foot",       0.4f,  10, {0,0,-15},      }, // 右足
+
+        { "R:L_Leg_2",      0.4f,  10, {0,-45,-20},    }, // 左足付け根
+        { "R:L_Leg_3",      0.4f,  10, {0,-20,10},     }, // 左ひざ
+        { "R:L_foot",       0.4f,  10, {0,0,15},       }, // 左足
+        
+        { "R:C_Tail_3",     1.0f,  10, {},             }, // 尻尾
+        { "R:C_Tail_5",     1.8f,  10, {},             }, // 尻尾
+        { "R:C_Tail_8",     3.0f,  10, {},             }, // 尻尾
+    };
+    // 攻撃判定
+    AttackDetectionData attackDetectionData[] =
     {
-        RegisterCollisionCylinderData(cylinderData[i]);
+        { "R:C_Tongue_1",   0.66f,  { 0, 0, 15 }    }, // 顔 ( 舌 )
+        { "R:C_Head_1",     0.90f,  {},             }, // 顔
+
+        { "R:R_Arm_2",              0.5f,   { 0, 40, 0 },   }, // 右腕
+        { "R:R_Middle_Finger_2",    0.5f,   { -15, 0, 0 },  }, // 右手
+
+        { "R:L_Arm_2",              0.5f,   { 0, -40, 0 },  }, // 左腕
+        { "R:L_Middle_Finger_2",    0.5f,   { -15, 0, 0 },  }, // 左手
+
+        { "R:C_Tail_3",     1.0f,   {},             }, // 尻尾
+        { "R:C_Tail_5",     1.8f,   {},             }, // 尻尾
+        { "R:C_Tail_8",     3.0f,   {},             }, // 尻尾
+    };
+
+    for (int i = 0; i < _countof(collisionDetectionData); ++i)
+    {
+        RegisterCollisionDetectionData(collisionDetectionData[i]);
     }
-    for (int i = 0; i < _countof(sphereData); ++i)
+    for (int i = 0; i < _countof(damageDetectionData); ++i)
     {
-        RegisterCollisionSphereData(sphereData[i]);
+        RegisterDamageDetectionData(damageDetectionData[i]);
+    }
+    for (int i = 0; i < _countof(attackDetectionData); ++i)
+    {
+        RegisterAttackDetectionData(attackDetectionData[i]);
     }
 }

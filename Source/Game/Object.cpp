@@ -4,7 +4,7 @@
 
 // ----- コンストラクタ -----
 Object::Object(const std::string filename)
-    : gltfModel_(Graphics::Instance().GetDevice(), filename)
+    : gltfModel_(filename)
 {
 }
 

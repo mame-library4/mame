@@ -17,8 +17,10 @@
 #include "../Graphics/Graphics.h"
 
 // コンストラクタ
-GltfModel::GltfModel(ID3D11Device* device, const std::string& filename) : filename_(filename)
+GltfModel::GltfModel(const std::string& filename) : filename_(filename)
 {
+    ID3D11Device* device = Graphics::Instance().GetDevice();
+
     tinygltf::Model gltfModel;
 
     tinygltf::TinyGLTF tinyGltf;
@@ -100,6 +102,7 @@ void GltfModel::UpdateAnimation(const float& elapsedTime)
     {
         animationEndFlag_       = false;    // 終了フラグをリセット
         currentAnimationIndex_  = -1;       // アニメーション番号をリセット
+        blendAnimationIndex1_ = -1;
         return;
     }
 
@@ -109,7 +112,26 @@ void GltfModel::UpdateAnimation(const float& elapsedTime)
     // アニメーション再生時間経過
     currentAnimationSeconds_ += elapsedTime * animationSpeed_;
 
-    Animate(currentAnimationIndex_, currentAnimationSeconds_, nodes_, animationLoopFlag_);
+    // アニメーションの最終フレームを取ってくる
+    float duration = animations_.at(currentAnimationIndex_).duration_;
+
+    // アニメーションが再生しきっている場合
+    if (currentAnimationSeconds_ > duration)
+    {
+        if (animationLoopFlag_)
+        {
+            currentAnimationSeconds_ = 0.0f;
+            return;
+        }
+        else
+        {
+            animationEndFlag_ = true;
+            return;
+        }
+    }
+
+    // アニメーション更新
+    Animate(currentAnimationIndex_, currentAnimationSeconds_, nodes_);
 }
 
 // ----- ブレンドアニメーション更新 ( 更新していたら true ) -----
@@ -118,24 +140,39 @@ bool GltfModel::UpdateBlendAnimation(const float& elapsedTime)
     // アニメーション番号が入ってない場合は return false
     if (blendAnimationIndex1_ < 0) return false;
 
-    if (animationEndFlag_)
-    {
-        animationEndFlag_ = false;  // 終了フラグをリセット
-        blendAnimationIndex1_ = -1; // アニメーション番号リセット
-        blendAnimationIndex2_ = -1; // アニメーション番号リセット
-        return false;
-    }
-
     // weight値を０～１の間に収める
     weight_ = std::clamp(weight_, 0.0f, 1.0f);
 
     // アニメーション再生時間更新
     blendAnimationSeconds_ += elapsedTime * animationSpeed_;
 
+    // アニメーションの最終フレームを取得
+    float duration1 = animations_.at(blendAnimationIndex1_).duration_;
+    float duration2 = animations_.at(blendAnimationIndex2_).duration_;
+
+    // 基準となるアニメーションにフレーム数を合わせる
+    float maxDuration = duration1;
+    if (blendThreshold_ < weight_) maxDuration = duration2;
+
+    // アニメーションが再生しきっている場合
+    if (blendAnimationSeconds_ > maxDuration)
+    {
+        if (animationLoopFlag_)
+        {
+            blendAnimationSeconds_ = 0.0f;
+            return true;
+        }
+        else
+        {
+            animationEndFlag_ = true;
+            return true;
+        }
+    }
+
     // ２つのアニメーションの姿勢を取ってくる
-    Animate(blendAnimationIndex1_, blendAnimationSeconds_, nodes_, animationLoopFlag_);
+    Animate(blendAnimationIndex1_, blendAnimationSeconds_, nodes_);
     std::vector<Node> node1 = nodes_;
-    Animate(blendAnimationIndex2_, blendAnimationSeconds_, nodes_, animationLoopFlag_);
+    Animate(blendAnimationIndex2_, blendAnimationSeconds_, nodes_);
     std::vector<Node> node2 = nodes_;
 
     // ２つのアニメーションのブレンドをする
@@ -302,41 +339,45 @@ void GltfModel::Render(ID3D11DeviceContext* deviceContext, const DirectX::XMFLOA
 
 void GltfModel::DrawDebug()
 {
-#ifdef USE_IMGUI
     GetTransform()->DrawDebug();
-    ImGui::DragFloat("weight", &weight_, 0.1f, 0.0f, 1.0f);
-    ImGui::DragFloat("animationSpeed", &animationSpeed_, 0.1f);
-    ImGui::Checkbox("animationLoopFlag_", &animationLoopFlag_);
-    ImGui::Checkbox("animationEndFlag_", &animationEndFlag_);
-    ImGui::DragFloat("currentAnimationSeconds_", &currentAnimationSeconds_);
-    ImGui::DragFloat("blendAnimationSeconds", &blendAnimationSeconds_);
-    if (ImGui::Button("timeReset"))
+    if (ImGui::TreeNode("Animation"))
     {
-        currentAnimationSeconds_ = 0.0f;
-        animationEndFlag_ = false;
+        if (ImGui::TreeNode("DefaultAnimation"))
+        {
+            ImGui::DragInt("AnimationIndex", &currentAnimationIndex_);
+            ImGui::DragFloat("AnimationTimer", &currentAnimationSeconds_);
+
+            ImGui::TreePop();
+        }
+        if (ImGui::TreeNode("BlendAnimation"))
+        {
+            ImGui::DragInt("BlendAnimationIndex1", &blendAnimationIndex1_);
+            ImGui::DragInt("BlendAnimationIndex2", &blendAnimationIndex2_);
+            ImGui::DragFloat("BlendAnimationTimer", &blendAnimationSeconds_);
+            ImGui::DragFloat("BlendWeight", &weight_, 0.1f, 0.0f, 1.0f);
+
+            ImGui::TreePop();
+        }
+        ImGui::DragFloat("AnimationSpeed", &animationSpeed_, 0.1f);
+        ImGui::Checkbox("AnimationLoop", &animationLoopFlag_);
+        ImGui::Checkbox("AnimationEnd", &animationEndFlag_);
+
+        ImGui::TreePop();
     }
-#endif // USE_IMGUI
 }
 
-void GltfModel::Animate(size_t animationIndex, float time, std::vector<Node>& animatedNodes, bool loopback)
+void GltfModel::Animate(size_t animationIndex, float time, std::vector<Node>& animatedNodes)
 {
-    std::function<size_t(const std::vector<float>&, float, float&, bool)> indexof
+    std::function<size_t(const std::vector<float>&, float, float&)> indexof
     {
-        [](const std::vector<float>& timelines, float time, float& interpolationFactor, bool loopback)->size_t
+        [](const std::vector<float>& timelines, float time, float& interpolationFactor)->size_t
         {
             const size_t keyframeCount{timelines.size()}; 
 
             if (time > timelines.at(keyframeCount - 1))
             {
-                if (loopback)
-                {
-                    time = fmodf(time, timelines.at(keyframeCount - 1));
-                }
-                else
-                {
-                    interpolationFactor = 1.0f;
-                    return keyframeCount - 2;
-                }
+                interpolationFactor = 1.0f;
+                return keyframeCount - 2;
             }
             else if (time < timelines.at(0))
             {
@@ -371,22 +412,7 @@ void GltfModel::Animate(size_t animationIndex, float time, std::vector<Node>& an
             }
             float interpolationFactor{};
 
-            size_t keyframeIndex{ indexof(timeline, time, interpolationFactor, loopback) };
-
-            // アニメーション終わったタイミングの判定を取っている
-            const size_t keyframeCount = timeline.size();
-            if (time > timeline.at(keyframeCount - 1))
-            {
-                if (animationLoopFlag_)
-                {
-                    //currentAnimationSeconds_ = 0.0f;
-                    //blendAnimationSeconds_ = 0.0f;
-                }
-                else
-                {
-                    animationEndFlag_ = true;
-                }
-            }
+            size_t keyframeIndex{ indexof(timeline, time, interpolationFactor) };
             
             if (channel.targetPath_ == "scale")
             {
@@ -427,7 +453,6 @@ void GltfModel::PlayAnimation(const int& index, const bool& loop, const float& s
     currentAnimationSeconds_    = 0.0f;     // タイマーをリセットする
     
     blendAnimationIndex1_ = -1; // 使用しないので-1
-    blendAnimationIndex2_ = -1; // 使用しないので-1
 
     animationLoopFlag_          = loop;     // アニメーションループフラグを設定する
     animationEndFlag_           = false;    // 再生終了フラグをリセット
@@ -454,10 +479,30 @@ void GltfModel::PlayBlendAnimation(const int& index1, const int& index2, const b
     animationSpeed_     = speed;    // アニメーション再生速度
 }
 
+// ----- ブレンドアニメーション再生 ( 初回以降使用可能 ) -----
+void GltfModel::PlayBlendAnimation(const int& index, const bool& loop, const float& speed)
+{
+    // 再生するindex番号が現在と同じ場合 return
+    if (blendAnimationIndex2_ == index) return;
+
+    // 通常アニメーション番号リセット
+    currentAnimationIndex_ = -1;
+
+    blendAnimationIndex1_ = blendAnimationIndex2_;  // 再生するアニメーション番号を設定
+    blendAnimationIndex2_ = index;                  // 再生するアニメーション番号を設定
+
+    blendAnimationSeconds_ = 0.0f;     // アニメーション再生時間リセット
+
+    animationLoopFlag_ = loop;     // ループさせるか
+    animationEndFlag_ = false;    // 再生終了フラグをリセット
+
+    animationSpeed_ = speed;    // アニメーション再生速度
+}
+
 // ----- アニメーションが再生中なら true -----
 const bool GltfModel::IsPlayAnimation()
 {
-    //// アニメーション再生されていない
+    // アニメーション再生されていない
     if (currentAnimationIndex_ < 0 && blendAnimationIndex1_ < 0) return false;
 
     // アニメーション番号が存在しない
@@ -469,9 +514,9 @@ const bool GltfModel::IsPlayAnimation()
 }
 
 // ----- 指定したジョイントの位置を取得 -----
-DirectX::XMFLOAT3 GltfModel::GetJointPosition(const size_t& nodeIndex, const float& scaleFactor)
+DirectX::XMFLOAT3 GltfModel::GetJointPosition(const size_t& nodeIndex, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition)
 {
-    DirectX::XMFLOAT3 position = { 0, 0, 0 };
+    DirectX::XMFLOAT3 position = offsetPosition;
 
     const Node& node = nodes_.at(nodeIndex);
     DirectX::XMMATRIX M = DirectX::XMLoadFloat4x4(&node.globalTransform_) * GetTransform()->CalcWorldMatrix(scaleFactor);
@@ -481,9 +526,9 @@ DirectX::XMFLOAT3 GltfModel::GetJointPosition(const size_t& nodeIndex, const flo
 }
 
 // ----- 指定したジョイントの位置を取得 -----
-DirectX::XMFLOAT3 GltfModel::GetJointPosition(const std::string& nodeName, const float& scaleFactor)
+DirectX::XMFLOAT3 GltfModel::GetJointPosition(const std::string& nodeName, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition)
 {
-    DirectX::XMFLOAT3 position = { 0, 0, 0 };
+    DirectX::XMFLOAT3 position = offsetPosition;
 
     // ノードを名前検索する
     for (Node& node : nodes_)
@@ -910,6 +955,14 @@ void GltfModel::FetchAnimation(const tinygltf::Model& gltfModel)
                         gltfBufferView.byteOffset + gltfAccessor.byteOffset, gltfAccessor.count * sizeof(DirectX::XMFLOAT3));
                 }
             }
+        }
+    }
+    // 各チャンネルのタイムラインで最長のアニメーション時間を見つける
+    for (decltype(animations_)::reference animation : animations_)
+    {
+        for (decltype(animation.timelines_)::reference timelines : animation.timelines_)
+        {
+            animation.duration_ = std::max<float>(animation.duration_, timelines.second.back());
         }
     }
 }

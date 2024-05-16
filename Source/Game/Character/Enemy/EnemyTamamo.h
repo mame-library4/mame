@@ -37,11 +37,19 @@ public:
     void DrawDebug()                        override;
     void DebugRender(DebugRenderer* debugRenderer);
 
+public:// --- çUåÇîªíËê›íËä÷êî ---
+    void SetAllAttackFlag(const bool& activeFlag = false) override;
+    void SetBiteAttackFlag(const bool& activeFlag = true) override;
+    void SetSlashAttackFlag(const bool& activeFlag = true) override;
+    void SetTailSwipeAttackFlag(const bool& activeFlag = true) override;
+    void SetSlamAttackFlag(const bool& activeFlag = true) override;
+
 private:
     void RegisterCollisionData(); // collisionDataìoò^
 
 private:
-    bool isCylinder_ = true;
-    bool isSphere_ = true;
+    bool isCollisionSphere_ = true;
+    bool isAttackSphere_ = true;
+    bool isDamageSphere_ = true;
 };
 

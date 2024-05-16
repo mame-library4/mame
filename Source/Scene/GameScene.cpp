@@ -33,6 +33,9 @@ void GameScene::CreateResource()
     LoadTextureFromFile(Graphics::Instance().GetDevice(),
         L"./Resources/environments/lut_ggx.DDS",
         iblTextures_[3].GetAddressOf(), &textureDesc);
+
+    particles_ = std::make_unique<decltype(particles_)::element_type>(100);
+    particles_->Initialize(0);
 }
 
 // ----- 初期化 -----
@@ -47,6 +50,7 @@ void GameScene::Initialize()
     stageNormal_[0]->GetTransform()->SetPositionZ(35);
     stageNormal_[1]->GetTransform()->SetPositionY(-100);
     stageNormal_[2]->GetTransform()->SetPositionZ(35);
+    stageNormal_[2]->GetTransform()->SetScaleFactor(1.5f);
 }
 
 // ----- 終了化 -----
@@ -70,18 +74,27 @@ void GameScene::Update(const float& elapsedTime)
 
     // ステージ位置更新
     stageCenter_ = stageNormal_[2]->GetTransform()->GetPosition();
+
+
+    if (GetAsyncKeyState('T') & 0x8000)
+    {
+        particles_->Initialize(0);
+    }
+    particles_->Integrate(elapsedTime);
 }
 
-void GameScene::ShadowRender(ID3D11DeviceContext* deviceContext)
+void GameScene::ShadowRender()
 {
 }
 
-void GameScene::DeferredRender(ID3D11DeviceContext* deviceContext)
+void GameScene::DeferredRender()
 {
 }
 
-void GameScene::ForwardRender(ID3D11DeviceContext* deviceContext)
+void GameScene::ForwardRender()
 {
+    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
+
     deviceContext->PSSetShaderResources(32, 1, iblTextures_[0].GetAddressOf());
     deviceContext->PSSetShaderResources(33, 1, iblTextures_[1].GetAddressOf());
     deviceContext->PSSetShaderResources(34, 1, iblTextures_[2].GetAddressOf());
@@ -98,6 +111,11 @@ void GameScene::ForwardRender(ID3D11DeviceContext* deviceContext)
         stageNormal_[i]->Render();
     }
 
+
+    Shader* shader = Graphics::Instance().GetShader();
+    shader->SetBlendState(Shader::BLEND_STATE::ADD);
+    shader->SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
+    particles_->Render();
     
 
 #ifdef _DEBUG
@@ -115,6 +133,7 @@ void GameScene::ForwardRender(ID3D11DeviceContext* deviceContext)
         position = stageNormal_[2]->GetTransform()->GetPosition();
 
         debugRenderer->DrawCylinder(position, stageRadius_, 1.5f, { 1, 0, 0, 1 });
+        //debugRenderer->DrawCylinder(position, stageRadius1_, 1.5f, { 1, 0, 0, 1 });
 
     }
     // デバッグレンダラ描画
@@ -126,7 +145,7 @@ void GameScene::ForwardRender(ID3D11DeviceContext* deviceContext)
 #endif
 }
 
-void GameScene::UserInterfaceRender(ID3D11DeviceContext* deviceContext)
+void GameScene::UserInterfaceRender()
 {
 }
 
@@ -134,12 +153,19 @@ void GameScene::UserInterfaceRender(ID3D11DeviceContext* deviceContext)
 void GameScene::DrawDebug()
 {
     ImGui::Checkbox("Debug", &isDebugRenderer_);
+    ImGui::DragFloat("stageRadius", &stageRadius1_);
+
+    particles_->DrawDebug();
 
     // プレイヤーImGui
     PlayerManager::Instance().DrawDebug();
 
     // 敵ImGui
-    EnemyManager::Instance().DrawDebug();
+    if (ImGui::TreeNode("Enemy"))
+    {
+        EnemyManager::Instance().DrawDebug();
+        ImGui::TreePop();
+    }
 
     if (ImGui::TreeNode("jinja"))
     {

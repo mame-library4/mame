@@ -11,7 +11,7 @@
 class GltfModel
 {
 public:
-    GltfModel(ID3D11Device* device, const std::string& filename);
+    GltfModel(const std::string& filename);
     virtual ~GltfModel() = default;
 
 public:
@@ -144,6 +144,7 @@ public:
     struct Animation
     {
         std::string name_;
+        float duration_ = 0.0f;
 
         struct Channel
         {
@@ -195,7 +196,7 @@ public:
         const std::vector<Node>& animatedNodes);
     void DrawDebug();
 
-    void Animate(size_t animationIndex, float time, std::vector<Node>& animatedNodes, bool loopback = true);
+    void Animate(size_t animationIndex, float time, std::vector<Node>& animatedNodes);
 
 
     Transform* GetTransform() { return &transform_; }
@@ -207,11 +208,18 @@ public:
     // アニメーション再生
     void PlayAnimation(const int& animationIndex, const bool& loop, const float& speed);
     void PlayBlendAnimation(const int& index1, const int& index2, const bool& loop, const float& speed);
+    void PlayBlendAnimation(const int& index, const bool& loop, const float& speed);
     const bool IsPlayAnimation();
 
+    // ----- BlendAnimationSeconds -----
+    [[nodiscard]] const float GetBlendAnimationSeconds() const { return blendAnimationSeconds_; }
+
+    // ----- AnimationIndex -----
+    [[nodiscard]] const int GetCurrentBlendAnimationIndex() const { return blendAnimationIndex2_; }
+
     // ----- JointPosiion -----
-    DirectX::XMFLOAT3 GetJointPosition(const size_t& nodeIndex, const float& scaleFactor);
-    DirectX::XMFLOAT3 GetJointPosition(const std::string& nodeName, const float& scaleFactor);
+    DirectX::XMFLOAT3 GetJointPosition(const size_t& nodeIndex, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {});
+    DirectX::XMFLOAT3 GetJointPosition(const std::string& nodeName, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {});
 
     // ----- weight値 -----
     [[nodiscard]] const float GetWeight() const { return weight_; }
@@ -253,8 +261,8 @@ private:
     bool    animationLoopFlag_          = false;    // アニメーションをループするか 
     bool    animationEndFlag_           = false;    // アニメーションが終了したか
 
-    int     blendAnimationIndex1_       = 0;       // １つ目ブレンド用アニメーション番号
-    int     blendAnimationIndex2_       = 1;       // ２つ目ブレンド用アニメーション番号
+    int     blendAnimationIndex1_       = -1;       // １つ目ブレンド用アニメーション番号
+    int     blendAnimationIndex2_       = -1;       // ２つ目ブレンド用アニメーション番号
     float   blendAnimationSeconds_      = 0.0f;     // 現在のアニメーション再生時間
     float   blendThreshold_             = 0.0f;     // ブレンドアニメーションのベースとなるアニメーションの切り替え閾値
 

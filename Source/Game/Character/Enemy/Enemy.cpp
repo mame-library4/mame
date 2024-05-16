@@ -24,14 +24,17 @@ void Enemy::Turn(const float& elapsedTime, const DirectX::XMFLOAT3& targetPos)
     ownerFront = XMFloat2Normalize(ownerFront);
     float dot = XMFloat2Dot(vec, ownerFront) - 1.0f;
 
+    // 回転速度設定
+    float rotateSpeed = GetRotateSpeed() * elapsedTime;
+
     // 回転処理
     if (cross > 0)
     {
-        GetTransform()->AddRotationY(dot);
+        GetTransform()->AddRotationY(dot * rotateSpeed);
     }
     else
     {
-        GetTransform()->AddRotationY(-dot);
+        GetTransform()->AddRotationY(-dot * rotateSpeed);
     }
 }
 
@@ -50,11 +53,46 @@ void Enemy::UpdateNode(const float& elapsedTime)
     }
 }
 
+// ----- ブレンドアニメーション設定 -----
+void Enemy::PlayBlendAnimation(const TamamoAnimation& index, const bool& loop, const float& speed)
+{
+    const int currentAnimationIndex = GetCurrentBlendAnimationIndex();
+
+    // 現在のアニメーションと引数のアニメーションが同じ場合
+    if (currentAnimationIndex == static_cast<int>(index))
+    {
+        // 仮でwalkを一つ目のブレンド引数に入れておく
+        Object::PlayBlendAnimation(static_cast<int>(Enemy::TamamoAnimation::Walk), static_cast<int>(index), loop, speed);
+        SetWeight(1.0f);
+        return;
+    }
+
+    // 攻撃アニメーションの時はweight値を１にする
+    if (currentAnimationIndex != static_cast<int>(TamamoAnimation::Idle) &&
+        currentAnimationIndex != static_cast<int>(TamamoAnimation::Walk) &&
+        currentAnimationIndex != static_cast<int>(TamamoAnimation::WalkLeft) &&
+        currentAnimationIndex != static_cast<int>(TamamoAnimation::WalkRight))
+    {
+        SetWeight(1.0f);
+    }
+
+    Object::PlayBlendAnimation(static_cast<int>(index), loop, speed);
+}
+
 // ----- プレイヤーまでの距離を算出 -----
-const float Enemy::CalcPlayerDistance()
+const float Enemy::CalcDistanceToPlayer()
 {
     DirectX::XMFLOAT3 ownerPos = GetTransform()->GetPosition();
     DirectX::XMFLOAT3 playerPos = PlayerManager::Instance().GetTransform()->GetPosition();
 
     return XMFloat3Length(playerPos - ownerPos);
+}
+
+// ----- 自分自身からプレイヤーへのベクトル -----
+const DirectX::XMFLOAT3 Enemy::CalcDirectionToPlayer()
+{
+    DirectX::XMFLOAT3 ownerPos = GetTransform()->GetPosition();
+    DirectX::XMFLOAT3 playerPos = PlayerManager::Instance().GetTransform()->GetPosition();
+
+    return playerPos - ownerPos;
 }

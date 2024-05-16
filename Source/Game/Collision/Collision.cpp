@@ -5,47 +5,18 @@
 const bool Collision::IntersectSphereVsSphere(
     const DirectX::XMFLOAT3& positionA, const float radiusA,
     const DirectX::XMFLOAT3& positionB, const float radiusB,
-    DirectX::XMFLOAT3* outPosition)
+    DirectX::XMFLOAT3& outPosition)
 {
-#if 0
-    // B → Aの単位ベクトルを算出
-    DirectX::XMVECTOR PositionA = DirectX::XMLoadFloat3(&positionA);
-    DirectX::XMVECTOR PositionB = DirectX::XMLoadFloat3(&positionB);
-    DirectX::XMVECTOR vec = DirectX::XMVectorSubtract(PositionB, PositionA);
-    DirectX::XMVECTOR LengthSq = DirectX::XMVector3Length(vec);
-    float lengthSq;
-    DirectX::XMStoreFloat(&lengthSq, LengthSq);
-
-    // 距離判定
-    float range = radiusA + radiusB;
-    if (lengthSq > range)
-    {
-        return false;
-    }
-
-    // A が B を押し出す
-    float dist = range - lengthSq;                      // めり込んでいる距離を算出
-    vec = DirectX::XMVectorScale(vec, dist);            // ベクトルに変換
-    PositionB = DirectX::XMVectorAdd(PositionB, vec);   // 押し出し位置
-    DirectX::XMStoreFloat3(&outPositionB, PositionB);
-
-    return true;
-
-#else
-    using DirectX::XMFLOAT3;
-
-    const XMFLOAT3 vec      = positionB - positionA;
-    const float    lengthSq = ::XMFloat3LengthSq(vec);
-    const float    range    = radiusA + radiusB;
+    const DirectX::XMFLOAT3 vec = positionB - positionA;
+    const float lengthSq = XMFloat3LengthSq(vec);
+    const float range = radiusA + radiusB;
 
     if (lengthSq > (range * range)) return false;
 
-    const XMFLOAT3 vecN = ::XMFloat3Normalize(vec);
-    (*outPosition) = (positionA + vecN * range);
+    const DirectX::XMFLOAT3 vecN = XMFloat3Normalize(vec);
+    outPosition = (positionA + vecN * range);
 
     return true;
-
-#endif
 }
 
 const bool Collision::IntersectSphereVsSphere(
@@ -59,6 +30,38 @@ const bool Collision::IntersectSphereVsSphere(
     const float    range    = radiusA + radiusB;
 
     if (lengthSq > (range * range)) return false;
+
+    return true;
+}
+
+// ----- 球と球の交差判定 ( Y座標の押し出しを考慮しない ) -----
+const bool Collision::IntersectSphereVsSphereNotConsiderY(const DirectX::XMFLOAT3& positionA, const float& radiusA, const DirectX::XMFLOAT3& positionB, const float& radiusB, DirectX::XMFLOAT3& outPositionB)
+{
+    // A -> B のベクトル算出
+    DirectX::XMFLOAT3 vec = positionB - positionA;
+    DirectX::XMFLOAT3 vecNormal = XMFloat3Normalize(vec);
+
+    // 距離判定を行う
+    float length = XMFloat3Length(vec);
+    const float range = radiusA + radiusB;
+    // 交差していない
+    if (length > range) return false;
+    
+    
+    DirectX::XMFLOAT2 posAxz = { positionA.x, positionA.z };
+    DirectX::XMFLOAT2 posBxz = { positionB.x, positionB.z };
+    DirectX::XMFLOAT2 vecXZ = posBxz - posAxz;
+    
+    float vecC = length;
+    float vecC2 = radiusA + radiusB;
+
+    float vecA = positionA.y - positionB.y;
+    float vecB = sqrtf(vecC * vecC - vecA * vecA);
+    float vecB2 = sqrtf(vecC2 * vecC2 - vecA * vecA);
+    float vecLength = vecB2 - vecB;
+
+    vecXZ = XMFloat2Normalize(vecXZ) * vecLength;
+    outPositionB = positionB + DirectX::XMFLOAT3(vecXZ.x, 0, vecXZ.y);
 
     return true;
 }

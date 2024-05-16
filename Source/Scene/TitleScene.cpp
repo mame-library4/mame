@@ -22,21 +22,23 @@ void TitleScene::Update(const float& elapsedTime)
 {
 }
 
-void TitleScene::ShadowRender(ID3D11DeviceContext* deviceContext)
+void TitleScene::ShadowRender()
 {
 }
 
-void TitleScene::DeferredRender(ID3D11DeviceContext* deviceContext)
+void TitleScene::DeferredRender()
 {
 }
 
-void TitleScene::ForwardRender(ID3D11DeviceContext* deviceContext)
+void TitleScene::ForwardRender()
 {
 }
 
-void TitleScene::UserInterfaceRender(ID3D11DeviceContext* deviceContext)
+void TitleScene::UserInterfaceRender()
 {
 }
+
+
 
 // ----- ImGui—p -----
 void TitleScene::DrawDebug()

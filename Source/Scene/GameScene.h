@@ -4,6 +4,8 @@
 #include "../Game/Stage/StageNormal.h"
 #include "../Game/Character/Enemy/EnemyTamamo.h"
 
+#include "../Graphics/Particle.h"
+
 class GameScene : public BaseScene
 {
 public:
@@ -15,17 +17,19 @@ public:
     void Finalize()                         override; // 終了化
     void Update(const float& elapsedTime)   override; // 更新処理
     
-    void ShadowRender(ID3D11DeviceContext* deviceContext)           override;
-    void DeferredRender(ID3D11DeviceContext* deviceContext)         override;
-    void ForwardRender(ID3D11DeviceContext* deviceContext)          override;
-    void UserInterfaceRender(ID3D11DeviceContext* deviceContext)    override;
+    void ShadowRender()                     override;
+    void DeferredRender()                   override;
+    void ForwardRender()                    override;
+    void UserInterfaceRender()              override;
 
     void DrawDebug()                        override; // ImGui用
 
 public:
     // ----- ステージ判定用 -----
     static DirectX::XMFLOAT3 stageCenter_;
-    static constexpr float stageRadius_ = 17.5f; // ステージ用の半径
+    //static constexpr float stageRadius_ = 17.5f; // ステージ用の半径
+    static constexpr float stageRadius_ = 26.5f; // ステージ用の半径
+    float stageRadius1_ = 17.5f; // ステージ用の半径
 
 private:
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> iblTextures_[4];
@@ -34,5 +38,7 @@ private:
     std::unique_ptr<StageNormal> stageNormal_[stageMax];
 
     bool isDebugRenderer_ = true;
+
+    std::unique_ptr<Particles> particles_;
 };
 

@@ -54,6 +54,12 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const DirectX::XMFLOAT3 GetTarget() const { return target_; }
     void SetTarget(const DirectX::XMFLOAT3& target) { target_ = target; }
 
+    // ---------- Offset -------------------------
+    [[nodiscard]] const DirectX::XMFLOAT3 GetTargetOffset() const { return targetOffset_; }
+    void SetTargetOffset(const DirectX::XMFLOAT3& offset) { targetOffset_ = offset; }
+    [[nodiscard]] const DirectX::XMFLOAT3 GetCameraOffset() const { return cameraOffset_; }
+    void SetCameraOffset(const DirectX::XMFLOAT3& offset) { cameraOffset_ = offset; }
+
 private:
     Transform           transform_          = {};
     DirectX::XMMATRIX   viewMatrix_         = {};
@@ -61,6 +67,8 @@ private:
     View                view_               = {};
 
     DirectX::XMFLOAT3   target_             = {};
+    DirectX::XMFLOAT3   targetOffset_       = {};       // ターゲット(注視点)に対するオフセット
+    DirectX::XMFLOAT3   cameraOffset_       = {};       // カメラの位置に対するオフセット
     float               nearZ_              = 0.1f;
     float               farZ_               = 1000.0f;
     float               fov_                = 45.0f;    // 視野角
@@ -68,8 +76,12 @@ private:
     float               inputThreshold_     = 0.3f;     // 入力判定値
     
     // ---------- 回転角制御用 ----------
-    float               minXRotation_       = DirectX::XMConvertToRadians(-30.0f);
-    float               maxXRotation_       = DirectX::XMConvertToRadians(-1.0f);
+    float               minXRotation_       = DirectX::XMConvertToRadians(-20.0f);
+    float               maxXRotation_       = DirectX::XMConvertToRadians(20.0f);
+
+    // ---------- カメラ位置制御用 ----------
+    float               minLength_          = 7.0f;
+    float               maxLength_          = 7.5f;
 
     // ---------- 画面振動 ----------
     DirectX::XMFLOAT3   screenVibrationOffset_  = {};   // 振動表現用の座標

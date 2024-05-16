@@ -26,6 +26,8 @@ public:// --- 定数 ---
         StrongAttack0,      // 強攻撃0
         StrongAttack1,      // 強攻撃1
 
+        Damage,
+
         Move,
     };
 
@@ -77,6 +79,10 @@ public:
         Object::PlayAnimation(static_cast<int>(index), loop, speed);
     }
 
+    // ----- 吹っ飛ばす処理 -----
+    void UpdateForce(const float& elapsedTime);
+    void AddForce(const DirectX::XMFLOAT3& direction, const float& power);
+
 public:// --- 取得・設定 ---
 #pragma region [Get, Set] Function
     // ---------- ステートマシン --------------------
@@ -107,4 +113,15 @@ private:
 
     int animationIndex_ = 0;
     float speed_ = 1.0f;
+
+    // ---------- 吹っ飛び --------------------
+    DirectX::XMFLOAT3 blowDirection_ = {};
+    float blowPower_ = 0.0f;
+
+    // ---------- Debug用 --------------------
+    bool isCollisionSphere_ = true;
+    bool isDamageSphere_ = true;
+    bool isAttackSphere_ = true;
+
+    DirectX::XMFLOAT3 offset_ = {};
 };

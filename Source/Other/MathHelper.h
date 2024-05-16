@@ -205,6 +205,34 @@ inline const DirectX::XMFLOAT2 operator-(
     return result;
 }
 
+// ----- float2 * float2 -----
+inline const DirectX::XMFLOAT2 operator*(
+    const DirectX::XMFLOAT2& float2_1,
+    const DirectX::XMFLOAT2& float2_2)
+{
+    const DirectX::XMFLOAT2 result =
+    {
+        float2_1.x * float2_2.x,
+        float2_1.y * float2_2.y,
+    };
+
+    return result;
+}
+
+// ----- float2 * float -----
+inline const DirectX::XMFLOAT2 operator*(
+    const DirectX::XMFLOAT2& float2,
+    const float& f)
+{
+    const DirectX::XMFLOAT2 result =
+    {
+        float2.x * f,
+        float2.y * f,
+    };
+
+    return result;
+}
+
 // ----- float2 / float2 -----
 inline const DirectX::XMFLOAT2 operator/(
     const DirectX::XMFLOAT2& float2_1,

@@ -49,21 +49,22 @@ void LoadingScene::Update(const float& elapsedTime)
     }
 }
 
-void LoadingScene::ShadowRender(ID3D11DeviceContext* deviceContext)
+void LoadingScene::ShadowRender()
 {
 }
 
-void LoadingScene::DeferredRender(ID3D11DeviceContext* deviceContext)
+void LoadingScene::DeferredRender()
 {
 }
 
-void LoadingScene::ForwardRender(ID3D11DeviceContext* deviceContext)
+void LoadingScene::ForwardRender()
 {
 }
 
-void LoadingScene::UserInterfaceRender(ID3D11DeviceContext* deviceContext)
+void LoadingScene::UserInterfaceRender()
 {
 }
+
 
 // ----- ImGui—p -----
 void LoadingScene::DrawDebug()

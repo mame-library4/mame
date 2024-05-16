@@ -1,11 +1,15 @@
 #include "Particle.h"
+#include "Graphics.h"
 
 #include "../Graphics/shader.h"
 #include "../Other/misc.h"
 #include "../Core/Application.h"
 
-Particles::Particles(ID3D11Device* device, size_t particleCount) : maxParticleCount(particleCount)
+// ----- コンストラクタ -----
+Particles::Particles(size_t particleCount) : maxParticleCount(particleCount)
 {
+    ID3D11Device* device = Graphics::Instance().GetDevice();
+
     HRESULT hr{ S_OK };
     D3D11_BUFFER_DESC bufferDesc{};
     bufferDesc.ByteWidth = static_cast<UINT>(sizeof(Particle) * particleCount);
@@ -55,8 +59,10 @@ UINT align(UINT num, UINT alignment)
     return (num + (alignment - 1)) & ~(alignment - 1);
 }
 
-void Particles::Integrate(ID3D11DeviceContext* deviceContext, float deltaTime)
+void Particles::Integrate(float deltaTime)
 {
+    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
+
     deviceContext->CSSetUnorderedAccessViews(0, 1, particleBufferUav.GetAddressOf(), NULL);
 
     particleData.time += deltaTime;
@@ -75,8 +81,10 @@ void Particles::Integrate(ID3D11DeviceContext* deviceContext, float deltaTime)
     deviceContext->CSSetUnorderedAccessViews(0, 1, &nullUnorderedAccessView, NULL);
 }
 
-void Particles::Initialize(ID3D11DeviceContext* deviceContext, float deltaTime)
+void Particles::Initialize(float deltaTime)
 {
+    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
+
     deviceContext->CSSetUnorderedAccessViews(0, 1, particleBufferUav.GetAddressOf(), NULL);
 
     particleData.time += deltaTime;
@@ -94,8 +102,10 @@ void Particles::Initialize(ID3D11DeviceContext* deviceContext, float deltaTime)
     deviceContext->CSSetUnorderedAccessViews(0, 1, &nullUnorderedAccessView, NULL);
 }
 
-void Particles::Render(ID3D11DeviceContext* deviceContext)
+void Particles::Render()
 {
+    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
+
     deviceContext->VSSetShader(particleVS.Get(), NULL, 0);
     deviceContext->PSSetShader(particlePS.Get(), NULL, 0);
     deviceContext->GSSetShader(particleGS.Get(), NULL, 0);

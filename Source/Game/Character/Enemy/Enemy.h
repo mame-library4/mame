@@ -27,6 +27,7 @@ public:
         TailSwipe,  // 尻尾
         Roar,       // 咆哮
         Filnch,     // ひるみ
+        Slam,       // たたきつけ
 
 #if 0
         Bite,           // 噛みつき
@@ -64,9 +65,13 @@ public:
     // ---------- アニメーション関連 ----------
     void PlayAnimation(const TamamoAnimation& index, const bool& loop, const float& speed = 1.0f) { Object::PlayAnimation(static_cast<int>(index), loop, speed); }
     void PlayBlendAnimation(const TamamoAnimation& index1, const TamamoAnimation& index2, const bool& loop, const float& speed = 1.0f) { Object::PlayBlendAnimation(static_cast<int>(index1), static_cast<int>(index2), loop, speed); }
+    void PlayBlendAnimation(const TamamoAnimation& index, const bool& loop, const float& speed = 1.0f);
 
     // ---------- プレイヤーまでの距離を算出 ----------
-    [[nodiscard]] const float CalcPlayerDistance();
+    [[nodiscard]] const float CalcDistanceToPlayer();
+
+    // ---------- 自分自身からプレイヤーへのベクトル ----------
+    [[nodiscard]] const DirectX::XMFLOAT3 CalcDirectionToPlayer();
 
 public:// --- 取得・設定 ---
 #pragma region [Get, Set] Function
@@ -97,7 +102,20 @@ public:// --- 取得・設定 ---
     void SetAttackComboCount(const int& count) { attackComboCount_ = count; }
     void AddAttackComboCount() { ++attackComboCount_; }
 
+    // ----- 歩行速度 -----
+    [[nodiscard]] const float GetWalkSpeed() const { return walkSpeed_; }
+    void SetWalkSpeed(const float& speed) { walkSpeed_ = speed; }
+
 #pragma endregion [Get, Set] Function
+
+#pragma region 九尾用 攻撃判定設定
+    virtual void SetAllAttackFlag(const bool& activeFlag = false) {}
+    virtual void SetBiteAttackFlag(const bool& activeFlag = true) {}
+    virtual void SetSlashAttackFlag(const bool& activeFlag = true) {}
+    virtual void SetTailSwipeAttackFlag(const bool& activeFlag = true) {}
+    virtual void SetSlamAttackFlag(const bool& activeFlag = true) {}
+
+#pragma endregion 九尾用 攻撃判定設定
 
 protected:
     std::unique_ptr<BehaviorTree>   behaviorTree_;
@@ -116,5 +134,7 @@ protected:
     DirectX::XMFLOAT3 movePosition_ = {}; // 移動先位置
 
     int     attackComboCount_ = 0; // 連続攻撃回数
+
+    float walkSpeed_ = 0.0f; // 歩行速度
 };
 

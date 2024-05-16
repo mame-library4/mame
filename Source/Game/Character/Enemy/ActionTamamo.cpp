@@ -1,6 +1,7 @@
 #include "ActionTamamo.h"
 #include "EnemyTamamo.h"
 #include "../Other/MathHelper.h"
+#include "../Other/Easing.h"
 #include "../Player/PlayerManager.h"
 
 // ----- 死亡行動 -----
@@ -9,8 +10,13 @@ const ActionBase::State DeathAction::Run(const float& elapsedTime)
     switch (owner_->GetStep())
     {
     case 0:
+        // アニメーション再生
+
+        owner_->SetStep(1);
         break;
     case 1:
+        // 死亡なのでこのまま放置
+
         break;
     }
 
@@ -24,12 +30,18 @@ const ActionBase::State FlinchAction::Run(const float& elapsedTime)
     {
     case 0:// 初期化
         // ひるみアニメーション再生
-        //owner_->PlayAnimation(Enemy::TamamoAnimation::Filnch, false, 1.0f);
-
+        owner_->PlayAnimation(Enemy::TamamoAnimation::Filnch, false, 1.0f);
 
         owner_->SetStep(1);
         break;
     case 1:
+        // アニメーション再生終了
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->SetStep(0);
+            return ActionBase::State::Failed;
+        }
+
         break;
     }
 
@@ -41,7 +53,7 @@ const ActionBase::State FlinchAction::Run(const float& elapsedTime)
 const ActionBase::State NonBattleIdleAction::Run(const float& elapsedTime)
 {
     // アニメーション再生 ( Idle )
-    owner_->PlayAnimation(Enemy::TamamoAnimation::Idle, true);
+    //owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Walk, Enemy::TamamoAnimation::Idle, true);
 
     return ActionBase::State::Run;
 }
@@ -49,8 +61,6 @@ const ActionBase::State NonBattleIdleAction::Run(const float& elapsedTime)
 // ----- 非戦闘歩き行動 -----
 const ActionBase::State NonBattleWalkAction::Run(const float& elapsedTime)
 {
-    // アニメーション再生
-    owner_->PlayAnimation(Enemy::TamamoAnimation::Walk, true);
 
     DirectX::XMFLOAT3 ownerPos = owner_->GetTransform()->GetPosition();
 
@@ -58,8 +68,19 @@ const ActionBase::State NonBattleWalkAction::Run(const float& elapsedTime)
     {
     case 0:
     {
-        DirectX::XMFLOAT3 movePos = { ownerPos.x + (rand() % 10 - 5), ownerPos.y, ownerPos.z + (rand() % 10 - 5) };
-        movePos = owner_->SetTargetPosition(movePos);
+        // アニメーション再生
+        if (owner_->GetCurrentBlendAnimationIndex() < 0)
+        {
+            owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Idle, Enemy::TamamoAnimation::Walk, true);
+            owner_->SetWeight(1.0f);
+        }
+        else
+        {
+            owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Walk, true);
+            owner_->SetWeight(0.0f);
+        }
+
+        DirectX::XMFLOAT3 movePos = owner_->SetTargetPosition();
 
         owner_->SetMovePosition(movePos);
 
@@ -69,6 +90,8 @@ const ActionBase::State NonBattleWalkAction::Run(const float& elapsedTime)
     case 1:
     {
         owner_->CollisionCharacterVsStage();
+
+        owner_->AddWeight(elapsedTime * 2.0f);
 
         DirectX::XMFLOAT3 movePos = owner_->GetMovePosition();
 
@@ -86,7 +109,8 @@ const ActionBase::State NonBattleWalkAction::Run(const float& elapsedTime)
 
         // 進む速度を計算
         direction = XMFloat3Normalize(direction);
-        direction = direction * elapsedTime * 1.0f;
+        float speed = owner_->GetWalkSpeed() * elapsedTime;
+        direction = direction * speed;
 
         owner_->GetTransform()->AddPosition(direction);
 
@@ -101,6 +125,8 @@ const ActionBase::State NonBattleWalkAction::Run(const float& elapsedTime)
 }
 
 #pragma endregion 非戦闘
+
+#pragma region 戦闘
 
 #pragma region 待機系 
 // ----- 歩き行動 -----
@@ -117,24 +143,41 @@ const ActionBase::State WalkAction::Run(const float& elapsedTime)
     {
         // 外積でプレイヤーが左右どっちにいるか判定
         float cross = XMFloat2Cross(ownerFront, vec);
-        // プレイヤーが右にいる
-        if (cross > 0)
+        Side currentSide = (cross > 0) ? Side::Right : Side::Left;
+
+        // 前回プレイヤーがいた方向と、今回プレイヤーがいた方向が違う
+        if (playerSide_ != currentSide)
         {
-            // アニメーション再生 ( 歩き左 )
-            //owner_->PlayAnimation(Enemy::TamamoAnimation::WalkLeft, true);
-            owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Walk, Enemy::TamamoAnimation::WalkLeft, true);
-        }
-        // プレイヤーが左にいる
-        else
-        {
-            // アニメーション再生 ( 歩き右 )
-            //owner_->PlayAnimation(Enemy::TamamoAnimation::WalkRight, true);
-            owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Walk, Enemy::TamamoAnimation::WalkRight, true);
+            if (playerSide_ == Side::None)
+            {
+                if(currentSide == Side::Left)
+                    owner_->PlayBlendAnimation(Enemy::TamamoAnimation::WalkRight, true);
+                if(currentSide == Side::Right)
+                    owner_->PlayBlendAnimation(Enemy::TamamoAnimation::WalkLeft, true);
+            }
+            else
+            {
+                // 今回プレイヤーが右にいる
+                if (currentSide == Side::Right)
+                {
+                    owner_->PlayBlendAnimation(Enemy::TamamoAnimation::WalkLeft, true);
+                }
+                // 今回プレイヤーが左にいる
+                if (currentSide == Side::Left)
+                {
+                    owner_->PlayBlendAnimation(Enemy::TamamoAnimation::WalkRight, true);
+                }
+            }
+
+            // 現在の方向を保存する
+            playerSide_ = currentSide;
+
+            // ウェイト値初期化
+            owner_->SetWeight(0.0f);
         }
 
-        // 初期化
-        actionTimer_ = 3.0f;
-        owner_->SetWeight(0.0f);
+        // タイマー初期化
+        actionTimer_ = 2.0f;
 
         owner_->SetStep(1);
     }
@@ -143,17 +186,15 @@ const ActionBase::State WalkAction::Run(const float& elapsedTime)
     {
         owner_->CollisionCharacterVsStage();
 
-        // 外積でプレイヤーが左右どっちにいるか判定
-        float cross = XMFloat2Cross(ownerFront, vec);
         vec = XMFloat2Normalize(vec);
         // プレイヤーが右にいる
-        if (cross > 0)
+        if (playerSide_ == Side::Right)
         {
             // 左ベクトル算出
             vec = { -vec.y, vec.x };
         }
         // プレイヤーが左にいる
-        else
+        if (playerSide_ == Side::Left)
         {
             // 右ベクトル算出
             vec = { vec.y, -vec.x };
@@ -163,6 +204,7 @@ const ActionBase::State WalkAction::Run(const float& elapsedTime)
         owner_->GetTransform()->AddPositionZ(vec.y * elapsedTime * 2.0f);
     }
 
+
         // 旋回処理
         owner_->Turn(elapsedTime, PlayerManager::Instance().GetTransform()->GetPosition());
 
@@ -170,6 +212,8 @@ const ActionBase::State WalkAction::Run(const float& elapsedTime)
         actionTimer_ -= elapsedTime;
         if (actionTimer_ <= 0.0f)
         {
+            // プイレイヤーが範囲外に出た時
+
             owner_->SetStep(0);
             return ActionBase::State::Failed;
         }
@@ -204,19 +248,34 @@ const ActionBase::State BiteAction::Run(const float& elapsedTime)
     {
     case 0:
         // アニメーション設定 ( 噛みつき )
-        owner_->PlayAnimation(Enemy::TamamoAnimation::Bite, false);
+        owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Bite, false);
+
+        // 噛みつき攻撃判定有効化
+        owner_->SetBiteAttackFlag();
+
+        // 変数初期化
+        isAttackCollisionEnd_ = false;
 
         owner_->SetStep(1);
-
         break;
     case 1:
+        // アニメーションに合わせて攻撃判定を無効化する
+        if (owner_->GetBlendAnimationSeconds() > attackCollisionEndFrame_ &&
+            isAttackCollisionEnd_ == false)
+        {
+            // 一度だけ処理するように制御する
+            isAttackCollisionEnd_ = true;
+
+            // 噛みつき攻撃判定無効化
+            owner_->SetBiteAttackFlag(false);
+        }
+
         // アニメーションが終わったら終了
         if (owner_->IsPlayAnimation() == false)
         {
             owner_->SetStep(0);
             return ActionBase::State::Failed;
         }
-
 
         break;
     }
@@ -231,12 +290,31 @@ const ActionBase::State SlashAction::Run(const float& elapsedTime)
     {
     case 0:
         // アニメーション設定 ( ひっかき )
-        owner_->PlayAnimation(Enemy::TamamoAnimation::Slash, false);
+        owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Slash, false);
+
+        // ひっかき攻撃判定設定
+        owner_->SetSlashAttackFlag();
+
+        // 変数初期化
+        isAttackCollisionEnd_ = false;
 
         owner_->SetStep(1);
 
         break;
     case 1:
+
+        // アニメーションに合わせて攻撃判定を無効化する
+        if (owner_->GetBlendAnimationSeconds() > attackCollisionEndFrame_ &&
+            isAttackCollisionEnd_ == false)
+        {            
+            // 一度だけしか処理しないように制御する
+            isAttackCollisionEnd_ = true;
+
+            // ひっかき攻撃判定を無効化する
+            owner_->SetSlashAttackFlag(false);
+        }
+
+
         // アニメーションが終わったら終了
         if (owner_->IsPlayAnimation() == false)
         {
@@ -257,12 +335,16 @@ const ActionBase::State TailSwipeAction::Run(const float& elapsedTime)
     {
     case 0:
         // アニメーション設定 ( 尻尾 )
-        owner_->PlayAnimation(Enemy::TamamoAnimation::TailSwipe, false);
+        owner_->PlayBlendAnimation(Enemy::TamamoAnimation::TailSwipe, false);
+
+        // 尻尾攻撃判定設定
+        owner_->SetTailSwipeAttackFlag();
 
         owner_->SetStep(1);
 
         break;
     case 1:
+
         // アニメーションが終わったら終了
         if (owner_->IsPlayAnimation() == false)
         {
@@ -276,6 +358,149 @@ const ActionBase::State TailSwipeAction::Run(const float& elapsedTime)
     return ActionBase::State::Run;
 }
 
+// ----- たたきつけ行動 -----
+const ActionBase::State SlamAction::Run(const float& elapsedTime)
+{
+    DirectX::XMFLOAT3 playerPosition = PlayerManager::Instance().GetTransform()->GetPosition();
+    DirectX::XMFLOAT3 ownerPosition = owner_->GetTransform()->GetPosition();
+    DirectX::XMFLOAT2 ownerPos = { ownerPosition.x, ownerPosition.z };
+    DirectX::XMFLOAT2 targetPos = { targetPosition_.x, targetPosition_.z };
+
+    // アニメーションに合わせて攻撃判定を有効化、無効化の切り替え
+    UpdateAttackCollision();
+
+    switch (static_cast<Step>(owner_->GetStep()))
+    {
+    case Step::Initialize:// 初期設定
+        // アニメーション再生 ( たたきつけ )
+        owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Slam, false);
+        
+        // 変数初期化
+        isAttackCollisionStart_ = false;
+        isAttackCollisionEnd_ = false;
+
+        SetStep(Step::Search);
+        break;
+    case Step::Search:// 狙いを定める
+
+        // 回転処理
+        owner_->Turn(elapsedTime, playerPosition);
+
+        // 指定しているアニメーションのフレームを超えると次の状態に移る
+        if (owner_->GetBlendAnimationSeconds() > stateChangeFrame_)
+        {
+            // とびかかる位置を設定する
+            targetPosition_ = playerPosition;
+
+            targetPos = { targetPosition_.x, targetPosition_.z };
+
+            // 自分自身とターゲットの距離を算出
+            length_ = XMFloat2Length(targetPos - ownerPos);
+
+            SetStep(Step::Ascend);
+        }        
+
+        break;
+    case Step::Ascend:// 上昇する
+    {
+        // Y 方向移動
+        easingTimer_ += elapsedTime;
+        ownerPosition.y = Easing::InCirc(easingTimer_, ascendEndFrame_ - stateChangeFrame_, maxAscend_, 0.0f);
+        owner_->GetTransform()->SetPositionY(ownerPosition.y);
+                
+        // XZ 方向移動
+        DirectX::XMFLOAT2 moveVec = XMFloat2Normalize(targetPos - ownerPos);
+        float moveLength = (length_ / 3) / (ascendEndFrame_ - stateChangeFrame_) * elapsedTime;
+        moveVec = moveVec * moveLength;
+        owner_->GetTransform()->AddPositionX(moveVec.x);
+        owner_->GetTransform()->AddPositionZ(moveVec.y);
+
+        // 回転処理
+        owner_->Turn(elapsedTime, targetPosition_);
+
+        // 指定しているアニメーションのフレームを超えると次の状態に移る
+        if (owner_->GetBlendAnimationSeconds() > ascendEndFrame_)
+        {
+            // タイマーリセット
+            easingTimer_ = 0.0f;
+
+            SetStep(Step::Attack);
+        }
+    }
+        break;
+    case Step::Attack:// 実際にたたきつけ攻撃に入る
+    {
+        easingTimer_ += elapsedTime;
+        ownerPosition.y = Easing::InCubic(easingTimer_, attackEndFrame_ - ascendEndFrame_, 0.0f, maxAscend_);
+        owner_->GetTransform()->SetPositionY(ownerPosition.y);
+
+        // XZ 方向移動
+        DirectX::XMFLOAT2 moveVec = XMFloat2Normalize(targetPos - ownerPos);
+        float moveLength = (length_ / 3)  / (attackEndFrame_ - ascendEndFrame_) * elapsedTime;
+        moveVec = moveVec * moveLength;
+        owner_->GetTransform()->AddPositionX(moveVec.x);
+        owner_->GetTransform()->AddPositionZ(moveVec.y);
+
+        // 回転処理
+        owner_->Turn(elapsedTime, targetPosition_);
+
+        if (owner_->GetBlendAnimationSeconds() > attackEndFrame_)
+        {
+            // カメラシェイクを入れる
+            Camera::Instance().ScreenVibrate(0.1f, 1.0f);
+
+            // 位置を０に設定
+            owner_->GetTransform()->SetPositionY(0.0f);
+            
+            // タイマーリセット
+            easingTimer_ = 0.0f;
+
+            SetStep(Step::Wait);
+        }
+
+    }
+        break;
+    case Step::Wait:
+
+        // アニメーションが終わったら終了
+        if (owner_->IsPlayAnimation() == false)
+        {
+            SetStep(Step::Initialize);
+
+            return ActionBase::State::Failed;
+        }
+
+        break;
+    }
+
+    return ActionBase::State();
+}
+
+// ----- アニメーションに合わせて攻撃判定を有効化、無効化の切り替え -----
+void SlamAction::UpdateAttackCollision()
+{
+    // アニメーションに合わせて攻撃判定を有効化する
+    if (owner_->GetBlendAnimationSeconds() > attackCollisionStartFrame_ &&
+        isAttackCollisionStart_ == false)
+    {
+        // 制御フラグを立てる
+        isAttackCollisionStart_ = true;
+
+        // たたきつけ攻撃判定を有効化する
+        owner_->SetSlamAttackFlag();
+    }
+    // アニメーションに合わせて攻撃判定を無効化する
+    else if (owner_->GetBlendAnimationSeconds() > attackCollisionEndFrame_ &&
+        isAttackCollisionEnd_ == false)
+    {
+        // 制御フラグを立てる
+        isAttackCollisionEnd_ = true;
+
+        // たたきつけ攻撃判定を無効化する
+        owner_->SetSlamAttackFlag(false);
+    }
+}
+
 #pragma endregion 攻撃系
 
 #pragma region 叫ぶ系
@@ -285,10 +510,11 @@ const ActionBase::State RoarAction::Run(const float& elapsedTime)
     switch (owner_->GetStep())
     {
     case 0:
-        //owner_->PlayAnimation(Enemy::TamamoAnimation::Roar, false);
+        //owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Roar, false);
         owner_->SetStep(1);
         break;
     case 1:
+
         if (!owner_->IsPlayAnimation())
         {
             owner_->SetStep(0);
@@ -308,5 +534,7 @@ const ActionBase::State IntimidateAction::Run(const float& elapsedTime)
 }
 
 #pragma endregion 叫ぶ系
+
+#pragma endregion 戦闘
 
 

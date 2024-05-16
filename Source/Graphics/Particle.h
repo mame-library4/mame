@@ -4,9 +4,6 @@
 #include <wrl.h>
 #include <DirectXMath.h>
 
-#include <vector>
-#include "../Resource/Model.h"
-
 #define NUMTHREADS_X 16
 
 struct Particle
@@ -18,28 +15,21 @@ struct Particle
     int state{};
 };
 
-struct Particles
+class Particles
 {
-    const size_t maxParticleCount;
-    struct ParticleConstants
-    {
-        DirectX::XMFLOAT3 emitterPosition{};
-        float particleSize{ 0.02f };
-        DirectX::XMFLOAT4 color{ 0.1f,0.1f,1.0f,1.0f };
-        float time{};
-        float deltaTime{};
-        
-        DirectX::XMFLOAT2 scrollDirection{ 1.0f, 0.0f };    // UVScroll方向
-        float options = 0.0f;                               // UVScroll用タイマー
-                
-        DirectX::XMFLOAT2 dissolveParameters{}; // x : ディゾルブ適応量、 y : 縁の閾値
-        float something = 0; // ダミー
+public:
+    Particles(size_t particleCount);
+    Particles& operator=(const Particles&) = delete;
+    Particles(Particles&&) noexcept = delete;
+    Particles& operator=(Particles&&) noexcept = delete;
+    virtual ~Particles() = default;
 
-        DirectX::XMFLOAT4 edgeColor{};   // 縁の色
+    void Integrate(float deltaTime);
+    void Initialize(float deltaTime);
+    void Render();
+    void DrawDebug();
 
-    };
-    ParticleConstants particleData;
-
+private:
     Microsoft::WRL::ComPtr<ID3D11Buffer> particleBuffer;
     Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> particleBufferUav;
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> particleBufferSrv;
@@ -52,14 +42,23 @@ struct Particles
     Microsoft::WRL::ComPtr<ID3D11ComputeShader> particleInitializerCS;
     Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
 
-    Particles(ID3D11Device* device, size_t particleCount);
-    Particles& operator=(const Particles&) = delete;
-    Particles(Particles&&) noexcept = delete;
-    Particles& operator=(Particles&&) noexcept = delete;
-    virtual ~Particles() = default;
+    const size_t maxParticleCount;
+    struct ParticleConstants
+    {
+        DirectX::XMFLOAT3 emitterPosition{};
+        float particleSize{ 0.02f };
+        DirectX::XMFLOAT4 color{ 0.1f,0.1f,1.0f,1.0f };
+        float time{};
+        float deltaTime{};
 
-    void Integrate(ID3D11DeviceContext* deviceContext, float deltaTime);
-    void Initialize(ID3D11DeviceContext* deviceContext, float deltaTime);
-    void Render(ID3D11DeviceContext* deviceContext);
-    void DrawDebug();
+        DirectX::XMFLOAT2 scrollDirection{ 1.0f, 0.0f };    // UVScroll方向
+        float options = 0.0f;                               // UVScroll用タイマー
+
+        DirectX::XMFLOAT2 dissolveParameters{}; // x : ディゾルブ適応量、 y : 縁の閾値
+        float something = 0; // ダミー
+
+        DirectX::XMFLOAT4 edgeColor{};   // 縁の色
+
+    };
+    ParticleConstants particleData;
 };

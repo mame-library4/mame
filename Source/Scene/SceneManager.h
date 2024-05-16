@@ -18,10 +18,10 @@ public:
     void Initialize();
     void Update(const float& elapesdTime);  // çXêVèàóù
         
-    void ShadowRender(ID3D11DeviceContext* deviceContext);
-    void DeferredRender(ID3D11DeviceContext* deviceContext);
-    void ForwardRender(ID3D11DeviceContext* deviceContext);
-    void UserInterfaceRender(ID3D11DeviceContext* deviceContext);
+    void ShadowRender();
+    void DeferredRender();
+    void ForwardRender();
+    void UserInterfaceRender();
 
     void DrawDebug();
 

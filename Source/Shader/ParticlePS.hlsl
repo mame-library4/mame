@@ -11,6 +11,7 @@ Texture2D textureMap : register(t16);
 
 float4 main(GS_OUT psIn) : SV_TARGET
 {
+    return float4(1, 1, 1, 1);
     float4 color = textureMap.Sample(samplerState[POINT], psIn.texcoord);
     //float4 color = textureMap.Sample(samplerState[POINT], psIn.scrollTexcoord);
     

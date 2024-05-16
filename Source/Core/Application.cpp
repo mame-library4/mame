@@ -108,11 +108,11 @@ void Application::Render()
         shader->SetRasterizerState(Shader::RASTER_STATE::SOLID);
         shader->SetDepthStencileState(Shader::DEPTH_STATE::ZT_ON_ZW_ON);
 
-        sceneConstants_.Activate(graphics_.GetDeviceContext(), 1);
+        sceneConstants_.Activate(graphics_.GetDeviceContext(), 1, true, true, true, true);
 
         // ポストプロセス開始
         postProcess_.Activate(deviceContext);
-        SceneManager::Instance().ForwardRender(deviceContext);
+        SceneManager::Instance().ForwardRender();
         postProcess_.Deactivate(deviceContext);
         postProcess_.Draw(deviceContext);
     }

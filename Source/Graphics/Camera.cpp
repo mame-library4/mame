@@ -11,6 +11,12 @@ void Camera::Initialize()
 {
     GetTransform()->SetRotationY(DirectX::XMConvertToRadians(180));
     GetTransform()->SetRotationX(DirectX::XMConvertToRadians(-9));
+
+    // TODO:かめら
+    // ここからテストしてるだけなので変える多分
+    targetOffset_ = { 0,-1,0 };
+    cameraOffset_ = { 0,3,0 };
+    length_ = 7.0f;
 }
 
 // ----- 更新 -----
@@ -30,10 +36,10 @@ void Camera::SetPerspectiveFov()
 {
     DirectX::XMFLOAT3 front = GetTransform()->CalcForward();
     DirectX::XMFLOAT3 rot   = GetTransform()->GetRotation();
-    view_.eye_.x = target_.x + front.x - length_ * cosf(rot.x) * sinf(rot.y);
-    view_.eye_.y = target_.y + front.y - length_ * sinf(rot.x);
-    view_.eye_.z = target_.z + front.z - length_ * cosf(rot.x) * cosf(rot.y);
-    view_.focus_ = target_;
+    view_.eye_.x = target_.x + cameraOffset_.x + front.x - length_ * cosf(rot.x) * sinf(rot.y);
+    view_.eye_.y = target_.y + cameraOffset_.y + front.y - length_ * sinf(rot.x);
+    view_.eye_.z = target_.z + cameraOffset_.z + front.z - length_ * cosf(rot.x) * cosf(rot.y);
+    view_.focus_ = target_ + cameraOffset_ + targetOffset_;
 
     // --- projectionMatrix 設定 ---
     float aspectRatio = SCREEN_WIDTH / (float)SCREEN_HEIGHT;
@@ -55,14 +61,20 @@ void Camera::DrawDebug()
 {
     if (ImGui::TreeNode("Camera"))
     {
-        ImGui::DragFloat("length", &length_, 0.01f);
+        ImGui::DragFloat("Length", &length_, 0.01f);
+        ImGui::DragFloat("MinLength", &minLength_, 0.01f);
+        ImGui::DragFloat("MaxLength", &maxLength_, 0.01f);
+
         ImGui::DragFloat("fov", &fov_, 0.01f);
         ImGui::DragFloat("inputThreshold", &inputThreshold_, 0.1f, 0.0f, 1.0f);
         
+        ImGui::DragFloat3("FocusOffset", &targetOffset_.x);
+        ImGui::DragFloat3("CameraOffset", &cameraOffset_.x);
+
         float minXRotation = DirectX::XMConvertToDegrees(minXRotation_);
         float maxXRotation = DirectX::XMConvertToDegrees(maxXRotation_);
-        ImGui::DragFloat("minXRotation", &minXRotation, 1.0f, -75.0f, -30.0f);
-        ImGui::DragFloat("maxXRotation", &maxXRotation, 1.0f, -20.0f, 0.0f);
+        ImGui::DragFloat("minXRotation", &minXRotation, 1.0f, -75.0f, -20.0f);
+        ImGui::DragFloat("maxXRotation", &maxXRotation, 1.0f, -20.0f, 20.0f);
         minXRotation_ = DirectX::XMConvertToRadians(minXRotation);
         maxXRotation_ = DirectX::XMConvertToRadians(maxXRotation);
 
@@ -89,6 +101,14 @@ void Camera::Rotate(const float& elapsedTime)
     }
     // 横移動は制限なし
     rotate.y += aRx * elapsedTime;
+
+    // length制御
+    float deltaLength = maxLength_ - minLength_;
+    float deltaRotate = fabs(maxXRotation_) + fabs(minXRotation_);
+    float addLength = deltaLength / deltaRotate;
+    length_ += addLength * aRy * elapsedTime;
+    if (length_ < minLength_) length_ = minLength_;
+    if (length_ > maxLength_) length_ = maxLength_;
 
     // X軸(上下)の回転制御
     if (rotate.x < minXRotation_) rotate.x = minXRotation_;

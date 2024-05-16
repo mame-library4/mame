@@ -14,10 +14,10 @@ public:// 基本的な関数
     void Finalize()                         override; // 終了化
     void Update(const float& elapsedTime)   override; // 更新処理
 
-    void ShadowRender(ID3D11DeviceContext* deviceContext)           override;
-    void DeferredRender(ID3D11DeviceContext* deviceContext)         override;
-    void ForwardRender(ID3D11DeviceContext* deviceContext)          override;
-    void UserInterfaceRender(ID3D11DeviceContext* deviceContext)    override;
+    void ShadowRender()                     override;
+    void DeferredRender()                   override;
+    void ForwardRender()                    override;
+    void UserInterfaceRender()              override;
 
     void DrawDebug()    override;
     

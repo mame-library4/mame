@@ -23,7 +23,7 @@ const bool FlinchJudgment::Judgment()
 const bool NonBattleJudgment::Judgment()
 {
     // プレイヤーまでの距離を計算する
-    float length = owner_->CalcPlayerDistance();
+    float length = owner_->CalcDistanceToPlayer();
 
     // 戦闘範囲にいなかったら非戦闘
     if (length > owner_->GetBattleRadius()) 
@@ -62,7 +62,7 @@ const bool WalkJudgment::Judgment()
 const bool AttackJudgment::Judgment()
 {
     // プレイヤーまでの距離を計算する
-    float length = owner_->CalcPlayerDistance();
+    float length = owner_->CalcDistanceToPlayer();
 
     // 攻撃範囲にいるか
     if (length < owner_->GetAFarAttackRadius())
@@ -76,7 +76,7 @@ const bool AttackJudgment::Judgment()
 const bool NearAttackJudgment::Judgment()
 {
     // プレイヤーまでの距離を計算する
-    float length = owner_->CalcPlayerDistance();
+    float length = owner_->CalcDistanceToPlayer();
 
     // 攻撃範囲にいるか
     if (length < owner_->GetNearAttackRadius())
@@ -89,13 +89,33 @@ const bool NearAttackJudgment::Judgment()
     }
 }
 
+// 尻尾攻撃判定
+const bool TailSwipeJudgment::Judgment()
+{
+    DirectX::XMFLOAT3 float3Vec = owner_->CalcDirectionToPlayer();
+    DirectX::XMFLOAT2 float2Vec = XMFloat2Normalize({ float3Vec.x, float3Vec.z });
+    DirectX::XMFLOAT3 float3Forward = owner_->GetTransform()->CalcForward();
+    DirectX::XMFLOAT2 float2Forward = XMFloat2Normalize({ float3Forward.x, float3Forward.z });
+    float dot = XMFloat2Dot(float2Vec, float2Forward);
+
+    if (dot > 0)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+
 #pragma endregion 近距離
 
 #pragma region 遠距離
 // 遠距離判定
 const bool FarAttackJudgment::Judgment()
 {
-    return false;
+    return true;
 }
 
 #pragma endregion 遠距離

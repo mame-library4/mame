@@ -45,26 +45,52 @@ void PlayerManager::DebugRender(DebugRenderer* debugRenderer)
 // ----- プレイヤーと敵との押し出し判定 -----
 void PlayerManager::CollisionPlayerVsEnemy()
 {
-    const int enemyCount = EnemyManager::Instance().GetEnemyCount();
-    for (int enemyIndex = 0; enemyIndex < enemyCount; ++enemyIndex)
+    if (EnemyManager::Instance().GetEnemyCount() == 0) return;
+    auto num = EnemyManager::Instance().GetEnemyCount();
+    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
+
+    // プレイヤーの食らい判定処理 ( ダメージを受けたか )
+    for (int playerDataIndex = 0; playerDataIndex < GetPlayer()->GetDamageDetectionDataCount(); ++playerDataIndex)
     {
-        auto playerData = GetPlayer()->GetCollisionCylinderData("collide");
+        auto playerData = GetPlayer()->GetDamageDetectionData(playerDataIndex);
 
-        Enemy* enemy = EnemyManager::Instance().GetEnemy(enemyIndex);
-        const int dataMax = enemy->GetCollisionCylinderDataCount();
-
-        for (int dataIndex = 0; dataIndex < dataMax; ++dataIndex)
+        for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetAttackDetectionDataCount(); ++enemyDataIndex)
         {
-            auto data = enemy->GetCollisionCylinderData(dataIndex);
-            DirectX::XMFLOAT3 enemyPos = data.GetPosition();
+            auto enemyData = enemy->GetAttackDetectionData(enemyDataIndex);
+
+            // 現在アクティブではないので処理をしない
+            if (enemyData.GetIsActive() == false) continue;
+
+            if (Collision::IntersectSphereVsSphere(
+                enemyData.GetPosition(), enemyData.GetRadius(),
+                playerData.GetPosition(), playerData.GetRadius()))
+            {
+                DirectX::XMFLOAT3 direction = {};
+                direction = playerData.GetPosition() - enemy->GetTransform()->GetPosition();
+                //direction = playerData.GetPosition() - enemyData.GetPosition();
+                GetPlayer()->AddForce(direction, 0.2f);
+
+                GetPlayer()->ChangeState(Player::STATE::Damage);
+            }
+        }
+    }
+
+    // 押し出し判定処理
+    for (int playerDataIndex = 0; playerDataIndex < GetPlayer()->GetDamageDetectionDataCount(); ++playerDataIndex)
+    {
+        auto playerData = GetPlayer()->GetDamageDetectionData(playerDataIndex);
+
+        for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetCollisionDetectionDataCount(); ++enemyDataIndex)
+        {
+            auto enemyData = enemy->GetCollisionDetectionData(enemyDataIndex);
 
             DirectX::XMFLOAT3 resultPos = {};
-            if (Collision::IntersectCylinderVsCylinder(
-                enemyPos, data.GetRadius(), data.GetHeight(),
-                GetTransform()->GetPosition(), playerData.GetRadius(), playerData.GetHeight(),
+            if (Collision::IntersectSphereVsSphereNotConsiderY(
+                enemyData.GetPosition(), enemyData.GetRadius(),
+                playerData.GetPosition(), playerData.GetRadius(),
                 resultPos))
             {
-                GetTransform()->SetPosition(resultPos);
+                GetTransform()->SetPosition(resultPos - playerData.GetOffsetPosition());
             }
         }
     }
