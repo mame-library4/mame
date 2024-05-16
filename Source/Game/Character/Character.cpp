@@ -8,6 +8,15 @@ Character::Character(std::string filename)
 {
 }
 
+void Character::Update(const float& elapsedTime)
+{
+    // アニメーション更新
+    Object::Update(elapsedTime);
+
+    // 吹っ飛び更新
+    UpdateForce(elapsedTime);
+}
+
 // ----- ImGui用 -----
 void Character::DrawDebug()
 {
@@ -88,6 +97,29 @@ DirectX::XMFLOAT3 Character::SetTargetPosition()
     DirectX::XMFLOAT3 direction = { static_cast<float>(rand() % 21 - 10), 0, static_cast<float>(rand() % 21 - 10) };
     DirectX::XMFLOAT3 vec = stagePos + XMFloat3Normalize(direction) * length;
     return vec;
+}
+
+void Character::UpdateForce(const float& elapsedTime)
+{
+    // パワーが無いときは処理しない
+    if (blowPower_ <= 0) return;
+
+    blowPower_ -= elapsedTime * 2.0f;
+    blowPower_ = std::max(blowPower_, 0.0f); // 0.0f以下にならないように修正
+
+    // 吹っ飛び方向にどれだけ、吹っ飛ばすかを計算する
+    DirectX::XMFLOAT3 direction = {};
+    direction = XMFloat3Normalize(blowDirection_) * blowPower_;
+
+    // 吹っ飛ばす。
+    GetTransform()->AddPosition(direction);
+}
+
+void Character::AddForce(const DirectX::XMFLOAT3& direction, const float& power)
+{
+    // Y方向には吹っ飛ばさない
+    blowDirection_ = { direction.x, 0, direction.z };
+    blowPower_ = power;
 }
 
 // ----- ImGui用 -----

@@ -255,6 +255,7 @@ const ActionBase::State BiteAction::Run(const float& elapsedTime)
 
         // 変数初期化
         isAttackCollisionEnd_ = false;
+        isAddForce_ = false;    
 
         owner_->SetStep(1);
         break;
@@ -268,6 +269,15 @@ const ActionBase::State BiteAction::Run(const float& elapsedTime)
 
             // 噛みつき攻撃判定無効化
             owner_->SetBiteAttackFlag(false);
+        }
+
+        if (owner_->isForce()) {
+            if (owner_->GetBlendAnimationSeconds() > addForceFrame_ &&
+                isAddForce_ == false)
+            {
+                isAddForce_ = true;
+                owner_->AddForce(owner_->GetTransform()->CalcForward(), 0.3f);
+            }
         }
 
         // アニメーションが終わったら終了

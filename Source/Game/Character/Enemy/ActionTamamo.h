@@ -80,6 +80,10 @@ private:
     float   attackCollisionEndFrame_    = 2.0f;     // 攻撃判定無効フレーム
     bool    isAttackCollisionEnd_       = false;    // 制御フラグ
 
+    // ----- 前進するための変数 -----
+    float addForceFrame_ = 1.345f;
+    bool isAddForce_ = false;
+
 };
 
 // ひっかき行動

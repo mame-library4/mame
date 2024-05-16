@@ -113,14 +113,13 @@ void EnemyTamamo::Finalize()
 // ----- 更新処理 -----
 void EnemyTamamo::Update(const float& elapsedTime)
 {
+    Character::Update(elapsedTime);
+
     // Collisionデータ更新
     UpdateCollisions(0.01f);
 
     // behaviorTree更新
     UpdateNode(elapsedTime);
-
-    // アニメーション更新
-    Object::Update(elapsedTime);
 }
 
 // ----- 描画 -----
@@ -134,6 +133,7 @@ void EnemyTamamo::DrawDebug()
 {
     if (ImGui::Begin("Tamamo"))
     {
+        ImGui::Checkbox("force", &isforce_);
         ImGui::Checkbox("DamageSphere", &isDamageSphere_);
         ImGui::Checkbox("AttackSphere", &isAttackSphere_);
         ImGui::Checkbox("collision", &isCollisionSphere_);

@@ -64,14 +64,11 @@ void Player::Update(const float& elapsedTime)
     GetDamageDetectionData("body").SetPosition(GetTransform()->GetPosition());
     GetDamageDetectionData("foot").SetPosition(GetTransform()->GetPosition());
 
-    Object::Update(elapsedTime);
+    Character::Update(elapsedTime);
 
     Camera::Instance().SetTarget(GetTransform()->GetPosition() + offset_);
 
     GetStateMachine()->Update(elapsedTime);
-
-    // 吹っ飛ばす処理
-    UpdateForce(elapsedTime);
 
     // ステージの外に出ないようにする
     CollisionCharacterVsStage();
@@ -199,29 +196,4 @@ void Player::ResetFlags()
 {
     SetNextInput(Player::NextInput::None);  // 先行入力管理フラグ
     SetIsAvoidance(false);                  // 回避入力判定用フラグ
-}
-
-// ----- 吹っ飛ばす処理 -----
-void Player::UpdateForce(const float& elapsedTime)
-{
-    // パワーが無いときは処理しない
-    if (blowPower_ <= 0) return;
-
-    blowPower_ -= elapsedTime * 2.0f;
-    blowPower_ = std::max(blowPower_, 0.0f); // 0.0f以下にならないように修正
-
-    // 吹っ飛び方向にどれだけ、吹っ飛ばすかを計算する
-    DirectX::XMFLOAT3 direction = {};
-    direction = XMFloat3Normalize(blowDirection_) * blowPower_;
-    
-    // 吹っ飛ばす。
-    GetTransform()->AddPosition(direction);
-}
-
-// ----- 吹っ飛ばす方向と力を設定する -----
-void Player::AddForce(const DirectX::XMFLOAT3& direction, const float& power)
-{
-    // Y方向には吹っ飛ばさない
-    blowDirection_ = { direction.x, 0, direction.z };
-    blowPower_ = power;
 }

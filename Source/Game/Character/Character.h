@@ -8,7 +8,7 @@ public:
     Character(std::string filename);
     virtual ~Character() {}
 
-    virtual void Update(const float& elapsedTime)   = 0;
+    virtual void Update(const float& elapsedTime);
     virtual void Render()                           = 0;
     virtual void DrawDebug();
 
@@ -200,6 +200,10 @@ public:
     DirectX::XMFLOAT3 SetTargetPosition();
     
 
+    // ----- ‚Á”ò‚Î‚·ˆ— -----
+    void UpdateForce(const float& elapsedTime);
+    void AddForce(const DirectX::XMFLOAT3& direction, const float& power);
+
 public:// --- æ“¾Eİ’è ---
 #pragma region [Get, Set] Function
     // ---------- ‘¬“x ----------
@@ -257,5 +261,9 @@ private:
     std::vector<DamageDetectionData>        damageDetectionData_;   // ‚­‚ç‚¢”»’è
     std::vector<AttackDetectionData>        attackDetectionData_;   // UŒ‚”»’è
     std::vector<CollisionDetectionData>     collisionDetectionData_;// ‰Ÿ‚µo‚µ”»’è
+
+    // ---------- ‚Á”ò‚Ñ --------------------
+    DirectX::XMFLOAT3   blowDirection_  = {};
+    float               blowPower_      = 0.0f;
 };
 
