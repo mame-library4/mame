@@ -7,6 +7,11 @@
 EnemyTamamo::EnemyTamamo()
     : Enemy("./Resources/Model/Character/Fox.glb")
 {
+    for (int i = 0; i < maxStoneNum_; ++i)
+    {
+        stones_[i] = std::make_unique<Stone>("./Resources/Model/stone.glb");
+    }
+
     // BehaviorTree設定
 #pragma region BehaviorTree設定
     behaviorData_ = std::make_unique<BehaviorData>();       // BehaviorData生成
@@ -115,6 +120,8 @@ void EnemyTamamo::Update(const float& elapsedTime)
 {
     Character::Update(elapsedTime);
 
+    UpdateStones(elapsedTime);
+
     // Collisionデータ更新
     UpdateCollisions(0.01f);
 
@@ -126,6 +133,11 @@ void EnemyTamamo::Update(const float& elapsedTime)
 void EnemyTamamo::Render()
 {
     Object::Render(0.01f);
+
+    for (int i = 0; i < maxStoneNum_; ++i)
+    {
+        stones_[i]->Render(1.0f);
+    }
 }
 
 // ----- ImGui用 -----
@@ -133,7 +145,8 @@ void EnemyTamamo::DrawDebug()
 {
     if (ImGui::Begin("Tamamo"))
     {
-        ImGui::Checkbox("force", &isforce_);
+        stones_[0]->DrawDebug();
+
         ImGui::Checkbox("DamageSphere", &isDamageSphere_);
         ImGui::Checkbox("AttackSphere", &isAttackSphere_);
         ImGui::Checkbox("collision", &isCollisionSphere_);
@@ -202,6 +215,26 @@ void EnemyTamamo::DebugRender(DebugRenderer* debugRenderer)
     debugRenderer->DrawCylinder(position, nearAttackRadius_, 0.5f, { 1,0,0,1 });
     debugRenderer->DrawCylinder(position, farAttackRadius_, 0.5f, { 1,0,1,1 });
 
+}
+
+void EnemyTamamo::InitializeStones()
+{
+    // 生成位置を前足元に設定する
+    DirectX::XMFLOAT3 pos = GetTransform()->GetPosition() + GetTransform()->CalcForward() * 4;
+
+    for (int i = 0; i < maxStoneNum_; ++i)
+    {
+        stones_[i]->Initialize(pos);
+    }
+
+}
+
+void EnemyTamamo::UpdateStones(const float& elapsedTime)
+{
+    for (int i = 0; i < maxStoneNum_; ++i)
+    {
+        stones_[i]->Update(elapsedTime);
+    }
 }
 
 // ----- 全攻撃判定設定 -----

@@ -1,5 +1,6 @@
 #pragma once
 #include "Enemy.h"
+#include "Stone/Stone.h"
 
 class EnemyTamamo : public Enemy
 {
@@ -37,6 +38,9 @@ public:
     void DrawDebug()                        override;
     void DebugRender(DebugRenderer* debugRenderer);
 
+    void InitializeStones();
+    void UpdateStones(const float& elapsedTime);
+
 public:// --- çUåÇîªíËê›íËä÷êî ---
     void SetAllAttackFlag(const bool& activeFlag = false) override;
     void SetBiteAttackFlag(const bool& activeFlag = true) override;
@@ -51,5 +55,8 @@ private:
     bool isCollisionSphere_ = true;
     bool isAttackSphere_ = true;
     bool isDamageSphere_ = true;
+
+    static const int maxStoneNum_ = 15;
+    std::unique_ptr<Stone> stones_[maxStoneNum_];
 };
 

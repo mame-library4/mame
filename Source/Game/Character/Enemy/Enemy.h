@@ -115,7 +115,7 @@ public:// --- 取得・設定 ---
     virtual void SetTailSwipeAttackFlag(const bool& activeFlag = true) {}
     virtual void SetSlamAttackFlag(const bool& activeFlag = true) {}
 
-    bool isForce() { return isforce_; }
+    virtual void InitializeStones() {}
 
 #pragma endregion 九尾用 攻撃判定設定
 
@@ -123,7 +123,6 @@ protected:
     std::unique_ptr<BehaviorTree>   behaviorTree_;
     std::unique_ptr<BehaviorData>   behaviorData_;
     NodeBase*                       activeNode_ = nullptr;
-    bool isforce_ = true;
 
     int     step_       = 0;        // 行動ステップ
     bool    isFlinch_   = false;    // ひるみフラグ

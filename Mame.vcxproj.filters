@@ -172,6 +172,9 @@
     <ClCompile Include="Source\Game\Character\Enemy\EnemyManager.cpp">
       <Filter>Mame\Game\Object\Character\Enemy</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\Stone\Stone.cpp">
+      <Filter>Mame\Game\Object\Stone</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -376,6 +379,9 @@
     <ClInclude Include="Source\Game\Character\Enemy\EnemyManager.h">
       <Filter>Mame\Game\Object\Character\Enemy</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\Stone\Stone.h">
+      <Filter>Mame\Game\Object\Stone</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -482,6 +488,9 @@
     </Filter>
     <Filter Include="Mame\Shader\PostProcess\Bloom">
       <UniqueIdentifier>{0ae50862-4b54-48a7-8d48-237b7f8d632d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\Object\Stone">
+      <UniqueIdentifier>{1df10b1f-b605-47fd-9b5b-7df16a1c975a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

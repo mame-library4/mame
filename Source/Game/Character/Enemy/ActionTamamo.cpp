@@ -271,13 +271,12 @@ const ActionBase::State BiteAction::Run(const float& elapsedTime)
             owner_->SetBiteAttackFlag(false);
         }
 
-        if (owner_->isForce()) {
-            if (owner_->GetBlendAnimationSeconds() > addForceFrame_ &&
-                isAddForce_ == false)
-            {
-                isAddForce_ = true;
-                owner_->AddForce(owner_->GetTransform()->CalcForward(), 0.3f);
-            }
+        // アニメーションに合わせて少し前進する
+        if (owner_->GetBlendAnimationSeconds() > addForceFrame_ &&
+            isAddForce_ == false)
+        {
+            isAddForce_ = true;
+            owner_->AddForce(owner_->GetTransform()->CalcForward(), 0.3f);
         }
 
         // アニメーションが終わったら終了
@@ -350,10 +349,11 @@ const ActionBase::State TailSwipeAction::Run(const float& elapsedTime)
         // 尻尾攻撃判定設定
         owner_->SetTailSwipeAttackFlag();
 
-        owner_->SetStep(1);
 
+        owner_->SetStep(1);
         break;
     case 1:
+
 
         // アニメーションが終わったら終了
         if (owner_->IsPlayAnimation() == false)
@@ -458,6 +458,8 @@ const ActionBase::State SlamAction::Run(const float& elapsedTime)
         {
             // カメラシェイクを入れる
             Camera::Instance().ScreenVibrate(0.1f, 1.0f);
+
+            owner_->InitializeStones();
 
             // 位置を０に設定
             owner_->GetTransform()->SetPositionY(0.0f);
