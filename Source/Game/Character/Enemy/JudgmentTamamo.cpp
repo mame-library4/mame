@@ -22,14 +22,15 @@ const bool FlinchJudgment::Judgment()
 // ----- 非戦闘判定 -----
 const bool NonBattleJudgment::Judgment()
 {
-    // プレイヤーまでの距離を計算する
-    float length = owner_->CalcDistanceToPlayer();
-
     // 戦闘範囲にいなかったら非戦闘
-    if (length > owner_->GetBattleRadius()) 
-        return true;
-    else
+    if (owner_->SearchPlayer())
+    {
         return false;
+    }
+    else
+    {
+        return true;
+    }
 }
 
 // ----- 非戦闘時待機 -----
@@ -61,14 +62,42 @@ const bool WalkJudgment::Judgment()
 // 攻撃判定
 const bool AttackJudgment::Judgment()
 {
+#if 0
     // プレイヤーまでの距離を計算する
     float length = owner_->CalcDistanceToPlayer();
 
     // 攻撃範囲にいるか
-    if (length < owner_->GetAFarAttackRadius())
+    if (length < owner_->GetFarAttackRadius())
         return true;
     else
         return false;
+#else
+    DirectX::XMFLOAT2 ownerPos = { owner_->GetTransform()->GetPositionX(), owner_->GetTransform()->GetPositionZ() };
+    DirectX::XMFLOAT2 playerPos = { PlayerManager::Instance().GetTransform()->GetPositionX(), PlayerManager::Instance().GetTransform()->GetPositionZ() };
+    DirectX::XMFLOAT2 vec = ownerPos - playerPos;
+    float dist = sqrtf(vec.x * vec.x + vec.y * vec.y);
+
+    // 遠距離攻撃範囲にいる
+    if (dist < owner_->GetFarAttackRadius())
+    {
+        // 単位ベクトル化
+        vec = vec / dist;
+
+        // 方向ベクトル化
+        DirectX::XMFLOAT2 frontVec = { owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z };
+        frontVec = XMFloat2Normalize(frontVec);
+
+        // 前後判定
+        float dot = XMFloat2Dot(frontVec, vec);
+        if (dot < 0.0f)
+        {
+            return true;
+        }
+    }
+
+    return false;
+
+#endif
 }
 
 #pragma region 近距離

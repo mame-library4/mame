@@ -38,6 +38,40 @@ void Enemy::Turn(const float& elapsedTime, const DirectX::XMFLOAT3& targetPos)
     }
 }
 
+// ----- プレイヤーを探す ( 戦闘状態に移行できるか ) -----
+const bool Enemy::SearchPlayer()
+{
+    DirectX::XMFLOAT2 ownerPos = { GetTransform()->GetPositionX(), GetTransform()->GetPositionZ() };
+    DirectX::XMFLOAT2 playerPos = { PlayerManager::Instance().GetTransform()->GetPositionX(), PlayerManager::Instance().GetTransform()->GetPositionZ() };
+
+    DirectX::XMFLOAT2 vec = ownerPos - playerPos;
+    float dist = sqrtf(vec.x * vec.x + vec.y * vec.y);
+
+    // 近距離攻撃範囲以内にいるので強制的に戦闘状態にする
+    if (dist < nearAttackRadius_) return true;
+    if (dist < farAttackRadius_) return true;
+
+    // 戦闘範囲にいる
+    if (dist < battleRadius_)
+    {
+        // 単位ベクトル化
+        vec = vec / dist;
+        
+        // 方向ベクトル化
+        DirectX::XMFLOAT2 frontVec = { GetTransform()->CalcForward().x, GetTransform()->CalcForward().z };
+        frontVec = XMFloat2Normalize(frontVec);
+
+        // 前後判定
+        float dot = XMFloat2Dot(frontVec, vec);
+        if (dot < 0.0f)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // ----- ノード更新 -----
 void Enemy::UpdateNode(const float& elapsedTime)
 {
@@ -54,17 +88,24 @@ void Enemy::UpdateNode(const float& elapsedTime)
 }
 
 // ----- ブレンドアニメーション設定 -----
-void Enemy::PlayBlendAnimation(const TamamoAnimation& index, const bool& loop, const float& speed)
+bool Enemy::PlayBlendAnimation(const TamamoAnimation& index, const bool& loop, const float& speed)
 {
     const int currentAnimationIndex = GetCurrentBlendAnimationIndex();
 
     // 現在のアニメーションと引数のアニメーションが同じ場合
     if (currentAnimationIndex == static_cast<int>(index))
     {
+        // 斜め歩きの時だけもう一度アニメーション再生してほしくないので処理を飛ばす
+        if (index == TamamoAnimation::WalkLeft ||
+            index == TamamoAnimation::WalkRight)
+        {
+            return false;
+        }
+
         // 仮でwalkを一つ目のブレンド引数に入れておく
         Object::PlayBlendAnimation(static_cast<int>(Enemy::TamamoAnimation::Walk), static_cast<int>(index), loop, speed);
         SetWeight(1.0f);
-        return;
+        return true;
     }
 
     // 攻撃アニメーションの時はweight値を１にする
@@ -77,6 +118,7 @@ void Enemy::PlayBlendAnimation(const TamamoAnimation& index, const bool& loop, c
     }
 
     Object::PlayBlendAnimation(static_cast<int>(index), loop, speed);
+    return true;
 }
 
 // ----- プレイヤーまでの距離を算出 -----

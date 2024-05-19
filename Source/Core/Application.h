@@ -10,6 +10,7 @@
 #include "../Graphics/shader.h"
 #include "../Input/Input.h"
 
+#include "ShadowMap.h"
 #include "../Graphics/DeferredRendering.h"
 #include "../Graphics/PostProcess/PostProcess.h"
 
@@ -45,7 +46,7 @@ private:
 		DirectX::XMFLOAT4X4 viewProjection_;
 		DirectX::XMFLOAT4	lightDirection_;
 		DirectX::XMFLOAT4	cameraPosition_;
-		DirectX::XMFLOAT4	lightViewProjection_;
+		DirectX::XMFLOAT4X4	lightViewProjection_;
 	};
 
 private:
@@ -53,15 +54,16 @@ private:
 	Graphics graphics_;
 	Input input_;
 
-	PostProcess postProcess_;
-	DeferredRendering deferredRendering_;
+	ShadowMap shadowMap_;
+	PostProcess			postProcess_;
+	DeferredRendering	deferredRendering_;
 
 
 	HighResolutionTimer tictoc_;
 	uint32_t			frames_			= 0;
 	float				elapsedTime_	= 0.0f;
 
-	bool isDeferred_ = true; // deferredを使うか
+	bool isDeferred_ = false; // deferredを使うか
 
 	// --- シーン定数バッファー ---
 	ConstantBuffer<SceneConstants> sceneConstants_;

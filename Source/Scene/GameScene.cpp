@@ -85,6 +85,8 @@ void GameScene::Update(const float& elapsedTime)
 
 void GameScene::ShadowRender()
 {
+    PlayerManager::Instance().Render();
+    EnemyManager::Instance().Render();
 }
 
 void GameScene::DeferredRender()

@@ -49,14 +49,13 @@ public:
 
     enum class Side
     {
-        None,   // なし
         Right,  // 右
         Left,   // 左
     };
 
 private:
     float   actionTimer_ = 0.0f;
-    Side    playerSide_ = Side::None; // プレイヤーが左右どっちにいるか
+    Side    playerSide_ = Side::Right; // プレイヤーが左右どっちにいるか
 };
 
 class StepAction : public ActionBase

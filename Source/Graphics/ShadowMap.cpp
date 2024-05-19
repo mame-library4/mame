@@ -1,6 +1,7 @@
 #include "ShadowMap.h"
 #include "../Other/misc.h"
 #include "../Graphics/shader.h"
+#include "Graphics.h"
 
 ShadowMap::ShadowMap(ID3D11Device* device, uint32_t width, uint32_t height)
 {
@@ -64,4 +65,46 @@ void ShadowMap::Deactivete(ID3D11DeviceContext* deviceContext)
 {
 	deviceContext->RSSetViewports(viewportCount, cachedViewports);
 	deviceContext->OMSetRenderTargets(1, cachedRenderTargetView.GetAddressOf(), cachedDepthStencilView.Get());
+}
+
+void ShadowMap::DrawDebug()
+{
+	ImGui::DragFloat4("LightViewFocus", &shadowData_.lightViewFocus_.x);
+	ImGui::DragFloat("LightViewDistance", &shadowData_.lightViewDistance_);
+	ImGui::DragFloat("LightViewSize", &shadowData_.lightViewSize_);
+	ImGui::DragFloat("LightViewNearZ", &shadowData_.lightViewNearZ_);
+	ImGui::DragFloat("LightViewFarZ", &shadowData_.lightViewFarZ_);
+}
+
+DirectX::XMFLOAT4X4 ShadowMap::CalcViewProjection(const float& aspectRatio)
+{
+	DirectX::XMVECTOR F =
+	{
+		DirectX::XMLoadFloat4(&shadowData_.lightViewFocus_)
+	};
+	DirectX::XMVECTOR E =
+	{
+		DirectX::XMVectorSubtract(F,
+		DirectX::XMVectorScale(
+			DirectX::XMVector3Normalize(
+				DirectX::XMLoadFloat4(&Graphics::Instance().GetShader()->view.position)), shadowData_.lightViewDistance_))
+	};
+	DirectX::XMVECTOR U =
+	{
+		DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)
+	};
+	DirectX::XMMATRIX V =
+	{
+		DirectX::XMMatrixLookAtLH(E,F,U)
+	};
+	DirectX::XMMATRIX P =
+	{
+		DirectX::XMMatrixOrthographicLH(shadowData_.lightViewSize_ * aspectRatio,
+		shadowData_.lightViewSize_, shadowData_.lightViewNearZ_, shadowData_.lightViewFarZ_)
+	};
+
+	DirectX::XMFLOAT4X4 result = {};
+	DirectX::XMStoreFloat4x4(&result, V * P);
+
+	return result;
 }

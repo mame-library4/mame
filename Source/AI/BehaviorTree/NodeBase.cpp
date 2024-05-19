@@ -67,11 +67,11 @@ NodeBase* NodeBase::SelectSequence(std::vector<NodeBase*>* candidateList, Behavi
     if (step >= children_.size())
     {
         // ルールがSequentialLoopingの時は最初から実行するため、stepに０を代入
-        if (BehaviorTree::SelectRule::SequentialLooping == children_.at(step)->selectRule_)
+        if (BehaviorTree::SelectRule::SequentialLooping == selectRule_)
         {
             step = 0;
         }
-        else if (BehaviorTree::SelectRule::Sequence == children_.at(step)->selectRule_)
+        else if (BehaviorTree::SelectRule::Sequence == selectRule_)
         {
             return nullptr;
         }
@@ -89,7 +89,7 @@ NodeBase* NodeBase::SelectSequence(std::vector<NodeBase*>* candidateList, Behavi
             data->PushSequenceNode(this);
 
             // 次に実行する中間ノードとステップ数を保存する
-            data->SetSequenceStep(childNode->GetName(), step + 1);
+            data->SetSequenceStep(GetName(), step + 1);
 
             // 現在のステップ番号のノードを返す
             return childNode;

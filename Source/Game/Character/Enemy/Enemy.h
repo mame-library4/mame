@@ -59,13 +59,15 @@ public:
 
     void Turn(const float& elapsedTime, const DirectX::XMFLOAT3& targetPos);
 
+    [[nodiscard]] const bool SearchPlayer();
+
     // ---------- BehaviorTree ----------
     void UpdateNode(const float& elapsedTime);
 
     // ---------- アニメーション関連 ----------
     void PlayAnimation(const TamamoAnimation& index, const bool& loop, const float& speed = 1.0f) { Object::PlayAnimation(static_cast<int>(index), loop, speed); }
     void PlayBlendAnimation(const TamamoAnimation& index1, const TamamoAnimation& index2, const bool& loop, const float& speed = 1.0f) { Object::PlayBlendAnimation(static_cast<int>(index1), static_cast<int>(index2), loop, speed); }
-    void PlayBlendAnimation(const TamamoAnimation& index, const bool& loop, const float& speed = 1.0f);
+    bool PlayBlendAnimation(const TamamoAnimation& index, const bool& loop, const float& speed = 1.0f);
 
     // ---------- プレイヤーまでの距離を算出 ----------
     [[nodiscard]] const float CalcDistanceToPlayer();
@@ -90,7 +92,7 @@ public:// --- 取得・設定 ---
     // ----- 攻撃開始範囲 -----
     [[nodiscard]] const float GetNearAttackRadius() const { return nearAttackRadius_; }
     void SetNearAttackRadius(const float& radius) { nearAttackRadius_ = radius; }
-    [[nodiscard]] const float GetAFarAttackRadius() const { return farAttackRadius_; }
+    [[nodiscard]] const float GetFarAttackRadius() const { return farAttackRadius_; }
     void SetFarAttackRadius(const float& radius) { farAttackRadius_ = radius; }
 
     // ----- 移動先位置 -----

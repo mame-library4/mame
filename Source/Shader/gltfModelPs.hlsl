@@ -7,6 +7,8 @@
 #define EMISSIVE_TEXTURE 3
 #define OCCLUSION_TEXTURE 4
 Texture2D<float4> materialTextures[5] : register(t1);
+Texture2D<float4> shadowMap : register(t9);
+SamplerComparisonState comparisonSamplerState : register(s5);
 
 float4 main(VS_OUT pin) : SV_TARGET
 {
@@ -104,7 +106,46 @@ float4 main(VS_OUT pin) : SV_TARGET
     specular = lerp(specular, specular * occlusionFactor, occlusionStrength);
 
     float3 Lo = diffuse + specular + emissive;
-    return float4(Lo, baseColorFactor.a);
+    
+    
+#if 1
+    const float shadowDepthBias = 0.01;
+    
+    float4 lightViewPosition = mul(pin.wPosition, lightViewProjection);
+    lightViewPosition = lightViewPosition / lightViewPosition.w;
+    float2 lightViewTexcoord = 0;
+    lightViewTexcoord.x = lightViewPosition.x * 0.5 + 0.5;
+    lightViewTexcoord.y = lightViewPosition.y * -0.5 + 0.5;
+    float depth = saturate(lightViewPosition.z - shadowDepthBias);
+    
+    // SHADOW
+    float shadowWidth;
+    float shadowHight;
+    shadowMap.GetDimensions(shadowWidth, shadowHight);
+
+    float shadowWidthOffset = 1 / shadowWidth;
+    float shadowHightOffset = 1 / shadowHight;
+    
+    float3 shadowFactor = 1.0f;
+    // shdowFactorひとつだけだと、まわりを取って平均値を出すことできれいに見せる。
+    {
+        shadowFactor = shadowMap.SampleCmpLevelZero(comparisonSamplerState, lightViewTexcoord, depth).xxx;
+        shadowFactor += shadowMap.SampleCmpLevelZero(comparisonSamplerState, float2(lightViewTexcoord.x + shadowWidthOffset, lightViewTexcoord.y), depth).xxx; // 右
+        shadowFactor += shadowMap.SampleCmpLevelZero(comparisonSamplerState, float2(lightViewTexcoord.x - shadowWidthOffset, lightViewTexcoord.y), depth).xxx; // 左
+        shadowFactor += shadowMap.SampleCmpLevelZero(comparisonSamplerState, float2(lightViewTexcoord.x, lightViewTexcoord.y - shadowHightOffset), depth).xxx; // 上
+        shadowFactor += shadowMap.SampleCmpLevelZero(comparisonSamplerState, float2(lightViewTexcoord.x, lightViewTexcoord.y + shadowHightOffset), depth).xxx; // 下
+        
+        shadowFactor += shadowMap.SampleCmpLevelZero(comparisonSamplerState, float2(lightViewTexcoord.x + shadowWidthOffset, lightViewTexcoord.y - shadowHightOffset), depth).xxx; // 右上
+        shadowFactor += shadowMap.SampleCmpLevelZero(comparisonSamplerState, float2(lightViewTexcoord.x - shadowWidthOffset, lightViewTexcoord.y - shadowHightOffset), depth).xxx; // 左上
+        shadowFactor += shadowMap.SampleCmpLevelZero(comparisonSamplerState, float2(lightViewTexcoord.x + shadowWidthOffset, lightViewTexcoord.y + shadowHightOffset), depth).xxx; // 右下
+        shadowFactor += shadowMap.SampleCmpLevelZero(comparisonSamplerState, float2(lightViewTexcoord.x - shadowWidthOffset, lightViewTexcoord.y + shadowHightOffset), depth).xxx; // 左下
+        
+        shadowFactor /= 9;
+    }
+    
+#endif    
+    
+    return float4(Lo * shadowFactor, baseColorFactor.a);
 #else
     MaterialConstants m = materials[material];
 

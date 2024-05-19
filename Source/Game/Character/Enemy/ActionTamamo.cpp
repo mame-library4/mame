@@ -89,6 +89,14 @@ const ActionBase::State NonBattleWalkAction::Run(const float& elapsedTime)
         break;
     case 1:
     {
+        // 戦闘状態になる
+        if (owner_->SearchPlayer())
+        {
+            owner_->SetStep(0);
+            //return ActionBase::State::Complete;
+            return ActionBase::State::Failed;
+        }
+
         owner_->CollisionCharacterVsStage();
 
         owner_->AddWeight(elapsedTime * 2.0f);
@@ -143,37 +151,27 @@ const ActionBase::State WalkAction::Run(const float& elapsedTime)
     {
         // 外積でプレイヤーが左右どっちにいるか判定
         float cross = XMFloat2Cross(ownerFront, vec);
-        Side currentSide = (cross > 0) ? Side::Right : Side::Left;
+        // 現在の方向を保存する
+        playerSide_ = (cross > 0) ? Side::Right : Side::Left;
 
-        // 前回プレイヤーがいた方向と、今回プレイヤーがいた方向が違う
-        if (playerSide_ != currentSide)
+        // 左右で再生するアニメーションを切り替える
+        if (playerSide_ == Side::Left)
         {
-            if (playerSide_ == Side::None)
+            // 今回設定するアニメーションが前回と同じでなければ初期化する
+            if (owner_->PlayBlendAnimation(Enemy::TamamoAnimation::WalkRight, true))
             {
-                if(currentSide == Side::Left)
-                    owner_->PlayBlendAnimation(Enemy::TamamoAnimation::WalkRight, true);
-                if(currentSide == Side::Right)
-                    owner_->PlayBlendAnimation(Enemy::TamamoAnimation::WalkLeft, true);
+                // ウェイト値初期化
+                owner_->SetWeight(0.0f);
             }
-            else
+        }
+        else
+        {
+            // 今回設定するアニメーションが前回と同じでなければ初期化する
+            if (owner_->PlayBlendAnimation(Enemy::TamamoAnimation::WalkLeft, true))
             {
-                // 今回プレイヤーが右にいる
-                if (currentSide == Side::Right)
-                {
-                    owner_->PlayBlendAnimation(Enemy::TamamoAnimation::WalkLeft, true);
-                }
-                // 今回プレイヤーが左にいる
-                if (currentSide == Side::Left)
-                {
-                    owner_->PlayBlendAnimation(Enemy::TamamoAnimation::WalkRight, true);
-                }
+                // ウェイト値初期化
+                owner_->SetWeight(0.0f);
             }
-
-            // 現在の方向を保存する
-            playerSide_ = currentSide;
-
-            // ウェイト値初期化
-            owner_->SetWeight(0.0f);
         }
 
         // タイマー初期化
@@ -213,9 +211,16 @@ const ActionBase::State WalkAction::Run(const float& elapsedTime)
         if (actionTimer_ <= 0.0f)
         {
             // プイレイヤーが範囲外に出た時
-
-            owner_->SetStep(0);
-            return ActionBase::State::Failed;
+            if (owner_->SearchPlayer() == false)
+            {
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+            else
+            {
+                owner_->SetStep(0);
+                return ActionBase::State::Failed;
+            }
         }
 
         break;
@@ -379,11 +384,14 @@ const ActionBase::State SlamAction::Run(const float& elapsedTime)
     // アニメーションに合わせて攻撃判定を有効化、無効化の切り替え
     UpdateAttackCollision();
 
+    owner_->AddWeight(2.0f * elapsedTime);
+
     switch (static_cast<Step>(owner_->GetStep()))
     {
     case Step::Initialize:// 初期設定
         // アニメーション再生 ( たたきつけ )
         owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Slam, false);
+        owner_->SetWeight(0.0f);
         
         // 変数初期化
         isAttackCollisionStart_ = false;

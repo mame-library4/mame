@@ -182,6 +182,8 @@ void EnemyTamamo::DrawDebug()
 void EnemyTamamo::DebugRender(DebugRenderer* debugRenderer)
 {
     DirectX::XMFLOAT3 position = GetTransform()->GetPosition();
+    DirectX::XMFLOAT3 forwardVec = GetTransform()->CalcForward();
+    DirectX::XMFLOAT3 rightVec = GetTransform()->CalcRight();
 
     if (isCollisionSphere_)
     {
@@ -210,6 +212,17 @@ void EnemyTamamo::DebugRender(DebugRenderer* debugRenderer)
 
     // 戦闘範囲
     debugRenderer->DrawCylinder(position, battleRadius_, 0.5f, { 1,1,1,1 });
+
+    debugRenderer->DrawCylinder(position + forwardVec * battleRadius_, 0.5f, 2.0f, { 0,1,0,1 });
+    debugRenderer->DrawCylinder(position + rightVec * battleRadius_, 0.5f, 2.0f, { 0,1,0,1 });
+    debugRenderer->DrawCylinder(position + rightVec * -battleRadius_, 0.5f, 2.0f, {0,1,0,1});
+    debugRenderer->DrawCylinder(position + (XMFloat3Normalize(forwardVec + rightVec) * battleRadius_), 0.5f, 2.0f, {0,1,0,1});
+    debugRenderer->DrawCylinder(position + (XMFloat3Normalize(forwardVec + (rightVec * -1)) * battleRadius_), 0.5f, 2.0f, {0,1,0,1});
+    debugRenderer->DrawCylinder(position + (XMFloat3Normalize(forwardVec + forwardVec + rightVec) * battleRadius_), 0.5f, 2.0f, {0,1,0,1});
+    debugRenderer->DrawCylinder(position + (XMFloat3Normalize(forwardVec + rightVec + rightVec) * battleRadius_), 0.5f, 2.0f, {0,1,0,1});
+    debugRenderer->DrawCylinder(position + (XMFloat3Normalize(forwardVec + forwardVec + (rightVec * -1)) * battleRadius_), 0.5f, 2.0f, {0,1,0,1});
+    debugRenderer->DrawCylinder(position + (XMFloat3Normalize(forwardVec + (rightVec * -1) + (rightVec * -1)) * battleRadius_), 0.5f, 2.0f, {0,1,0,1});
+    
 
     // 攻撃範囲
     debugRenderer->DrawCylinder(position, nearAttackRadius_, 0.5f, { 1,0,0,1 });
@@ -255,6 +268,7 @@ void EnemyTamamo::SetBiteAttackFlag(const bool& activeFlag)
     // 必要な攻撃判定を設定する
     GetAttackDetectionData("R:C_Tongue_1").SetIsActive(activeFlag);
     GetAttackDetectionData("R:C_Head_1").SetIsActive(activeFlag);
+    //GetAttackDetectionData("R:C_Spine_6").SetIsActive(activeFlag);
 }
 
 // ----- ひっかき攻撃判定設定 -----
@@ -358,6 +372,7 @@ void EnemyTamamo::RegisterCollisionData()
     {
         { "R:C_Tongue_1",   0.66f,  { 0, 0, 15 }    }, // 顔 ( 舌 )
         { "R:C_Head_1",     0.90f,  {},             }, // 顔
+        { "R:C_Spine_6",    1.3f,   { 0, -10, -20 } }, // くび
 
         { "R:R_Arm_2",              0.5f,   { 0, 40, 0 },   }, // 右腕
         { "R:R_Middle_Finger_2",    0.5f,   { -15, 0, 0 },  }, // 右手
