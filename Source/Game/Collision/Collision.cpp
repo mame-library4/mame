@@ -37,6 +37,7 @@ const bool Collision::IntersectSphereVsSphere(
 // ----- 球と球の交差判定 ( Y座標の押し出しを考慮しない ) -----
 const bool Collision::IntersectSphereVsSphereNotConsiderY(const DirectX::XMFLOAT3& positionA, const float& radiusA, const DirectX::XMFLOAT3& positionB, const float& radiusB, DirectX::XMFLOAT3& outPositionB)
 {
+#if 0
     // A -> B のベクトル算出
     DirectX::XMFLOAT3 vec = positionB - positionA;
     DirectX::XMFLOAT3 vecNormal = XMFloat3Normalize(vec);
@@ -64,6 +65,30 @@ const bool Collision::IntersectSphereVsSphereNotConsiderY(const DirectX::XMFLOAT
     outPositionB = positionB + DirectX::XMFLOAT3(vecXZ.x, 0, vecXZ.y);
 
     return true;
+#else
+    DirectX::XMVECTOR posA = DirectX::XMLoadFloat3(&positionA);
+    DirectX::XMVECTOR posB = DirectX::XMLoadFloat3(&positionB);
+    DirectX::XMVECTOR vec = DirectX::XMVectorSubtract(posA, posB);
+    DirectX::XMVECTOR LengthSq = DirectX::XMVector3LengthSq(vec);
+    float lengthSq;
+    DirectX::XMStoreFloat(&lengthSq, LengthSq);
+
+    float range = radiusA + radiusB;
+    if (lengthSq > range * range)
+    {
+        return false;
+    }
+
+    DirectX::XMVECTOR horizonVec = DirectX::XMVectorSetY(vec, 0.0f);
+    float lengthHorizon = DirectX::XMVectorGetX(DirectX::XMVector3Length(horizonVec));
+    float subY = DirectX::XMVectorGetY(vec);
+    float newHorizonLength = sqrtf(range * range - subY * subY);
+    DirectX::XMVECTOR normalVec = DirectX::XMVector3Normalize(horizonVec);
+    float penetration = newHorizonLength - lengthHorizon;
+    DirectX::XMStoreFloat3(&outPositionB, DirectX::XMVectorScale(normalVec, penetration));
+
+    return true;
+#endif
 }
 
 // ----- "円柱" と "円柱" の交差判定 -----

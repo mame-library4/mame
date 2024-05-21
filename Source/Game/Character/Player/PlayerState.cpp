@@ -20,7 +20,8 @@ namespace PlayerState
         //}
         //else
         //{
-            owner_->PlayAnimation(Player::Animation::Idle, true);
+        owner_->PlayBlendAnimation(Player::Animation::Walk, Player::Animation::Idle, true);
+        owner_->SetWeight(1.0f);
         //}
 
         // TODO: weight値を0にする
@@ -30,6 +31,8 @@ namespace PlayerState
     // ----- 更新 -----
     void IdleState::Update(const float& elapsedTime)
     {
+        owner_->AddWeight(elapsedTime * 4.0f);
+
         if (GetAsyncKeyState('B') & 1)
         {
             owner_->ChangeState(Player::STATE::Counter);
@@ -46,6 +49,7 @@ namespace PlayerState
         // 強攻撃
         if (owner_->GetStrongAttackKeyDown())
         {
+            return;
             owner_->ChangeState(Player::STATE::StrongAttack0);
             return;
         }
@@ -118,6 +122,8 @@ namespace PlayerState
     // ----- 初期化 -----
     void WalkState::Initialize()
     {
+        owner_->PlayBlendAnimation(Player::Animation::Walk, true);
+        owner_->SetWeight(1.0f);
     }
 
     // ----- 更新 -----
@@ -137,6 +143,80 @@ namespace PlayerState
             owner_->ChangeState(Player::STATE::Run);
             return;
         }
+
+        // 弱攻撃
+        if (owner_->GetLightAttackKeyDown())
+        {
+            owner_->ChangeState(Player::STATE::LightAttack0);
+            return;
+        }
+
+        GamePad& gamePad = Input::Instance().GetGamePad();
+        float aLX = gamePad.GetAxisLX();
+        float aLY = gamePad.GetAxisLY();
+
+        // 回転
+        DirectX::XMFLOAT2 input = { fabs(gamePad.GetAxisLX()), fabs(gamePad.GetAxisLY()) };
+        DirectX::XMFLOAT3 cameraFront = Camera::Instance().CalcForward();
+        DirectX::XMFLOAT3 cameraRight = Camera::Instance().CalcRight();
+
+        DirectX::XMFLOAT3 direction =
+        {
+            aLY * cameraFront.x + aLX * cameraRight.x,
+            0,
+            aLY * cameraFront.z + aLX * cameraRight.z,
+        };
+        direction = XMFloat3Normalize(direction);
+        if (input.x > 0.0f || input.y > 0.0f)
+        {
+
+
+            // カメラの前方向とプレイヤーの前方向を取得
+#if 0
+            DirectX::XMFLOAT2 cameraForward = { Camera::Instance().CalcForward().x ,Camera::Instance().CalcForward().z };
+            cameraForward = XMFloat2Normalize(cameraForward);
+#else 
+            DirectX::XMFLOAT2 cameraForward = { direction.x, direction.z };
+            cameraForward = XMFloat2Normalize(cameraForward);
+#endif
+
+            DirectX::XMFLOAT2 playerForward = { owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z };
+            playerForward = XMFloat2Normalize(playerForward);
+
+            // 外積をしてどちらに回転するのかを判定する
+            float forwardCorss = XMFloat2Cross(cameraForward, playerForward);
+
+            // 内積で回転幅を算出
+            float forwardDot = XMFloat2Dot(cameraForward, playerForward) - 1.0f;
+
+            if (forwardCorss > 0)
+            {
+                owner_->GetTransform()->AddRotationY(forwardDot);
+            }
+            else
+            {
+                owner_->GetTransform()->AddRotationY(-forwardDot);
+            }
+        }
+
+        // 速度計算
+        DirectX::XMFLOAT3 velocity = owner_->GetVelocity();
+
+        velocity.x = std::min(owner_->GetMaxSpeed(), velocity.x * elapsedTime);
+        velocity.z = std::min(owner_->GetMaxSpeed(), velocity.z * elapsedTime);
+
+        owner_->SetVelocity(velocity);
+        owner_->GetTransform()->AddPosition(direction * elapsedTime * 2.0f);
+
+        aLX = fabs(gamePad.GetAxisLX());
+        aLY = fabs(gamePad.GetAxisLY());
+
+        if (aLX <= 0 && aLY <= 0)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+
     }
 
     // ----- 終了化 -----
@@ -170,8 +250,8 @@ namespace PlayerState
     void RunState::Initialize()
     {
         // アニメーション設定
-        //owner_->PlayBlendAnimation(Player::Animation::Idle, Player::Animation::Run, true);
-        owner_->PlayAnimation(Player::Animation::Run, true);
+        owner_->PlayBlendAnimation(Player::Animation::Run, true);
+        owner_->SetWeight(0.0f);
 
         DirectX::XMFLOAT3 velocity = owner_->GetVelocity();
 
@@ -184,6 +264,8 @@ namespace PlayerState
     // ----- 更新 -----
     void RunState::Update(const float& elapsedTime)
     {
+        owner_->AddWeight(elapsedTime);
+
         // 弱攻撃
         if (owner_->GetLightAttackKeyDown())
         {
@@ -359,9 +441,8 @@ namespace PlayerState
     // ----- 初期化 -----
     void LightAttack0State::Initialize()
     {
-        owner_->PlayAnimation(Player::Animation::LightAttack0, false, 2.0f);
-        //float currentAnimationIndex = owner_->GetCurrentBlendAnimationIndex();
-        //owner_->PlayBlendAnimation(currentAnimationIndex, Player::Animation::Avoidance, false);
+        owner_->PlayBlendAnimation(Player::Animation::LightAttack0, false);
+        owner_->SetWeight(1.0f);
 
         // フラグをリセットする
         owner_->ResetFlags();
@@ -370,8 +451,24 @@ namespace PlayerState
     // ----- 更新 -----
     void LightAttack0State::Update(const float& elapsedTime)
     {
-        // ステート遷移判定
-        owner_->UpdateAttackState(Player::STATE::LightAttack1);
+        // 先行入力受付
+        if (owner_->GetLightAttackKeyDown()) owner_->SetNextInput(Player::NextInput::LightAttack);
+        //if (owner_->GetStrongAttackKeyDown()) owner_->SetNextInput(Player::NextInput::StrongAttack);
+
+        // 先行入力がある場合、現在の攻撃フレームが終わった時にステートを切り替える
+        if (owner_->GetNextInput() == static_cast<int>(Player::NextInput::LightAttack) &&
+            owner_->GetBlendAnimationSeconds() > comboAttackFrame_)
+        {
+            owner_->ChangeState(Player::STATE::LightAttack1);
+            return;
+        }
+
+        // アニメーションが終了したら待機ステートに切り替える
+        if (owner_->IsPlayAnimation() == false)
+        //if(owner_->GetBlendAnimationSeconds() > animationEndFrame_)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+        }
     }
 
     // ----- 終了化 -----
@@ -387,7 +484,8 @@ namespace PlayerState
     void LightAttack1State::Initialize()
     {
         // アニメーション設定
-        owner_->PlayAnimation(Player::Animation::LightAttack1, false, 2.0f);
+        owner_->PlayBlendAnimation(Player::Animation::LightAttack1, false);
+        owner_->SetWeight(1.0f);
 
         // フラグをリセットする
         owner_->ResetFlags();
@@ -396,8 +494,23 @@ namespace PlayerState
     // ----- 更新 -----
     void LightAttack1State::Update(const float& elapsedTime)
     {
-        // ステート遷移判定
-        owner_->UpdateAttackState(Player::STATE::LightAttack2);
+        // 先行入力受付
+        if (owner_->GetLightAttackKeyDown()) owner_->SetNextInput(Player::NextInput::LightAttack);
+        //if (owner_->GetStrongAttackKeyDown()) owner_->SetNextInput(Player::NextInput::StrongAttack);
+
+        // 先行入力がある場合、現在の攻撃フレームが終わった時にステートを切り替える
+        if (owner_->GetNextInput() == static_cast<int>(Player::NextInput::LightAttack) &&
+            owner_->GetBlendAnimationSeconds() > comboAttackFrame_)
+        {
+            owner_->ChangeState(Player::STATE::LightAttack2);
+            return;
+        }
+
+        // アニメーションが終了したら待機ステートに切り替える
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+        }
     }
 
     // ----- 終了化 -----
@@ -412,7 +525,8 @@ namespace PlayerState
     // ----- 初期化 -----
     void LightAttack2State::Initialize()
     {
-        owner_->PlayAnimation(Player::Animation::LightAttack2, false, 2.0f);
+        owner_->PlayBlendAnimation(Player::Animation::LightAttack2, false);
+        owner_->SetWeight(1.0f);
 
         // フラグをリセットする
         owner_->ResetFlags();
@@ -421,8 +535,11 @@ namespace PlayerState
     // ----- 更新 -----
     void LightAttack2State::Update(const float& elapsedTime)
     {
-        // ステート遷移判定
-        owner_->UpdateAttackState(Player::STATE::LightAttack0);
+        // アニメーションが終了したら待機ステートに切り替える
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+        }
     }
 
     // ----- 終了化 -----
@@ -496,6 +613,7 @@ namespace PlayerState
     // ----- 初期化 -----
     void DamageState::Initialize()
     {
+        return;
         // アニメーション再生 
         owner_->PlayAnimation(Player::Animation::Damage1, false);
         //owner_->PlayAnimation(Player::Animation::Damage0, false);
@@ -504,6 +622,7 @@ namespace PlayerState
     // ----- 更新 -----
     void DamageState::Update(const float& elapsedTime)
     {
+            owner_->ChangeState(Player::STATE::Idle);
         // アニメーション終了
         if (owner_->IsPlayAnimation() == false)
         {

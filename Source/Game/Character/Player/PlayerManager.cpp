@@ -76,9 +76,9 @@ void PlayerManager::CollisionPlayerVsEnemy()
     }
 
     // 押し出し判定処理
-    for (int playerDataIndex = 0; playerDataIndex < GetPlayer()->GetDamageDetectionDataCount(); ++playerDataIndex)
+    for (int playerDataIndex = 0; playerDataIndex < GetPlayer()->GetCollisionDetectionDataCount(); ++playerDataIndex)
     {
-        auto playerData = GetPlayer()->GetDamageDetectionData(playerDataIndex);
+        auto playerData = GetPlayer()->GetCollisionDetectionData(playerDataIndex);
 
         for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetCollisionDetectionDataCount(); ++enemyDataIndex)
         {
@@ -90,7 +90,30 @@ void PlayerManager::CollisionPlayerVsEnemy()
                 playerData.GetPosition(), playerData.GetRadius(),
                 resultPos))
             {
-                GetTransform()->SetPosition(resultPos - playerData.GetOffsetPosition());
+                GetTransform()->SetPosition(GetTransform()->GetPosition() - resultPos);// -playerData.GetOffsetPosition());
+                //GetTransform()->SetPosition(resultPos - playerData.GetOffsetPosition());
+            }
+        }
+    }
+
+    // プレイヤーの攻撃判定
+    for (int playerDataIndex = 0; playerDataIndex < GetPlayer()->GetAttackDetectionDataCount(); ++playerDataIndex)
+    {
+        auto playerData = GetPlayer()->GetAttackDetectionData(playerDataIndex);
+
+        for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetDamageDetectionDataCount(); ++enemyDataIndex)
+        {
+            auto enemyData = enemy->GetDamageDetectionData(enemyDataIndex);
+
+            if (Collision::IntersectSphereVsSphere(
+                enemyData.GetPosition(), enemyData.GetRadius(),
+                playerData.GetPosition(), playerData.GetRadius()))
+            {
+                if (enemyData.GetIsHit() == false)
+                {
+                    enemy->GetDamageDetectionData(enemyDataIndex).SetIsHit(true);
+                    enemy->GetDamageDetectionData(enemyDataIndex).SetHitTimer(2.0f);                   
+                }
             }
         }
     }

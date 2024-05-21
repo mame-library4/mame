@@ -31,11 +31,13 @@ void DeferredRendering::Activate(ID3D11DeviceContext* deviceContext)
 
 void DeferredRendering::DrawDebug()
 {
-    ImGui::Begin("name");
-    //ImGui::Image(reinterpret_cast<void*>(baseColorBuffer_.shaderResourceViews->GetAddressOf()), ImVec2(256.0, 256.0));
-    //ImGui::Image(reinterpret_cast<void*>(normalBuffer_.shaderResourceViews->GetAddressOf()), ImVec2(256.0, 256.0));
-    //ImGui::Image(reinterpret_cast<void*>(worldBuffer_.shaderResourceViews->GetAddressOf()), ImVec2(256.0, 256.0));
-    //ImGui::Image(reinterpret_cast<void*>(shadowBuffer_.shaderResourceViews->GetAddressOf()), ImVec2(256.0, 256.0));
-    //ImGui::Image(reinterpret_cast<void*>(metalnessRoughnessBuffer_.shaderResourceViews->GetAddressOf()), ImVec2(256.0, 256.0));
-    ImGui::End();
+    if (ImGui::TreeNode("G-Buffer"))
+    {
+        //ImGui::Image(reinterpret_cast<void*>(baseColorBuffer_.shaderResourceViews->GetAddressOf()), ImVec2(256.0, 256.0));
+        //ImGui::Image(reinterpret_cast<void*>(normalBuffer_.shaderResourceViews->GetAddressOf()), ImVec2(256.0, 256.0));
+        //ImGui::Image(reinterpret_cast<void*>(worldBuffer_.shaderResourceViews->GetAddressOf()), ImVec2(256.0, 256.0));
+        //ImGui::Image(reinterpret_cast<void*>(shadowBuffer_.shaderResourceViews->GetAddressOf()), ImVec2(256.0, 256.0));
+        //ImGui::Image(reinterpret_cast<void*>(metalnessRoughnessBuffer_.shaderResourceViews->GetAddressOf()), ImVec2(256.0, 256.0));
+        ImGui::TreePop();
+    }
 }

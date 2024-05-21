@@ -34,10 +34,13 @@ public:// --- 定数 ---
     enum class Animation
     {
         Idle,       // 待機
+        Walk,
         Run,        // 走り   
+        
         LightAttack0,
         LightAttack1,
         LightAttack2,
+
         Avoidance,  // 回避
 
         Protect,
@@ -47,7 +50,6 @@ public:// --- 定数 ---
         Damage1,
         StrongAttack1,
         StrongAttack2,
-        Walk,
     };
 
     enum class NextInput
@@ -77,7 +79,17 @@ public:
     void PlayAnimation(const Animation& index, const bool& loop, const float& speed = 1.0f)
     {
         Object::PlayAnimation(static_cast<int>(index), loop, speed);
+        swordModel_.PlayAnimation(static_cast<int>(index), loop, speed);
     }
+
+
+    void PlayBlendAnimation(const Animation& index1, const Animation& index2, const bool& loop, const float& speed = 1.0f);
+    void PlayBlendAnimation(const Animation& index, const bool& loop, const float& speed = 1.0f);
+
+    void UpdateCollisions(const float& elapsedTime, const float& scaleFactor) override;
+
+    void SetWeight(const float& weight) override;
+    void AddWeight(const float& weight) override;
 
 public:// --- 取得・設定 ---
 #pragma region [Get, Set] Function
@@ -100,17 +112,15 @@ public:// --- 取得・設定 ---
 #pragma endregion [Get, Set] Function
 
 private:
+    // ---------- 剣 ----------
+    GltfModel swordModel_;
+
     // ---------- ステートマシン --------------------
     std::unique_ptr<StateMachine<State<Player>>> stateMachine_;
 
     // ---------- 行動 ------------------------------
     int nextInput_ = false; // 先行入力
     bool isAvoidance_ = false; // 回避
-
-    int animationIndex_ = 0;
-    float speed_ = 1.0f;
-
-
 
     // ---------- Debug用 --------------------
     bool isCollisionSphere_ = true;

@@ -9,8 +9,9 @@ Texture2D textureMap : register(t0);
 SamplerState samplerStates[5] : register(s0);
 
 float4 main(PSIn psIn) : SV_TARGET
-{
-    float4 color = textureMap.Sample(samplerStates[LINEAR_BORDER_BLACK], psIn.texcoord);
+{    
+    //float4 color = textureMap.Sample(samplerStates[LINEAR_BORDER_BLACK], psIn.texcoord);
+    float4 color = textureMap.Sample(samplerStates[LINEAR], psIn.texcoord);
 	
     return color;
 }

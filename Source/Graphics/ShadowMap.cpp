@@ -69,13 +69,20 @@ void ShadowMap::Deactivete(ID3D11DeviceContext* deviceContext)
 
 void ShadowMap::DrawDebug()
 {
-	ImGui::DragFloat4("LightViewFocus", &shadowData_.lightViewFocus_.x);
-	ImGui::DragFloat("LightViewDistance", &shadowData_.lightViewDistance_);
-	ImGui::DragFloat("LightViewSize", &shadowData_.lightViewSize_);
-	ImGui::DragFloat("LightViewNearZ", &shadowData_.lightViewNearZ_);
-	ImGui::DragFloat("LightViewFarZ", &shadowData_.lightViewFarZ_);
+	if (ImGui::TreeNode("ShadowMap"))
+	{
+		ImGui::Image(reinterpret_cast<ImTextureID>(shaderResourceView.Get()), ImVec2(256.0, 256.0));
+		ImGui::DragFloat4("LightViewFocus", &shadowData_.lightViewFocus_.x);
+		ImGui::DragFloat("LightViewDistance", &shadowData_.lightViewDistance_);
+		ImGui::DragFloat("LightViewSize", &shadowData_.lightViewSize_);
+		ImGui::DragFloat("LightViewNearZ", &shadowData_.lightViewNearZ_);
+		ImGui::DragFloat("LightViewFarZ", &shadowData_.lightViewFarZ_);
+		
+		ImGui::TreePop();
+	}
 }
 
+// ----- âeópÇÃviewProjectionçsóÒéZèo -----
 DirectX::XMFLOAT4X4 ShadowMap::CalcViewProjection(const float& aspectRatio)
 {
 	DirectX::XMVECTOR F =

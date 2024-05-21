@@ -30,8 +30,8 @@ public:
 
     // ---------- weight ----------
     [[nodiscard]] const float GetWeight() { return gltfModel_.GetWeight(); }
-    void SetWeight(const float& weight) { gltfModel_.SetWeight(weight); }
-    void AddWeight(const float& weight);
+    virtual void SetWeight(const float& weight) { gltfModel_.SetWeight(weight); }
+    virtual void AddWeight(const float& weight);
 
 private:
     GltfModel gltfModel_;

@@ -36,6 +36,10 @@ bool Application::Initialize()
 
     // --- シーン初期化 ---
     SceneManager::Instance().ChangeScene(new GameScene);
+#ifdef _DEBUG
+    //SceneManager::Instance().ChangeScene(new TitleScene);
+#else
+#endif
 
 //#ifndef _DEBUG
 //    ShowCursor(!FULLSCREEN);	// フルスクリーン時はカーソルを消す
@@ -116,7 +120,8 @@ void Application::Render()
         camera.SetPerspectiveFov();
         DirectX::XMStoreFloat4x4(&sceneConstants_.data.viewProjection_, camera.GetViewMatrix() * camera.GetProjectionMatrix());
         sceneConstants_.data.lightDirection_ = shader->GetViewPosition();
-        sceneConstants_.data.cameraPosition_ = shader->GetViewCamera();
+        sceneConstants_.data.cameraPosition_ = { camera.GetEye().x, camera.GetEye().y, camera.GetEye().z, 0 };
+        //sceneConstants_.data.cameraPosition_ = shader->GetViewCamera();
 
         sceneConstants_.Activate(graphics_.GetDeviceContext(), 1, true, true, true, true);
 
@@ -142,6 +147,7 @@ void Application::Render()
 
 void Application::DrawDebug()
 {
+#ifdef USE_IMGUI
     shadowMap_.DrawDebug();
 
     postProcess_.DrawDebug();
@@ -151,6 +157,7 @@ void Application::DrawDebug()
     ImGui::Checkbox("isDeferred_", &isDeferred_);
 
     deferredRendering_.DrawDebug();
+#endif
 }
 
 // ----- 実行 -----

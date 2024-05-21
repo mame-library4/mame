@@ -57,7 +57,7 @@ EnemyTamamo::EnemyTamamo()
     // ----- 距離近い -----
     behaviorTree_->AddNode("Attack", "Near", 1, BehaviorTree::SelectRule::Priority, new NearAttackJudgment(this), nullptr); // 近距離 (中間ノード)
     
-    behaviorTree_->AddNode("Near", "Bite",   1, BehaviorTree::SelectRule::None, nullptr, new BiteAction(this)); // 嚙みつき
+    behaviorTree_->AddNode("Near", "Bite",   1, BehaviorTree::SelectRule::None, new BiteJudgment(this), new BiteAction(this)); // 嚙みつき
     behaviorTree_->AddNode("Near", "Slash",  1, BehaviorTree::SelectRule::None, nullptr, new SlashAction(this)); // ひっかき
     behaviorTree_->AddNode("Near", "Tail",   0, BehaviorTree::SelectRule::None, new TailSwipeJudgment(this), new TailSwipeAction(this)); // 尻尾
     // behaviorTree_->AddNode("Near", "Spin",   1, BehaviorTree::SelectRule::None, nullptr, nullptr); // 回転
@@ -123,7 +123,7 @@ void EnemyTamamo::Update(const float& elapsedTime)
     UpdateStones(elapsedTime);
 
     // Collisionデータ更新
-    UpdateCollisions(0.01f);
+    UpdateCollisions(elapsedTime, 0.01f);
 
     // behaviorTree更新
     UpdateNode(elapsedTime);

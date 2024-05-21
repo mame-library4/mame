@@ -77,6 +77,12 @@ const bool AttackJudgment::Judgment()
     DirectX::XMFLOAT2 vec = ownerPos - playerPos;
     float dist = sqrtf(vec.x * vec.x + vec.y * vec.y);
 
+    // ‹ß‹——£UŒ‚”ÍˆÍ‚É‚¢‚é‚Æ‚«‚Í‹­§“I‚ÉUŒ‚ó‘Ô‚É‚È‚é
+    if (dist < owner_->GetNearAttackRadius())
+    {
+        return true;
+    }
+
     // ‰“‹——£UŒ‚”ÍˆÍ‚É‚¢‚é
     if (dist < owner_->GetFarAttackRadius())
     {
@@ -116,6 +122,17 @@ const bool NearAttackJudgment::Judgment()
     {
         return false;
     }
+}
+
+// Šš‚İ‚Â‚«UŒ‚”»’è
+const bool BiteJudgment::Judgment()
+{
+    if (rand() % 2 == 0)
+    {
+        return true;
+    }
+
+    return false;
 }
 
 // K”öUŒ‚”»’è
@@ -179,4 +196,5 @@ const bool IntimidateJudgment::Judgment()
 #pragma endregion í“¬Œn
 
 #pragma endregion í“¬
+
 

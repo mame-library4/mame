@@ -53,13 +53,15 @@ void Character::DrawDebug()
 }
 
 // ----- Collision更新 -----
-void Character::UpdateCollisions(const float& scaleFactor)
+void Character::UpdateCollisions(const float& elapsedTime, const float& scaleFactor)
 {
     // くらい判定更新
     for (DamageDetectionData& data : damageDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
         data.SetJointPosition(GetJointPosition(data.GetName(), scaleFactor, data.GetOffsetPosition()));
+
+        data.Update(elapsedTime);
     }
     // 攻撃判定更新
     for (AttackDetectionData& data : attackDetectionData_)
@@ -122,29 +124,6 @@ void Character::AddForce(const DirectX::XMFLOAT3& direction, const float& power)
     blowPower_ = power;
 }
 
-// ----- ImGui用 -----
-void Character::CollisionCylinderData::DrawDebug()
-{
-    if (ImGui::TreeNode(GetName().c_str()))
-    {
-        ImGui::DragFloat3("offsetPosition", &offsetPosition_.x);
-        ImGui::DragFloat("radius", &radius_, 0.01f);
-        ImGui::DragFloat("height", &height_, 0.01f);
-        ImGui::TreePop();
-    }
-}
-
-// ----- ImGui用 -----
-void Character::CollisionSphereData::DrawDebug()
-{
-    if (ImGui::TreeNode(GetName().c_str()))
-    {
-        ImGui::DragFloat3("offsetPosition", &offsetPosition_.x);
-        ImGui::DragFloat("radius", &radius_, 0.01f);
-        ImGui::TreePop();
-    }
-}
-
 // ---------- くらい判定 ----------
 #pragma region くらい判定
 // ----- 登録 -----
@@ -154,7 +133,7 @@ void Character::RegisterDamageDetectionData(const DamageDetectionData& data)
 }
 
 // ----- データ取得 ( 名前検索 ) -----
-Character::DamageDetectionData& Character::GetDamageDetectionData(const std::string& name)
+DamageDetectionData& Character::GetDamageDetectionData(const std::string& name)
 {
     // 名前でデータを探す
     for (DamageDetectionData& data : damageDetectionData_)
@@ -169,16 +148,11 @@ Character::DamageDetectionData& Character::GetDamageDetectionData(const std::str
 }
 
 // ----- データ取得 ( 登録番号 ) -----
-Character::DamageDetectionData& Character::GetDamageDetectionData(const int& index)
+DamageDetectionData& Character::GetDamageDetectionData(const int& index)
 {
     return damageDetectionData_.at(index);
 }
 
-// ----- ImGui用 -----
-void Character::DamageDetectionData::DrawDebug()
-{
-    collisionSphereData_.DrawDebug();
-}
 
 #pragma endregion くらい判定
 
@@ -191,7 +165,7 @@ void Character::RegisterAttackDetectionData(const AttackDetectionData& data)
 }
 
 // ----- データ取得 ( 名前検索 ) -----
-Character::AttackDetectionData& Character::GetAttackDetectionData(const std::string& name)
+AttackDetectionData& Character::GetAttackDetectionData(const std::string& name)
 {
     // 名前でデータを探す
     for (AttackDetectionData& data : attackDetectionData_)
@@ -206,17 +180,10 @@ Character::AttackDetectionData& Character::GetAttackDetectionData(const std::str
 }
 
 // ----- データ取得 ( 登録番号 ) -----
-Character::AttackDetectionData& Character::GetAttackDetectionData(const int& index)
+AttackDetectionData& Character::GetAttackDetectionData(const int& index)
 {
     return attackDetectionData_.at(index);
 }
-
-// ----- ImGui用 -----
-void Character::AttackDetectionData::DrawDebug()
-{
-    collisionSphereData_.DrawDebug();
-}
-
 #pragma endregion 攻撃判定
 
 // ---------- 押し出し判定 ----------
@@ -227,7 +194,7 @@ void Character::RegisterCollisionDetectionData(const CollisionDetectionData& dat
 }
 
 // ----- データ取得 ( 名前検索 ) -----
-Character::CollisionDetectionData& Character::GetCollisionDetectionData(const std::string& name)
+CollisionDetectionData& Character::GetCollisionDetectionData(const std::string& name)
 {
     // 名前でデータを探す
     for (CollisionDetectionData& data : collisionDetectionData_)
@@ -242,16 +209,8 @@ Character::CollisionDetectionData& Character::GetCollisionDetectionData(const st
 }
 
 // ----- データ取得 ( 登録番号 ) -----
-Character::CollisionDetectionData& Character::GetCollisionDetectionData(const int& index)
+CollisionDetectionData& Character::GetCollisionDetectionData(const int& index)
 {
     return collisionDetectionData_.at(index);
 }
-
-// ----- ImGui用 -----
-void Character::CollisionDetectionData::DrawDebug()
-{
-    collisionSphereData_.DrawDebug();
-}
-
 #pragma endregion 押し出し判定
-

@@ -77,6 +77,13 @@ public:
     const bool Judgment() override;
 };
 
+class BiteJudgment : public JudgmentBase
+{
+public:
+    BiteJudgment(Enemy* owner) : JudgmentBase(owner) {}
+    const bool Judgment() override;
+};
+
 // K”öUŒ‚”»’è
 class TailSwipeJudgment : public JudgmentBase
 {

@@ -46,6 +46,8 @@ public:// --- 取得・設定 ---
     void SetViewMatrix(DirectX::XMMATRIX v) { viewMatrix_ = v; }
     void SetProjectionMatrix(DirectX::XMMATRIX p) { projectionMatrix_ = p; }
 
+    [[nodiscard]] const DirectX::XMFLOAT3 GetEye() { return view_.eye_; }
+
     // ---------- ベクトル取得 ( 前, 右 ) ---------------
     [[nodiscard]] const DirectX::XMFLOAT3 CalcForward();
     [[nodiscard]] const DirectX::XMFLOAT3 CalcRight();

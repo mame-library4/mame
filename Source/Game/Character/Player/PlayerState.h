@@ -104,6 +104,10 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+
+    private:
+        float comboAttackFrame_ = 0.34f; // Ÿ‚ÌUŒ‚‚ÉˆÚ‚éƒtƒŒ[ƒ€
+        //float animationEndFrame_ = 0.68f;
     };
 
     // ----- ãUŒ‚‚P -----
@@ -116,6 +120,9 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+
+    private:
+        float comboAttackFrame_ = 0.4f; // Ÿ‚ÌUŒ‚‚ÉˆÚ‚éƒtƒŒ[ƒ€
     };
 
     // ----- ãUŒ‚‚Q -----

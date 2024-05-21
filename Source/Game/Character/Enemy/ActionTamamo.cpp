@@ -262,9 +262,13 @@ const ActionBase::State BiteAction::Run(const float& elapsedTime)
         isAttackCollisionEnd_ = false;
         isAddForce_ = false;    
 
+        owner_->SetWeight(0.0f);
+
         owner_->SetStep(1);
         break;
     case 1:
+        owner_->AddWeight(2.0f * elapsedTime);
+
         // アニメーションに合わせて攻撃判定を無効化する
         if (owner_->GetBlendAnimationSeconds() > attackCollisionEndFrame_ &&
             isAttackCollisionEnd_ == false)
@@ -354,7 +358,6 @@ const ActionBase::State TailSwipeAction::Run(const float& elapsedTime)
         // 尻尾攻撃判定設定
         owner_->SetTailSwipeAttackFlag();
 
-
         owner_->SetStep(1);
         break;
     case 1:
@@ -363,6 +366,9 @@ const ActionBase::State TailSwipeAction::Run(const float& elapsedTime)
         // アニメーションが終わったら終了
         if (owner_->IsPlayAnimation() == false)
         {
+            // 攻撃判定リセット
+            owner_->SetTailSwipeAttackFlag(false);
+
             owner_->SetStep(0);
             return ActionBase::State::Failed;
         }

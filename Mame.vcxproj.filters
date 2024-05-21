@@ -175,6 +175,9 @@
     <ClCompile Include="Source\Game\Stone\Stone.cpp">
       <Filter>Mame\Game\Object\Stone</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\Collision\CollisionData.cpp">
+      <Filter>Mame\Game\Collision</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -382,6 +385,9 @@
     <ClInclude Include="Source\Game\Stone\Stone.h">
       <Filter>Mame\Game\Object\Stone</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\Collision\CollisionData.h">
+      <Filter>Mame\Game\Collision</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -505,9 +511,6 @@
     <None Include="Source\Shader\bidirectionalReflectanceDistributionFunction.hlsli">
       <Filter>Mame\Shader</Filter>
     </None>
-    <None Include="Source\Shader\FbxModel.hlsli">
-      <Filter>Mame\Shader</Filter>
-    </None>
     <None Include="Source\Shader\FullScreenQuad.hlsli">
       <Filter>Mame\Shader</Filter>
     </None>
@@ -529,9 +532,6 @@
     <None Include="Source\Shader\sprite.hlsli">
       <Filter>Mame\Shader</Filter>
     </None>
-    <None Include="Source\Shader\SpriteDissolve.hlsli">
-      <Filter>Mame\Shader</Filter>
-    </None>
     <None Include="Source\Shader\gltfModel.hlsli">
       <Filter>Mame\Shader\GltfModel</Filter>
     </None>
@@ -549,15 +549,6 @@
     <FxCompile Include="Source\Shader\blur_ps.hlsl">
       <Filter>Mame\Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Source\Shader\CharacterPS.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\FbxModelVS.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\finalPassPs.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
     <FxCompile Include="Source\Shader\FogPS.hlsl">
       <Filter>Mame\Shader</Filter>
     </FxCompile>
@@ -565,12 +556,6 @@
       <Filter>Mame\Shader</Filter>
     </FxCompile>
     <FxCompile Include="Source\Shader\FullScreenQuadVS.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\GenerateAuraPS.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\MagicCirclePS.hlsl">
       <Filter>Mame\Shader</Filter>
     </FxCompile>
     <FxCompile Include="Source\Shader\ParticleCS.hlsl">
@@ -588,31 +573,16 @@
     <FxCompile Include="Source\Shader\ParticleVS.hlsl">
       <Filter>Mame\Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Source\Shader\PlayerPS.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
     <FxCompile Include="Source\Shader\SkyBoxPS.hlsl">
       <Filter>Mame\Shader</Filter>
     </FxCompile>
     <FxCompile Include="Source\Shader\SkyBoxVS.hlsl">
       <Filter>Mame\Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Source\Shader\sprite_dissolve_ps.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
     <FxCompile Include="Source\Shader\sprite_ps.hlsl">
       <Filter>Mame\Shader</Filter>
     </FxCompile>
     <FxCompile Include="Source\Shader\sprite_vs.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\SpriteColorDissolvePS.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\SpriteDissolvePS.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\SpriteEmissivePS.hlsl">
       <Filter>Mame\Shader</Filter>
     </FxCompile>
     <FxCompile Include="Source\Shader\gltfModelPs.hlsl">

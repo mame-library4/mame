@@ -17,7 +17,7 @@ void GameScene::CreateResource()
     stageNormal_[1] = std::make_unique<StageNormal>("./Resources/Model/Stage/torii.glb");
     stageNormal_[2] = std::make_unique<StageNormal>("./Resources/Model/Stage/circle.glb");
 
-    EnemyManager::Instance().Register(new EnemyTamamo());
+    EnemyManager::Instance().Register(new EnemyTamamo);
 
     // IBLテクスチャ
     D3D11_TEXTURE2D_DESC textureDesc = {};
@@ -35,7 +35,6 @@ void GameScene::CreateResource()
         iblTextures_[3].GetAddressOf(), &textureDesc);
 
     particles_ = std::make_unique<decltype(particles_)::element_type>(100);
-    particles_->Initialize(0);
 }
 
 // ----- 初期化 -----
@@ -47,10 +46,14 @@ void GameScene::Initialize()
     // 敵初期化
     EnemyManager::Instance().Initialize();
 
-    stageNormal_[0]->GetTransform()->SetPositionZ(35);
-    stageNormal_[1]->GetTransform()->SetPositionY(-100);
+    stageNormal_[0]->GetTransform()->SetPositionZ(-6);
+
+    stageNormal_[1]->GetTransform()->SetPositionZ(9);
+    
     stageNormal_[2]->GetTransform()->SetPositionZ(35);
     stageNormal_[2]->GetTransform()->SetScaleFactor(1.5f);
+    
+    //particles_->Initialize(0);
 }
 
 // ----- 終了化 -----
