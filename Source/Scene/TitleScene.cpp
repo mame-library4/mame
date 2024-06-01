@@ -1,6 +1,7 @@
 #include "TitleScene.h"
 #include "../Graphics/Graphics.h"
 #include "../Resource/texture.h"
+#include "Input.h"
 
 #include "GameScene.h"
 #include "LoadingScene.h"
@@ -9,11 +10,14 @@
 // ----- リソース生成 -----
 void TitleScene::CreateResource()
 {
+    //sprite_ = std::make_unique<Sprite>(L"./Resources/Image/white.png");
+    sprite_ = std::make_unique<Sprite>(L"./Resources/Image/Emma.png");
 }
 
 // ----- 初期化 -----
 void TitleScene::Initialize()
 {
+    SceneManager::Instance().SetCurrentSceneName(SceneManager::SceneName::Title);
 }
 
 // ----- 終了化 -----
@@ -47,9 +51,11 @@ void TitleScene::ForwardRender()
 
 void TitleScene::UserInterfaceRender()
 {
+    sprite_->Render();
 }
 
 // ----- ImGui用 -----
 void TitleScene::DrawDebug()
 {
+    sprite_->DrawDebug();
 }

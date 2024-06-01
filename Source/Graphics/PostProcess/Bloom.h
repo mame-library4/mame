@@ -2,9 +2,9 @@
 #include <d3d11.h>
 #include <memory>
 #include <wrl.h>
-#include "../Graphics/ConstantBuffer.h"
-#include "../Graphics/FrameBuffer.h"
-#include "../Graphics/FullscreenQuad.h"
+#include "ConstantBuffer.h"
+#include "FrameBuffer.h"
+#include "FullscreenQuad.h"
 
 class Bloom
 {
@@ -13,12 +13,13 @@ public:
     ~Bloom() = default;
 
     // ----- bloom 実行関数 -----
-    void Bloom::Execute(ID3D11DeviceContext* deviceContext, 
-        ID3D11ShaderResourceView* colorMap);
+    void Execute(ID3D11ShaderResourceView* colorMap);
+
     // ----- ImGui用 -----
     void DrawDebug();
+
     // ----- bloom ShaderResourceView -----
-    ID3D11ShaderResourceView** GetShaderResourceView() { return bloom_->shaderResourceViews[0].GetAddressOf(); }
+    ID3D11ShaderResourceView** GetShaderResourceView() { return bloom_->shaderResourceViews_[0].GetAddressOf(); }
 
 private:
     // ---------- 書き出し用 -----------------------------------
@@ -48,7 +49,7 @@ private:
     struct BloomConstants
     {
         float bloomExtractionThreshold_ = 0.85f;    // 輝度抽出閾値
-        float bloomIntensity_           = 0.35f;    // ブルーム強度
+        float bloomIntensity_           = 0.0f;    // ブルーム強度
         float dummy_[2]                 = {};       // ダミー
     };
     BloomConstants bloomConstants_ = {};

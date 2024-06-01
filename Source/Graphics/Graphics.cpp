@@ -14,7 +14,7 @@ void acquireHighPerformanceAdapter(IDXGIFactory6* dxgiFactory6, IDXGIAdapter3** 
 	{
 		DXGI_ADAPTER_DESC1 adapterDesc;
 		hr = enumeratedAdapter->GetDesc1(&adapterDesc);
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
 		if (adapterDesc.VendorId == 0x1002/*AMD*/ || adapterDesc.VendorId == 0x10DE/*NVIDIA*/)
 		{
@@ -37,6 +37,8 @@ void acquireHighPerformanceAdapter(IDXGIFactory6* dxgiFactory6, IDXGIAdapter3** 
 
 Graphics* Graphics::instance_ = nullptr;
 
+#define ADAPTER 0
+
 // ----- コンストラクタ -----
 Graphics::Graphics(HWND hWnd, BOOL fullscreen)
 {
@@ -47,6 +49,7 @@ Graphics::Graphics(HWND hWnd, BOOL fullscreen)
 	HRESULT hr = S_OK;
 
 	// アダプタ
+#if ADAPTER
 	IDXGIFactory* factory;
 	CreateDXGIFactory(IID_PPV_ARGS(&factory));
 	IDXGIAdapter* adapter;
@@ -61,6 +64,7 @@ Graphics::Graphics(HWND hWnd, BOOL fullscreen)
 		adapter->Release();
 	}
 	factory->Release();
+#endif
 
 	{
 		// スワップチェーンの作成
@@ -84,20 +88,26 @@ Graphics::Graphics(HWND hWnd, BOOL fullscreen)
 		swapChainDesc.SampleDesc.Quality = 0;
 		swapChainDesc.Windowed = !FULLSCREEN;
 
-		hr = D3D11CreateDeviceAndSwapChain(adapter/*ADAPTER*/, D3D_DRIVER_TYPE_UNKNOWN/*ADAPTER*/, NULL, createDeviceFlags,
+#if ADAPTER
+        hr = D3D11CreateDeviceAndSwapChain(adapter/*ADAPTER*/, D3D_DRIVER_TYPE_UNKNOWN/*ADAPTER*/, NULL, createDeviceFlags,
+        	&featureLevels, 1, D3D11_SDK_VERSION, &swapChainDesc,
+        	&swapchain_, &device_, NULL, &deviceContext_);
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+
+        if (adapter != nullptr) adapter->Release();
+#endif
+		hr = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, createDeviceFlags,
 			&featureLevels, 1, D3D11_SDK_VERSION, &swapChainDesc,
 			&swapchain_, &device_, NULL, &deviceContext_);
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-		if (adapter != nullptr) adapter->Release();
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
 		// レンダーターゲットビューの作成
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer{};
 		hr = swapchain_->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<LPVOID*>(backBuffer.GetAddressOf()));
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
 		hr = device_->CreateRenderTargetView(backBuffer.Get(), NULL, &renderTargetView_);
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
 
 		// 深度ステンシルビューの作成
@@ -116,14 +126,14 @@ Graphics::Graphics(HWND hWnd, BOOL fullscreen)
 		texture2dDesc.CPUAccessFlags = 0;
 		texture2dDesc.MiscFlags = 0;
 		hr = device_->CreateTexture2D(&texture2dDesc, NULL, depthStencilBuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
 		D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc{};
 		depthStencilViewDesc.Format = texture2dDesc.Format;
 		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		depthStencilViewDesc.Texture2D.MipSlice = 0;
 		hr = device_->CreateDepthStencilView(depthStencilBuffer.Get(), &depthStencilViewDesc, depthStencilView_.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 #endif
 
 		// ビューポートの設定
@@ -139,13 +149,13 @@ Graphics::Graphics(HWND hWnd, BOOL fullscreen)
 
 	// シェーダー
 	{
-		shader = std::make_unique<Shader>(device_.Get());
+		shader_ = std::make_unique<Shader>();
 	}
 
 	// デバッグレンダラ生成
 	{
+		debugRenderer_ = std::make_unique<DebugRenderer>();
 #ifdef _DEBUG
-		debugRenderer_ = std::make_unique<DebugRenderer>(device_.Get());
 #endif
 	}
 }

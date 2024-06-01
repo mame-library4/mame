@@ -1,7 +1,7 @@
 #include "SkyBox.h"
 
-#include "../Graphics/shader.h"
-#include "../Other/misc.h"
+#include "Graphics.h"
+#include "Misc.h"
 
 SkyBox::SkyBox(ID3D11Device* device, std::shared_ptr<Sprite> sprite)
     :sprite(sprite)
@@ -14,9 +14,8 @@ SkyBox::SkyBox(ID3D11Device* device, std::shared_ptr<Sprite> sprite)
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
     };
 
-    CreateVsFromCso(device, "./Resources/Shader/SkyBoxVS.cso", vertexShader.GetAddressOf(),
-        inputLayout.GetAddressOf(), inputElementDesc, _countof(inputElementDesc));
-    CreatePsFromCso(device, "./Resources/Shader/SkyBoxPS.cso", pixelShader.GetAddressOf());
+    Graphics::Instance().CreateVsFromCso("./Resources/Shader/SkyBoxVS.cso", vertexShader.GetAddressOf(), inputLayout.GetAddressOf(), inputElementDesc, _countof(inputElementDesc));
+    Graphics::Instance().CreatePsFromCso("./Resources/Shader/SkyBoxPS.cso", pixelShader.GetAddressOf());
 
     // 定数バッファ
     {
@@ -30,7 +29,7 @@ SkyBox::SkyBox(ID3D11Device* device, std::shared_ptr<Sprite> sprite)
         desc.StructureByteStride = 0;
 
         hr = device->CreateBuffer(&desc, 0, sceneConstantBuffer.GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
     }
 
     // ブレンドステート
@@ -49,7 +48,7 @@ SkyBox::SkyBox(ID3D11Device* device, std::shared_ptr<Sprite> sprite)
         desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
         hr = device->CreateBlendState(&desc, blendState.GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
     }
 
     // 深度ステンシルステート
@@ -61,7 +60,7 @@ SkyBox::SkyBox(ID3D11Device* device, std::shared_ptr<Sprite> sprite)
         desc.DepthFunc = D3D11_COMPARISON_ALWAYS;
 
         hr = device->CreateDepthStencilState(&desc, depthStencilState.GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
     }
 
     // ラスタライザーステート
@@ -80,7 +79,7 @@ SkyBox::SkyBox(ID3D11Device* device, std::shared_ptr<Sprite> sprite)
         desc.AntialiasedLineEnable = false;
 
         hr = device->CreateRasterizerState(&desc, rasterizerState.GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
     }
 
     // サンプラステート
@@ -102,7 +101,7 @@ SkyBox::SkyBox(ID3D11Device* device, std::shared_ptr<Sprite> sprite)
         desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 
         hr = device->CreateSamplerState(&desc, samplerState.GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
     }
 }
 

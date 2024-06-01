@@ -21,6 +21,7 @@ public:
     void Finalize();
     void Update(const float& elapsedTime);
     void Render();
+    void RenderUserInterface();
     void DrawDebug();
     void DebugRender(DebugRenderer* debugRenderer);
 

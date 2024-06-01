@@ -1,14 +1,13 @@
 #include "DebugRenderer.h"
-
 #include <stdio.h>
 #include <memory>
+#include "Misc.h"
+#include "Graphics.h"
 
-#include "../Other/misc.h"
-
-//#include "Common.h"
-
-DebugRenderer::DebugRenderer(ID3D11Device* device)
+DebugRenderer::DebugRenderer()
 {
+	ID3D11Device* device = Graphics::Instance().GetDevice();
+
 	// 頂点シェーダー
 	{
 		// ファイルを開く
@@ -30,7 +29,8 @@ DebugRenderer::DebugRenderer(ID3D11Device* device)
 		// 頂点シェーダー生成
 		HRESULT hr = device->CreateVertexShader(csoData.get(), csoSize, nullptr, vertexShader.GetAddressOf());
 		//_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		_ASSERT_EXPR(SUCCEEDED(hr), 
+			(hr));
 
 		// 入力レイアウト
 		D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
@@ -39,7 +39,7 @@ DebugRenderer::DebugRenderer(ID3D11Device* device)
 		};
 		hr = device->CreateInputLayout(inputElementDesc, ARRAYSIZE(inputElementDesc), csoData.get(), csoSize, inputLayout.GetAddressOf());
 		//_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 	}
 
 	// ピクセルシェーダー
@@ -63,7 +63,7 @@ DebugRenderer::DebugRenderer(ID3D11Device* device)
 		// ピクセルシェーダー生成
 		HRESULT hr = device->CreatePixelShader(csoData.get(), csoSize, nullptr, pixelShader.GetAddressOf());
 		//_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 	}
 
 	// 定数バッファ
@@ -80,7 +80,7 @@ DebugRenderer::DebugRenderer(ID3D11Device* device)
 
 		HRESULT hr = device->CreateBuffer(&desc, 0, constantBuffer.GetAddressOf());
 		//_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));	}
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));	}
 
 	// ブレンドステート
 	{
@@ -99,7 +99,7 @@ DebugRenderer::DebugRenderer(ID3D11Device* device)
 
 		HRESULT hr = device->CreateBlendState(&desc, blendState.GetAddressOf());
 		//_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));	}
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));	}
 
 	// 深度ステンシルステート
 	{
@@ -111,7 +111,7 @@ DebugRenderer::DebugRenderer(ID3D11Device* device)
 
 		HRESULT hr = device->CreateDepthStencilState(&desc, depthStencilState.GetAddressOf());
 		//_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 	}
 
 	// ラスタライザーステート
@@ -131,7 +131,7 @@ DebugRenderer::DebugRenderer(ID3D11Device* device)
 
 		HRESULT hr = device->CreateRasterizerState(&desc, rasterizerState.GetAddressOf());
 		//_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));	}
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));	}
 
 	// 球メッシュ作成
 	CreateSphereMesh(device, 1.0f, 16, 16);
@@ -157,9 +157,11 @@ void DebugRenderer::Render(ID3D11DeviceContext* context, const DirectX::XMFLOAT4
 
 	// レンダーステート設定
 	const float blendFactor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
 	context->OMSetBlendState(blendState.Get(), blendFactor, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(depthStencilState.Get(), 0);
 	context->RSSetState(rasterizerState.Get());
+
 
 	// ビュープロジェクション行列作成
 	DirectX::XMMATRIX V = DirectX::XMLoadFloat4x4(&view);
@@ -351,7 +353,7 @@ void DebugRenderer::CreateSphereMesh(ID3D11Device* device, float radius, int sli
 
 		HRESULT hr = device->CreateBuffer(&desc, &subresourceData, sphereVertexBuffer.GetAddressOf());
 		//_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));	}
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));	}
 }
 
 // 円柱メッシュ作成
@@ -422,7 +424,7 @@ void DebugRenderer::CreateCylinderMesh(ID3D11Device* device, float radius1, floa
 
 		HRESULT hr = device->CreateBuffer(&desc, &subresourceData, cylinderVertexBuffer.GetAddressOf());
 		//_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));	}
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));	}
 }
 
 
@@ -550,7 +552,7 @@ void DebugRenderer::CreateBoxMesh(ID3D11Device* device, const float& size)
 
 		HRESULT hr = device->CreateBuffer(&desc, &subresourceData, boxVertexBuffer.GetAddressOf());
 		//_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));	}
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));	}
 
 }
 

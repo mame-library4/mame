@@ -5,10 +5,10 @@
 class DeferredRendering
 {
 public:
-    DeferredRendering(ID3D11Device* device, uint32_t width, uint32_t height);
+    DeferredRendering(const uint32_t& width, const uint32_t& height);
     ~DeferredRendering() {}
 
-    void Activate(ID3D11DeviceContext* deviceContext);
+    void Activate();
 
     void DrawDebug();
 

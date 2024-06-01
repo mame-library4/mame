@@ -101,9 +101,12 @@ void PlayerManager::CollisionPlayerVsEnemy()
     {
         auto playerData = GetPlayer()->GetAttackDetectionData(playerDataIndex);
 
+        if (playerData.GetIsActive() == false) continue;
+
         for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetDamageDetectionDataCount(); ++enemyDataIndex)
         {
             auto enemyData = enemy->GetDamageDetectionData(enemyDataIndex);
+
 
             if (Collision::IntersectSphereVsSphere(
                 enemyData.GetPosition(), enemyData.GetRadius(),
@@ -112,7 +115,8 @@ void PlayerManager::CollisionPlayerVsEnemy()
                 if (enemyData.GetIsHit() == false)
                 {
                     enemy->GetDamageDetectionData(enemyDataIndex).SetIsHit(true);
-                    enemy->GetDamageDetectionData(enemyDataIndex).SetHitTimer(2.0f);                   
+                    enemy->GetDamageDetectionData(enemyDataIndex).SetHitTimer(0.5f);                   
+                    enemy->AddDamage(enemyData.GetDamage());
                 }
             }
         }

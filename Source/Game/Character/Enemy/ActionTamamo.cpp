@@ -3,6 +3,7 @@
 #include "../Other/MathHelper.h"
 #include "../Other/Easing.h"
 #include "../Player/PlayerManager.h"
+#include "Camera.h"
 
 // ----- 死亡行動 -----
 const ActionBase::State DeathAction::Run(const float& elapsedTime)
@@ -12,10 +13,30 @@ const ActionBase::State DeathAction::Run(const float& elapsedTime)
     case 0:
         // アニメーション再生
 
+        timer_ = 0.0f;
+
         owner_->SetStep(1);
         break;
     case 1:
+        timer_ += elapsedTime;
+
+        if (timer_ > 1.0f)
+        {
+            owner_->isWin_ = true;
+            owner_->SetStep(2);
+        }
+
+        break;
+    case 2:
         // 死亡なのでこのまま放置
+
+        float posY = owner_->GetTransform()->GetPositionY();
+
+        posY -= elapsedTime * 5.0f;
+        float max = -100.0f;
+        posY = std::max(max, posY);
+
+        owner_->GetTransform()->SetPositionY(posY);
 
         break;
     }

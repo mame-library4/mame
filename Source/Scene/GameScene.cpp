@@ -1,6 +1,7 @@
 #include "GameScene.h"
+#include "SceneManager.h"
 #include "../Graphics/Graphics.h"
-#include "../Resource/texture.h"
+#include "Texture.h"
 #include "../Game/Character/Player/PlayerManager.h"
 #include "../Game/Character/Enemy/EnemyManager.h"
 
@@ -21,17 +22,13 @@ void GameScene::CreateResource()
 
     // IBLテクスチャ
     D3D11_TEXTURE2D_DESC textureDesc = {};
-    LoadTextureFromFile(Graphics::Instance().GetDevice(),
-        L"./Resources/environments/sunset_jhbcentral_4k/sunset_jhbcentral_4k.dds",
+    Texture::Instance().LoadTexture(L"./Resources/environments/sunset_jhbcentral_4k/sunset_jhbcentral_4k.dds",
         iblTextures_[0].GetAddressOf(), &textureDesc);
-    LoadTextureFromFile(Graphics::Instance().GetDevice(),
-        L"./Resources/environments/sunset_jhbcentral_4k/diffuse_iem.dds",
+    Texture::Instance().LoadTexture(L"./Resources/environments/sunset_jhbcentral_4k/diffuse_iem.dds",
         iblTextures_[1].GetAddressOf(), &textureDesc);
-    LoadTextureFromFile(Graphics::Instance().GetDevice(),
-        L"./Resources/environments/sunset_jhbcentral_4k/specular_pmrem.dds",
+    Texture::Instance().LoadTexture(L"./Resources/environments/sunset_jhbcentral_4k/specular_pmrem.dds",
         iblTextures_[2].GetAddressOf(), &textureDesc);
-    LoadTextureFromFile(Graphics::Instance().GetDevice(),
-        L"./Resources/environments/lut_ggx.DDS",
+    Texture::Instance().LoadTexture(L"./Resources/environments/lut_ggx.DDS",
         iblTextures_[3].GetAddressOf(), &textureDesc);
 
     particles_ = std::make_unique<decltype(particles_)::element_type>(100);
@@ -40,19 +37,23 @@ void GameScene::CreateResource()
 // ----- 初期化 -----
 void GameScene::Initialize()
 {
+    SceneManager::Instance().SetCurrentSceneName(SceneManager::SceneName::Game);
+
+    stageNormal_[0]->GetTransform()->SetPositionZ(-6);
+
+    stageNormal_[1]->GetTransform()->SetPositionZ(9);
+    
+    stageNormal_[2]->GetTransform()->SetPositionZ(35.5f);
+    stageNormal_[2]->GetTransform()->SetScaleFactor(1.53f);
+
+    stageCenter_ = stageNormal_[2]->GetTransform()->GetPosition();
+
     // プレイヤー初期化
     PlayerManager::Instance().Initialize();
 
     // 敵初期化
     EnemyManager::Instance().Initialize();
 
-    stageNormal_[0]->GetTransform()->SetPositionZ(-6);
-
-    stageNormal_[1]->GetTransform()->SetPositionZ(9);
-    
-    stageNormal_[2]->GetTransform()->SetPositionZ(35);
-    stageNormal_[2]->GetTransform()->SetScaleFactor(1.5f);
-    
     //particles_->Initialize(0);
 }
 
@@ -88,6 +89,7 @@ void GameScene::Update(const float& elapsedTime)
 
 void GameScene::ShadowRender()
 {
+    
     PlayerManager::Instance().Render();
     EnemyManager::Instance().Render();
 }
@@ -104,17 +106,18 @@ void GameScene::ForwardRender()
     deviceContext->PSSetShaderResources(33, 1, iblTextures_[1].GetAddressOf());
     deviceContext->PSSetShaderResources(34, 1, iblTextures_[2].GetAddressOf());
     deviceContext->PSSetShaderResources(35, 1, iblTextures_[3].GetAddressOf());
-    
+
+    // ステージ
+    for (int i = 0; i < stageMax; ++i)
+    {
+        stageNormal_[i]->Render();
+    }
+
     // プレイヤー描画
     PlayerManager::Instance().Render();
 
     // 敵描画
     EnemyManager::Instance().Render();
-
-    for (int i = 0; i < stageMax; ++i)
-    {
-        stageNormal_[i]->Render();
-    }
 
 
     Shader* shader = Graphics::Instance().GetShader();
@@ -122,12 +125,10 @@ void GameScene::ForwardRender()
     shader->SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
     particles_->Render();
     
-
-#ifdef _DEBUG
     DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
+#ifdef _DEBUG
     if (isDebugRenderer_)
     {
-
         // player
         PlayerManager::Instance().DebugRender(debugRenderer);
 
@@ -141,17 +142,14 @@ void GameScene::ForwardRender()
         //debugRenderer->DrawCylinder(position, stageRadius1_, 1.5f, { 1, 0, 0, 1 });
 
     }
-    // デバッグレンダラ描画
-    DirectX::XMFLOAT4X4 view, projection;
-    DirectX::XMStoreFloat4x4(&view, Camera::Instance().GetViewMatrix());
-    DirectX::XMStoreFloat4x4(&projection, Camera::Instance().GetProjectionMatrix());
-
-    debugRenderer->Render(deviceContext, view, projection);
 #endif
 }
 
 void GameScene::UserInterfaceRender()
 {
+    Graphics::Instance().GetShader()->SetBlendState(Shader::BLEND_STATE::ALPHA);
+
+    EnemyManager::Instance().RenderUserInterface();
 }
 
 // ----- ImGui用 -----

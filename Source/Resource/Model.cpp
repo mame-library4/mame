@@ -1,6 +1,5 @@
 #include "Model.h"
-
-#include "../Other/misc.h"
+#include "Misc.h"
 
 #include <sstream>
 #include <functional>
@@ -118,7 +117,7 @@ void Model::CreateComObjects(ID3D11Device* device, const char* fbxFileName)
         subresource_data.SysMemSlicePitch = 0;
         hr = device->CreateBuffer(&bufferDesc, &subresource_data,
             mesh.vertexBuffer.ReleaseAndGetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
         bufferDesc.ByteWidth = static_cast<UINT>(sizeof(uint32_t) * mesh.indices.size());
         bufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -126,7 +125,7 @@ void Model::CreateComObjects(ID3D11Device* device, const char* fbxFileName)
         subresource_data.pSysMem = mesh.indices.data();
         hr = device->CreateBuffer(&bufferDesc, &subresource_data,
             mesh.indexBuffer.ReleaseAndGetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
 
         mesh.vertices.clear();
@@ -143,23 +142,22 @@ void Model::CreateComObjects(ID3D11Device* device, const char* fbxFileName)
         {
             std::filesystem::path path(fbxFileName);
             path.replace_filename(iterator->second.textureFilenames[0]);
-            LoadTextureFromFile(device, path.c_str(), iterator->second.shaderResourceViews[0].GetAddressOf(), &texture2dDesc);
+            Texture::Instance().LoadTexture(path.c_str(), iterator->second.shaderResourceViews[0].GetAddressOf(), &texture2dDesc);
         }
         else
         {
-            MakeDummyTexture(device, iterator->second.shaderResourceViews[0].GetAddressOf(), 0xFFFFFFFF, 4);
-        }
+            Texture::Instance().MakeDummyTexture(iterator->second.shaderResourceViews[0].GetAddressOf(), 0xFFFFFFFF, 4);       }
 
         // Normal
         if (iterator->second.textureFilenames[1].size() > 0)
         {
             std::filesystem::path path(fbxFileName);
             path.replace_filename(iterator->second.textureFilenames[1]);
-            LoadTextureFromFile(device, path.c_str(), iterator->second.shaderResourceViews[1].GetAddressOf(), &texture2dDesc);
+            Texture::Instance().LoadTexture(path.c_str(), iterator->second.shaderResourceViews[1].GetAddressOf(), &texture2dDesc);
         }
         else
         {
-            MakeDummyTexture(device, iterator->second.shaderResourceViews[1].GetAddressOf(), 0xFFFFF7F7, 4);
+            Texture::Instance().MakeDummyTexture(iterator->second.shaderResourceViews[1].GetAddressOf(), 0xFFFFF7F7, 4);
         }
 
         // EMISSIVE
@@ -167,11 +165,11 @@ void Model::CreateComObjects(ID3D11Device* device, const char* fbxFileName)
         {
             std::filesystem::path path(fbxFileName);
             path.replace_filename(iterator->second.textureFilenames[2]);
-            LoadTextureFromFile(device, path.c_str(), iterator->second.shaderResourceViews[2].GetAddressOf(), &texture2dDesc);
+            Texture::Instance().LoadTexture(path.c_str(), iterator->second.shaderResourceViews[2].GetAddressOf(), &texture2dDesc);
         }
         else
         {
-            MakeDummyTexture(device, iterator->second.shaderResourceViews[2].GetAddressOf(), 0xFF000000, 4);
+            Texture::Instance().MakeDummyTexture(iterator->second.shaderResourceViews[2].GetAddressOf(), 0xFF000000, 4);
         }
     }
 
@@ -185,9 +183,9 @@ void Model::CreateComObjects(ID3D11Device* device, const char* fbxFileName)
         { "WEIGHTS" , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT },
         { "BONES"   , 0, DXGI_FORMAT_R32G32B32A32_UINT,  0, D3D11_APPEND_ALIGNED_ELEMENT },
     };
-    CreateVsFromCso(device, "./resources/Shader/FbxModelVS.cso", vertexShader.ReleaseAndGetAddressOf(),
+    Graphics::Instance().CreateVsFromCso("./resources/Shader/FbxModelVS.cso", vertexShader.ReleaseAndGetAddressOf(),
         inputLayout.ReleaseAndGetAddressOf(), inputElementDesc, ARRAYSIZE(inputElementDesc));
-    CreatePsFromCso(device, "./resources/Shader/CharacterPS.cso", pixelShader.ReleaseAndGetAddressOf());
+    Graphics::Instance().CreatePsFromCso("./resources/Shader/CharacterPS.cso", pixelShader.ReleaseAndGetAddressOf());
 #else
     // Instancing
     {
@@ -213,7 +211,7 @@ void Model::CreateComObjects(ID3D11Device* device, const char* fbxFileName)
 #endif
 
     // 定数バッファー
-    constant_ = std::make_unique<ConstantBuffer<Constants>>(device);
+    constant_ = std::make_unique<ConstantBuffer<Constants>>();
 }
 
 // コンストラクタ
@@ -290,7 +288,7 @@ void Model::Render(ID3D11DeviceContext* deviceContext, const DirectX::XMFLOAT4X4
         {
             // 定数バッファ構造体のworldメンバ変数の計算を変更する
             const Animation::KeyFrame::Node& meshNode{ keyFrame->nodes.at(mesh.nodeIndex) };
-            DirectX::XMStoreFloat4x4(&constant_->data.world,
+            DirectX::XMStoreFloat4x4(&constant_->GetData()->world,
                 DirectX::XMLoadFloat4x4(&meshNode.globalTransform) * DirectX::XMLoadFloat4x4(&world));
 
             const size_t boneCount{ mesh.bindPose.bones.size() };
@@ -300,7 +298,7 @@ void Model::Render(ID3D11DeviceContext* deviceContext, const DirectX::XMFLOAT4X4
             {
                 const Skeleton::Bone& bone{ mesh.bindPose.bones.at(boneIndex) };
                 const Animation::KeyFrame::Node& boneNode{ keyFrame->nodes.at(bone.nodeIndex) };
-                DirectX::XMStoreFloat4x4(&constant_->data.boneTransforms[boneIndex],
+                DirectX::XMStoreFloat4x4(&constant_->GetData()->boneTransforms[boneIndex],
                     DirectX::XMLoadFloat4x4(&bone.offsetTransform) *
                     DirectX::XMLoadFloat4x4(&boneNode.globalTransform) *
                     DirectX::XMMatrixInverse(nullptr, DirectX::XMLoadFloat4x4(&mesh.defaultGlobalTransform))
@@ -309,11 +307,11 @@ void Model::Render(ID3D11DeviceContext* deviceContext, const DirectX::XMFLOAT4X4
         }
         else
         {
-            DirectX::XMStoreFloat4x4(&constant_->data.world,
+            DirectX::XMStoreFloat4x4(&constant_->GetData()->world,
                 DirectX::XMLoadFloat4x4(&mesh.defaultGlobalTransform) * DirectX::XMLoadFloat4x4(&world));
             for (size_t boneIndex = 0; boneIndex < MAX_BONES; ++boneIndex)
             {
-                constant_->data.boneTransforms[boneIndex] =
+                constant_->GetData()->boneTransforms[boneIndex] =
                 {
                     1,0,0,0,
                     0,1,0,0,
@@ -327,11 +325,11 @@ void Model::Render(ID3D11DeviceContext* deviceContext, const DirectX::XMFLOAT4X4
         {
             const Material& material{ materials.at(subset.materialUniqueId) };
 
-            DirectX::XMStoreFloat4(&constant_->data.materialColor,
+            DirectX::XMStoreFloat4(&constant_->GetData()->materialColor,
                 DirectX::XMVectorMultiply(DirectX::XMLoadFloat4(&materialColor), DirectX::XMLoadFloat4(&material.Kd)));
 
             // 定数バッファー更新
-            constant_->Activate(deviceContext, 0); 
+            constant_->Activate(0); 
 
             // Diffuse
             deviceContext->PSSetShaderResources(0, 1, material.shaderResourceViews[0].GetAddressOf());
@@ -415,15 +413,15 @@ void Model::DrawDebug()
 {
     if (ImGui::TreeNode("Emmisive"))
     {
-        ImGui::ColorEdit4("color", &constant_->data.emissiveColor.x);
-        ImGui::DragFloat("Intencity", &constant_->data.emissiveIntensity);
-        ImGui::DragFloat("options", &constant_->data.emissiveOptions);
-        ImGui::DragFloat2("scrollDirection", &constant_->data.emissiveScrollDirection.x);
+        ImGui::ColorEdit4("color", &constant_->GetData()->emissiveColor.x);
+        ImGui::DragFloat("Intencity", &constant_->GetData()->emissiveIntensity);
+        ImGui::DragFloat("options", &constant_->GetData()->emissiveOptions);
+        ImGui::DragFloat2("scrollDirection", &constant_->GetData()->emissiveScrollDirection.x);
 
         ImGui::TreePop();
     }
 
-    ImGui::ColorEdit4("materialColor", &constant_->data.sageColor.x);
+    ImGui::ColorEdit4("materialColor", &constant_->GetData()->sageColor.x);
 }
 
 void Model::FetchMeshes(FbxScene* fbxScene, std::vector<Mesh>& meshes)

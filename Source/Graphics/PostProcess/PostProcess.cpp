@@ -1,14 +1,14 @@
 #include "PostProcess.h"
-#include "../Graphics/Graphics.h"
+#include "Graphics.h"
 
 // ----- コンストラクタ -----
-PostProcess::PostProcess(ID3D11Device* device, uint32_t width, uint32_t height)
+PostProcess::PostProcess(const uint32_t& width, const uint32_t& height)
 {
-    renderer_ = std::make_unique<FullscreenQuad>(device);
+    renderer_ = std::make_unique<FullscreenQuad>();
 
-    CreatePsFromCso(device, "./Resources/Shader/PostProcessPS.cso", postProcessPS_.GetAddressOf());
+    Graphics::Instance().CreatePsFromCso("./Resources/Shader/PostProcessPS.cso", postProcessPS_.GetAddressOf());
 
-    postProcess_ = std::make_unique<FrameBuffer>(device, width, height);
+    postProcess_ = std::make_unique<FrameBuffer>(width, height);
 }
 
 // ----- デストラクタ -----
@@ -17,23 +17,23 @@ PostProcess::~PostProcess()
 }
 
 // ----- ポストプロセス開始 -----
-void PostProcess::Activate(ID3D11DeviceContext* deviceContext)
+void PostProcess::Activate()
 {
-    postProcess_->Clear(deviceContext);
-    postProcess_->Activate(deviceContext);
+    postProcess_->Clear();
+    postProcess_->Activate();
 }
 
 // ----- ポストプロセス終了 -----
-void PostProcess::Deactivate(ID3D11DeviceContext* deviceContext)
+void PostProcess::Deactivate()
 {
-    postProcess_->Deactivate(deviceContext);
-    bloom_.Execute(deviceContext, postProcess_->shaderResourceViews[0].Get());
+    postProcess_->Deactivate();
+    bloom_.Execute(postProcess_->shaderResourceViews_[0].Get());
 }
 
 // ----- ポストプロセス描画 -----
-void PostProcess::Draw(ID3D11DeviceContext* deviceContext)
+void PostProcess::Draw()
 {
-    renderer_->Draw(deviceContext, bloom_.GetShaderResourceView(), 0, 1, postProcessPS_.Get());
+    renderer_->Draw(bloom_.GetShaderResourceView(), 0, 1, postProcessPS_.Get());
 }
 
 // ----- ImGui用 -----
@@ -41,7 +41,7 @@ void PostProcess::DrawDebug()
 {
     if (ImGui::TreeNode("PostProcess"))
     {
-        ImGui::Image(reinterpret_cast<ImTextureID>(postProcess_->shaderResourceViews[0].Get()), ImVec2(256.0, 256.0));
+        ImGui::Image(reinterpret_cast<ImTextureID>(postProcess_->shaderResourceViews_[0].Get()), ImVec2(256.0, 256.0));
 
         bloom_.DrawDebug();
 

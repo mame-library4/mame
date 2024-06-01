@@ -109,6 +109,9 @@ public:
     [[nodiscard]] const DirectX::XMFLOAT4 GetColor() const { return collisionSphereData_.GetColor(); }
     void SetColor(const DirectX::XMFLOAT4& color) { collisionSphereData_.SetColor(color); }
 
+    // ---------- ダメージ量 ----------
+    [[nodiscard]] const float GetDamage() const { return damage_; }
+
     // ----- くらった時の管理用 -----
     void Update(const float& elapsedTime);
 

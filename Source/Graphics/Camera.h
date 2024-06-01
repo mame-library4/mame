@@ -77,6 +77,12 @@ private:
     float               length_             = 10.0f;    // focus‚Æeye‚Ü‚Å‚Ì‹——£
     float               inputThreshold_     = 0.3f;     // “ü—Í”»’è’l
     
+
+    float               verticalRotationSpeed_      = 1.0f; // ‚’¼‰ñ“]‘¬“x
+    float               horizontalRotationSpeed_    = 1.0f; // …•½‰ñ“]‘¬“x
+
+    bool                invertVertical_     = false;    // ã‰º”½“]ƒtƒ‰ƒO
+
     // ---------- ‰ñ“]Šp§Œä—p ----------
     float               minXRotation_       = DirectX::XMConvertToRadians(-20.0f);
     float               maxXRotation_       = DirectX::XMConvertToRadians(20.0f);

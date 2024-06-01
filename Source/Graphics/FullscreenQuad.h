@@ -1,5 +1,4 @@
 #pragma once
-
 #include <d3d11.h>
 #include <wrl.h>
 #include <cstdint>
@@ -7,14 +6,12 @@
 class FullscreenQuad
 {
 public:
-    FullscreenQuad(ID3D11Device* device);
+    FullscreenQuad();
     virtual ~FullscreenQuad() = default;
 
-private:
-    Microsoft::WRL::ComPtr<ID3D11VertexShader> embeddedVertexShader;
-    Microsoft::WRL::ComPtr<ID3D11PixelShader> embeddedPixelShader;
+    void Draw(ID3D11ShaderResourceView** shaderResourceView, const uint32_t& startSlot, const uint32_t& numViews, ID3D11PixelShader* replacedPixelShader = nullptr);
 
-public:
-    void Draw(ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceView** shaderResourceView,
-        uint32_t startSlot, uint32_t numViews, ID3D11PixelShader* replacedPixelShader = nullptr);
+private:
+    Microsoft::WRL::ComPtr<ID3D11VertexShader>  vertexShader_;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader>   pixelShader_;
 };

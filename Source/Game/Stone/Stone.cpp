@@ -57,7 +57,10 @@ void Stone::Initialize(const DirectX::XMFLOAT3& basePosition)
 // ----- XV -----
 void Stone::Update(const float& elapsedTime)
 {
-    if (GetTransform()->GetPositionY() < -10.0f) return;
+    if (GetTransform()->GetPositionY() < -10.0f)
+    {
+        GetTransform()->SetScaleFactor(0.0f);
+    }
 
     // Y ²ˆÚ“®ˆ—
     float gravity = 9.8f * elapsedTime;

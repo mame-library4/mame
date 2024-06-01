@@ -1,9 +1,9 @@
 #include "PlayerState.h"
 #include <cmath>
-#include "../../../Input/Input.h"
-#include "../../../Graphics/Camera.h"
-#include "../../../Other/Easing.h"
-#include "../../../Other/MathHelper.h"
+#include "Input.h"
+#include "Camera.h"
+#include "Easing.h"
+#include "MathHelper.h"
 
 // ----- 待機 -----
 namespace PlayerState
@@ -12,20 +12,8 @@ namespace PlayerState
     void IdleState::Initialize()
     {
         // アニメーション設定
-        //int currentBlendAnimation = owner_->GetCurrentBlendAnimationIndex();
-        //if (currentBlendAnimation > 0)
-        //{
-        //    // ブレンドアニメーションをしていた場合そのアニメーションを使ってブレンドする
-        //    owner_->PlayBlendAnimation(Player::Animation::Idle, currentBlendAnimation, true);
-        //}
-        //else
-        //{
-        owner_->PlayBlendAnimation(Player::Animation::Walk, Player::Animation::Idle, true);
         owner_->SetWeight(1.0f);
-        //}
-
-        // TODO: weight値を0にする
-
+        owner_->PlayBlendAnimation(Player::Animation::Walk, Player::Animation::Idle, true);
     }
 
     // ----- 更新 -----
@@ -33,45 +21,46 @@ namespace PlayerState
     {
         owner_->AddWeight(elapsedTime * 4.0f);
 
-        if (GetAsyncKeyState('B') & 1)
-        {
-            owner_->ChangeState(Player::STATE::Counter);
-            return;
-        }
-
         // 弱攻撃
         if (owner_->GetLightAttackKeyDown())
         {
             owner_->ChangeState(Player::STATE::LightAttack0);
             return;
         }
-
         // 強攻撃
         if (owner_->GetStrongAttackKeyDown())
         {
-            return;
             owner_->ChangeState(Player::STATE::StrongAttack0);
             return;
         }
 
-        // ステートを切り替えるか判定
-        int isChangeState = isInputMove();
-        if (isChangeState)
+        GamePad gamePad = Input::Instance().GetGamePad();
+        float aLX = fabs(gamePad.GetAxisLX());
+        float aLY = fabs(gamePad.GetAxisLY());
+        if (aLX != 0.0f && aLY != 0.0f)
         {
-            // 値が１の場合 歩き なので WalkState へ遷移
-            if (isChangeState == 1)
-            {
-                owner_->ChangeState(Player::STATE::Walk);
-                return;
-            }
+            owner_->ChangeState(Player::STATE::Move);
+            return;
+        }        
 
-            // 値が２の場合 走り なので RunState へ遷移
-            if (isChangeState == 2)
-            {
-                owner_->ChangeState(Player::STATE::Run);
-                return;
-            }
-        }
+        // ステートを切り替えるか判定
+        //int isChangeState = isInputMove();
+        //if (isChangeState)
+        //{
+        //    // 値が１の場合 歩き なので WalkState へ遷移
+        //    if (isChangeState == 1)
+        //    {
+        //        owner_->ChangeState(Player::STATE::Walk);
+        //        return;
+        //    }
+
+        //    // 値が２の場合 走り なので RunState へ遷移
+        //    if (isChangeState == 2)
+        //    {
+        //        owner_->ChangeState(Player::STATE::Run);
+        //        return;
+        //    }
+        //}
 
         // 速度計算
         DirectX::XMFLOAT3 velocity = owner_->GetVelocity();
@@ -111,11 +100,36 @@ namespace PlayerState
         // 入力値なし
         return 0;
     }
+
 }
 
 // ---------- 移動 ----------
 #pragma region 移動
 
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void MoveState::Initialize()
+    {
+        // アニメーション設定
+        owner_->PlayBlendAnimation(Player::Animation::Idle, Player::Animation::Run, true);
+        owner_->SetWeight(0.0f);
+    }
+
+    // ----- 更新 -----
+    void MoveState::Update(const float& elapsedTime)
+    {
+        owner_->Turn(elapsedTime);
+        owner_->Move(elapsedTime);
+    }
+
+    // ----- 終了化 -----
+    void MoveState::Finalize()
+    {
+    }
+}
+
+#if 0
 // ----- 歩き -----
 namespace PlayerState
 {
@@ -264,12 +278,19 @@ namespace PlayerState
     // ----- 更新 -----
     void RunState::Update(const float& elapsedTime)
     {
-        owner_->AddWeight(elapsedTime);
+        //owner_->AddWeight(elapsedTime);
 
         // 弱攻撃
         if (owner_->GetLightAttackKeyDown())
         {
             owner_->ChangeState(Player::STATE::LightAttack0);
+            return;
+        }
+
+        // 強攻撃
+        if (owner_->GetStrongAttackKeyDown())
+        {
+            owner_->ChangeState(Player::STATE::StrongAttack0);
             return;
         }
 
@@ -323,12 +344,27 @@ namespace PlayerState
 
         // 速度計算
         DirectX::XMFLOAT3 velocity = owner_->GetVelocity();
+        const float speed = owner_->GetSpeed() * elapsedTime;
+        const float maxSpeed = owner_->GetMaxSpeed();
 
-        velocity.x = std::min(owner_->GetMaxSpeed(), velocity.x + 5.0f * elapsedTime);
-        velocity.z = std::min(owner_->GetMaxSpeed(), velocity.z + 5.0f * elapsedTime);
+        float length = sqrtf(velocity.x * velocity.x + velocity.z * velocity.z);
+        const float weight = std::min(1.0f, length / maxSpeed);
+        owner_->SetWeight(weight);
+
+        velocity.x += direction.x * speed;
+        velocity.z += direction.z * speed;
+        if (fabs(velocity.x) > maxSpeed)
+        {
+            velocity.x = (velocity.x > 0) ? maxSpeed : -maxSpeed;
+        }
+        if (fabs(velocity.z) > maxSpeed)
+        {
+            velocity.z = (velocity.z > 0) ? maxSpeed : -maxSpeed;
+        }
+
 
         owner_->SetVelocity(velocity);
-        owner_->GetTransform()->AddPosition(direction * elapsedTime * 5.0f);
+        owner_->GetTransform()->AddPosition(velocity);
 
         aLX = fabs(gamePad.GetAxisLX());
         aLY = fabs(gamePad.GetAxisLY());
@@ -345,6 +381,8 @@ namespace PlayerState
     {
     }
 }
+
+#endif
 
 #pragma endregion 移動
 
@@ -376,13 +414,16 @@ namespace PlayerState
     // ----- 初期化 -----
     void CounterState::Initialize()
     {
+        return;
         // アニメーション設定
-        owner_->PlayAnimation(Player::Animation::Protect, false);
+        //owner_->PlayAnimation(Player::Animation::Protect, false);
     }
 
     // ----- 更新 -----
     void CounterState::Update(const float& elapsedTime)
     {
+        owner_->ChangeState(Player::STATE::Idle);
+        return;
         // アニメーション再生終了
         if (!owner_->IsPlayAnimation())
         {
@@ -444,6 +485,9 @@ namespace PlayerState
         owner_->PlayBlendAnimation(Player::Animation::LightAttack0, false);
         owner_->SetWeight(1.0f);
 
+        // 攻撃判定有効化
+        owner_->SetAttackFlag();
+
         // フラグをリセットする
         owner_->ResetFlags();
     }
@@ -453,14 +497,27 @@ namespace PlayerState
     {
         // 先行入力受付
         if (owner_->GetLightAttackKeyDown()) owner_->SetNextInput(Player::NextInput::LightAttack);
-        //if (owner_->GetStrongAttackKeyDown()) owner_->SetNextInput(Player::NextInput::StrongAttack);
+        if (owner_->GetStrongAttackKeyDown()) owner_->SetNextInput(Player::NextInput::StrongAttack);
 
         // 先行入力がある場合、現在の攻撃フレームが終わった時にステートを切り替える
-        if (owner_->GetNextInput() == static_cast<int>(Player::NextInput::LightAttack) &&
-            owner_->GetBlendAnimationSeconds() > comboAttackFrame_)
+        if (owner_->GetBlendAnimationSeconds() > comboAttackFrame_)
         {
-            owner_->ChangeState(Player::STATE::LightAttack1);
-            return;
+            // 攻撃判定を無効化する
+            if (owner_->GetIsActiveAttackFlag() == true)
+            {
+                owner_->SetAttackFlag(false);
+            }
+
+            if (owner_->GetNextInput() == static_cast<int>(Player::NextInput::LightAttack))
+            {
+                owner_->ChangeState(Player::STATE::LightAttack1);
+                return;
+            }
+            if (owner_->GetNextInput() == static_cast<int>(Player::NextInput::StrongAttack))
+            {
+                owner_->ChangeState(Player::STATE::StrongAttack0);
+                return;
+            }
         }
 
         // アニメーションが終了したら待機ステートに切り替える
@@ -487,6 +544,9 @@ namespace PlayerState
         owner_->PlayBlendAnimation(Player::Animation::LightAttack1, false);
         owner_->SetWeight(1.0f);
 
+        // 攻撃判定有効化
+        owner_->SetAttackFlag();
+
         // フラグをリセットする
         owner_->ResetFlags();
     }
@@ -496,14 +556,27 @@ namespace PlayerState
     {
         // 先行入力受付
         if (owner_->GetLightAttackKeyDown()) owner_->SetNextInput(Player::NextInput::LightAttack);
-        //if (owner_->GetStrongAttackKeyDown()) owner_->SetNextInput(Player::NextInput::StrongAttack);
+        if (owner_->GetStrongAttackKeyDown()) owner_->SetNextInput(Player::NextInput::StrongAttack);
 
         // 先行入力がある場合、現在の攻撃フレームが終わった時にステートを切り替える
-        if (owner_->GetNextInput() == static_cast<int>(Player::NextInput::LightAttack) &&
-            owner_->GetBlendAnimationSeconds() > comboAttackFrame_)
+        if (owner_->GetBlendAnimationSeconds() > comboAttackFrame_)
         {
-            owner_->ChangeState(Player::STATE::LightAttack2);
-            return;
+            // 攻撃判定を無効化する
+            if (owner_->GetIsActiveAttackFlag() == true)
+            {
+                owner_->SetAttackFlag(false);
+            }
+
+            if (owner_->GetNextInput() == static_cast<int>(Player::NextInput::LightAttack))
+            {
+                owner_->ChangeState(Player::STATE::LightAttack2);
+                return;
+            }
+            if (owner_->GetNextInput() == static_cast<int>(Player::NextInput::StrongAttack))
+            {
+                owner_->ChangeState(Player::STATE::StrongAttack0);
+                return;
+            }
         }
 
         // アニメーションが終了したら待機ステートに切り替える
@@ -528,6 +601,9 @@ namespace PlayerState
         owner_->PlayBlendAnimation(Player::Animation::LightAttack2, false);
         owner_->SetWeight(1.0f);
 
+        // 攻撃判定有効化
+        owner_->SetAttackFlag();
+
         // フラグをリセットする
         owner_->ResetFlags();
     }
@@ -538,6 +614,12 @@ namespace PlayerState
         // アニメーションが終了したら待機ステートに切り替える
         if (owner_->IsPlayAnimation() == false)
         {
+            // 攻撃判定を無効化する
+            if (owner_->GetIsActiveAttackFlag() == true)
+            {
+                owner_->SetAttackFlag(false);
+            }
+
             owner_->ChangeState(Player::STATE::Idle);
         }
     }
@@ -560,7 +642,11 @@ namespace PlayerState
     void StrongAttack0State::Initialize()
     {
         // アニメーション設定
-        owner_->PlayAnimation(Player::Animation::StrongAttack0, false);
+        owner_->PlayBlendAnimation(Player::Animation::StrongAttack0, false);
+        owner_->SetWeight(1.0f);
+
+        // 攻撃判定有効化
+        owner_->SetAttackFlag();
 
         // フラグをリセットする
         owner_->ResetFlags();
@@ -569,8 +655,28 @@ namespace PlayerState
     // ----- 更新 -----
     void StrongAttack0State::Update(const float& elapsedTime)
     {
-        // ステート遷移判定
-        owner_->UpdateAttackState(Player::STATE::StrongAttack1);
+        // 先行入力受付
+        if (owner_->GetStrongAttackKeyDown()) owner_->SetNextInput(Player::NextInput::StrongAttack);
+
+        // 先行入力がある場合、現在の攻撃フレームが終わった時にステートを切り替える
+        if (owner_->GetNextInput() == static_cast<int>(Player::NextInput::StrongAttack) &&
+            owner_->GetBlendAnimationSeconds() > comboAttackFrame_)
+        {
+            // 攻撃判定を無効化する
+            if (owner_->GetIsActiveAttackFlag() == true)
+            {
+                owner_->SetAttackFlag(false);
+            }
+
+            owner_->ChangeState(Player::STATE::StrongAttack1);
+            return;
+        }
+
+        // アニメーションが終了したら待機ステートに切り替える
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+        }
     }
 
     // ----- 終了化 -----
@@ -586,7 +692,11 @@ namespace PlayerState
     void StrongAttack1State::Initialize()
     {
         // アニメーション設定
-        owner_->PlayAnimation(Player::Animation::StrongAttack1, false);
+        owner_->PlayBlendAnimation(Player::Animation::StrongAttack1, false);
+        owner_->SetWeight(1.0f);
+
+        // 攻撃判定有効化
+        owner_->SetAttackFlag();
 
         // フラグをリセットする
         owner_->ResetFlags();
@@ -595,8 +705,17 @@ namespace PlayerState
     // ----- 更新 -----
     void StrongAttack1State::Update(const float& elapsedTime)
     {
-        // ステート遷移判定
-        owner_->UpdateAttackState(Player::STATE::Idle);
+        // アニメーションが終了したら待機ステートに切り替える
+        if (owner_->IsPlayAnimation() == false)
+        {
+            // 攻撃判定を無効化する
+            if (owner_->GetIsActiveAttackFlag() == true)
+            {
+                owner_->SetAttackFlag(false);
+            }
+
+            owner_->ChangeState(Player::STATE::Idle);
+        }
     }
 
     // ----- 終了化 -----
@@ -613,7 +732,6 @@ namespace PlayerState
     // ----- 初期化 -----
     void DamageState::Initialize()
     {
-        return;
         // アニメーション再生 
         owner_->PlayAnimation(Player::Animation::Damage1, false);
         //owner_->PlayAnimation(Player::Animation::Damage0, false);
@@ -622,7 +740,6 @@ namespace PlayerState
     // ----- 更新 -----
     void DamageState::Update(const float& elapsedTime)
     {
-            owner_->ChangeState(Player::STATE::Idle);
         // アニメーション終了
         if (owner_->IsPlayAnimation() == false)
         {

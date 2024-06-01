@@ -11,10 +11,9 @@
 #include <stack>
 #include <filesystem>
 
-#include "../Other/misc.h"
-#include "../Graphics/shader.h"
-#include "../Resource/texture.h"
-#include "../Graphics/Graphics.h"
+#include "Misc.h"
+#include "Texture.h"
+#include "Graphics.h"
 
 // コンストラクタ
 GltfModel::GltfModel(const std::string& filename) : filename_(filename)
@@ -65,10 +64,10 @@ GltfModel::GltfModel(const std::string& filename) : filename_(filename)
         { "JOINTS", 1, vertexBufferViews.at("JOINTS_1").format_, 6, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },        
         { "WEIGHTS", 1, vertexBufferViews.at("WEIGHTS_1").format_, 7, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
     };
-    CreateVsFromCso(device, "./Resources/Shader/gltfModelVs.cso", vertexShader_.ReleaseAndGetAddressOf(),
+    Graphics::Instance().CreateVsFromCso("./Resources/Shader/gltfModelVs.cso", vertexShader_.ReleaseAndGetAddressOf(),
         inputLayout_.ReleaseAndGetAddressOf(), inputElementDesc, _countof(inputElementDesc));
-    //CreatePsFromCso(device, "./Resources/Shader/DeferredRenderingPS.cso", pixelShader.ReleaseAndGetAddressOf());
-    CreatePsFromCso(device, "./Resources/Shader/gltfModelPs.cso", pixelShader_.ReleaseAndGetAddressOf());
+    //Graphics::Instance().CreatePsFromCso("./Resources/Shader/DeferredRenderingPS.cso", pixelShader.ReleaseAndGetAddressOf());
+    Graphics::Instance().CreatePsFromCso("./Resources/Shader/gltfModelPs.cso", pixelShader_.ReleaseAndGetAddressOf());
 
     // 定数バッファ生成
     {
@@ -80,14 +79,14 @@ GltfModel::GltfModel(const std::string& filename) : filename_(filename)
         bufferDesc.Usage = D3D11_USAGE_DEFAULT;
         bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         hr = device->CreateBuffer(&bufferDesc, nullptr, primitiveCbuffer_.ReleaseAndGetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
         
         // primitiveJointCbuffer(ボーン行列)
         bufferDesc.ByteWidth = sizeof(PrimitiveJointConstants);
         bufferDesc.Usage = D3D11_USAGE_DEFAULT;
         bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         hr = device->CreateBuffer(&bufferDesc, nullptr, primitiveJointCbuffer_.ReleaseAndGetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
     }
 }
 
@@ -273,6 +272,7 @@ void GltfModel::Render(ID3D11DeviceContext* deviceContext, const DirectX::XMFLOA
                 primitiveData.material_ = primitive.material_;
                 primitiveData.hasTangent_ = primitive.vertexBufferViews_.at("TANGENT").buffer_ != NULL;
                 primitiveData.skin_ = node.skin_;
+                primitiveData.emissiveIntencity_ = emissiveIntencity_;
                 
                 DirectX::XMStoreFloat4x4(&primitiveData.world_,
                     DirectX::XMLoadFloat4x4(&node.globalTransform_) * DirectX::XMLoadFloat4x4(&world));
@@ -340,6 +340,7 @@ void GltfModel::Render(ID3D11DeviceContext* deviceContext, const DirectX::XMFLOA
 void GltfModel::DrawDebug()
 {
     GetTransform()->DrawDebug();
+    ImGui::DragFloat("emissive", &emissiveIntencity_, 0.01f);
     if (ImGui::TreeNode("Animation"))
     {
         if (ImGui::TreeNode("DefaultAnimation"))
@@ -628,7 +629,7 @@ void GltfModel::FetchMeshes(ID3D11Device* device, const tinygltf::Model& gltfMod
                 + gltfBufferView.byteOffset + gltfAccessor.byteOffset;
             hr = device->CreateBuffer(&bufferDesc, &subresourceData,
                 primitive.indexBufferView_.buffer_.ReleaseAndGetAddressOf());
-            _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+            _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
             // Create vertex buffers
             for (std::map<std::string, int>::const_reference gltfAttribute : gltfPrimitive.attributes)
@@ -651,7 +652,7 @@ void GltfModel::FetchMeshes(ID3D11Device* device, const tinygltf::Model& gltfMod
                     + gltfBufferView.byteOffset + gltfAccessor.byteOffset;
                 hr = device->CreateBuffer(&bufferDesc, &subresourceData,
                     vertexBufferView.buffer_.ReleaseAndGetAddressOf());
-                _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+                _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
                 primitive.vertexBufferViews_.emplace(std::make_pair(gltfAttribute.first, vertexBufferView));
 #else
@@ -707,7 +708,7 @@ void GltfModel::FetchMeshes(ID3D11Device* device, const tinygltf::Model& gltfMod
                 subresourceData.pSysMem = buffer;
                 hr = device->CreateBuffer(&bufferDesc, &subresourceData,
                     vertexBufferView.buffer_.ReleaseAndGetAddressOf());
-                _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+                _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
                 primitive.vertexBufferViews_.emplace(std::make_pair(gltfAttribute.first, vertexBufferView));
 #endif
@@ -804,14 +805,14 @@ void GltfModel::FetchMatetials(ID3D11Device* device, const tinygltf::Model& gltf
     D3D11_SUBRESOURCE_DATA subresourceData{};
     subresourceData.pSysMem = materialData.data();
     hr = device->CreateBuffer(&bufferDesc, &subresourceData, materialBuffer.GetAddressOf());
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
     D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc{};
     shaderResourceViewDesc.Format = DXGI_FORMAT_UNKNOWN;
     shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
     shaderResourceViewDesc.Buffer.NumElements = static_cast<UINT>(materialData.size());
     hr = device->CreateShaderResourceView(materialBuffer.Get(),
         &shaderResourceViewDesc, materialResourceView_.GetAddressOf());
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 }
 
 // テクスチャの取得
@@ -821,7 +822,7 @@ void GltfModel::FetchTexture(ID3D11Device* device, const tinygltf::Model& gltfMo
 
     for (const tinygltf::Texture& gltfTexture : gltfModel.textures)
     {
-        Texture& texture{ textures_.emplace_back() };
+        TextureData& texture{ textures_.emplace_back() };
         texture.name_ = gltfTexture.name;
         texture.source_ = gltfTexture.source;
     }
@@ -846,7 +847,7 @@ void GltfModel::FetchTexture(ID3D11Device* device, const tinygltf::Model& gltfMo
             const byte* data = buffer.data.data() + bufferView.byteOffset;
 
             ID3D11ShaderResourceView* textureResourceView{};
-            hr = LoadTextureFromMemory(device, data, bufferView.byteLength, &textureResourceView);
+            hr = Texture::Instance().LoadTexture(data, bufferView.byteLength, &textureResourceView);
             if (hr == S_OK)
             {
                 textureResourceViews_.emplace_back().Attach(textureResourceView);
@@ -862,7 +863,7 @@ void GltfModel::FetchTexture(ID3D11Device* device, const tinygltf::Model& gltfMo
                 path.parent_path().concat(L"/").wstring() +
                 std::wstring(gltfImage.uri.begin(),gltfImage.uri.end())
             };
-            hr = LoadTextureFromFile(device, filename.c_str(), &shaderResourceView, &texture2dDesc);
+            hr = Texture::Instance().LoadTexture(filename.c_str(), &shaderResourceView, &texture2dDesc);
             if (hr == S_OK)
             {
                 textureResourceViews_.emplace_back().Attach(shaderResourceView);

@@ -115,7 +115,7 @@ public:
         Cbuffer data_;
     };
 
-    struct Texture
+    struct TextureData
     {
         std::string name_;
         int source_ = -1;
@@ -179,7 +179,7 @@ public:
     std::vector<Mesh>       meshes_;
     std::vector<Material>   materials_;
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> materialResourceView_;
-    std::vector<Texture>    textures_;
+    std::vector<TextureData>textures_;
     std::vector<Image>      images_;
     std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> textureResourceViews_;
     std::vector<Skin>       skins_;
@@ -249,10 +249,10 @@ private:
         int material_ = -1;
         int hasTangent_ = 0;
         int skin_ = -1;
-        int step_ = 0;
+        float emissiveIntencity_ = 1.0f;
     };
     Microsoft::WRL::ComPtr<ID3D11Buffer> primitiveCbuffer_;
-
+    float emissiveIntencity_ = 1.0f;
 
     // ----- Animation -----
     int     currentAnimationIndex_      = -1;       // 現在のアニメーション番号

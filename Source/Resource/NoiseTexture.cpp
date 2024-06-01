@@ -1,19 +1,13 @@
 #include "NoiseTexture.h"
-
-#include "texture.h"
-
-#include "../Graphics/Graphics.h"
+#include "Texture.h"
+#include "Graphics.h"
 
 // コンストラクタ
 NoiseTexture::NoiseTexture()
 {
-    Graphics& graphics = Graphics::Instance();
+    D3D11_TEXTURE2D_DESC noiseTexture2dDesc = {};
 
-    // noiseTexture Load
-    D3D11_TEXTURE2D_DESC noiseTexture2dDesc{};
-
-    LoadTextureFromFile(graphics.GetDevice(),
-        L"./Resources/Image/Mask/Fade/mask1.png",
+    Texture::Instance().LoadTexture(L"./Resources/Image/Mask/Fade/mask1.png",
         noiseTexture[0].GetAddressOf(), &noiseTexture2dDesc);
 }
 

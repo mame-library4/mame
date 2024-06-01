@@ -8,6 +8,10 @@ class DeathAction : public ActionBase
 public:
     DeathAction(Enemy* owner) : ActionBase(owner) {}
     const ActionBase::State Run(const float& elapsedTime) override;
+
+private:
+    float timer_ = 0.0f;
+
 };
 
 // Ç–ÇÈÇ›çsìÆ

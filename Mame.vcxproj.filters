@@ -58,7 +58,7 @@
     <ClCompile Include="Source\Graphics\Particle.cpp">
       <Filter>Mame\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graphics\shader.cpp">
+    <ClCompile Include="Source\Graphics\Shader.cpp">
       <Filter>Mame\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="Source\Graphics\ShadowMap.cpp">
@@ -76,7 +76,7 @@
     <ClCompile Include="Source\Resource\ResourceManager.cpp">
       <Filter>Mame\Resource</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Resource\texture.cpp">
+    <ClCompile Include="Source\Resource\Texture.cpp">
       <Filter>Mame\Resource</Filter>
     </ClCompile>
     <ClCompile Include="Source\Resource\Audio.cpp">
@@ -91,7 +91,7 @@
     <ClCompile Include="Source\Resource\Model.cpp">
       <Filter>Mame\Resource\FbxModel</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Resource\sprite.cpp">
+    <ClCompile Include="Source\Resource\Sprite.cpp">
       <Filter>Mame\Resource\Sprite</Filter>
     </ClCompile>
     <ClCompile Include="Source\Other\Transform.cpp">
@@ -178,6 +178,15 @@
     <ClCompile Include="Source\Game\Collision\CollisionData.cpp">
       <Filter>Mame\Game\Collision</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\ConstantBuffer.cpp">
+      <Filter>Mame\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Resource\PrimitiveRenderer.cpp">
+      <Filter>Mame\Resource\PrimitiveRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Effect\SwordTrail\SwordTrail.cpp">
+      <Filter>Mame\Graphics\Effect\SwordTrail</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -244,7 +253,7 @@
     <ClInclude Include="Source\Graphics\Particle.h">
       <Filter>Mame\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Graphics\shader.h">
+    <ClInclude Include="Source\Graphics\Shader.h">
       <Filter>Mame\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Source\Graphics\ShadowMap.h">
@@ -262,7 +271,7 @@
     <ClInclude Include="Source\Resource\ResourceManager.h">
       <Filter>Mame\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Resource\texture.h">
+    <ClInclude Include="Source\Resource\Texture.h">
       <Filter>Mame\Resource</Filter>
     </ClInclude>
     <ClInclude Include="Source\Resource\Audio.h">
@@ -277,7 +286,7 @@
     <ClInclude Include="Source\Resource\Model.h">
       <Filter>Mame\Resource\FbxModel</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Resource\sprite.h">
+    <ClInclude Include="Source\Resource\Sprite.h">
       <Filter>Mame\Resource\Sprite</Filter>
     </ClInclude>
     <ClInclude Include="Source\Other\Common.h">
@@ -289,14 +298,11 @@
     <ClInclude Include="Source\Other\MathHelper.h">
       <Filter>Mame\Other</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Other\misc.h">
+    <ClInclude Include="Source\Other\Misc.h">
       <Filter>Mame\Other</Filter>
     </ClInclude>
     <ClInclude Include="Source\Other\Transform.h">
       <Filter>Mame\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Graphics\ConstantBuffer.h">
-      <Filter>Mame\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Source\Graphics\DebugRenderer.h">
       <Filter>Mame\Graphics</Filter>
@@ -387,6 +393,15 @@
     </ClInclude>
     <ClInclude Include="Source\Game\Collision\CollisionData.h">
       <Filter>Mame\Game\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\ConstantBuffer.h">
+      <Filter>Mame\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Resource\PrimitiveRenderer.h">
+      <Filter>Mame\Resource\PrimitiveRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Effect\SwordTrail\SwordTrail.h">
+      <Filter>Mame\Graphics\Effect\SwordTrail</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -498,6 +513,15 @@
     <Filter Include="Mame\Game\Object\Stone">
       <UniqueIdentifier>{1df10b1f-b605-47fd-9b5b-7df16a1c975a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mame\Resource\PrimitiveRenderer">
+      <UniqueIdentifier>{b5e83c12-c967-4dbe-a9ed-ffe26f67bca7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Shader\PrimiriveRenderer">
+      <UniqueIdentifier>{f417b85e-499b-4e47-a0ec-01fa8100e07a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Graphics\Effect\SwordTrail">
+      <UniqueIdentifier>{9b436e63-edbe-43d0-9efa-9ccf922c282b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -544,6 +568,9 @@
     <None Include="Source\Shader\PostProcess.hlsli">
       <Filter>Mame\Shader\PostProcess</Filter>
     </None>
+    <None Include="Source\Shader\PrimitiveRenderer.hlsli">
+      <Filter>Mame\Shader\PrimiriveRenderer</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shader\blur_ps.hlsl">
@@ -576,9 +603,6 @@
     <FxCompile Include="Source\Shader\SkyBoxPS.hlsl">
       <Filter>Mame\Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Source\Shader\SkyBoxVS.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
     <FxCompile Include="Source\Shader\sprite_ps.hlsl">
       <Filter>Mame\Shader</Filter>
     </FxCompile>
@@ -608,6 +632,12 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\PostProcessPS.hlsl">
       <Filter>Mame\Shader\PostProcess</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\PrimitiveRendererPS.hlsl">
+      <Filter>Mame\Shader\PrimiriveRenderer</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\PrimitiveRendererVS.hlsl">
+      <Filter>Mame\Shader\PrimiriveRenderer</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

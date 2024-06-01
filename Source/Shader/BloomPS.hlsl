@@ -11,7 +11,7 @@ Texture2D downSampleTextures[downsampledCount] : register(t1);
 SamplerState samplerStates[5] : register(s0);
 
 float4 main(PSIn psIn) : SV_TARGET
-{	
+{	    
     float4 baseColor = colorMap.Sample(samplerStates[LINEAR_BORDER_BLACK], psIn.texcoord);
     float4 color = { 0, 0, 0, 1 };
     for (int downSampledIndex = 0; downSampledIndex < downsampledCount; ++downSampledIndex)

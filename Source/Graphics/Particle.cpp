@@ -1,8 +1,7 @@
 #include "Particle.h"
 #include "Graphics.h"
+#include "Misc.h"
 
-#include "../Graphics/shader.h"
-#include "../Other/misc.h"
 #include "../Core/Application.h"
 
 // ----- コンストラクタ -----
@@ -19,7 +18,7 @@ Particles::Particles(size_t particleCount) : maxParticleCount(particleCount)
     bufferDesc.CPUAccessFlags = 0;
     bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
     hr = device->CreateBuffer(&bufferDesc, NULL, particleBuffer.GetAddressOf());
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
     D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
     shaderResourceViewDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -27,7 +26,7 @@ Particles::Particles(size_t particleCount) : maxParticleCount(particleCount)
     shaderResourceViewDesc.Buffer.ElementOffset = 0;
     shaderResourceViewDesc.Buffer.NumElements = static_cast<UINT>(particleCount);
     hr = device->CreateShaderResourceView(particleBuffer.Get(), &shaderResourceViewDesc, particleBufferSrv.GetAddressOf());
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
     D3D11_UNORDERED_ACCESS_VIEW_DESC unorderedAccessViewDesc;
     unorderedAccessViewDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -36,7 +35,7 @@ Particles::Particles(size_t particleCount) : maxParticleCount(particleCount)
     unorderedAccessViewDesc.Buffer.NumElements = static_cast<UINT>(particleCount);
     unorderedAccessViewDesc.Buffer.Flags = 0;
     hr = device->CreateUnorderedAccessView(particleBuffer.Get(), &unorderedAccessViewDesc, particleBufferUav.GetAddressOf());
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
     bufferDesc.ByteWidth = sizeof(ParticleConstants);
     bufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -45,13 +44,13 @@ Particles::Particles(size_t particleCount) : maxParticleCount(particleCount)
     bufferDesc.MiscFlags = 0;
     bufferDesc.StructureByteStride = 0;
     hr = device->CreateBuffer(&bufferDesc, nullptr, constantBuffer.GetAddressOf());
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-    CreateVsFromCso(device, "./Resources/Shader/ParticleVS.cso", particleVS.ReleaseAndGetAddressOf(), NULL, NULL, 0);
-    CreatePsFromCso(device, "./Resources/Shader/ParticlePS.cso", particlePS.ReleaseAndGetAddressOf());
-    CreateGsFromCso(device, "./Resources/Shader/ParticleGS.cso", particleGS.ReleaseAndGetAddressOf());
-    CreateCsFromCso(device, "./Resources/Shader/ParticleCS.cso", particleCS.ReleaseAndGetAddressOf());
-    CreateCsFromCso(device, "./Resources/Shader/ParticleInitializerCS.cso", particleInitializerCS.ReleaseAndGetAddressOf());
+    Graphics::Instance().CreateVsFromCso("./Resources/Shader/ParticleVS.cso", particleVS.ReleaseAndGetAddressOf(), NULL, NULL, 0);
+    Graphics::Instance().CreatePsFromCso("./Resources/Shader/ParticlePS.cso", particlePS.ReleaseAndGetAddressOf());
+    Graphics::Instance().CreateGsFromCso("./Resources/Shader/ParticleGS.cso", particleGS.ReleaseAndGetAddressOf());
+    Graphics::Instance().CreateCsFromCso("./Resources/Shader/ParticleCS.cso", particleCS.ReleaseAndGetAddressOf());
+    Graphics::Instance().CreateCsFromCso("./Resources/Shader/ParticleInitializerCS.cso", particleInitializerCS.ReleaseAndGetAddressOf());
 }
 
 UINT align(UINT num, UINT alignment)

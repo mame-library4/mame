@@ -94,13 +94,13 @@ Audio::Audio(IXAudio2* xaudio2, const wchar_t* filename)
     if (INVALID_HANDLE_VALUE == hFile)
     {
         hr = HRESULT_FROM_WIN32(GetLastError());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
     }
 
     if (INVALID_SET_FILE_POINTER == SetFilePointer(hFile, 0, NULL, FILE_BEGIN))
     {
         hr = HRESULT_FROM_WIN32(GetLastError());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
     }
 
     DWORD chunkSize;
@@ -124,7 +124,7 @@ Audio::Audio(IXAudio2* xaudio2, const wchar_t* filename)
     buffer.Flags = XAUDIO2_END_OF_STREAM;   // tell the source voice not to expect any data after this buffer
 
     hr = xaudio2->CreateSourceVoice(&sourceVoice, (WAVEFORMATEX*)&wfx);
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 }
 
 Audio::~Audio()
@@ -147,10 +147,10 @@ void Audio::Play(const int loopCount)
    
     buffer.LoopCount = loopCount;
     hr = sourceVoice->SubmitSourceBuffer(&buffer);
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
     hr = sourceVoice->Start(0);
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 }
 
 void Audio::Play(const bool isLoop, const bool isIgnoreQueue)
@@ -166,10 +166,10 @@ void Audio::Play(const bool isLoop, const bool isIgnoreQueue)
 
     buffer.LoopCount = loopCount;
     hr = sourceVoice->SubmitSourceBuffer(&buffer);
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
     hr = sourceVoice->Start(0);
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 }
 
 
@@ -189,16 +189,16 @@ void Audio::Stop(bool playTails, size_t afterSamplesPlayed)
 
     HRESULT hr;
     hr = sourceVoice->Stop(playTails ? XAUDIO2_PLAY_TAILS : 0);
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
     hr = sourceVoice->FlushSourceBuffers();
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 }
 
 void Audio::Volume(float volume)
 {
     HRESULT hr = sourceVoice->SetVolume(volume);
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 }
 
 bool Audio::Queuing()

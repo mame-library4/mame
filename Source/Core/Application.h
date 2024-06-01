@@ -4,9 +4,10 @@
 #include <dxgi1_6.h>
 #include <wrl.h>
 #include "HighResolutionTimer.h"
-#include "../../../External/imgui/ImGuiCtrl.h"
+#include "ImGui/ImGuiCtrl.h"
 
-#include "../Graphics/Graphics.h"
+#include "Graphics.h"
+
 #include "../Graphics/shader.h"
 #include "../Input/Input.h"
 
@@ -57,6 +58,7 @@ private:
 	ShadowMap shadowMap_;
 	PostProcess			postProcess_;
 	DeferredRendering	deferredRendering_;
+
 
 
 	HighResolutionTimer tictoc_;

@@ -120,7 +120,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;USE_IMGUI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\External\DirectXTK-main\Inc;C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\include;.\External\cereal-master\include;%(AdditionalIncludeDirectories);.\External\Effekseer170b\include\Effekseer;.\External\Effekseer170b\include\EffekseerRendererDX11;.\Source\AI;.\Source\Core;.\Source\Game;.\Source\Graphics;.\Source\Input;.\Source\Other;.\Source\Resource;.\Source\Scene;.\Source\Shader</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External\DirectXTK-main\Inc;C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\include;.\External\cereal-master\include;%(AdditionalIncludeDirectories);.\External\Effekseer170b\include\Effekseer;.\External\Effekseer170b\include\EffekseerRendererDX11;.\Source\AI;.\Source\Core;.\Source\Game;.\Source\Graphics;.\Source\Input;.\Source\Other;.\Source\Resource;.\Source\Scene;.\Source\Shader;.\External</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -175,7 +175,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\include;.\External\cereal-master\include;.\External\DirectXTK-main\Inc;%(AdditionalIncludeDirectories);.\External\Effekseer170b\include\Effekseer;.\External\Effekseer170b\include\EffekseerRendererDX11;.\Source\AI;.\Source\Core;.\Source\Game;.\Source\Graphics;.\Source\Input;.\Source\Other;.\Source\Resource;.\Source\Scene;.\Source\Shader</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\include;.\External\cereal-master\include;.\External\DirectXTK-main\Inc;%(AdditionalIncludeDirectories);.\External\Effekseer170b\include\Effekseer;.\External\Effekseer170b\include\EffekseerRendererDX11;.\Source\AI;.\Source\Core;.\Source\Game;.\Source\Graphics;.\Source\Input;.\Source\Other;.\Source\Resource;.\Source\Scene;.\Source\Shader;.\External</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -227,17 +227,19 @@
     <ClCompile Include="Source\Game\Stage\StageNormal.cpp" />
     <ClCompile Include="Source\Game\Stone\Stone.cpp" />
     <ClCompile Include="Source\Graphics\Camera.cpp" />
+    <ClCompile Include="Source\Graphics\ConstantBuffer.cpp" />
     <ClCompile Include="Source\Graphics\DebugRenderer.cpp" />
     <ClCompile Include="Source\Graphics\DeferredRendering.cpp" />
     <ClCompile Include="Source\Graphics\Effect\Effect.cpp" />
     <ClCompile Include="Source\Graphics\Effect\EffectManager.cpp" />
+    <ClCompile Include="Source\Graphics\Effect\SwordTrail\SwordTrail.cpp" />
     <ClCompile Include="Source\Graphics\FrameBuffer.cpp" />
     <ClCompile Include="Source\Graphics\FullscreenQuad.cpp" />
     <ClCompile Include="Source\Graphics\Graphics.cpp" />
     <ClCompile Include="Source\Graphics\Particle.cpp" />
     <ClCompile Include="Source\Graphics\PostProcess\Bloom.cpp" />
     <ClCompile Include="Source\Graphics\PostProcess\PostProcess.cpp" />
-    <ClCompile Include="Source\Graphics\shader.cpp" />
+    <ClCompile Include="Source\Graphics\Shader.cpp" />
     <ClCompile Include="Source\Graphics\ShadowMap.cpp" />
     <ClCompile Include="Source\Graphics\SkyBox.cpp" />
     <ClCompile Include="Source\Input\GamePad.cpp" />
@@ -249,9 +251,10 @@
     <ClCompile Include="Source\Resource\GltfModel.cpp" />
     <ClCompile Include="Source\Resource\Model.cpp" />
     <ClCompile Include="Source\Resource\NoiseTexture.cpp" />
+    <ClCompile Include="Source\Resource\PrimitiveRenderer.cpp" />
     <ClCompile Include="Source\Resource\ResourceManager.cpp" />
-    <ClCompile Include="Source\Resource\sprite.cpp" />
-    <ClCompile Include="Source\Resource\texture.cpp" />
+    <ClCompile Include="Source\Resource\Sprite.cpp" />
+    <ClCompile Include="Source\Resource\Texture.cpp" />
     <ClCompile Include="Source\Scene\GameScene.cpp" />
     <ClCompile Include="Source\Scene\LoadingScene.cpp" />
     <ClCompile Include="Source\Scene\SceneManager.cpp" />
@@ -298,13 +301,14 @@
     <ClInclude Include="Source\Graphics\DeferredRendering.h" />
     <ClInclude Include="Source\Graphics\Effect\Effect.h" />
     <ClInclude Include="Source\Graphics\Effect\EffectManager.h" />
+    <ClInclude Include="Source\Graphics\Effect\SwordTrail\SwordTrail.h" />
     <ClInclude Include="Source\Graphics\FrameBuffer.h" />
     <ClInclude Include="Source\Graphics\FullscreenQuad.h" />
     <ClInclude Include="Source\Graphics\Graphics.h" />
     <ClInclude Include="Source\Graphics\Particle.h" />
     <ClInclude Include="Source\Graphics\PostProcess\Bloom.h" />
     <ClInclude Include="Source\Graphics\PostProcess\PostProcess.h" />
-    <ClInclude Include="Source\Graphics\shader.h" />
+    <ClInclude Include="Source\Graphics\Shader.h" />
     <ClInclude Include="Source\Graphics\ShadowMap.h" />
     <ClInclude Include="Source\Graphics\SkyBox.h" />
     <ClInclude Include="Source\Input\GamePad.h" />
@@ -313,16 +317,17 @@
     <ClInclude Include="Source\Other\Common.h" />
     <ClInclude Include="Source\Other\Easing.h" />
     <ClInclude Include="Source\Other\MathHelper.h" />
-    <ClInclude Include="Source\Other\misc.h" />
+    <ClInclude Include="Source\Other\Misc.h" />
     <ClInclude Include="Source\Other\Transform.h" />
     <ClInclude Include="Source\Resource\Audio.h" />
     <ClInclude Include="Source\Resource\AudioManager.h" />
     <ClInclude Include="Source\Resource\GltfModel.h" />
     <ClInclude Include="Source\Resource\Model.h" />
     <ClInclude Include="Source\Resource\NoiseTexture.h" />
+    <ClInclude Include="Source\Resource\PrimitiveRenderer.h" />
     <ClInclude Include="Source\Resource\ResourceManager.h" />
-    <ClInclude Include="Source\Resource\sprite.h" />
-    <ClInclude Include="Source\Resource\texture.h" />
+    <ClInclude Include="Source\Resource\Sprite.h" />
+    <ClInclude Include="Source\Resource\Texture.h" />
     <ClInclude Include="Source\Scene\BaseScene.h" />
     <ClInclude Include="Source\Scene\GameScene.h" />
     <ClInclude Include="Source\Scene\LoadingScene.h" />
@@ -347,6 +352,7 @@
     <None Include="Source\Shader\Particle.hlsli" />
     <None Include="Source\Shader\PostEffect.hlsli" />
     <None Include="Source\Shader\PostProcess.hlsli" />
+    <None Include="Source\Shader\PrimitiveRenderer.hlsli" />
     <None Include="Source\Shader\SkyBox.hlsli" />
     <None Include="Source\Shader\sprite.hlsli" />
   </ItemGroup>
@@ -431,13 +437,21 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
+    <FxCompile Include="Source\Shader\PrimitiveRendererPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\PrimitiveRendererVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
     <FxCompile Include="Source\Shader\SkyBoxPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\SkyBoxVS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="Source\Shader\sprite_ps.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

@@ -20,6 +20,16 @@ void Character::Update(const float& elapsedTime)
 // ----- ImGui—p -----
 void Character::DrawDebug()
 {
+    if (ImGui::TreeNode("Move"))
+    {
+        ImGui::DragFloat("Acceleration", &acceleration_);
+        ImGui::DragFloat("Deceleration", &deceleration_);
+        ImGui::DragFloat("MaxSpeed", &maxSpeed_);
+        ImGui::DragFloat3("Velocity", &velocity_.x);
+
+        ImGui::TreePop();
+    }
+
     if (ImGui::TreeNode("Collision"))
     {
         if (ImGui::TreeNode("DamageDetection"))

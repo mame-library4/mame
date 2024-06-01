@@ -12,6 +12,8 @@ float4 main(PSIn psIn) : SV_TARGET
 {    
     //float4 color = textureMap.Sample(samplerStates[LINEAR_BORDER_BLACK], psIn.texcoord);
     float4 color = textureMap.Sample(samplerStates[LINEAR], psIn.texcoord);
+    
+    color.rgb = color.rgb * 2.2f;
 	
     return color;
 }

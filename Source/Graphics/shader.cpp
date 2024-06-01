@@ -1,499 +1,27 @@
 #include "shader.h"
-
-#include "Camera.h"
-
 #include <fstream>
-
-#include "../Other/misc.h"
-
-#include "../Resource/Model.h"
-
 #include "Graphics.h"
+#include "Misc.h"
 
-#include "../Core/Application.h"
-
-// 頂点シェーダー ( VertexShader )
-HRESULT CreateVsFromCso(ID3D11Device* device, const char* cso_name, ID3D11VertexShader** vertex_shader,
-    ID3D11InputLayout** input_layout, D3D11_INPUT_ELEMENT_DESC* input_element_desc, UINT num_elements)
+// ----- コンストラクタ -----
+Shader::Shader()
 {
-    FILE* fp{ nullptr };
-    fopen_s(&fp, cso_name, "rb");
-    _ASSERT_EXPR_A(fp, "CSO File not found");
+    // ブレンドステート作成
+    CreateBlendStates();
 
-    fseek(fp, 0, SEEK_END);
-    long cso_sz{ ftell(fp) };
-    fseek(fp, 0, SEEK_SET);
+    // ラスタライザーステート作成
+    CreateRasterizerStates();
 
-    std::unique_ptr<unsigned char[]>cso_data{ std::make_unique<unsigned char[]>(cso_sz) };
-    fread(cso_data.get(), cso_sz, 1, fp);
-    fclose(fp);
+    // 深度ステンシルステート作成
+    CreateDepthStencilStates();
 
-    HRESULT hr{ S_OK };
-    hr = device->CreateVertexShader(cso_data.get(), cso_sz, nullptr, vertex_shader);
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-    if (input_layout)
-    {
-        hr = device->CreateInputLayout(input_element_desc, num_elements,
-            cso_data.get(), cso_sz, input_layout);
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-    }
-
-    return hr;
+    // サンプラステート作成
+    CreateSamplerStates();
 }
 
-// ピクセルシェーダー ( PixelShader )
-HRESULT CreatePsFromCso(ID3D11Device* device, const char* cso_name, ID3D11PixelShader** pixel_shader)
-{
-    FILE* fp{ nullptr };
-    fopen_s(&fp, cso_name, "rb");
-    _ASSERT_EXPR_A(fp, "CSO File not found");
-
-    fseek(fp, 0, SEEK_END);
-    long cso_sz{ ftell(fp) };
-    fseek(fp, 0, SEEK_SET);
-
-    std::unique_ptr<unsigned char[]>cso_data{ std::make_unique<unsigned char[]>(cso_sz) };
-    fread(cso_data.get(), cso_sz, 1, fp);
-    fclose(fp);
-
-    HRESULT hr{ S_OK };
-    hr = device->CreatePixelShader(cso_data.get(), cso_sz, nullptr, pixel_shader);
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-    return hr;
-}
-
-// ジオメトリシェーダー ( GeometryShader )
-HRESULT CreateGsFromCso(ID3D11Device* device, const char* csoName, ID3D11GeometryShader** geometryShader)
-{
-    FILE* fp = nullptr;
-    fopen_s(&fp, csoName, "rb");
-    _ASSERT_EXPR_A(fp, "CSO File not found");
-
-    fseek(fp, 0, SEEK_END);
-    long csoSz = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-
-    std::unique_ptr<unsigned char[]> csoData = std::make_unique<unsigned char[]>(csoSz);
-    fread(csoData.get(), csoSz, 1, fp);
-    fclose(fp);
-
-    HRESULT hr = device->CreateGeometryShader(csoData.get(), csoSz, nullptr, geometryShader);
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-    return hr;
-}
-
-// コンピュートシェーダー ( ComputeShader )
-HRESULT CreateCsFromCso(ID3D11Device* device, const char* csoName, ID3D11ComputeShader** computeShader)
-{
-    FILE* fp = nullptr;
-    fopen_s(&fp, csoName, "rb");
-    _ASSERT_EXPR_A(fp, "CSO File not found");
-
-    fseek(fp, 0, SEEK_END);
-    long csoSz = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-
-    std::unique_ptr<unsigned char[]> csoData = std::make_unique<unsigned char[]>(csoSz);
-    fread(csoData.get(), csoSz, 1, fp);
-    fclose(fp);
-
-    HRESULT hr = device->CreateComputeShader(csoData.get(), csoSz, nullptr, computeShader);
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-    return hr;
-}
-
-// ドメインシェーダー ( DomainShader )
-HRESULT CreateDsFromCso(ID3D11Device* device, const char* csoName, ID3D11DomainShader** domainShader)
-{
-    FILE* fp = nullptr;
-    fopen_s(&fp, csoName, "rb");
-    _ASSERT_EXPR_A(fp, "CSO File not found");
-
-    fseek(fp, 0, SEEK_END);
-    long csoSz = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-
-    std::unique_ptr<unsigned char[]> csoData = std::make_unique<unsigned char[]>(csoSz);
-    fread(csoData.get(), csoSz, 1, fp);
-    fclose(fp);
-
-    HRESULT hr = device->CreateDomainShader(csoData.get(), csoSz, nullptr, domainShader);
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-    return hr;
-}
-
-// ハルシェーダー ( HullShader )
-HRESULT CreateHsFromCso(ID3D11Device* device, const char* csoName, ID3D11HullShader** hullShader)
-{
-    FILE* fp = nullptr;
-    fopen_s(&fp, csoName, "rb");
-    _ASSERT_EXPR_A(fp, "CSO File not found");
-
-    fseek(fp, 0, SEEK_END);
-    long csoSz = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-
-    std::unique_ptr<unsigned char[]> csoData = std::make_unique<unsigned char[]>(csoSz);
-    fread(csoData.get(), csoSz, 1, fp);
-    fclose(fp);
-
-    HRESULT hr = device->CreateHullShader(csoData.get(), csoSz, nullptr, hullShader);
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-    return hr;
-}
-
-// コンストラクタ　
-Shader::Shader(ID3D11Device* device)
-{
-    // 定数バッファ
-    {
-        // fog
-        fogConstants_ = std::make_unique<ConstantBuffer<FogConstants>>(device);
-
-        // PostEffect
-        postEffectConstants_ = std::make_unique<ConstantBuffer<PostEffectConstants>>(device);
-
-        // emissive
-        emissiveConstants_ = std::make_unique<ConstantBuffer<EmissiceConstants>>(device);
-
-        // dissolve
-        dissolveConstants_ = std::make_unique<ConstantBuffer<DissolveConstants>>(device);
-    }
-
-    // ブレンドステート
-#pragma region BlendState
-    {
-        HRESULT hr{ S_OK };
-
-        D3D11_BLEND_DESC desc{};
-        desc.AlphaToCoverageEnable = FALSE;
-        desc.IndependentBlendEnable = FALSE;
-        desc.RenderTarget[0].BlendEnable = FALSE;
-        desc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-        desc.RenderTarget[0].DestBlend = D3D11_BLEND_ZERO;
-        desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-        desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-        desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-        desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-        desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-        hr = device->CreateBlendState(&desc, blendStates[static_cast<size_t>(BLEND_STATE::NONE)].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-        desc.AlphaToCoverageEnable = FALSE;
-        desc.IndependentBlendEnable = FALSE;
-        desc.RenderTarget[0].BlendEnable = TRUE;
-        desc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-        desc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-        desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-        desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-        desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
-        desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-        desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-        hr = device->CreateBlendState(&desc, blendStates[static_cast<size_t>(BLEND_STATE::ALPHA)].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-        desc.AlphaToCoverageEnable = FALSE;
-        desc.IndependentBlendEnable = FALSE;
-        desc.RenderTarget[0].BlendEnable = TRUE;
-        desc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA; //D3D11_BLEND_ONE D3D11_BLEND_SRC_ALPHA
-        desc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-        desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-        desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
-        desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
-        desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-        desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-        hr = device->CreateBlendState(&desc, blendStates[static_cast<size_t>(BLEND_STATE::ADD)].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-        desc.AlphaToCoverageEnable = FALSE;
-        desc.IndependentBlendEnable = FALSE;
-        desc.RenderTarget[0].BlendEnable = TRUE;
-        desc.RenderTarget[0].SrcBlend = D3D11_BLEND_ZERO; //D3D11_BLEND_DEST_COLOR
-        desc.RenderTarget[0].DestBlend = D3D11_BLEND_SRC_COLOR; //D3D11_BLEND_SRC_COLOR
-        desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-        desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_DEST_ALPHA;
-        desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-        desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-        desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-        hr = device->CreateBlendState(&desc, blendStates[static_cast<size_t>(BLEND_STATE::MULTIPLY)].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-        desc.AlphaToCoverageEnable = FALSE;
-        desc.IndependentBlendEnable = FALSE;
-        for (int i = 0; i < 5; ++i)
-        {
-            desc.RenderTarget[i].BlendEnable = FALSE;
-            desc.RenderTarget[i].SrcBlend = D3D11_BLEND_ONE;
-            desc.RenderTarget[i].DestBlend = D3D11_BLEND_ZERO;
-            desc.RenderTarget[i].BlendOp = D3D11_BLEND_OP_ADD;
-            desc.RenderTarget[i].SrcBlendAlpha = D3D11_BLEND_ONE;
-            desc.RenderTarget[i].DestBlendAlpha = D3D11_BLEND_ZERO;
-            desc.RenderTarget[i].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-            desc.RenderTarget[i].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-        }
-        hr = device->CreateBlendState(&desc, blendStates[static_cast<int>(BLEND_STATE::MRT)].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-    }
-#pragma endregion// BlendState
-
-    // 深度ステンシルステート
-#pragma region DepthStencilState
-    {
-        HRESULT hr{ S_OK };
-
-        D3D11_DEPTH_STENCIL_DESC desc{};
-        // 0 深度テスト：オン　深度ライト：オン
-        desc.DepthEnable = TRUE;	// 深度テストを有効にします
-        desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;	// 深度データで変更できる深度ステンシルバッファーの一部を特定します
-        desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; // 深度データと既存データを比較する関数
-        hr = device->CreateDepthStencilState(&desc, depthStencilStates[0].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-        // 1 深度テスト：オン　深度ライト：オフ
-        desc.DepthEnable = TRUE;
-        desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-        hr = device->CreateDepthStencilState(&desc, depthStencilStates[1].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-        // 2 深度テスト：オフ　深度ライト：オン
-        desc.DepthEnable = FALSE;
-        desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-        hr = device->CreateDepthStencilState(&desc, depthStencilStates[2].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-        // 3 深度テスト：オフ　深度ライト：オフ
-        desc.DepthEnable = FALSE;
-        desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-        hr = device->CreateDepthStencilState(&desc, depthStencilStates[3].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-    }
-#pragma endregion// DepthStencilState
-
-    // ラスタライザーステート
-#pragma region RasterRizerState
-    {
-        HRESULT hr{ S_OK };
-
-        D3D11_RASTERIZER_DESC desc{};
-        desc.FillMode = D3D11_FILL_SOLID;
-        desc.CullMode = D3D11_CULL_BACK;
-        desc.FrontCounterClockwise = TRUE;
-        desc.DepthBias = 0;
-        desc.DepthBiasClamp = 0;
-        desc.SlopeScaledDepthBias = 0;
-        desc.DepthClipEnable = TRUE;
-        desc.ScissorEnable = FALSE;
-        desc.MultisampleEnable = FALSE;
-        desc.AntialiasedLineEnable = FALSE;
-        hr = device->CreateRasterizerState(&desc, rasterizerStates[static_cast<size_t>(RASTER_STATE::SOLID)].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-        desc.FillMode = D3D11_FILL_WIREFRAME;
-        desc.CullMode = D3D11_CULL_BACK;
-        desc.AntialiasedLineEnable = TRUE;
-        hr = device->CreateRasterizerState(&desc, rasterizerStates[static_cast<size_t>(RASTER_STATE::WIREFRAME)].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-        
-        desc.FillMode = D3D11_FILL_SOLID;
-        desc.CullMode = D3D11_CULL_NONE;
-        desc.AntialiasedLineEnable = TRUE;
-        hr = device->CreateRasterizerState(&desc, rasterizerStates[static_cast<size_t>(RASTER_STATE::CULL_NONE)].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-        desc.FillMode = D3D11_FILL_WIREFRAME;
-        desc.CullMode = D3D11_CULL_NONE;
-        desc.AntialiasedLineEnable = TRUE;
-        hr = device->CreateRasterizerState(&desc, rasterizerStates[static_cast<size_t>(RASTER_STATE::WIREFRAME_CULL_NONE)].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-    }
-#pragma endregion// RasterRizerState
-
-    // サンプラステート
-#pragma region SamplerState
-    {
-        HRESULT hr{ S_OK };
-
-        D3D11_SAMPLER_DESC desc{};
-        desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-        desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-        desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-        desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-        desc.MipLODBias = 0;
-        desc.MaxAnisotropy = 16;
-        desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-        desc.BorderColor[0] = 0;
-        desc.BorderColor[1] = 0;
-        desc.BorderColor[2] = 0;
-        desc.BorderColor[3] = 0;
-        desc.MinLOD = 0;
-        desc.MaxLOD = D3D11_FLOAT32_MAX;
-        hr = device->CreateSamplerState(&desc, samplerState[static_cast<size_t>(SAMPLER_STATE::POINT)].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-        desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-        desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-        desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-        desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-        hr = device->CreateSamplerState(&desc, samplerState[static_cast<size_t>(SAMPLER_STATE::LINEAR)].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-        desc.Filter = D3D11_FILTER_ANISOTROPIC;
-        desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-        desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-        desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-        hr = device->CreateSamplerState(&desc, samplerState[static_cast<size_t>(SAMPLER_STATE::ANISOTROPIC)].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-        desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-        desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-        desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-        desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
-        desc.BorderColor[0] = 0;
-        desc.BorderColor[1] = 0;
-        desc.BorderColor[2] = 0;
-        desc.BorderColor[3] = 0;
-        hr = device->CreateSamplerState(&desc, samplerState[static_cast<size_t>(SAMPLER_STATE::LINEAR_BORDER_BLACK)].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-        desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-        desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-        desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-        desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
-        desc.BorderColor[0] = 1;
-        desc.BorderColor[1] = 1;
-        desc.BorderColor[2] = 1;
-        desc.BorderColor[3] = 1;
-        hr = device->CreateSamplerState(&desc, samplerState[static_cast<size_t>(SAMPLER_STATE::LINEAR_BORDER_WHITE)].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-        // SHADOW
-        desc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
-        desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-        desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-        desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
-        desc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL; // D3D11_COMPARISON_LESS_EQUAL
-        desc.BorderColor[0] = 1;
-        desc.BorderColor[1] = 1;
-        desc.BorderColor[2] = 1;
-        desc.BorderColor[3] = 1;
-        hr = device->CreateSamplerState(&desc, samplerState[static_cast<size_t>(SAMPLER_STATE::COMPARISON_LINEAR_BORDER_WHITE)].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-        desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-        desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-        desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-        desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
-        desc.MipLODBias = 0.0f;
-        desc.MaxAnisotropy = 0;
-        desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-        desc.BorderColor[0] = 0;
-        desc.BorderColor[0] = 0;
-        desc.BorderColor[0] = 0;
-        desc.BorderColor[0] = 1;
-        desc.MinLOD = 0.0f;
-        desc.MaxLOD = D3D11_FLOAT32_MAX;
-        hr = device->CreateSamplerState(&desc, samplerState[static_cast<size_t>(SAMPLER_STATE::LINEAR_BORDER_OPAQUE_BLACK)].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-
-        desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-        desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-        desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-        desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-        desc.MipLODBias = 0.0f;
-        desc.MaxAnisotropy = 0;
-        desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-        desc.BorderColor[0] = 0;
-        desc.BorderColor[0] = 0;
-        desc.BorderColor[0] = 0;
-        desc.BorderColor[0] = 0;
-        desc.MinLOD = 0.0f;
-        desc.MaxLOD = D3D11_FLOAT32_MAX;
-        hr = device->CreateSamplerState(&desc, samplerState[static_cast<size_t>(SAMPLER_STATE::POINT_CLAMP)].GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-    }
-#pragma endregion// SamplerState
-
-    // LightConstants
-    {
-        Graphics& graphics = Graphics::Instance();
-#ifdef _DEBUG
-        // POINT_LIGHT
-
-#endif// _DEBUG
-
-        // DIRECTION_LIGHT
-        {
-            lightConstant.directionLight.direction = DirectX::XMFLOAT4(0.0f, -1.0f, 0.0f, 0.0f);
-            lightConstant.directionLight.color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-        }
-
-        // POINT_LIGHT
-        {
-#if POINT_LIGHT_ONE
-            lightConstant.pointLight.position = DirectX::XMFLOAT4(0.0f, 1.5f, 3.0f, 0.0f);
-            lightConstant.pointLight.color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-            lightConstant.pointLight.range = 5.0f;
-#else
-            for (int i = 0; i < pointLightMax; ++i)
-            {
-                lightConstant.pointLight[i].position=DirectX::XMFLOAT4(3.0f*i, 1.5f, 3.0f, 0.0f);
-                lightConstant.pointLight[i].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-                lightConstant.pointLight[i].range = 5.0f;
-            }
-#endif// POINT_LIGHT_ONE
-        }
-
-        // SPOT_LIGHT
-        {
-            lightConstant.spotLight.position = DirectX::XMFLOAT4(0.0f, 1.0f, 15.0f, 0.0f);
-            lightConstant.spotLight.color = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-            lightConstant.spotLight.direction = DirectX::XMFLOAT3(1.0f, -1.0f, 1.0f);
-
-            lightConstant.spotLight.range = 10.0f;
-
-            // 正規化
-            DirectX::XMVECTOR spotLightDirectionVec = DirectX::XMLoadFloat3(&lightConstant.spotLight.direction);
-            spotLightDirectionVec = DirectX::XMVector3Normalize(spotLightDirectionVec);
-            DirectX::XMStoreFloat3(&lightConstant.spotLight.direction, spotLightDirectionVec);
-
-            lightConstant.spotLight.angle = DirectX::XMConvertToRadians(-5.0f);
-        }
-
-        // HEMISPHERE_LIGHT
-        {
-            // 地面色
-            lightConstant.hemisphereLight.groundColor.x = 0.7f;
-            lightConstant.hemisphereLight.groundColor.y = 0.5f;
-            lightConstant.hemisphereLight.groundColor.z = 0.3f;
-
-            // 天球色
-            lightConstant.hemisphereLight.skyColor.x = 0.15f;
-            lightConstant.hemisphereLight.skyColor.y = 0.7f;
-            lightConstant.hemisphereLight.skyColor.z = 0.95f;
-
-            // 地面の法線を設定
-            lightConstant.hemisphereLight.groundNormal.x = 0.0f;
-            lightConstant.hemisphereLight.groundNormal.y = 1.0f;
-            lightConstant.hemisphereLight.groundNormal.z = 0.0f;
-        }
-    }
-}
-
-
+// ----- ImGui用 -----
 void Shader::DrawDebug()
 {
-    Camera& camera = Camera::Instance();
-
-    ImGui::Begin("view");
-
     if (ImGui::TreeNode("camera"))
     {
         ImGui::SliderFloat("wight", &view.viewWitdh,1.0f,10000.0f);
@@ -506,158 +34,443 @@ void Shader::DrawDebug()
 
         ImGui::TreePop();
     }
-
-    camera.DrawDebug();
-
-    ImGui::End();
-
-    // テスト用
-    //postEffectConstants_->data.noiseTimer = framework::tictoc.time_stamp();
-    //postEffectConstants_->data.scanLineTimer = framework::tictoc.time_stamp();
-
-    if (ImGui::TreeNode("postEffect"))
-    {
-        ImGui::DragFloat4("shiftSize", &postEffectConstants_->data.shiftSize.x);
-        ImGui::ColorEdit4("noiseColor", &postEffectConstants_->data.noiseColor.x);
-        ImGui::DragFloat("noiseTimer", &postEffectConstants_->data.noiseTimer);
-        ImGui::DragFloat("scanTimer", &postEffectConstants_->data.scanLineTimer);
-
-        //ImGui::DragFloat("boekhAperture", &postEffectConstants.bokehAperture);
-        //ImGui::DragFloat("bokehFocus", &postEffectConstants.bokehFocus);
-
-        ImGui::DragFloat("bokeh_aperture", &postEffectConstants_->data.bokehAperture, 0.001f, 0.0f, 1.0f, "%.3f");
-        ImGui::DragFloat("bokeh_focus", &postEffectConstants_->data.bokehFocus, 0.001f, 0.0f, 1.0f, "%.3f");
-
-        ImGui::SliderFloat("vignetteValue", &postEffectConstants_->data.vignetteValue, 0.0f, 1.0f);
-
-        ImGui::TreePop();
-    }
-
-    if (ImGui::Begin("Light"))
-    {
-        // DIRECTION_LIGHT
-        if (ImGui::TreeNode("DirectionLight"))
-        {
-            ImGui::DragFloat4("directiono", &lightConstant.directionLight.direction.x);
-            ImGui::ColorEdit4("color", &lightConstant.directionLight.color.x);
-            ImGui::TreePop();
-        }
-
-        // POINT_LIGHT
-#if POINT_LIGHT_ONE
-        if (ImGui::TreeNode("PointLight"))
-        {
-            ImGui::DragFloat4("position", &lightConstant.pointLight.position.x);
-            ImGui::ColorEdit4("color", &lightConstant.pointLight.color.x);
-            ImGui::DragFloat("range", &lightConstant.pointLight.range);
-            ImGui::TreePop();
-        }
-#else
-        for (int i = 0; i < pointLightMax; ++i)
-        {
-            ImGui::Begin(("pointLight" + std::to_string(i)).c_str());
-            ImGui::DragFloat4("position", &lightConstant.pointLight[i].position.x);
-            ImGui::ColorEdit4("color", &lightConstant.pointLight[i].color.x);
-            ImGui::DragFloat("range", &lightConstant.pointLight[i].range);
-            ImGui::End();
-        }
-
-#endif// POINT_LIGHT_ONE
-
-        // SPOT_LIGHT
-        if (ImGui::TreeNode("SpotLight"))
-        {
-            ImGui::DragFloat4("position", &lightConstant.spotLight.position.x);
-            ImGui::ColorEdit4("color", &lightConstant.spotLight.color.x);
-            ImGui::DragFloat("range", &lightConstant.spotLight.range);
-            ImGui::DragFloat3("direction", &lightConstant.spotLight.direction.x);
-            float angle = DirectX::XMConvertToDegrees(lightConstant.spotLight.angle);
-            ImGui::DragFloat("angle", &angle);
-            lightConstant.spotLight.angle = DirectX::XMConvertToRadians(angle);
-            ImGui::TreePop();
-        }
-
-        // HEMISPHERE_LIGHT
-        if (ImGui::TreeNode("HemisphereLight"))
-        {
-            ImGui::ColorEdit4("groundColor", &lightConstant.hemisphereLight.groundColor.x);
-            ImGui::ColorEdit4("skyColor", &lightConstant.hemisphereLight.skyColor.x);
-            ImGui::DragFloat4("groundNormal", &lightConstant.hemisphereLight.groundNormal.x);
-            ImGui::TreePop();
-        }
-
-        if (ImGui::TreeNode("Fog"))
-        {
-            ImGui::ColorEdit4("fogColor", &fogConstants_->data.fogColor.x);
-            ImGui::DragFloat("fogDensity", &fogConstants_->data.fogDensity);
-            //ImGui::SliderFloat("fogDensity", &fogConstants.fogDensity, 0.0f, 10.0f, "%.4f");
-            ImGui::DragFloat("fogHeightFalloff", &fogConstants_->data.fogHeightFalloff);
-            //ImGui::SliderFloat("fogHeightFalloff", &fogConstants.fogHeightFalloff, 0.0001f, 10.0f, "%.4f");
-            ImGui::SliderFloat("fogCutoffDistance", &fogConstants_->data.fogCutoffDistance, 0.0f, 1000.0f, "%.4f");
-            ImGui::SliderFloat("startDistance", &fogConstants_->data.startDistance, 0.0f, 100.0f, "%.4f");
-
-            ImGui::SliderFloat("timeScale", &fogConstants_->data.timeScale, 0.0f, 10.0f, "%.4f");
-            ImGui::SliderFloat("speedScale", &fogConstants_->data.speedScale, 0.0f, 0.5f, "%.4f");
-            ImGui::TreePop();
-        }
-
-
-        ImGui::End();
-    }
 }
 
-void Shader::UpdatePostEffectConstants(int slot)
-{   // PostEffect
-    postEffectConstants_->Activate(Graphics::Instance().GetDeviceContext(), slot, false, true);
-}
-
-void Shader::UpdateFogConstants(int slot)
-{   // Fog
-    fogConstants_->Activate(Graphics::Instance().GetDeviceContext(), slot, false, true);
-}
-
-void Shader::UpdateEmissiveConstants(int slot)
-{   // emissive
-    emissiveConstants_->Activate(Graphics::Instance().GetDeviceContext(), slot, false, true);
-}
-
-void Shader::UpdateDissolveConstants(int slot)
-{   // dissolve
-    dissolveConstants_->Activate(Graphics::Instance().GetDeviceContext(), slot, false, true);
-}
-
-
-void Shader::SetDepthStencileState(DEPTH_STATE depthStencileState)
+// ----- 頂点シェーダー作成 -----
+HRESULT Shader::CreateVsFromCso(const char* csoName, ID3D11VertexShader** vertexShader, ID3D11InputLayout** inputLayout, D3D11_INPUT_ELEMENT_DESC* inputElementDesc, UINT numElements)
 {
-    Graphics::Instance().GetDeviceContext()->
-        OMSetDepthStencilState(depthStencilStates[static_cast<UINT>(depthStencileState)].Get(), 1);
-}
+    HRESULT         result = S_OK;
+    ID3D11Device*   device = Graphics::Instance().GetDevice();
 
-void Shader::SetBlendState(BLEND_STATE blendState)
-{
-    Graphics::Instance().GetDeviceContext()->
-        OMSetBlendState(blendStates[static_cast<UINT>(blendState)].Get(), nullptr, 0xFFFFFFFF);
-}
+    FILE* fp = nullptr;
+    fopen_s(&fp, csoName, "rb");
+    _ASSERT_EXPR_A(fp, "CSO File not found");
 
-void Shader::SetRasterizerState(RASTER_STATE rasterizerState)
-{
-    Graphics::Instance().GetDeviceContext()->
-        RSSetState(rasterizerStates[static_cast<UINT>(rasterizerState)].Get());
-}
+    fseek(fp, 0, SEEK_END);
+    long cso_sz = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
 
-void Shader::SetSamplerState(ID3D11DeviceContext* deviceContext)
-{  
-    // サンプラーステート
-    {
-        deviceContext->PSSetSamplers(0, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::POINT)].GetAddressOf());
-        deviceContext->PSSetSamplers(1, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::LINEAR)].GetAddressOf());
-        deviceContext->PSSetSamplers(2, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::ANISOTROPIC)].GetAddressOf());
-        deviceContext->PSSetSamplers(3, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::LINEAR_BORDER_BLACK)].GetAddressOf());
-        deviceContext->PSSetSamplers(4, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::LINEAR_BORDER_WHITE)].GetAddressOf());
-        // SHADOW
-        deviceContext->PSSetSamplers(5, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::COMPARISON_LINEAR_BORDER_WHITE)].GetAddressOf());
+    std::unique_ptr<unsigned char[]>cso_data = std::make_unique<unsigned char[]>(cso_sz);
+    fread(cso_data.get(), cso_sz, 1, fp);
+    fclose(fp);
         
-        deviceContext->PSSetSamplers(6, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::LINEAR_BORDER_OPAQUE_BLACK)].GetAddressOf());
-        deviceContext->PSSetSamplers(7, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::POINT_CLAMP)].GetAddressOf());
+    result = device->CreateVertexShader(cso_data.get(), cso_sz, nullptr, vertexShader);
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    if (inputLayout)
+    {
+        result = device->CreateInputLayout(inputElementDesc, numElements, cso_data.get(), cso_sz, inputLayout);
+        _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
     }
+
+    return result;
+}
+
+// ----- ピクセルシェーダー作成 -----
+HRESULT Shader::CreatePsFromCso(const char* csoName, ID3D11PixelShader** pixelShader)
+{
+    HRESULT         result = S_OK;
+    ID3D11Device*   device = Graphics::Instance().GetDevice();
+
+    FILE* fp = nullptr;
+    fopen_s(&fp, csoName, "rb");
+    _ASSERT_EXPR_A(fp, "CSO File not found");
+
+    fseek(fp, 0, SEEK_END);
+    long cso_sz = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+
+    std::unique_ptr<unsigned char[]>cso_data = std::make_unique<unsigned char[]>(cso_sz);
+    fread(cso_data.get(), cso_sz, 1, fp);
+    fclose(fp);
+
+    result = device->CreatePixelShader(cso_data.get(), cso_sz, nullptr, pixelShader);
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    return result;
+}
+
+// ----- ジオメトリシェーダー作成 -----
+HRESULT Shader::CreateGsFromCso(const char* csoName, ID3D11GeometryShader** geometryShader)
+{
+    HRESULT         result = S_OK;
+    ID3D11Device*   device = Graphics::Instance().GetDevice();
+
+    FILE* fp = nullptr;
+    fopen_s(&fp, csoName, "rb");
+    _ASSERT_EXPR_A(fp, "CSO File not found");
+
+    fseek(fp, 0, SEEK_END);
+    long csoSz = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+
+    std::unique_ptr<unsigned char[]> csoData = std::make_unique<unsigned char[]>(csoSz);
+    fread(csoData.get(), csoSz, 1, fp);
+    fclose(fp);
+
+    result = device->CreateGeometryShader(csoData.get(), csoSz, nullptr, geometryShader);
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    return result;
+}
+
+// ----- コンピュートシェーダー作成 -----
+HRESULT Shader::CreateCsFromCso(const char* csoName, ID3D11ComputeShader** computeShader)
+{
+    HRESULT         result = S_OK;
+    ID3D11Device*   device = Graphics::Instance().GetDevice();
+
+    FILE* fp = nullptr;
+    fopen_s(&fp, csoName, "rb");
+    _ASSERT_EXPR_A(fp, "CSO File not found");
+
+    fseek(fp, 0, SEEK_END);
+    long csoSz = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+
+    std::unique_ptr<unsigned char[]> csoData = std::make_unique<unsigned char[]>(csoSz);
+    fread(csoData.get(), csoSz, 1, fp);
+    fclose(fp);
+
+    result = device->CreateComputeShader(csoData.get(), csoSz, nullptr, computeShader);
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    return result;
+}
+
+// ----- ドメインシェーダー作成 -----
+HRESULT Shader::CreateDsFromCso(const char* csoName, ID3D11DomainShader** domainShader)
+{
+    HRESULT         result = S_OK;
+    ID3D11Device*   device = Graphics::Instance().GetDevice();
+
+    FILE* fp = nullptr;
+    fopen_s(&fp, csoName, "rb");
+    _ASSERT_EXPR_A(fp, "CSO File not found");
+
+    fseek(fp, 0, SEEK_END);
+    long csoSz = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+
+    std::unique_ptr<unsigned char[]> csoData = std::make_unique<unsigned char[]>(csoSz);
+    fread(csoData.get(), csoSz, 1, fp);
+    fclose(fp);
+
+    result = device->CreateDomainShader(csoData.get(), csoSz, nullptr, domainShader);
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    return result;
+}
+
+// ----- ハルシェーダー作成 -----
+HRESULT Shader::CreateHsFromCso(const char* csoName, ID3D11HullShader** hullShader)
+{
+    HRESULT         result = S_OK;
+    ID3D11Device*   device = Graphics::Instance().GetDevice();
+
+    FILE* fp = nullptr;
+    fopen_s(&fp, csoName, "rb");
+    _ASSERT_EXPR_A(fp, "CSO File not found");
+
+    fseek(fp, 0, SEEK_END);
+    long csoSz = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+
+    std::unique_ptr<unsigned char[]> csoData = std::make_unique<unsigned char[]>(csoSz);
+    fread(csoData.get(), csoSz, 1, fp);
+    fclose(fp);
+
+    result = device->CreateHullShader(csoData.get(), csoSz, nullptr, hullShader);
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    return result;
+}
+
+// ----- ブレンドステート設定 -----
+void Shader::SetBlendState(const BLEND_STATE& blendState)
+{
+    Graphics::Instance().GetDeviceContext()->OMSetBlendState(blendStates_[static_cast<UINT>(blendState)].Get(), nullptr, 0xFFFFFFFF);
+}
+
+// ----- ラスタライザステート設定 -----
+void Shader::SetRasterizerState(const RASTER_STATE& rasterizerState)
+{
+    Graphics::Instance().GetDeviceContext()->RSSetState(rasterizerStates_[static_cast<UINT>(rasterizerState)].Get());
+}
+
+// ----- デプスステンシルステート設定 -----
+void Shader::SetDepthStencileState(const DEPTH_STATE& depthStencileState)
+{
+    Graphics::Instance().GetDeviceContext()->OMSetDepthStencilState(depthStencilStates_[static_cast<int>(depthStencileState)].Get(), 1);
+}
+
+// ----- サンプラーステート設定 -----
+void Shader::SetSamplerState()
+{
+    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
+
+    deviceContext->PSSetSamplers(0, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::POINT)].GetAddressOf());
+    deviceContext->PSSetSamplers(1, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::LINEAR)].GetAddressOf());
+    deviceContext->PSSetSamplers(2, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::ANISOTROPIC)].GetAddressOf());
+    deviceContext->PSSetSamplers(3, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::LINEAR_BORDER_BLACK)].GetAddressOf());
+    deviceContext->PSSetSamplers(4, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::LINEAR_BORDER_WHITE)].GetAddressOf());
+    // SHADOW
+    deviceContext->PSSetSamplers(5, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::COMPARISON_LINEAR_BORDER_WHITE)].GetAddressOf());
+
+    deviceContext->PSSetSamplers(6, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::LINEAR_BORDER_OPAQUE_BLACK)].GetAddressOf());
+    deviceContext->PSSetSamplers(7, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::POINT_CLAMP)].GetAddressOf());
+}
+
+// ----- ブレンドステート作成 -----
+void Shader::CreateBlendStates()
+{
+    HRESULT             result      = S_OK;
+    ID3D11Device*       device      = Graphics::Instance().GetDevice();
+    D3D11_BLEND_DESC    blendDesc   = {};
+
+    blendDesc.AlphaToCoverageEnable                 = FALSE;
+    blendDesc.IndependentBlendEnable                = FALSE;
+    blendDesc.RenderTarget[0].BlendEnable           = FALSE;
+    blendDesc.RenderTarget[0].SrcBlend              = D3D11_BLEND_ONE;
+    blendDesc.RenderTarget[0].DestBlend             = D3D11_BLEND_ZERO;
+    blendDesc.RenderTarget[0].BlendOp               = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].SrcBlendAlpha         = D3D11_BLEND_ONE;
+    blendDesc.RenderTarget[0].DestBlendAlpha        = D3D11_BLEND_ZERO;
+    blendDesc.RenderTarget[0].BlendOpAlpha          = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+    result = device->CreateBlendState(&blendDesc, blendStates_[static_cast<int>(BLEND_STATE::NONE)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    blendDesc.AlphaToCoverageEnable                 = FALSE;
+    blendDesc.IndependentBlendEnable                = FALSE;
+    blendDesc.RenderTarget[0].BlendEnable           = TRUE;
+    blendDesc.RenderTarget[0].SrcBlend              = D3D11_BLEND_SRC_ALPHA;
+    blendDesc.RenderTarget[0].DestBlend             = D3D11_BLEND_INV_SRC_ALPHA;
+    blendDesc.RenderTarget[0].BlendOp               = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].SrcBlendAlpha         = D3D11_BLEND_ONE;
+    blendDesc.RenderTarget[0].DestBlendAlpha        = D3D11_BLEND_INV_SRC_ALPHA;
+    blendDesc.RenderTarget[0].BlendOpAlpha          = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+    result = device->CreateBlendState(&blendDesc, blendStates_[static_cast<int>(BLEND_STATE::ALPHA)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    blendDesc.AlphaToCoverageEnable                 = FALSE;
+    blendDesc.IndependentBlendEnable                = FALSE;
+    blendDesc.RenderTarget[0].BlendEnable           = TRUE;
+    blendDesc.RenderTarget[0].SrcBlend              = D3D11_BLEND_SRC_ALPHA;
+    blendDesc.RenderTarget[0].DestBlend             = D3D11_BLEND_ONE;
+    blendDesc.RenderTarget[0].BlendOp               = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].SrcBlendAlpha         = D3D11_BLEND_ZERO;
+    blendDesc.RenderTarget[0].DestBlendAlpha        = D3D11_BLEND_ONE;
+    blendDesc.RenderTarget[0].BlendOpAlpha          = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+    result = device->CreateBlendState(&blendDesc, blendStates_[static_cast<int>(BLEND_STATE::ADD)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    blendDesc.AlphaToCoverageEnable                 = FALSE;
+    blendDesc.IndependentBlendEnable                = FALSE;
+    blendDesc.RenderTarget[0].BlendEnable           = TRUE;
+    blendDesc.RenderTarget[0].SrcBlend              = D3D11_BLEND_ZERO; 
+    blendDesc.RenderTarget[0].DestBlend             = D3D11_BLEND_SRC_COLOR;
+    blendDesc.RenderTarget[0].BlendOp               = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].SrcBlendAlpha         = D3D11_BLEND_DEST_ALPHA;
+    blendDesc.RenderTarget[0].DestBlendAlpha        = D3D11_BLEND_ZERO;
+    blendDesc.RenderTarget[0].BlendOpAlpha          = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+    result = device->CreateBlendState(&blendDesc, blendStates_[static_cast<int>(BLEND_STATE::MULTIPLY)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    blendDesc.AlphaToCoverageEnable = FALSE;
+    blendDesc.IndependentBlendEnable = FALSE;
+    for (int i = 0; i < 5; ++i)
+    {
+        blendDesc.RenderTarget[i].BlendEnable           = FALSE;
+        blendDesc.RenderTarget[i].SrcBlend              = D3D11_BLEND_ONE;
+        blendDesc.RenderTarget[i].DestBlend             = D3D11_BLEND_ZERO;
+        blendDesc.RenderTarget[i].BlendOp               = D3D11_BLEND_OP_ADD;
+        blendDesc.RenderTarget[i].SrcBlendAlpha         = D3D11_BLEND_ONE;
+        blendDesc.RenderTarget[i].DestBlendAlpha        = D3D11_BLEND_ZERO;
+        blendDesc.RenderTarget[i].BlendOpAlpha          = D3D11_BLEND_OP_ADD;
+        blendDesc.RenderTarget[i].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+    }
+    result = device->CreateBlendState(&blendDesc, blendStates_[static_cast<int>(BLEND_STATE::MRT)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+}
+
+// ----- ラスタライザステート作成 -----
+void Shader::CreateRasterizerStates()
+{
+    HRESULT                 result          = S_OK;
+    ID3D11Device*           device          = Graphics::Instance().GetDevice();
+    D3D11_RASTERIZER_DESC   rasterizerDesc  = {};
+
+    rasterizerDesc.FillMode                 = D3D11_FILL_SOLID;
+    rasterizerDesc.CullMode                 = D3D11_CULL_BACK;
+    rasterizerDesc.FrontCounterClockwise    = TRUE;
+    rasterizerDesc.DepthBias                = 0;
+    rasterizerDesc.DepthBiasClamp           = 0;
+    rasterizerDesc.SlopeScaledDepthBias     = 0;
+    rasterizerDesc.DepthClipEnable          = TRUE;
+    rasterizerDesc.ScissorEnable            = FALSE;
+    rasterizerDesc.MultisampleEnable        = FALSE;
+    rasterizerDesc.AntialiasedLineEnable    = FALSE;
+    result = device->CreateRasterizerState(&rasterizerDesc, rasterizerStates_[static_cast<size_t>(RASTER_STATE::SOLID)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    rasterizerDesc.FillMode                 = D3D11_FILL_WIREFRAME;
+    rasterizerDesc.CullMode                 = D3D11_CULL_BACK;
+    rasterizerDesc.AntialiasedLineEnable    = TRUE;
+    result = device->CreateRasterizerState(&rasterizerDesc, rasterizerStates_[static_cast<size_t>(RASTER_STATE::WIREFRAME)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    rasterizerDesc.FillMode                 = D3D11_FILL_SOLID;
+    rasterizerDesc.CullMode                 = D3D11_CULL_NONE;
+    rasterizerDesc.AntialiasedLineEnable    = TRUE;
+    result = device->CreateRasterizerState(&rasterizerDesc, rasterizerStates_[static_cast<size_t>(RASTER_STATE::CULL_NONE)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    rasterizerDesc.FillMode                 = D3D11_FILL_WIREFRAME;
+    rasterizerDesc.CullMode                 = D3D11_CULL_NONE;
+    rasterizerDesc.AntialiasedLineEnable    = TRUE;
+    result = device->CreateRasterizerState(&rasterizerDesc, rasterizerStates_[static_cast<size_t>(RASTER_STATE::WIREFRAME_CULL_NONE)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+}
+
+// ----- デプスステンシルステート作成 -----
+void Shader::CreateDepthStencilStates()
+{
+    HRESULT                     result              = S_OK;
+    ID3D11Device*               device              = Graphics::Instance().GetDevice();
+    D3D11_DEPTH_STENCIL_DESC    depthStencilDesc    = {};
+
+    // 深度テスト：オン　深度ライト：オン
+    depthStencilDesc.DepthEnable    = TRUE;	                        // 深度テストを有効にする
+    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;   // 深度ステンシル バッファーへの書き込みを有効にする
+    depthStencilDesc.DepthFunc      = D3D11_COMPARISON_LESS_EQUAL;  // 深度データと既存データを比較する関数
+    result = device->CreateDepthStencilState(&depthStencilDesc, depthStencilStates_[static_cast<int>(DEPTH_STATE::ZT_ON_ZW_ON)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    // 深度テスト：オン　深度ライト：オフ
+    depthStencilDesc.DepthEnable    = TRUE;                         // 深度テストを有効にする
+    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;  // 深度ステンシル バッファーへの書き込みを無効にする
+    result = device->CreateDepthStencilState(&depthStencilDesc, depthStencilStates_[static_cast<int>(DEPTH_STATE::ZT_ON_ZW_OFF)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    // 深度テスト：オフ　深度ライト：オン
+    depthStencilDesc.DepthEnable    = FALSE;                        // 深度テストを無効にする
+    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;   // 深度ステンシル バッファーへの書き込みを有効にする
+    result = device->CreateDepthStencilState(&depthStencilDesc, depthStencilStates_[static_cast<int>(DEPTH_STATE::ZT_OFF_ZW_ON)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    // 深度テスト：オフ　深度ライト：オフ
+    depthStencilDesc.DepthEnable    = FALSE;                        // 深度テストを無効にする
+    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;  // 深度ステンシル バッファーでの書き込みを無効にする
+    result = device->CreateDepthStencilState(&depthStencilDesc, depthStencilStates_[static_cast<int>(DEPTH_STATE::ZT_OFF_ZW_OFF)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+}
+
+// ----- サンプラーステート作成 -----
+void Shader::CreateSamplerStates()
+{
+    HRESULT             result      = S_OK;
+    ID3D11Device*       device      = Graphics::Instance().GetDevice();
+    D3D11_SAMPLER_DESC  samplerDesc = {};
+
+    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.MipLODBias = 0;
+    samplerDesc.MaxAnisotropy = 16;
+    samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+    samplerDesc.BorderColor[0] = 0;
+    samplerDesc.BorderColor[1] = 0;
+    samplerDesc.BorderColor[2] = 0;
+    samplerDesc.BorderColor[3] = 0;
+    samplerDesc.MinLOD = 0;
+    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+    result = device->CreateSamplerState(&samplerDesc, samplerState[static_cast<size_t>(SAMPLER_STATE::POINT)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+    result = device->CreateSamplerState(&samplerDesc, samplerState[static_cast<size_t>(SAMPLER_STATE::LINEAR)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+    result = device->CreateSamplerState(&samplerDesc, samplerState[static_cast<size_t>(SAMPLER_STATE::ANISOTROPIC)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.BorderColor[0] = 0;
+    samplerDesc.BorderColor[1] = 0;
+    samplerDesc.BorderColor[2] = 0;
+    samplerDesc.BorderColor[3] = 0;
+    result = device->CreateSamplerState(&samplerDesc, samplerState[static_cast<size_t>(SAMPLER_STATE::LINEAR_BORDER_BLACK)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.BorderColor[0] = 1;
+    samplerDesc.BorderColor[1] = 1;
+    samplerDesc.BorderColor[2] = 1;
+    samplerDesc.BorderColor[3] = 1;
+    result = device->CreateSamplerState(&samplerDesc, samplerState[static_cast<size_t>(SAMPLER_STATE::LINEAR_BORDER_WHITE)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    // SHADOW
+    samplerDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL; // D3D11_COMPARISON_LESS_EQUAL
+    samplerDesc.BorderColor[0] = 1;
+    samplerDesc.BorderColor[1] = 1;
+    samplerDesc.BorderColor[2] = 1;
+    samplerDesc.BorderColor[3] = 1;
+    result = device->CreateSamplerState(&samplerDesc, samplerState[static_cast<size_t>(SAMPLER_STATE::COMPARISON_LINEAR_BORDER_WHITE)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.MipLODBias = 0.0f;
+    samplerDesc.MaxAnisotropy = 0;
+    samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+    samplerDesc.BorderColor[0] = 0;
+    samplerDesc.BorderColor[0] = 0;
+    samplerDesc.BorderColor[0] = 0;
+    samplerDesc.BorderColor[0] = 1;
+    samplerDesc.MinLOD = 0.0f;
+    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+    result = device->CreateSamplerState(&samplerDesc, samplerState[static_cast<size_t>(SAMPLER_STATE::LINEAR_BORDER_OPAQUE_BLACK)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+
+    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+    samplerDesc.MipLODBias = 0.0f;
+    samplerDesc.MaxAnisotropy = 0;
+    samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+    samplerDesc.BorderColor[0] = 0;
+    samplerDesc.BorderColor[0] = 0;
+    samplerDesc.BorderColor[0] = 0;
+    samplerDesc.BorderColor[0] = 0;
+    samplerDesc.MinLOD = 0.0f;
+    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+    result = device->CreateSamplerState(&samplerDesc, samplerState[static_cast<size_t>(SAMPLER_STATE::POINT_CLAMP)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
 }

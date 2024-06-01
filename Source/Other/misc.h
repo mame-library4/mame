@@ -1,5 +1,4 @@
 #pragma once
-
 #include <windows.h>
 #include <crtdbg.h>
 
@@ -12,40 +11,41 @@
 #define  _ASSERT_EXPR_A(expr, expr_str) ((void)0)
 #endif
 
-inline LPWSTR hr_trace(HRESULT hr)
+inline LPWSTR HRTrace(HRESULT hr)
 {
 	LPWSTR msg{ 0 };
 	FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER, NULL, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPWSTR>(&msg), 0, NULL);
 	return msg;
 }
 
-class benchmark
+class Benchmark
 {
-	LARGE_INTEGER ticks_per_second;
-	LARGE_INTEGER start_ticks;
-	LARGE_INTEGER current_ticks;
-
 public:
-	benchmark()
+	Benchmark()
 	{
-		QueryPerformanceFrequency(&ticks_per_second);
-		QueryPerformanceCounter(&start_ticks);
-		QueryPerformanceCounter(&current_ticks);
+		QueryPerformanceFrequency(&ticksPerSecond_);
+		QueryPerformanceCounter(&startTicks_);
+		QueryPerformanceCounter(&currentTicks_);
 	}
-	~benchmark() = default;
-	benchmark(const benchmark&) = delete;
-	benchmark& operator=(const benchmark&) = delete;
-	benchmark(benchmark&&) noexcept = delete;
-	benchmark& operator=(benchmark&&) noexcept = delete;
+	~Benchmark() = default;
+	Benchmark(const Benchmark&) = delete;
+	Benchmark& operator=(const Benchmark&) = delete;
+	Benchmark(Benchmark&&) noexcept = delete;
+	Benchmark& operator=(Benchmark&&) noexcept = delete;
 
-	void begin()
+	void Begin()
 	{
-		QueryPerformanceCounter(&start_ticks);
+		QueryPerformanceCounter(&startTicks_);
 	}
-	float end()
+	float End()
 	{
-		QueryPerformanceCounter(&current_ticks);
-		return static_cast<float>(current_ticks.QuadPart - start_ticks.QuadPart) / static_cast<float>(ticks_per_second.QuadPart);
+		QueryPerformanceCounter(&currentTicks_);
+		return static_cast<float>(currentTicks_.QuadPart - startTicks_.QuadPart) / static_cast<float>(ticksPerSecond_.QuadPart);
 	}
+
+private:
+	LARGE_INTEGER ticksPerSecond_;
+	LARGE_INTEGER startTicks_;
+	LARGE_INTEGER currentTicks_;
 };
 

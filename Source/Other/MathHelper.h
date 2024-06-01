@@ -175,7 +175,7 @@ inline const DirectX::XMFLOAT3 XMFloat3Cross(
 
 #pragma endregion XMFLOAT3
 
-
+// ----- Zp‰‰Zq -----
 #pragma region XMFLOAT2
 // ----- float2 + float2 -----
 inline const DirectX::XMFLOAT2 operator+(
@@ -191,6 +191,17 @@ inline const DirectX::XMFLOAT2 operator+(
     return result;
 }
 
+// ----- float2 += float2 -----
+inline const DirectX::XMFLOAT2 operator +=(
+    DirectX::XMFLOAT2& float2_1,
+    const DirectX::XMFLOAT2& float2_2)
+{
+    float2_1.x + float2_2.x;
+    float2_1.y + float2_2.y;
+
+    return float2_1;
+}
+
 // ----- float2 - float2 -----
 inline const DirectX::XMFLOAT2 operator-(
     const DirectX::XMFLOAT2& float2_1,
@@ -203,6 +214,17 @@ inline const DirectX::XMFLOAT2 operator-(
     };
 
     return result;
+}
+
+// ----- float2 -= float2 -----
+inline const DirectX::XMFLOAT2 operator-=(
+    DirectX::XMFLOAT2& float2_1,
+    const DirectX::XMFLOAT2& float2_2)
+{
+    float2_1.x -= float2_2.x;
+    float2_1.y -= float2_2.y;
+
+    return float2_1;
 }
 
 // ----- float2 * float2 -----
@@ -263,6 +285,7 @@ inline const DirectX::XMFLOAT2 operator/(
 
 #pragma endregion XMFLOAT2
 
+// ----- ZpŠÖ” -----
 #pragma region XMFLOAT2
 // ----- XMFLOAT2“¯m‚Ì“àÏ‚ğŒvZ -----
 inline const float XMFloat2Dot(

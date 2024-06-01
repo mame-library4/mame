@@ -5,15 +5,20 @@
 #include "../Scene/TitleScene.h"
 #include "../Scene/GameScene.h"
 
+#include "Camera.h"
+
+// SKYBOX
+#include "texture.h"
+
 // ----- コンストラクタ -----
 Application::Application(HWND hwnd)
     : hwnd_(hwnd),
     graphics_(hwnd, FALSE),
     input_(hwnd),
-    shadowMap_(graphics_.GetDevice(), SCREEN_WIDTH, SCREEN_HEIGHT),
-    postProcess_(graphics_.GetDevice(), SCREEN_WIDTH, SCREEN_HEIGHT),
-    deferredRendering_(graphics_.GetDevice(), SCREEN_WIDTH, SCREEN_HEIGHT),
-    sceneConstants_(graphics_.GetDevice())
+    shadowMap_(SCREEN_WIDTH, SCREEN_HEIGHT),
+    postProcess_(SCREEN_WIDTH, SCREEN_HEIGHT),
+    deferredRendering_(SCREEN_WIDTH, SCREEN_HEIGHT),
+    sceneConstants_()
 {
 }
 
@@ -36,10 +41,7 @@ bool Application::Initialize()
 
     // --- シーン初期化 ---
     SceneManager::Instance().ChangeScene(new GameScene);
-#ifdef _DEBUG
     //SceneManager::Instance().ChangeScene(new TitleScene);
-#else
-#endif
 
 //#ifndef _DEBUG
 //    ShowCursor(!FULLSCREEN);	// フルスクリーン時はカーソルを消す
@@ -78,36 +80,34 @@ void Application::Render()
 {
     ID3D11DeviceContext* deviceContext = graphics_.GetDeviceContext();
 
-    Shader* shader = graphics_.GetShader();
     Camera& camera = Camera::Instance();
 
     // --- 描画初期化 ---
     ID3D11RenderTargetView* renderTargetView = graphics_.GetRenderTargetView();
     ID3D11DepthStencilView* depthStencilView = graphics_.GetDepthStencilView();
     FLOAT color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    //FLOAT color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
     deviceContext->ClearRenderTargetView(renderTargetView, color);
     deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
     deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
 
     // --- サンプラーステート設定 ---
-    graphics_.GetShader()->SetSamplerState(deviceContext);
+    graphics_.GetShader()->SetSamplerState();
 
     const float aspectRatio = shadowMap_.viewport.Width / shadowMap_.viewport.Height;
-    sceneConstants_.data.viewProjection_ = shadowMap_.CalcViewProjection(aspectRatio);
-    sceneConstants_.data.lightViewProjection_ = sceneConstants_.data.viewProjection_;
+    sceneConstants_.GetData()->viewProjection_ = shadowMap_.CalcViewProjection(aspectRatio);
+    sceneConstants_.GetData()->lightViewProjection_ = sceneConstants_.GetData()->viewProjection_;
 
-    shader->SetBlendState(Shader::BLEND_STATE::NONE);
-    shader->SetRasterizerState(Shader::RASTER_STATE::SOLID);
-    shader->SetDepthStencileState(Shader::DEPTH_STATE::ZT_ON_ZW_ON);
+    Graphics::Instance().SetBlendState(Shader::BLEND_STATE::NONE);
+    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::SOLID);
+    Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_ON_ZW_ON);
 
-    sceneConstants_.Activate(graphics_.GetDeviceContext(), 1, true, true, true, true);
+    sceneConstants_.Activate(1, true, true, true, true);
 
     // --- ShadowMap作成 ---
-    shadowMap_.Clear(deviceContext);
-    shadowMap_.Activate(deviceContext);
+    shadowMap_.Clear();
+    shadowMap_.Activate();
     SceneManager::Instance().ShadowRender();
-    shadowMap_.Deactivete(deviceContext);
+    shadowMap_.Deactivete();
 
     // --- deferred rendering ---
     if (isDeferred_)
@@ -118,22 +118,42 @@ void Application::Render()
     else
     {
         camera.SetPerspectiveFov();
-        DirectX::XMStoreFloat4x4(&sceneConstants_.data.viewProjection_, camera.GetViewMatrix() * camera.GetProjectionMatrix());
-        sceneConstants_.data.lightDirection_ = shader->GetViewPosition();
-        sceneConstants_.data.cameraPosition_ = { camera.GetEye().x, camera.GetEye().y, camera.GetEye().z, 0 };
-        //sceneConstants_.data.cameraPosition_ = shader->GetViewCamera();
+        DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->viewProjection_, camera.GetViewMatrix() * camera.GetProjectionMatrix());
+        sceneConstants_.GetData()->lightDirection_ = Graphics::Instance().GetShader()->GetViewPosition();
+        sceneConstants_.GetData()->cameraPosition_ = { camera.GetEye().x, camera.GetEye().y, camera.GetEye().z, 0 };
+        //sceneConstants_.GetData()->cameraPosition_ = shader->GetViewCamera();
 
-        sceneConstants_.Activate(graphics_.GetDeviceContext(), 1, true, true, true, true);
+        sceneConstants_.Activate(1, true, true, true, true);
 
         // shadowTexture set
         deviceContext->PSSetShaderResources(9, 1, shadowMap_.shaderResourceView.GetAddressOf());
         
         // ポストプロセス開始
-        postProcess_.Activate(deviceContext);
+        postProcess_.Activate();
+
+        // シーン
         SceneManager::Instance().ForwardRender();
-        postProcess_.Deactivate(deviceContext);
-        postProcess_.Draw(deviceContext);
+
+        // デバッグレンダラ
+#if _DEBUG
+        DirectX::XMFLOAT4X4 view, projection;
+        DirectX::XMStoreFloat4x4(&view, Camera::Instance().GetViewMatrix());
+        DirectX::XMStoreFloat4x4(&projection, Camera::Instance().GetProjectionMatrix());
+        Graphics::Instance().GetDebugRenderer()->Render(deviceContext, view, projection);
+#endif
+
+        Graphics::Instance().SetBlendState(Shader::BLEND_STATE::ALPHA);
+        Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
+        Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_OFF_ZW_OFF);
+        
+        postProcess_.Deactivate();
+        postProcess_.Draw();
     }
+
+    Graphics::Instance().SetBlendState(Shader::BLEND_STATE::ALPHA);
+    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
+    Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_OFF_ZW_OFF);
+    SceneManager::Instance().UserInterfaceRender();
 
     DrawDebug();
 
@@ -141,7 +161,7 @@ void Application::Render()
     IMGUI_CTRL_DISPLAY();
 
     // --- 実行 ---
-    UINT syncInterval = 0;
+    UINT syncInterval = 1;
     graphics_.GetSwapChain()->Present(syncInterval, 0);
 }
 

@@ -1,9 +1,8 @@
 #pragma once
-
 #include <d3d11.h>
 #include <wrl.h>
-#include <assert.h>
-#include "../Other/misc.h"
+#include "Graphics.h"
+#include "Misc.h"
 
 // ----- ConstantBuffer の使い方 -----
 // --- GPU側に渡したい変数を定義する。※16バイトの倍数に限る (.h) ---
@@ -14,26 +13,22 @@
 // std::unique_ptr<ConstantBuffer<constants>> constant_;
 //
 // --- 生成する ( CreateResource or Initialize ) ---
-// constant_ = std::make_unique<ConstantBuffer<constants>>(device.Get());
+// constant_ = std::make_unique<ConstantBuffer<constants>>();
 // 
 // --- 更新 ( Update and Render ) ---
-// constant_->data.parameters = { 1, 0, 0, 0 };
-// constant_->Activate(deviceContext.Get(), 0);
+// constant_->GetData()->parameters = { 1, 0, 0, 0 };
+// constant_->Activate(0);
 // 
-
-#define USAGE_DYNAMIC
 
 template <class T>
 class ConstantBuffer
 {
 public:
-    T data;
-
-    ConstantBuffer(ID3D11Device* device)
+    ConstantBuffer()
     {
-        HRESULT hr{ S_OK };
-        
-        D3D11_BUFFER_DESC bufferDesc{};
+        HRESULT result = S_OK;
+
+        D3D11_BUFFER_DESC bufferDesc = {};
         bufferDesc.ByteWidth = (sizeof(T) + 0x0f) & ~0x0f;
         bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         bufferDesc.MiscFlags = 0;
@@ -41,70 +36,67 @@ public:
 #ifdef USAGE_DYNAMIC
         bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
         bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-        hr = device->CreateBuffer(&bufferDesc, 0, bufferObject.GetAddressOf());
-        assert(SUCCEEDED(hr) && hr_trace(hr));
+        result = Graphics::Instance().GetDevice()->CreateBuffer(&bufferDesc, 0, buffer_.GetAddressOf());
+        assert(SUCCEEDED(result) && HRTrace(result));
 #else
         bufferDesc.Usage = D3D11_USAGE_DEFAULT;
         bufferDesc.CPUAccessFlags = 0;
 
-        D3D11_SUBRESOURCE_DATA subresourceData{};
-        subresourceData.pSysMem = &data;
+        D3D11_SUBRESOURCE_DATA subresourceData = {};
+        subresourceData.pSysMem = &data_;
         subresourceData.SysMemPitch = 0;
         subresourceData.SysMemSlicePitch = 0;
-        hr = device->CreateBuffer(&bufferDesc, &subresourceData, bufferObject.GetAddressOf());
-        assert(SUCCEEDED(hr) && hr_trace(hr));
+        result = Graphics::Instance().GetDevice()->CreateBuffer(&bufferDesc, &subresourceData, buffer_.GetAddressOf());
+        assert(SUCCEEDED(result) && HRTrace(result));
 #endif
     }
     virtual ~ConstantBuffer() = default;
-    ConstantBuffer(ConstantBuffer&) = delete;
-    ConstantBuffer& operator =(ConstantBuffer&) = delete;
 
-    void Activate(ID3D11DeviceContext* deviceContext, int slot,
-        bool VSset = true, bool PSset = true, bool CSset = false,
-        bool GSset = false, bool HSset = false)
+    void Activate(const int& slot, const bool& vsSet = true, const bool& psSet = true,
+        const bool& csSet = false, const bool& gsSet = false, const bool& hsSet = false)
     {
-        HRESULT hr{ S_OK };
+        HRESULT result = S_OK;
+        ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
 
 #ifdef USAGE_DYNAMIC
         D3D11_MAP map = D3D11_MAP_WRITE_DISCARD;
         D3D11_MAPPED_SUBRESOURCE mappedBuffer;
 
-        hr = deviceContext->Map(bufferObject.Get(), 0, map, 0, &mappedBuffer);
-        assert(SUCCEEDED(hr) && hr_trace(hr));
-        memcpy_s(mappedBuffer.pData, sizeof(T), &data, sizeof(T));
-        deviceContext->Unmap(bufferObject.Get(), 0);
+        result = deviceContext->Map(buffer_.Get(), 0, map, 0, &mappedBuffer);
+        assert(SUCCEEDED(result) && HRTrace(result));
+        memcpy_s(mappedBuffer.pData, sizeof(T), &data_, sizeof(T));
+        deviceContext->Unmap(buffer_.Get(), 0);
 #else
-        deviceContext->UpdateSubresource(bufferObject.Get(), 0, 0, &data, 0, 0);
+        deviceContext->UpdateSubresource(buffer_.Get(), 0, 0, &data_, 0, 0);
 #endif
 
-        if (VSset)
+        if (vsSet)
         {   // 頂点シェーダー ( VertexShader )
-            deviceContext->VSSetConstantBuffers(slot, 1, bufferObject.GetAddressOf());
+            deviceContext->VSSetConstantBuffers(slot, 1, buffer_.GetAddressOf());
         }
-        if (PSset)
+        if (psSet)
         {   // ピクセルシェーダー ( PixelShader )
-            deviceContext->PSSetConstantBuffers(slot, 1, bufferObject.GetAddressOf());
+            deviceContext->PSSetConstantBuffers(slot, 1, buffer_.GetAddressOf());
         }
-        if (CSset)
+        if (csSet)
         {   // コンピュートシェーダー ( ComputeShader )
-            deviceContext->CSSetConstantBuffers(slot, 1, bufferObject.GetAddressOf());
+            deviceContext->CSSetConstantBuffers(slot, 1, buffer_.GetAddressOf());
         }
-        if (GSset)
+        if (gsSet)
         {   // ジオメトリシェーダー ( GeometryShader )
-            deviceContext->GSSetConstantBuffers(slot, 1, bufferObject.GetAddressOf());
+            deviceContext->GSSetConstantBuffers(slot, 1, buffer_.GetAddressOf());
         }
-        if (HSset)
+        if (hsSet)
         {   // ハルシェーダー ( HullShader )
-            deviceContext->HSSetConstantBuffers(slot, 1, bufferObject.GetAddressOf());
+            deviceContext->HSSetConstantBuffers(slot, 1, buffer_.GetAddressOf());
         }
     }
+    void Deactivete() {}
 
-    void Deavtivate(ID3D11DeviceContext* deviceContext)
-    {
-        // NOP
-    }
+    T* GetData() { return &data_; }
 
 private:
-    Microsoft::WRL::ComPtr<ID3D11Buffer> bufferObject;
+    T data_;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> buffer_;
 };
 

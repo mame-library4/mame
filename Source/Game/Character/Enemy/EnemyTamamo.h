@@ -1,31 +1,10 @@
 #pragma once
 #include "Enemy.h"
 #include "Stone/Stone.h"
+#include "sprite.h"
 
 class EnemyTamamo : public Enemy
 {
-public:// --- ’è” ---
-#pragma region ’è”
-#if 0
-    enum class STATE
-    {
-        BiteState,          // Šš‚İ‚Â‚«
-        SlashState,         // ‚Ğ‚Á‚©‚«
-        TailSwipeState,     // K”ö
-        SpinAttackState,    // ‰ñ“]
-        SpineShotState,     // ™UŒ‚
-        TackleState,        // “Ëi
-        PounceState,        // ”ò‚Ñ‚©‚©‚éi‹}Pj
-        RoarState,          // ™ôšK
-        IntimidataState,    // ˆĞŠd
-        FilnchState,        // ‚Ğ‚é‚İ
-        WalkState,          // •à‚«
-        StepState,          // ƒXƒeƒbƒv
-    };
-#endif
-
-#pragma endregion ’è”
-
 public:
     EnemyTamamo();
     ~EnemyTamamo() override;
@@ -34,6 +13,7 @@ public:
     void Finalize()                         override;
     void Update(const float& elapsedTime)   override;
     void Render()                           override;
+    void RenderUserInterface()              override;
     
     void DrawDebug()                        override;
     void DebugRender(DebugRenderer* debugRenderer);
@@ -58,5 +38,9 @@ private:
 
     static const int maxStoneNum_ = 15;
     std::unique_ptr<Stone> stones_[maxStoneNum_];
+
+    std::unique_ptr<Sprite> hpSprite_;
+    std::unique_ptr<Sprite> hpBackSprite_;
+    std::unique_ptr<Sprite> winSprite_;
 };
 

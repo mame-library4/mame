@@ -84,6 +84,10 @@ EnemyTamamo::EnemyTamamo()
 
     // collisionData登録
     RegisterCollisionData();
+
+    hpSprite_ = std::make_unique<Sprite>(L"./Resources/Image/White.png");
+    hpBackSprite_ = std::make_unique<Sprite>(L"./Resources/Image/White.png");
+    winSprite_ = std::make_unique<Sprite>(L"./Resources/Image/youwin.png");
 }
 
 // ----- デストラクタ -----
@@ -97,7 +101,7 @@ void EnemyTamamo::Initialize()
     // サイズを設定
     GetTransform()->SetScaleFactor(1.5f);
 
-    GetTransform()->SetPositionZ(25);
+    GetTransform()->SetPositionZ(10);
 
     // 回転速度設定
     SetRotateSpeed(5.0f);
@@ -106,8 +110,17 @@ void EnemyTamamo::Initialize()
     SetWalkSpeed(3.0f);
 
     // 体力設定
-    SetMaxHealth(3000.0f);
+    SetMaxHealth(500.0f);
+    //SetMaxHealth(3000.0f);
     SetHealth(GetMaxHealth());
+
+    // sprite
+    hpBackSprite_->GetTransform()->SetPosition(340, 650);
+    hpBackSprite_->GetTransform()->SetSize(600, 10);
+    hpBackSprite_->GetTransform()->SetColor(0, 0, 0);
+    hpSprite_->GetTransform()->SetPosition(340, 650);
+    hpSprite_->GetTransform()->SetSize(600, 10);
+    hpSprite_->GetTransform()->SetColor(1, 0, 0);
 }
 
 // ----- 終了化 -----
@@ -127,6 +140,14 @@ void EnemyTamamo::Update(const float& elapsedTime)
 
     // behaviorTree更新
     UpdateNode(elapsedTime);
+
+    // sprite
+    float health = GetHealth();
+    float maxHealth = GetMaxHealth();
+    float hp = health / maxHealth;
+    hp = std::max(hp, 0.0f);
+    float maxSizeX = 600;
+    hpSprite_->GetTransform()->SetSizeX(maxSizeX * hp);
 }
 
 // ----- 描画 -----
@@ -140,11 +161,22 @@ void EnemyTamamo::Render()
     }
 }
 
+void EnemyTamamo::RenderUserInterface()
+{
+    hpBackSprite_->Render();
+    hpSprite_->Render();
+
+    if (isWin_) winSprite_->Render();
+}
+
 // ----- ImGui用 -----
 void EnemyTamamo::DrawDebug()
 {
     if (ImGui::Begin("Tamamo"))
     {
+        hpBackSprite_->DrawDebug();
+        hpSprite_->DrawDebug();
+
         stones_[0]->DrawDebug();
 
         ImGui::Checkbox("DamageSphere", &isDamageSphere_);

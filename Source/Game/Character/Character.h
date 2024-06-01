@@ -24,14 +24,19 @@ public:
     // ----- 吹っ飛ばす処理 -----
     void UpdateForce(const float& elapsedTime);
     void AddForce(const DirectX::XMFLOAT3& direction, const float& power);
+    void AddDamage(const float& damage) { health_ -= damage; }
 
 public:// --- 取得・設定 ---
 #pragma region [Get, Set] Function
     // ---------- 速度 ----------
     [[nodiscard]] const DirectX::XMFLOAT3 GetVelocity() const { return velocity_; }
+    [[nodiscard]] const float GetAcceleration() const { return acceleration_; }
+    [[nodiscard]] const float GetDeceleration() const { return deceleration_; }
     [[nodiscard]] const float GetMaxSpeed() const { return maxSpeed_; }
     
     void SetVelocity(const DirectX::XMFLOAT3& velocity) { velocity_ = velocity; }
+    void SetAcceleration(const float& speed) { acceleration_ = speed; }
+    void SetDeceleration(const float& speed) { deceleration_ = speed; }
     void SetMaxSpeed(const float& maxSpeed) { maxSpeed_ = maxSpeed; }
 
     // ---------- 回転速度 ----------
@@ -77,6 +82,8 @@ protected:
 
 private:
     DirectX::XMFLOAT3   velocity_   = {};   // 速度
+    float               acceleration_ = 0.0f; // 速度
+    float               deceleration_ = 0.0f; // 減速
     float               maxSpeed_   = 0.0f; // 最大速度
 
     float               rotateSpeed_ = 1.0f; // 回転速度

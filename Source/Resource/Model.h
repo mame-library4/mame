@@ -11,7 +11,7 @@
 
 #include <unordered_map>
 
-#include "../Graphics/ConstantBuffer.h"
+#include "ConstantBuffer.h"
 
 // cereal
 #include <cereal/archives/binary.hpp>

@@ -54,6 +54,7 @@ public:
     virtual void Finalize()                         = 0;
     virtual void Update(const float& elapsedTime)   = 0;
     virtual void Render()                           = 0;
+    virtual void RenderUserInterface()              = 0;
     virtual void DrawDebug()                        = 0;
     virtual void DebugRender(DebugRenderer* debugRenderer) = 0;
 
@@ -74,6 +75,9 @@ public:
 
     // ---------- 自分自身からプレイヤーへのベクトル ----------
     [[nodiscard]] const DirectX::XMFLOAT3 CalcDirectionToPlayer();
+
+    // TODO:消す。これほんまにいらん
+    bool isWin_ = false;
 
 public:// --- 取得・設定 ---
 #pragma region [Get, Set] Function

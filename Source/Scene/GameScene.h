@@ -5,6 +5,7 @@
 #include "../Game/Character/Enemy/EnemyTamamo.h"
 
 #include "../Graphics/Particle.h"
+#include "SkyBox.h"
 
 class GameScene : public BaseScene
 {

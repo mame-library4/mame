@@ -1,11 +1,15 @@
 #include "FrameBuffer.h"
-#include "../Other/misc.h"
+#include "Graphics.h"
+#include "Misc.h"
 
-FrameBuffer::FrameBuffer(ID3D11Device* device, uint32_t width, uint32_t height, bool hasDepthStancil/*BLOOM*/)
+// ----- コンストラクタ -----
+FrameBuffer::FrameBuffer(const uint32_t& width, const uint32_t& height, const bool& hasDepthStancil/*BLOOM*/)
 {
-    HRESULT hr{ S_OK };
+    HRESULT         result = S_OK;
+    ID3D11Device*   device = Graphics::Instance().GetDevice();
+        
     Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTargetBuffer;
-    D3D11_TEXTURE2D_DESC texture2dDesc{};
+    D3D11_TEXTURE2D_DESC texture2dDesc = {};
     texture2dDesc.Width = width;
     texture2dDesc.Height = height;
     texture2dDesc.MipLevels = 1;
@@ -17,75 +21,73 @@ FrameBuffer::FrameBuffer(ID3D11Device* device, uint32_t width, uint32_t height, 
     texture2dDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
     texture2dDesc.CPUAccessFlags = 0;
     texture2dDesc.MiscFlags = 0;
-    hr = device->CreateTexture2D(&texture2dDesc, 0, renderTargetBuffer.GetAddressOf());
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    result = device->CreateTexture2D(&texture2dDesc, 0, renderTargetBuffer.GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
 
-    D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc{};
+    D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc = {};
     renderTargetViewDesc.Format = texture2dDesc.Format;
     renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-    hr = device->CreateRenderTargetView(renderTargetBuffer.Get(), &renderTargetViewDesc,
-        renderTargetView.GetAddressOf());
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    result = device->CreateRenderTargetView(renderTargetBuffer.Get(), &renderTargetViewDesc, renderTargetView_.GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
 
-    D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc{};
+    D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
     shaderResourceViewDesc.Format = texture2dDesc.Format;
     shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
     shaderResourceViewDesc.Texture2D.MipLevels = 1;
-    hr = device->CreateShaderResourceView(renderTargetBuffer.Get(), &shaderResourceViewDesc,
-        shaderResourceViews[0].GetAddressOf());
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    result = device->CreateShaderResourceView(renderTargetBuffer.Get(), &shaderResourceViewDesc, shaderResourceViews_[0].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
 
     Microsoft::WRL::ComPtr<ID3D11Texture2D> depthStencilBuffer;
     texture2dDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
     texture2dDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
-    hr = device->CreateTexture2D(&texture2dDesc, 0, depthStencilBuffer.GetAddressOf());
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    result = device->CreateTexture2D(&texture2dDesc, 0, depthStencilBuffer.GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
 
     D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc{};
     depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
     depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
     depthStencilViewDesc.Flags = 0;
-    hr = device->CreateDepthStencilView(depthStencilBuffer.Get(), &depthStencilViewDesc,
-        depthStencilView.GetAddressOf());
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    result = device->CreateDepthStencilView(depthStencilBuffer.Get(), &depthStencilViewDesc, depthStencilView_.GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
 
     shaderResourceViewDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
     shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-    hr = device->CreateShaderResourceView(depthStencilBuffer.Get(), &shaderResourceViewDesc,
-        shaderResourceViews[1].GetAddressOf());
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    result = device->CreateShaderResourceView(depthStencilBuffer.Get(), &shaderResourceViewDesc, shaderResourceViews_[1].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
 
-    viewport.Width = static_cast<float>(width);
-    viewport.Height = static_cast<float>(height);
-    viewport.MinDepth = 0.0f;
-    viewport.MaxDepth = 1.0f;
-    viewport.TopLeftX = 0.0f;
-    viewport.TopLeftY = 0.0f;
+    viewport_.Width = static_cast<float>(width);
+    viewport_.Height = static_cast<float>(height);
+    viewport_.MinDepth = 0.0f;
+    viewport_.MaxDepth = 1.0f;
+    viewport_.TopLeftX = 0.0f;
+    viewport_.TopLeftY = 0.0f;
 }
 
-void FrameBuffer::Clear(ID3D11DeviceContext* deviceContext,
-    float r, float g, float b, float a, float depth)
+void FrameBuffer::Clear(float r, float g, float b, float a, float depth)
 {
+    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
     float color[4]{ r,g,b,a };
-    deviceContext->ClearRenderTargetView(renderTargetView.Get(), color);
-    deviceContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, depth, 0);
+    deviceContext->ClearRenderTargetView(renderTargetView_.Get(), color);
+    deviceContext->ClearDepthStencilView(depthStencilView_.Get(), D3D11_CLEAR_DEPTH, depth, 0);
 }
 
-void FrameBuffer::Activate(ID3D11DeviceContext* deviceContext)
+void FrameBuffer::Activate()
 {
-    viewportCount = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
-    deviceContext->RSGetViewports(&viewportCount, cachedViewports);
-    deviceContext->OMGetRenderTargets(1, cachedRenderTargetView.ReleaseAndGetAddressOf(),
-        cachedDepthStencilView.ReleaseAndGetAddressOf());
+    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
 
-    deviceContext->RSSetViewports(1, &viewport);
-    deviceContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(),
-        depthStencilView.Get());
+    viewportCount_ = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
+    deviceContext->RSGetViewports(&viewportCount_, cachedViewports_);
+    deviceContext->OMGetRenderTargets(1, cachedRenderTargetView_.ReleaseAndGetAddressOf(),
+        cachedDepthStencilView_.ReleaseAndGetAddressOf());
+
+    deviceContext->RSSetViewports(1, &viewport_);
+    deviceContext->OMSetRenderTargets(1, renderTargetView_.GetAddressOf(), depthStencilView_.Get());
 }
 
-void FrameBuffer::Deactivate(ID3D11DeviceContext* deviceContext)
+void FrameBuffer::Deactivate()
 {
-    deviceContext->RSSetViewports(viewportCount, cachedViewports);
-    deviceContext->OMSetRenderTargets(1, cachedRenderTargetView.GetAddressOf(),
-        cachedDepthStencilView.Get());
+    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
+
+    deviceContext->RSSetViewports(viewportCount_, cachedViewports_);
+    deviceContext->OMSetRenderTargets(1, cachedRenderTargetView_.GetAddressOf(), cachedDepthStencilView_.Get());
 }

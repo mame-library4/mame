@@ -8,7 +8,7 @@
 class DebugRenderer
 {
 public:
-	DebugRenderer(ID3D11Device* device);
+	DebugRenderer();
 	~DebugRenderer() {}
 
 public:

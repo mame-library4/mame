@@ -25,7 +25,7 @@ private:
     };
 
 public:
-    ShadowMap(ID3D11Device* device, uint32_t width, uint32_t height);
+    ShadowMap(const uint32_t& width, const uint32_t& height);
     virtual ~ShadowMap() = default;
     ShadowMap(const ShadowMap&) = delete;
     ShadowMap& operator =(const ShadowMap&) = delete;
@@ -35,9 +35,9 @@ public:
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView;
     D3D11_VIEWPORT viewport;
 
-    void Clear(ID3D11DeviceContext* deviceContext, float depth = 1);
-    void Activate(ID3D11DeviceContext* deviceContext);
-    void Deactivete(ID3D11DeviceContext* deviceContext);
+    void Clear(const float& depth = 1);
+    void Activate();
+    void Deactivete();
     void DrawDebug();
     DirectX::XMFLOAT4X4 CalcViewProjection(const float& aspectRatio);
 

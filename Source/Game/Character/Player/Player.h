@@ -1,9 +1,10 @@
 #pragma once
 #include <memory>
 #include "../Character.h"
-#include "../../../AI/StateMachine/StateMachine.h"
-#include "../../../Input/Input.h"
-#include "../Graphics/Graphics.h"
+#include "StateMachine/StateMachine.h"
+#include "Input.h"
+#include "Graphics.h"
+#include "Effect/SwordTrail/SwordTrail.h"
 
 class Player : public Character
 {
@@ -12,8 +13,10 @@ public:// --- 定数 ---
     enum class STATE
     {
         Idle,               // 待機
-        Walk,               // 歩き
-        Run,                // 走り
+
+        Move,
+        //Walk,               // 歩き
+        //Run,                // 走り
 
         Avoidance,          // 回避
         Counter,            // カウンター
@@ -27,8 +30,6 @@ public:// --- 定数 ---
         StrongAttack1,      // 強攻撃1
 
         Damage,
-
-        Move,
     };
 
     enum class Animation
@@ -41,15 +42,11 @@ public:// --- 定数 ---
         LightAttack1,
         LightAttack2,
 
-        Avoidance,  // 回避
-
-        Protect,
-
         StrongAttack0,
+        StrongAttack1,
+
         Damage0,
         Damage1,
-        StrongAttack1,
-        StrongAttack2,
     };
 
     enum class NextInput
@@ -72,6 +69,9 @@ public:
     void DrawDebug()                        override;  
     void DebugRender(DebugRenderer* debugRenderer);
 
+    void Turn(const float& elapsedTime);
+    void Move(const float& elapsedTime);
+
     void UpdateAttackState(const Player::STATE& state);
     void ResetFlags(); // フラグをリセットする
 
@@ -90,6 +90,10 @@ public:
 
     void SetWeight(const float& weight) override;
     void AddWeight(const float& weight) override;
+
+    // 攻撃判定有効フラグ設定
+    void SetAttackFlag(const bool& activeFlag = true);
+    bool GetIsActiveAttackFlag();
 
 public:// --- 取得・設定 ---
 #pragma region [Get, Set] Function
@@ -118,6 +122,9 @@ private:
     // ---------- ステートマシン --------------------
     std::unique_ptr<StateMachine<State<Player>>> stateMachine_;
 
+    // ----- 移動 -----
+    DirectX::XMFLOAT3 moveDirection_ = {};
+
     // ---------- 行動 ------------------------------
     int nextInput_ = false; // 先行入力
     bool isAvoidance_ = false; // 回避
@@ -128,4 +135,6 @@ private:
     bool isAttackSphere_ = true;
 
     DirectX::XMFLOAT3 offset_ = {};
+
+    SwordTrail swordTrail_;
 };

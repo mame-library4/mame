@@ -17,6 +17,8 @@ void Camera::Initialize()
     targetOffset_ = { 0,-1,0 };
     cameraOffset_ = { 0,3,0 };
     length_ = 7.0f;
+    verticalRotationSpeed_ = 1.0f;
+    horizontalRotationSpeed_ = 2.0f;
 }
 
 // ----- 更新 -----
@@ -59,28 +61,33 @@ void Camera::SetPerspectiveFov()
 
 void Camera::DrawDebug()
 {
-    if (ImGui::TreeNode("Camera"))
+    if (ImGui::BeginMenu("Camera"))
     {
+        ImGui::Checkbox("InvertVertical", &invertVertical_);
+
         ImGui::DragFloat("Length", &length_, 0.01f);
         ImGui::DragFloat("MinLength", &minLength_, 0.01f);
         ImGui::DragFloat("MaxLength", &maxLength_, 0.01f);
 
-        ImGui::DragFloat("fov", &fov_, 0.01f);
-        ImGui::DragFloat("inputThreshold", &inputThreshold_, 0.1f, 0.0f, 1.0f);
+        ImGui::DragFloat("Fov", &fov_, 0.01f);
+        ImGui::DragFloat("InputThreshold", &inputThreshold_, 0.1f, 0.0f, 1.0f);
         
         ImGui::DragFloat3("FocusOffset", &targetOffset_.x);
         ImGui::DragFloat3("CameraOffset", &cameraOffset_.x);
 
+        ImGui::DragFloat("VerticalRotationSpeed", &verticalRotationSpeed_);
+        ImGui::DragFloat("HorizontalRotationSpeed", &horizontalRotationSpeed_);
+
         float minXRotation = DirectX::XMConvertToDegrees(minXRotation_);
         float maxXRotation = DirectX::XMConvertToDegrees(maxXRotation_);
-        ImGui::DragFloat("minXRotation", &minXRotation, 1.0f, -75.0f, -20.0f);
-        ImGui::DragFloat("maxXRotation", &maxXRotation, 1.0f, -20.0f, 20.0f);
+        ImGui::DragFloat("MinXRotation", &minXRotation, 1.0f, -75.0f, -20.0f);
+        ImGui::DragFloat("MaxXRotation", &maxXRotation, 1.0f, -20.0f, 20.0f);
         minXRotation_ = DirectX::XMConvertToRadians(minXRotation);
         maxXRotation_ = DirectX::XMConvertToRadians(maxXRotation);
 
         transform_.DrawDebug();
 
-        ImGui::TreePop();
+        ImGui::EndMenu();
     }
 }
 
@@ -92,15 +99,17 @@ void Camera::Rotate(const float& elapsedTime)
     float aRy = gamePad.GetAxisRY();
     DirectX::XMFLOAT3 rotate = GetTransform()->GetRotation();
 
+    const float invertVertical = invertVertical_ ? -1 : 1;
+
     // コントローラーの傾きが一定以上じゃないと判定を取らない
     // ( 操作ストレス軽減のため制限を設ける )
     // 横移動したいのに上下移動してしまわないように...
     if (fabs(aRy) >= inputThreshold_)
     {
-        rotate.x -= aRy * elapsedTime;
+        rotate.x -= aRy * invertVertical * verticalRotationSpeed_ * elapsedTime;
     }
     // 横移動は制限なし
-    rotate.y += aRx * elapsedTime;
+    rotate.y += aRx * horizontalRotationSpeed_ * elapsedTime;
 
     // length制御
     float deltaLength = maxLength_ - minLength_;

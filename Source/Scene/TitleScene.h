@@ -1,9 +1,7 @@
 #pragma once
 #include "BaseScene.h"
 #include <memory>
-#include "../Game/Character/Player/Player.h"
-#include "../Game/Stage/StageNormal.h"
-#include "../Game/Character/Enemy/EnemyTamamo.h"
+#include "Sprite.h"
 
 class TitleScene : public BaseScene
 {
@@ -22,5 +20,9 @@ public:// äÓñ{ìIÇ»ä÷êî
     void UserInterfaceRender()              override;
 
     void DrawDebug()                        override; // ImGuióp
+
+private:
+    std::unique_ptr<Sprite> sprite_;
+
 
 };

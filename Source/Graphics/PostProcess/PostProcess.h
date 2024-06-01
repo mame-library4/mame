@@ -8,12 +8,12 @@
 class PostProcess
 {
 public:
-    PostProcess(ID3D11Device* device, uint32_t width, uint32_t height);
+    PostProcess(const uint32_t& width, const uint32_t& height);
     ~PostProcess();
 
-    void Activate(ID3D11DeviceContext* deviceContext);
-    void Deactivate(ID3D11DeviceContext* deviceContext);
-    void Draw(ID3D11DeviceContext* deviceContext);
+    void Activate();
+    void Deactivate();
+    void Draw();
 
     void DrawDebug();
 

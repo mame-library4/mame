@@ -1,30 +1,17 @@
-#include "sprite.h"
-#include "../Other/misc.h"
-#include <sstream>
+#include "Sprite.h"
+#include "Texture.h"
+#include "Misc.h"
+#include "Graphics.h"
+#include "Camera.h"
 
-#include "../../../External/DirectXTK-main/Inc/WICTextureLoader.h"
+// ----- ImGui用 -----
+int Sprite::nameNum_ = 0;
 
-#include "texture.h"
-#include "../Graphics/shader.h"
-#include "../Graphics/Graphics.h"
-
-#include "NoiseTexture.h"
-
-#include "../Other/Easing.h"
-
-//---ImGui名前かぶり防止用---//
-int Sprite::nameNum = 0;
-//---ImGui名前かぶり防止用---//
-
-// コンストラクタ
-Sprite::Sprite(ID3D11Device* device, const wchar_t* filename)
+// ----- コンストラクタ -----
+Sprite::Sprite(const wchar_t* filename)
 {
-    HRESULT hr{ S_OK };
-    Graphics& graphics = Graphics::Instance();
-
-    // Animation
-    animationTime_ = 0.0f;
-    animationFrame_ = 0.0f;
+    HRESULT result = S_OK;
+    ID3D11Device* device = Graphics::Instance().GetDevice();
 
     // 頂点情報のセット
     Vertex vertices[]
@@ -35,112 +22,64 @@ Sprite::Sprite(ID3D11Device* device, const wchar_t* filename)
         { { +1.0, -1.0, 0 }, { 1, 1, 1, 1 }, { 1, 1 } },
     };
 
-    // 定数バッファ生成
-    {
-        D3D11_BUFFER_DESC bufferDesc{};
-        bufferDesc.ByteWidth = sizeof(vertices);
-        bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-        bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-        bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-        bufferDesc.MiscFlags = 0;
-        bufferDesc.StructureByteStride = 0;
+    D3D11_BUFFER_DESC bufferDesc{};
+    bufferDesc.ByteWidth = sizeof(vertices);
+    bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+    bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    bufferDesc.MiscFlags = 0;
+    bufferDesc.StructureByteStride = 0;
 
-        D3D11_SUBRESOURCE_DATA subresource_data{};
-        subresource_data.pSysMem = vertices;
-        subresource_data.SysMemPitch = 0;
-        subresource_data.SysMemSlicePitch = 0;
+    D3D11_SUBRESOURCE_DATA subresourceData = {};
+    subresourceData.pSysMem = vertices;
+    subresourceData.SysMemPitch = 0;
+    subresourceData.SysMemSlicePitch = 0;
 
-        hr = device->CreateBuffer(&bufferDesc, &subresource_data, vertexBuffer.GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-
-        // spriteDissolve
-        bufferDesc.ByteWidth = sizeof(DissolveConstants);
-        bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-        bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        bufferDesc.CPUAccessFlags = 0;
-        bufferDesc.MiscFlags = 0;
-        bufferDesc.StructureByteStride = 0;
-        hr = graphics.GetDevice()->CreateBuffer(&bufferDesc, nullptr, dissolveConstantBuffer.GetAddressOf());
-        _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
-    }
+    result = device->CreateBuffer(&bufferDesc, &subresourceData, vertexBuffer_.GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
 
     // 入力レイアウトオブジェクトの生成
-    D3D11_INPUT_ELEMENT_DESC input_element_desc[]
+    D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
     {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-            D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0,
-            D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0,
-            D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "POSITION",   0, DXGI_FORMAT_R32G32B32_FLOAT,     0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "COLOR",      0, DXGI_FORMAT_R32G32B32A32_FLOAT,  0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD",   0, DXGI_FORMAT_R32G32_FLOAT,        0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
     };
 
-    // シェーダー関連
-    CreateVsFromCso(device, "./Resources/Shader/sprite_vs.cso", vertexShader.GetAddressOf(), inputLayout.GetAddressOf(), input_element_desc, _countof(input_element_desc));
-    CreatePsFromCso(device, "./Resources/Shader/sprite_ps.cso", pixelShader.GetAddressOf());
+    // シェーダー
+    Graphics::Instance().CreateVsFromCso("./Resources/Shader/sprite_vs.cso", vertexShader_.GetAddressOf(), inputLayout_.GetAddressOf(), inputElementDesc, _countof(inputElementDesc));
+    Graphics::Instance().CreatePsFromCso("./Resources/Shader/sprite_ps.cso", pixelShader_.GetAddressOf());
 
     // テクスチャのロード
-    LoadTextureFromFile(device, filename, shaderResourceView.GetAddressOf(), &texture2dDesc);
+    D3D11_TEXTURE2D_DESC texture2dDesc = {};
+    Texture::Instance().LoadTexture(filename, shaderResourceView_.GetAddressOf(), &texture2dDesc);
 
     // 画像サイズを設定
-    GetSpriteTransform()->SetSize(DirectX::XMFLOAT2(texture2dDesc.Width, texture2dDesc.Height));
-    GetSpriteTransform()->SetTexSize(DirectX::XMFLOAT2(texture2dDesc.Width, texture2dDesc.Height));
+    GetTransform()->SetSize(DirectX::XMFLOAT2(texture2dDesc.Width, texture2dDesc.Height));
+    GetTransform()->SetTexSize(DirectX::XMFLOAT2(texture2dDesc.Width, texture2dDesc.Height));
 
-    //---ImGui名前かぶり防止用---//
-    std::string name = "Sprite" + std::to_string(nameNum++);
+    // ImGui名前設定
+    std::string name = "Sprite" + std::to_string(nameNum_++);
     SetName(name.c_str());
-    //---ImGui名前かぶり防止用---//
 }
 
-// デストラクタ
+// ----- デストラクタ -----
 Sprite::~Sprite()
 {
-    --nameNum;
+    --nameNum_;
 }
 
-// 初期化
+// ----- 初期化 -----
 void Sprite::Initialize()
 {
+    // animation
     animationTime_ = 0.0f;
     animationFrame_ = 0.0f;
 }
 
+// ----- 更新 -----
 void Sprite::Update(const float& elapsedTime)
 {
-    // ディゾルブ更新
-    UpdateSpriteDissolve(elapsedTime);
-}
-
-void Sprite::UpdateSpriteDissolve(const float& elapsedTime)
-{
-    if (isFade_)
-    {
-        if (GetSpriteDissolve()->GetDissolveType() == 0)
-        {
-            if (FadeIn(elapsedTime))SetIsFade(false);
-        }
-        else
-        {
-            if (FadeOut(elapsedTime))SetIsFade(false);
-        }
-    }
-
-    // いい感じにFadeになるように設定してる
-    GetSpriteDissolve()->SetDissolveValue(GetSpriteDissolve()->GetDissolveBlackValue() - GetSpriteDissolve()->GetDelay());
-}
-
-bool Sprite::FadeIn(const float& elapsedTime)
-{
-    GetSpriteDissolve()->SubtractDissolveBlackValue(elapsedTime);
-
-    return GetSpriteDissolve()->GetDissolveBlackValue() < 0.0f;
-}
-
-bool Sprite::FadeOut(const float& elapsedTime)
-{
-    GetSpriteDissolve()->AddDissolveBlackValue(elapsedTime);
-
-    return GetSpriteDissolve()->GetDissolveBlackValue() > 2.0f;
 }
 
 // アニメーション関数
@@ -166,8 +105,8 @@ bool Sprite::PlayAnimation(const float elapsedTime, const float frameSpeed, cons
             animationFrame_ = totalAnimationFrame - 1;
 
             // ----- 一応この処理を書いておく -----
-            DirectX::XMFLOAT2 texPos = GetSpriteTransform()->GetTexPos();
-            const DirectX::XMFLOAT2 texSize = GetSpriteTransform()->GetTexSize();
+            DirectX::XMFLOAT2 texPos = GetTransform()->GetTexPos();
+            const DirectX::XMFLOAT2 texSize = GetTransform()->GetTexSize();
 
             if (animationVertical) texPos.y = texSize.y * animationFrame_;
             else                   texPos.x = texSize.x * animationFrame_;
@@ -177,15 +116,22 @@ bool Sprite::PlayAnimation(const float elapsedTime, const float frameSpeed, cons
         }
     }
 
-    DirectX::XMFLOAT2 texPos = GetSpriteTransform()->GetTexPos();
-    const DirectX::XMFLOAT2 texSize = GetSpriteTransform()->GetTexSize();
+    DirectX::XMFLOAT2 texPos = GetTransform()->GetTexPos();
+    const DirectX::XMFLOAT2 texSize = GetTransform()->GetTexSize();
 
     if (animationVertical) texPos.y = texSize.y * animationFrame_;
     else                   texPos.x = texSize.x * animationFrame_;
 
-    GetSpriteTransform()->SetTexPos(texPos);
+    GetTransform()->SetTexPos(texPos);
 
     return false;
+}
+
+void Sprite::ResetAnimation()
+{
+    transform_.SetTexPos(DirectX::XMFLOAT2(0, 0));
+    animationTime_ = 0.0f;
+    animationFrame_ = 0.0f;
 }
 
 DirectX::XMFLOAT2 Sprite::ConvertToScreenPos(
@@ -222,60 +168,14 @@ DirectX::XMFLOAT2 Sprite::ConvertToScreenPos(
 }
 
 // 描画
-void Sprite::Render(ID3D11PixelShader* psShader, const char* type)
+void Sprite::Render(ID3D11PixelShader* psShader)
 {
-    Graphics& graphics = Graphics::Instance();
-    Shader* shader = graphics.GetShader();
+    HRESULT result = S_OK;
+    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
+    D3D11_VIEWPORT viewport = {};
+    UINT numViewports = 1;
     
-    // 何をセットするのかによって分ける
-    SetConstantBuffer(type);
-
-    // spriteDissolve
-    NoiseTexture::Instance().SetConstantBuffers(1);
-
-    // 定数バッファの更新
-    {
-        DissolveConstants dissolve{};
-        dissolve.parameters.x = GetSpriteDissolve()->GetDissolveValue();
-        dissolve.parameters.y = GetSpriteDissolve()->GetDissolveBlackValue();
-        dissolve.parameters.z = GetSpriteDissolve()->GetEdgeThreshold();
-        dissolve.edgeColor = GetSpriteDissolve()->GetEdgeColor();
-        graphics.GetDeviceContext()->UpdateSubresource(dissolveConstantBuffer.Get(), 0, 0, &dissolve, 0, 0);
-        graphics.GetDeviceContext()->VSSetConstantBuffers(3, 1, dissolveConstantBuffer.GetAddressOf());
-        graphics.GetDeviceContext()->PSSetConstantBuffers(3, 1, dissolveConstantBuffer.GetAddressOf());
-    }
-
-    // 描画
-    Render(graphics.GetDeviceContext(), psShader);
-}
-
-void Sprite::SetConstantBuffer(const char* type)
-{
-    Shader* shader = Graphics::Instance().GetShader();
-
-    if (type == "Emissive")
-    {
-        shader->SetEmissiveColor(GetEmissive()->GetEmissiveColor());
-        shader->SetEmissiveIntensity(GetEmissive()->GetEmissiveIntensity());
-        shader->UpdateEmissiveConstants(6);
-    }
-
-    if (type == "Dissolve")
-    {
-        shader->SetDissolveIntensity(GetSpriteDissolve()->GetDissolveValue());
-        shader->UpdateDissolveConstants(3);
-    }
-}
-
-
-// 描画する本体の関数
-void Sprite::Render(ID3D11DeviceContext* deviceContext, ID3D11PixelShader* psShader)
-{
-    HRESULT hr{ S_OK };
-
-    // スクリーン（ビューポート）のサイズを取得する
-    D3D11_VIEWPORT viewport{};
-    UINT numViewports{ 1 };
+    // スクリーンサイズを取得
     deviceContext->RSGetViewports(&numViewports, &viewport);
 
     // 短形の角頂点の位置（スクリーン座標系）を計算する
@@ -287,42 +187,27 @@ void Sprite::Render(ID3D11DeviceContext* deviceContext, ID3D11PixelShader* psSha
     // (x2, y2) *----* (x3, y3)
 
     // left-top
-    float x0{ GetSpriteTransform()->GetPosX() };
-    float y0{ GetSpriteTransform()->GetPosY() };
+    float x0 = GetTransform()->GetPositionX();
+    float y0 = GetTransform()->GetPositionY();
     // right-top
-    float x1{ GetSpriteTransform()->GetPosX() + GetSpriteTransform()->GetSizeX() };
-    float y1{ GetSpriteTransform()->GetPosY() };
+    float x1 = GetTransform()->GetPositionX() + GetTransform()->GetSizeX();
+    float y1 = GetTransform()->GetPositionY();
     // left-bottom
-    float x2{ GetSpriteTransform()->GetPosX() };
-    float y2{ GetSpriteTransform()->GetPosY() + GetSpriteTransform()->GetSizeY() };
+    float x2 = GetTransform()->GetPositionX();
+    float y2 = GetTransform()->GetPositionY() + GetTransform()->GetSizeY();
     // right-bottom
-    float x3{ GetSpriteTransform()->GetPosX() + GetSpriteTransform()->GetSizeX() };
-    float y3{ GetSpriteTransform()->GetPosY() + GetSpriteTransform()->GetSizeY() };
+    float x3 = GetTransform()->GetPositionX() + GetTransform()->GetSizeX();
+    float y3 = GetTransform()->GetPositionY() + GetTransform()->GetSizeY();
 
-    // 矩形回転
-    auto rotate = [](float& x, float& y, float cx, float cy, float angle)
-    {
-        x -= cx;
-        y -= cy;
+    // 回転処理 ( 回転の中心を短形の中心点にした場合 )
+    float cx = GetTransform()->GetPositionX() + GetTransform()->GetSizeX() * 0.5f;
+    float cy = GetTransform()->GetPositionY() + GetTransform()->GetSizeY() * 0.5f;
+    Rotate(x0, y0, cx, cy, GetTransform()->GetAngle());
+    Rotate(x1, y1, cx, cy, GetTransform()->GetAngle());
+    Rotate(x2, y2, cx, cy, GetTransform()->GetAngle());
+    Rotate(x3, y3, cx, cy, GetTransform()->GetAngle());
 
-        float cos{ cosf(DirectX::XMConvertToRadians(angle)) };
-        float sin{ sinf(DirectX::XMConvertToRadians(angle)) };
-        float tx{ x }, ty{ y };
-        x = cos * tx + -sin * ty;
-        y = sin * tx + cos * ty;
-
-        x += cx;
-        y += cy;
-    };
-    // 回転の中心を短形の中心点にした場合
-    float cx = GetSpriteTransform()->GetPosX() + GetSpriteTransform()->GetSizeX() * 0.5f;
-    float cy = GetSpriteTransform()->GetPosY() + GetSpriteTransform()->GetSizeY() * 0.5f;
-    rotate(x0, y0, cx, cy, GetSpriteTransform()->GetAngle());
-    rotate(x1, y1, cx, cy, GetSpriteTransform()->GetAngle());
-    rotate(x2, y2, cx, cy, GetSpriteTransform()->GetAngle());
-    rotate(x3, y3, cx, cy, GetSpriteTransform()->GetAngle());
-
-    // スクリーン座標系からNDCへの座標変換をおこなう
+    // スクリーン座標系から NDCへの座標変換をおこなう
     x0 = 2.0f * x0 / viewport.Width - 1.0f;
     y0 = 1.0f - 2.0f * y0 / viewport.Height;
     x1 = 2.0f * x1 / viewport.Width - 1.0f;
@@ -333,40 +218,39 @@ void Sprite::Render(ID3D11DeviceContext* deviceContext, ID3D11PixelShader* psSha
     y3 = 1.0f - 2.0f * y3 / viewport.Height;
 
     // 計算結果で頂点バッファオブジェクトを更新する
-    D3D11_MAPPED_SUBRESOURCE mapped_subresource{};
-    hr = deviceContext->Map(vertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped_subresource);
-    _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+    D3D11_MAPPED_SUBRESOURCE mappedSubresouce = {};
+    result = deviceContext->Map(vertexBuffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubresouce);
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
 
-    Vertex* vertices{ reinterpret_cast<Vertex*>(mapped_subresource.pData) };
+    Vertex* vertices = reinterpret_cast<Vertex*>(mappedSubresouce.pData);
     if (vertices != nullptr)
     {
-        vertices[0].position = { x0, y0, 0 };
-        vertices[1].position = { x1, y1, 0 };
-        vertices[2].position = { x2, y2, 0 };
-        vertices[3].position = { x3, y3, 0 };
-        vertices[0].color = vertices[1].color = vertices[2].color = vertices[3].color = GetSpriteTransform()->GetColor();
+        vertices[0].position_ = { x0, y0, 0 };
+        vertices[1].position_ = { x1, y1, 0 };
+        vertices[2].position_ = { x2, y2, 0 };
+        vertices[3].position_ = { x3, y3, 0 };
+        vertices[0].color_ = vertices[1].color_ = vertices[2].color_ = vertices[3].color_ = GetTransform()->GetColor();
 
-        vertices[0].texcord = { GetSpriteTransform()->GetTexPosX() / texture2dDesc.Width, GetSpriteTransform()->GetTexPosY() / texture2dDesc.Height };
-        vertices[1].texcord = { (GetSpriteTransform()->GetTexPosX() + GetSpriteTransform()->GetTexSizeX()) / texture2dDesc.Width,GetSpriteTransform()->GetTexPosY() / texture2dDesc.Height };
-        vertices[2].texcord = { GetSpriteTransform()->GetTexPosX() / texture2dDesc.Width, (GetSpriteTransform()->GetTexPosY() + GetSpriteTransform()->GetTexSizeY()) / texture2dDesc.Height };
-        vertices[3].texcord = { (GetSpriteTransform()->GetTexPosX() + GetSpriteTransform()->GetTexSizeX()) / texture2dDesc.Width, (GetSpriteTransform()->GetTexPosY() + GetSpriteTransform()->GetTexSizeY()) / texture2dDesc.Height };
+        vertices[0].texcord_ = { GetTransform()->GetTexPosX() / GetTransform()->GetSizeX(), GetTransform()->GetTexPosY() / GetTransform()->GetSizeY() };
+        vertices[1].texcord_ = { (GetTransform()->GetTexPosX() + GetTransform()->GetTexSizeX()) / GetTransform()->GetSizeX(), GetTransform()->GetTexPosY() / GetTransform()->GetSizeY() };
+        vertices[2].texcord_ = { GetTransform()->GetTexPosX() / GetTransform()->GetSizeX(), (GetTransform()->GetTexPosY() + GetTransform()->GetTexSizeY()) / GetTransform()->GetSizeY() };
+        vertices[3].texcord_ = { (GetTransform()->GetTexPosX() + GetTransform()->GetTexSizeX()) / GetTransform()->GetSizeX(), (GetTransform()->GetTexPosY() + GetTransform()->GetTexSizeY()) / GetTransform()->GetSizeY() };
     }
-    deviceContext->Unmap(vertexBuffer.Get(), 0);
+    deviceContext->Unmap(vertexBuffer_.Get(), 0);
 
-    UINT stride{ sizeof(Vertex) };
-    UINT offset{ 0 };
+    UINT stride = sizeof(Vertex);
+    UINT offset = 0;
 
-    deviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+    deviceContext->IASetVertexBuffers(0, 1, vertexBuffer_.GetAddressOf(), &stride, &offset);
     deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-    deviceContext->IASetInputLayout(inputLayout.Get());
+    deviceContext->IASetInputLayout(inputLayout_.Get());
 
-    deviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
-    psShader ? deviceContext->PSSetShader(psShader, nullptr, 0) : deviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
+    deviceContext->VSSetShader(vertexShader_.Get(), nullptr, 0);
+    psShader ? deviceContext->PSSetShader(psShader, nullptr, 0) : deviceContext->PSSetShader(pixelShader_.Get(), nullptr, 0);
 
-    deviceContext->PSSetShaderResources(0, 1, shaderResourceView.GetAddressOf());
+    deviceContext->PSSetShaderResources(0, 1, shaderResourceView_.GetAddressOf());
 
     deviceContext->Draw(4, 0);
-    //---これより下に何かいても意味ない---//
 }
 
 // debug用関数
@@ -374,15 +258,10 @@ void Sprite::DrawDebug()
 {
     if (ImGui::BeginMenu(GetName()))
     {
-        GetSpriteTransform()->DrawDebug();
+        GetTransform()->DrawDebug();
 
-        GetSpriteDissolve()->DrawDebug();
+        ImGui::DragFloat("AnimationFrame", &animationFrame_);
 
-        GetEmissive()->DrawDebug();
-
-        ImGui::DragFloat(u8"アニメーションフレーム", &animationFrame_);
-
-        if (ImGui::Button("Fade"))SetIsFade(true);
 
         ImGui::EndMenu();
     }
@@ -404,7 +283,7 @@ void Sprite::Vibration(const float& elapsedTime, const float& volume, const floa
     vibrationBreakTimer_ = breakTime;
 
     // 前回の結果をリセットする
-    GetSpriteTransform()->SubtractPos(oldVibration_);
+    GetTransform()->SubtractPosition(oldVibration_);
 
     // 振動の幅、方向を算出する
     DirectX::XMFLOAT2 vibration = { (rand() % 100 - 50.0f), (rand() % 100 - 50.0f) };
@@ -416,62 +295,51 @@ void Sprite::Vibration(const float& elapsedTime, const float& volume, const floa
     DirectX::XMStoreFloat2(&vibration, Vibration);
 
     // 振動の値を入れる。
-    GetSpriteTransform()->AddPos(vibration);
+    GetTransform()->AddPosition(vibration);
 
     // 現在の振動値を保存しておく
     oldVibration_ = vibration;
 }
 
-// SpriteTransform
-void Sprite::SpriteTransform::DrawDebug()
+void Sprite::Rotate(float& x, float& y, const float& centerX, const float& centerY, const float& angle)
 {
-    if (ImGui::TreeNode("spriteTransform"))
-    {
-        ImGui::DragFloat2(u8"位置", &position_.x); // test u8
-        ImGui::DragFloat2("size", &size_.x);
+    // 指定の位置に動かす
+    x -= centerX;
+    y -= centerY;
 
-        if (ImGui::Button("isSizeFactor"))
-        {
-            isSizeFactor_ = !isSizeFactor_;
-        }
+    // 回転処理
+    float cos = cosf(DirectX::XMConvertToRadians(angle));
+    float sin = sinf(DirectX::XMConvertToRadians(angle));
+    float tx = x;
+    float ty = y;
+    x = cos * tx + -sin * ty;
+    y = sin * tx + cos * ty;
+
+    // 元の位置に戻す
+    x += centerX;
+    y += centerY;
+}
+
+void Sprite::Transform::DrawDebug()
+{
+    if (ImGui::TreeNode("Transform"))
+    {
+        ImGui::DragFloat2("Position", &position_.x);
+        ImGui::Checkbox("SizeFactor", &isSizeFactor_);
         if (isSizeFactor_)
         {
-            float sizeFactor = size_.x;
-            ImGui::DragFloat("sizeFactor", &sizeFactor);
-            SetSize(sizeFactor);
+            float size = GetSizeX();
+            ImGui::DragFloat("Size", &size);
+            SetSize(size);
         }
-
+        else
+        {
+            ImGui::DragFloat2("Size", &size_.x);
+        }
         ImGui::ColorEdit4("color", &color_.x);
         ImGui::DragFloat("angle", &angle_);
         ImGui::DragFloat2("texPos", &texPos_.x);
         ImGui::DragFloat2("texSize", &texSize_.x);
-        ImGui::TreePop();
-    }
-}
-
-// SpriteDissolve
-void Sprite::SpriteDissolve::DrawDebug()
-{
-    if (ImGui::TreeNode("spriteDissolve"))
-    {
-        ImGui::SliderInt("textureValue", &maskTextureValue, 0, 7);
-        ImGui::SliderFloat("dissolveValue", &dissolveValue, 0.0f, 2.0f);
-        ImGui::SliderFloat("dissolveBlackValue", &dissolveBlackValue, 0.0f, 2.0f);
-        ImGui::SliderFloat("edgeThreshold", &edgeThreshold, 0.0f, 1.0f);
-        ImGui::ColorEdit4("edgeColor", &edgeColor.x);
-        ImGui::SliderFloat("delay", &delay, 0.0f, 1.0f);
-        ImGui::SliderInt("dissolveType", &dissolveType, 0, 1);
-        ImGui::TreePop();
-    }
-}
-
-void Sprite::Emissive::DrawDebug()
-{
-    if (ImGui::TreeNode("Emissive"))
-    {
-        ImGui::ColorEdit4("emissiveColor", &emissiveColor_.x);
-        ImGui::DragFloat("emissiveIntensity", &emissiveIntensity_);
-
         ImGui::TreePop();
     }
 }

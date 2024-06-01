@@ -66,6 +66,14 @@ void EnemyManager::Render()
     }
 }
 
+void EnemyManager::RenderUserInterface()
+{
+    for (Enemy*& enemy : enemies_)
+    {
+        enemy->RenderUserInterface();
+    }
+}
+
 // ----- ImGui—p -----
 void EnemyManager::DrawDebug()
 {

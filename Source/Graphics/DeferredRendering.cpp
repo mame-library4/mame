@@ -1,32 +1,32 @@
 #include "DeferredRendering.h"
 #include "Graphics.h"
 
-DeferredRendering::DeferredRendering(ID3D11Device* device, uint32_t width, uint32_t height)
-    : baseColorBuffer_(device, width, height),
-    normalBuffer_(device, width, height),
-    worldBuffer_(device, width, height),
-    shadowBuffer_(device, width, height),
-    metalnessRoughnessBuffer_(device, width, height)
+DeferredRendering::DeferredRendering(const uint32_t& width, const uint32_t& height)
+    : baseColorBuffer_(width, height),
+    normalBuffer_(width, height),
+    worldBuffer_(width, height),
+    shadowBuffer_(width, height),
+    metalnessRoughnessBuffer_(width, height)
 {
 }
 
-void DeferredRendering::Activate(ID3D11DeviceContext* deviceContext)
+void DeferredRendering::Activate()
 {
-    baseColorBuffer_.Clear(deviceContext);
-    normalBuffer_.Clear(deviceContext);
-    worldBuffer_.Clear(deviceContext);
-    shadowBuffer_.Clear(deviceContext);
-    metalnessRoughnessBuffer_.Clear(deviceContext);
+    baseColorBuffer_.Clear();
+    normalBuffer_.Clear();
+    worldBuffer_.Clear();
+    shadowBuffer_.Clear();
+    metalnessRoughnessBuffer_.Clear();
 
     ID3D11RenderTargetView* renderTargetView[] =
     {
-        baseColorBuffer_.renderTargetView.Get(),
-        normalBuffer_.renderTargetView.Get(),
-        worldBuffer_.renderTargetView.Get(),
-        shadowBuffer_.renderTargetView.Get(),
-        metalnessRoughnessBuffer_.renderTargetView.Get()
+        baseColorBuffer_.renderTargetView_.Get(),
+        normalBuffer_.renderTargetView_.Get(),
+        worldBuffer_.renderTargetView_.Get(),
+        shadowBuffer_.renderTargetView_.Get(),
+        metalnessRoughnessBuffer_.renderTargetView_.Get()
     };
-    deviceContext->OMSetRenderTargets(_countof(renderTargetView), renderTargetView, Graphics::Instance().GetDepthStencilView());
+    Graphics::Instance().GetDeviceContext()->OMSetRenderTargets(_countof(renderTargetView), renderTargetView, Graphics::Instance().GetDepthStencilView());
 }
 
 void DeferredRendering::DrawDebug()

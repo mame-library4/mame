@@ -1,25 +1,25 @@
 #include "FullscreenQuad.h"
-#include "../Graphics/shader.h"
-#include "../Other/misc.h"
+#include "Graphics.h"
+#include "Misc.h"
 
-FullscreenQuad::FullscreenQuad(ID3D11Device* device)
+// ----- コンストラクタ -----
+FullscreenQuad::FullscreenQuad()
 {
-    CreateVsFromCso(device, "./Resources/Shader/FullScreenQuadVS.cso", embeddedVertexShader.ReleaseAndGetAddressOf(),
-        nullptr, nullptr, 0);
-    CreatePsFromCso(device, "./Resources/Shader/FullScreenQuadPS.cso", embeddedPixelShader.ReleaseAndGetAddressOf());
+    Graphics::Instance().CreateVsFromCso("./Resources/Shader/FullScreenQuadVS.cso", vertexShader_.ReleaseAndGetAddressOf(), nullptr, nullptr, 0);
+    Graphics::Instance().CreatePsFromCso("./Resources/Shader/FullScreenQuadPS.cso", pixelShader_.ReleaseAndGetAddressOf());
 }
 
-void FullscreenQuad::Draw(ID3D11DeviceContext* deviceContext,
-    ID3D11ShaderResourceView** shaderResourceView, uint32_t startSlot, uint32_t numViews, 
-    ID3D11PixelShader* replacedPixelShader)
+// ----- 描画 -----
+void FullscreenQuad::Draw(ID3D11ShaderResourceView** shaderResourceView, const uint32_t& startSlot, const uint32_t& numViews, ID3D11PixelShader* replacedPixelShader)
 {
+    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
+
     deviceContext->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
     deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
     deviceContext->IASetInputLayout(nullptr);
 
-    deviceContext->VSSetShader(embeddedVertexShader.Get(), 0, 0);
-    replacedPixelShader ? deviceContext->PSSetShader(replacedPixelShader, 0, 0) :
-        deviceContext->PSSetShader(embeddedPixelShader.Get(), 0, 0);
+    deviceContext->VSSetShader(vertexShader_.Get(), 0, 0);
+    replacedPixelShader ? deviceContext->PSSetShader(replacedPixelShader, 0, 0) : deviceContext->PSSetShader(pixelShader_.Get(), 0, 0);
 
     deviceContext->PSSetShaderResources(startSlot, numViews, shaderResourceView);
 
