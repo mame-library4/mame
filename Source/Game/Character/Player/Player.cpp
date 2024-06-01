@@ -215,11 +215,9 @@ void Player::Turn(const float& elapsedTime)
 void Player::Move(const float& elapsedTime)
 {
     DirectX::XMFLOAT3 velocity = GetVelocity();
-    const float maxSpeed = GetMaxSpeed();
     const float length = sqrtf(velocity.x * velocity.x + velocity.z * velocity.z);
 
-
-
+    // 移動入力がないので減速処理
     if (fabs(moveDirection_.x) + fabs(moveDirection_.z) <= 0.001f &&
         length != 0.0f)
     {
@@ -234,11 +232,23 @@ void Player::Move(const float& elapsedTime)
 
         velocity = XMFloat3Normalize(velocity) * deceleration;
     }
+    // 加速処理
     else
     {
+        float accelaration  = GetAcceleration();
+        float maxSpeed      = GetMaxSpeed();
 
-        velocity.x += moveDirection_.x * GetAcceleration() * elapsedTime;
-        velocity.z += moveDirection_.z * GetAcceleration() * elapsedTime;
+#if 1
+        // 歩きの場合 加速度,移動速度上限ともに減らす
+        if (GetCurrentBlendAnimationIndex() == static_cast<int>(Animation::Walk))
+        {
+            accelaration *= 0.08f;
+            maxSpeed *= 0.3f;
+        }
+#endif
+
+        velocity.x += moveDirection_.x * accelaration * elapsedTime;
+        velocity.z += moveDirection_.z * accelaration * elapsedTime;
 
         if (length > maxSpeed)
         {
@@ -249,6 +259,7 @@ void Player::Move(const float& elapsedTime)
     SetVelocity(velocity);
     GetTransform()->AddPosition(velocity * elapsedTime);
 
+    // アニメーションをいい感じにする
     const float weight = std::min(1.0f, length / GetMaxSpeed());
     SetWeight(weight);
 }

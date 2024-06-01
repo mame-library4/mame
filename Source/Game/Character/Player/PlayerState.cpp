@@ -102,13 +102,24 @@ namespace PlayerState
     void MoveState::Initialize()
     {
         // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::Idle, Player::Animation::Run, true);
+        owner_->PlayBlendAnimation(Player::Animation::Idle, Player::Animation::Walk, true);
         owner_->SetWeight(0.0f);
     }
 
     // ----- 更新 -----
     void MoveState::Update(const float& elapsedTime)
     {
+#if 1
+        if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
+        {
+            owner_->PlayBlendAnimation(Player::Animation::Idle, Player::Animation::Run, true);
+        }
+        else
+        {
+            owner_->PlayBlendAnimation(Player::Animation::Idle, Player::Animation::Walk, true);
+        }
+#endif
+
         // 攻撃入力受付 ( ステートが変更された場合ここで終了 )
         if (owner_->CheckAttackButton(Player::NextInput::None)) return;
 

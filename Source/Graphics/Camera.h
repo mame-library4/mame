@@ -84,12 +84,12 @@ private:
     bool                invertVertical_     = false;    // 上下反転フラグ
 
     // ---------- 回転角制御用 ----------
-    float               minXRotation_       = DirectX::XMConvertToRadians(-20.0f);
-    float               maxXRotation_       = DirectX::XMConvertToRadians(20.0f);
+    float               minXRotation_       = DirectX::XMConvertToRadians(-15.0f);
+    float               maxXRotation_       = DirectX::XMConvertToRadians(13.0f);
 
     // ---------- カメラ位置制御用 ----------
-    float               minLength_          = 7.0f;
-    float               maxLength_          = 7.5f;
+    float               minLength_          = 6.0f;
+    float               maxLength_          = 6.5f;
 
     // ---------- 画面振動 ----------
     DirectX::XMFLOAT3   screenVibrationOffset_  = {};   // 振動表現用の座標

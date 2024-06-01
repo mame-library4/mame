@@ -14,11 +14,11 @@ void Camera::Initialize()
 
     // TODO:かめら
     // ここからテストしてるだけなので変える多分
-    targetOffset_ = { 0,-1,0 };
-    cameraOffset_ = { 0,3,0 };
-    length_ = 7.0f;
+    targetOffset_ = { 0, -1, 0 };
+    cameraOffset_ = { 0, 2.5f, 0 };
+    length_ = 6.0f;
     verticalRotationSpeed_ = 1.0f;
-    horizontalRotationSpeed_ = 2.0f;
+    horizontalRotationSpeed_ = 4.0f;
 }
 
 // ----- 更新 -----
