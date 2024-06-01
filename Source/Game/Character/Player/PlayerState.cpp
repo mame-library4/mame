@@ -21,18 +21,8 @@ namespace PlayerState
     {
         owner_->AddWeight(elapsedTime * 4.0f);
 
-        // 弱攻撃
-        if (owner_->GetLightAttackKeyDown())
-        {
-            owner_->ChangeState(Player::STATE::LightAttack0);
-            return;
-        }
-        // 強攻撃
-        if (owner_->GetStrongAttackKeyDown())
-        {
-            owner_->ChangeState(Player::STATE::StrongAttack0);
-            return;
-        }
+        // 攻撃入力受付 ( ステートが変更された場合ここで終了 )
+        if (owner_->CheckAttackButton(Player::NextInput::None)) return;
 
         GamePad gamePad = Input::Instance().GetGamePad();
         float aLX = fabs(gamePad.GetAxisLX());
@@ -119,7 +109,13 @@ namespace PlayerState
     // ----- 更新 -----
     void MoveState::Update(const float& elapsedTime)
     {
+        // 攻撃入力受付 ( ステートが変更された場合ここで終了 )
+        if (owner_->CheckAttackButton(Player::NextInput::None)) return;
+
+        // 旋回
         owner_->Turn(elapsedTime);
+
+        // 移動
         owner_->Move(elapsedTime);
     }
 
@@ -485,6 +481,9 @@ namespace PlayerState
         owner_->PlayBlendAnimation(Player::Animation::LightAttack0, false);
         owner_->SetWeight(1.0f);
 
+        // 移動速度をリセットする
+        owner_->SetVelocity({});
+
         // 攻撃判定有効化
         owner_->SetAttackFlag();
 
@@ -496,8 +495,7 @@ namespace PlayerState
     void LightAttack0State::Update(const float& elapsedTime)
     {
         // 先行入力受付
-        if (owner_->GetLightAttackKeyDown()) owner_->SetNextInput(Player::NextInput::LightAttack);
-        if (owner_->GetStrongAttackKeyDown()) owner_->SetNextInput(Player::NextInput::StrongAttack);
+        owner_->CheckAttackButton(Player::NextInput::LightAttack);
 
         // 先行入力がある場合、現在の攻撃フレームが終わった時にステートを切り替える
         if (owner_->GetBlendAnimationSeconds() > comboAttackFrame_)
@@ -555,8 +553,7 @@ namespace PlayerState
     void LightAttack1State::Update(const float& elapsedTime)
     {
         // 先行入力受付
-        if (owner_->GetLightAttackKeyDown()) owner_->SetNextInput(Player::NextInput::LightAttack);
-        if (owner_->GetStrongAttackKeyDown()) owner_->SetNextInput(Player::NextInput::StrongAttack);
+        owner_->CheckAttackButton(Player::NextInput::LightAttack);
 
         // 先行入力がある場合、現在の攻撃フレームが終わった時にステートを切り替える
         if (owner_->GetBlendAnimationSeconds() > comboAttackFrame_)
@@ -645,6 +642,9 @@ namespace PlayerState
         owner_->PlayBlendAnimation(Player::Animation::StrongAttack0, false);
         owner_->SetWeight(1.0f);
 
+        // 移動速度をリセットする
+        owner_->SetVelocity({});
+
         // 攻撃判定有効化
         owner_->SetAttackFlag();
 
@@ -656,7 +656,7 @@ namespace PlayerState
     void StrongAttack0State::Update(const float& elapsedTime)
     {
         // 先行入力受付
-        if (owner_->GetStrongAttackKeyDown()) owner_->SetNextInput(Player::NextInput::StrongAttack);
+        owner_->CheckAttackButton(Player::NextInput::StrongAttack);
 
         // 先行入力がある場合、現在の攻撃フレームが終わった時にステートを切り替える
         if (owner_->GetNextInput() == static_cast<int>(Player::NextInput::StrongAttack) &&

@@ -14,7 +14,7 @@ Player::Player()
 
         // ステートを登録する
         GetStateMachine()->RegisterState(new PlayerState::IdleState(this));                 // 待機
-        GetStateMachine()->RegisterState(new PlayerState::MoveState(this));
+        GetStateMachine()->RegisterState(new PlayerState::MoveState(this));                 // 移動
         //GetStateMachine()->RegisterState(new PlayerState::WalkState(this));                 // 歩き
         //GetStateMachine()->RegisterState(new PlayerState::RunState(this));                  // 走り
         GetStateMachine()->RegisterState(new PlayerState::AvoidanceState(this));            // 回避
@@ -120,7 +120,7 @@ void Player::Render()
 // ----- ImGui用 -----
 void Player::DrawDebug()
 {
-    if (ImGui::TreeNode("Player"))
+    if (ImGui::BeginMenu("Player"))
     {
 
         Character::DrawDebug();
@@ -134,7 +134,7 @@ void Player::DrawDebug()
 
 
         swordTrail_.DrawDebug();
-        ImGui::TreePop();
+        ImGui::EndMenu();
     }
 }
 
@@ -253,80 +253,50 @@ void Player::Move(const float& elapsedTime)
     SetWeight(weight);
 }
 
-void Player::UpdateAttackState(const Player::STATE& state)
+// ----- 攻撃ボタンが押されたか ( ステートが変更された場合trueを返す ) ( 先行入力も見る ) -----
+bool Player::CheckAttackButton(const Player::NextInput& nextInput)
 {
-    // 先行入力受付
-// TODO:先行入力の受付の制限を設ける。
-    if (GetLightAttackKeyDown()) SetNextInput(Player::NextInput::LightAttack);
-    if (GetStrongAttackKeyDown()) SetNextInput(Player::NextInput::StrongAttack);
-
-    // アニメーション再生中
-    if (IsPlayAnimation()) return;
-
-    // 先行入力があった。
-    if (GetNextInput())
+    // 弱攻撃のボタンが押された場合
+    if(GetLightAttackKeyDown())
     {
-        switch (state)
+        // 先行入力受付がない
+        if (nextInput == NextInput::None)
         {
-        case Player::STATE::LightAttack0:
-        case Player::STATE::LightAttack1:
-        case Player::STATE::LightAttack2:
-            // Xボタンが押された場合
-            if (GetNextInput() == static_cast<int>(Player::NextInput::LightAttack))
-            {
-                ChangeState(state);
-            }
-            // Yボタンが押された場合
-            else
-            {
-                // TODO: アニメーションが来るまで重攻撃は放置
-                break;
-                ChangeState(Player::STATE::StrongAttack0);
-            }
-            break;
-            // Y
-        case Player::STATE::StrongAttack0:
-        case Player::STATE::StrongAttack1:
-            // TODO: アニメーションが来るまで重攻撃は放置
-            break;
-
-            // Xボタンが押された場合
-            if (GetNextInput() == static_cast<int>(Player::NextInput::LightAttack))
-            {
-                ChangeState(Player::STATE::LightAttack0);
-            }
-            // Yボタンが押された場合
-            else
-            {
-                ChangeState(state);
-            }
-            break;
-        default:
-            // Xボタンが押された場合
-            if (GetNextInput() == static_cast<int>(Player::NextInput::LightAttack))
-            {
-                ChangeState(Player::STATE::LightAttack0);
-            }
-            // それ以外
-            else
-            {
-                ChangeState(state);
-            }
-            break;
+            // ステートを変更して終了
+            ChangeState(STATE::LightAttack0);
+            return true;
         }
 
-        return;
+        // 先行入力受付
+        if (nextInput == NextInput::LightAttack)
+        {
+            nextInput_ = static_cast<int>(NextInput::LightAttack);
+        }
+        // nextInputがStrongAttackの場合、弱攻撃の先行入力は受け付けない
     }
 
-    // 先行入力がなかった。( 待機ステートへ遷移 )
-    ChangeState(STATE::Idle);
-    return;
+    // 強攻撃のボタンが押された場合
+    if (GetStrongAttackKeyDown())
+    {
+        // 先行入力受付がない
+        if (nextInput == NextInput::None)
+        {
+            // ステートを変更して終了
+            ChangeState(STATE::StrongAttack0);          
+            return true;
+        }
+
+        // 先行入力受付
+        nextInput_ = static_cast<int>(NextInput::StrongAttack);
+    }
+
+    return false;
 }
 
 void Player::ResetFlags()
 {
-    SetNextInput(Player::NextInput::None);  // 先行入力管理フラグ
-    SetIsAvoidance(false);                  // 回避入力判定用フラグ
+    nextInput_ = static_cast<int>(NextInput::None); // 先行入力管理フラグ
+    SetIsAvoidance(false);                          // 回避入力判定用フラグ
 }
 
 void Player::PlayBlendAnimation(const Animation& index1, const Animation& index2, const bool& loop, const float& speed)

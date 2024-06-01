@@ -72,7 +72,8 @@ public:
     void Turn(const float& elapsedTime);
     void Move(const float& elapsedTime);
 
-    void UpdateAttackState(const Player::STATE& state);
+    bool CheckAttackButton(const Player::NextInput& nextInput);
+
     void ResetFlags(); // フラグをリセットする
 
 
@@ -103,7 +104,6 @@ public:// --- 取得・設定 ---
 
     // ---------- 行動 -------------------------------------------------------
     [[nodiscard]] const int GetNextInput() const { return nextInput_; }
-    void SetNextInput(const NextInput& nextInput) { nextInput_ = static_cast<int>(nextInput); }
     [[nodiscard]] const bool GetIsAvoidance() const { return isAvoidance_; }
     void SetIsAvoidance(const bool& isAvoidance) { isAvoidance_ = isAvoidance; }
 

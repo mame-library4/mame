@@ -7,8 +7,7 @@
 
 #include "Camera.h"
 
-// SKYBOX
-#include "texture.h"
+#include "AudioManager.h"
 
 // ----- コンストラクタ -----
 Application::Application(HWND hwnd)
@@ -35,6 +34,8 @@ bool Application::Initialize()
     input_.GetMouse().SetScreenHeight(SCREEN_HEIGHT);
 
     // --- オーディオ読み込み ---
+    AudioManager::Instance().LoadAudio();
+    AudioManager::Instance().StopAllAudio();
 
     // --- カメラ初期化 ---
     Camera::Instance().Initialize();
