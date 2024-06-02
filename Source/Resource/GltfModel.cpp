@@ -7,15 +7,13 @@
 #define STBI_MSC_SECURE_CRT
 
 #include "../../External/tinygltf/tiny_gltf.h"
-
 #include <stack>
 #include <filesystem>
-
 #include "Misc.h"
 #include "Texture.h"
 #include "Graphics.h"
 
-// コンストラクタ
+// ----- コンストラクタ -----
 GltfModel::GltfModel(const std::string& filename) : filename_(filename)
 {
     ID3D11Device* device = Graphics::Instance().GetDevice();
@@ -66,7 +64,6 @@ GltfModel::GltfModel(const std::string& filename) : filename_(filename)
     };
     Graphics::Instance().CreateVsFromCso("./Resources/Shader/gltfModelVs.cso", vertexShader_.ReleaseAndGetAddressOf(),
         inputLayout_.ReleaseAndGetAddressOf(), inputElementDesc, _countof(inputElementDesc));
-    //Graphics::Instance().CreatePsFromCso("./Resources/Shader/DeferredRenderingPS.cso", pixelShader.ReleaseAndGetAddressOf());
     Graphics::Instance().CreatePsFromCso("./Resources/Shader/gltfModelPs.cso", pixelShader_.ReleaseAndGetAddressOf());
 
     // 定数バッファ生成
@@ -214,23 +211,19 @@ void GltfModel::BlendAnimations(const std::vector<Node>* nodes[2], float factor,
     }
 }
 
-// 外での呼び出し用
-void GltfModel::Render(float scaleFactor)
-{
-    Graphics& graphics = Graphics::Instance();
+
+// ----- 描画 -----
+void GltfModel::Render(const float& scaleFactor, ID3D11PixelShader* psShader)
+{ 
+    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
+
     DirectX::XMMATRIX W = transform_.CalcWorldMatrix(scaleFactor);
     DirectX::XMFLOAT4X4 world;
     DirectX::XMStoreFloat4x4(&world, W);
-    
-    Render(graphics.GetDeviceContext(), world, nodes_);
-}
 
-// 本体
-void GltfModel::Render(ID3D11DeviceContext* deviceContext, const DirectX::XMFLOAT4X4& world, const std::vector<Node>& animatedNodes)
-{
     deviceContext->PSSetShaderResources(0, 1, materialResourceView_.GetAddressOf());
     deviceContext->VSSetShader(vertexShader_.Get(), nullptr, 0);
-    deviceContext->PSSetShader(pixelShader_.Get(), nullptr, 0);
+    psShader ? deviceContext->PSSetShader(psShader, nullptr, 0) : deviceContext->PSSetShader(pixelShader_.Get(), nullptr, 0);
     deviceContext->IASetInputLayout(inputLayout_.Get());
     deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -314,7 +307,7 @@ void GltfModel::Render(ID3D11DeviceContext* deviceContext, const DirectX::XMFLOA
                         {
                             DirectX::XMStoreFloat4x4(&primitiveJointData.matrices_[jointIndex],
                                 DirectX::XMLoadFloat4x4(&skin.inverseBindMatrices_.at(jointIndex)) *
-                                DirectX::XMLoadFloat4x4(&animatedNodes.at(skin.joints_.at(jointIndex)).globalTransform_) *
+                                DirectX::XMLoadFloat4x4(&nodes_.at(skin.joints_.at(jointIndex)).globalTransform_) *
                                 DirectX::XMMatrixInverse(NULL, DirectX::XMLoadFloat4x4(&node.globalTransform_))
                             );
                         }

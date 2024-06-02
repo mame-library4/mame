@@ -8,7 +8,7 @@ public:
     ~Object();
 
     void Update(const float& elapsedTime);
-    void Render(const float& scaleFactor);
+    void Render(const float& scaleFactor, ID3D11PixelShader* psShader = nullptr);
     void DrawDebug();
 
     void PlayAnimation(const int& index, const bool& loop, const float& speed) { gltfModel_.PlayAnimation(index, loop, speed); }

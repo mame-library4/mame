@@ -58,11 +58,11 @@ void EnemyManager::Update(const float& elapsedTime)
 }
 
 // ----- •`‰æ -----
-void EnemyManager::Render()
+void EnemyManager::Render(ID3D11PixelShader* psShader)
 {
     for (Enemy*& enemy : enemies_)
     {
-        enemy->Render();
+        enemy->Render(psShader);
     }
 }
 

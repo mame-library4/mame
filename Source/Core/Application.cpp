@@ -16,7 +16,7 @@ Application::Application(HWND hwnd)
     input_(hwnd),
     shadowMap_(SCREEN_WIDTH, SCREEN_HEIGHT),
     postProcess_(SCREEN_WIDTH, SCREEN_HEIGHT),
-    deferredRendering_(SCREEN_WIDTH, SCREEN_HEIGHT),
+    deferredRendering_(),
     sceneConstants_()
 {
 }
@@ -110,25 +110,31 @@ void Application::Render()
     SceneManager::Instance().ShadowRender();
     shadowMap_.Deactivete();
 
+    camera.SetPerspectiveFov();
+    DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->viewProjection_, camera.GetViewMatrix() * camera.GetProjectionMatrix());
+    sceneConstants_.GetData()->lightDirection_ = Graphics::Instance().GetShader()->GetViewPosition();
+    sceneConstants_.GetData()->cameraPosition_ = { camera.GetEye().x, camera.GetEye().y, camera.GetEye().z, 0 };
+    sceneConstants_.Activate(1, true, true, true, true);
+
+    // ShadowMap Set 9
+    deviceContext->PSSetShaderResources(9, 1, shadowMap_.shaderResourceView.GetAddressOf());
+
     // --- deferred rendering ---
     if (isDeferred_)
     {
-        // ----- G-Buffer への描画 -----
+        Graphics::Instance().GetShader()->SetGBuffer();
+        Graphics::Instance().SetBlendState(Shader::BLEND_STATE::MRT);
+        SceneManager::Instance().DeferredRender();
+
+        deviceContext->ClearRenderTargetView(renderTargetView, color);
+        deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+        deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+
+        deferredRendering_.Draw();
     }
     // --- forward rendering ---
     else
-    {
-        camera.SetPerspectiveFov();
-        DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->viewProjection_, camera.GetViewMatrix() * camera.GetProjectionMatrix());
-        sceneConstants_.GetData()->lightDirection_ = Graphics::Instance().GetShader()->GetViewPosition();
-        sceneConstants_.GetData()->cameraPosition_ = { camera.GetEye().x, camera.GetEye().y, camera.GetEye().z, 0 };
-        //sceneConstants_.GetData()->cameraPosition_ = shader->GetViewCamera();
-
-        sceneConstants_.Activate(1, true, true, true, true);
-
-        // shadowTexture set
-        deviceContext->PSSetShaderResources(9, 1, shadowMap_.shaderResourceView.GetAddressOf());
-        
+    {        
         // ポストプロセス開始
         postProcess_.Activate();
 
@@ -177,7 +183,7 @@ void Application::DrawDebug()
 
     ImGui::Checkbox("isDeferred_", &isDeferred_);
 
-    deferredRendering_.DrawDebug();
+    graphics_.GetShader()->DrawDebug();
 #endif
 }
 

@@ -17,11 +17,24 @@ Shader::Shader()
 
     // サンプラステート作成
     CreateSamplerStates();
+
+    // G-Buffer作成
+    CreateGBuffer();
 }
 
 // ----- ImGui用 -----
 void Shader::DrawDebug()
 {
+    if (ImGui::TreeNode("G-Buffer"))
+    {
+        for (int i = 0; i < static_cast<int>(GBufferId::Max); ++i)
+        {
+            ImGui::Image(reinterpret_cast<ImTextureID>(gBufferShaderResourceView_[i].Get()), ImVec2(256.0, 256.0));
+        }
+
+        ImGui::TreePop();
+    }
+
     if (ImGui::TreeNode("camera"))
     {
         ImGui::SliderFloat("wight", &view.viewWitdh,1.0f,10000.0f);
@@ -221,6 +234,38 @@ void Shader::SetSamplerState()
     deviceContext->PSSetSamplers(7, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::POINT_CLAMP)].GetAddressOf());
 }
 
+// ----- G-Bufferを有効化する -----
+void Shader::SetGBuffer()
+{
+    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
+
+    ID3D11RenderTargetView* renderTargets[static_cast<int>(GBufferId::Max)] =
+    {
+        gBufferRenderTargetView_[static_cast<int>(GBufferId::BaseColor)].Get(),
+        gBufferRenderTargetView_[static_cast<int>(GBufferId::Emissive)].Get(),
+        gBufferRenderTargetView_[static_cast<int>(GBufferId::Normal)].Get(),
+        gBufferRenderTargetView_[static_cast<int>(GBufferId::Parameters)].Get(),
+        gBufferRenderTargetView_[static_cast<int>(GBufferId::Depth)].Get(),
+    };
+    FLOAT clearColor[] = { 0, 0, 0, 0 };
+    for (int i = 0; i < static_cast<int>(GBufferId::Max); ++i)
+    {
+        deviceContext->ClearRenderTargetView(renderTargets[i], clearColor);
+    }
+    deviceContext->ClearDepthStencilView(Graphics::Instance().GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    deviceContext->OMSetRenderTargets(static_cast<int>(GBufferId::Max), renderTargets, Graphics::Instance().GetDepthStencilView());
+}
+
+void Shader::SetGBufferShaderResourceView()
+{
+    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
+
+    deviceContext->PSSetShaderResources(1, 1, gBufferShaderResourceView_[1].GetAddressOf());
+    deviceContext->PSSetShaderResources(2, 1, gBufferShaderResourceView_[2].GetAddressOf());
+    deviceContext->PSSetShaderResources(3, 1, gBufferShaderResourceView_[3].GetAddressOf());
+    deviceContext->PSSetShaderResources(4, 1, gBufferShaderResourceView_[4].GetAddressOf());
+}
+
 // ----- ブレンドステート作成 -----
 void Shader::CreateBlendStates()
 {
@@ -282,7 +327,7 @@ void Shader::CreateBlendStates()
 
     blendDesc.AlphaToCoverageEnable = FALSE;
     blendDesc.IndependentBlendEnable = FALSE;
-    for (int i = 0; i < 5; ++i)
+    for (int i = 0; i < static_cast<int>(GBufferId::Max); ++i)
     {
         blendDesc.RenderTarget[i].BlendEnable           = FALSE;
         blendDesc.RenderTarget[i].SrcBlend              = D3D11_BLEND_ONE;
@@ -473,4 +518,50 @@ void Shader::CreateSamplerStates()
     samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
     result = device->CreateSamplerState(&samplerDesc, samplerState[static_cast<size_t>(SAMPLER_STATE::POINT_CLAMP)].GetAddressOf());
     _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+}
+
+// ----- G-Buffer作成 -----
+void Shader::CreateGBuffer()
+{
+    HRESULT result = S_OK;
+
+    D3D11_TEXTURE2D_DESC texture2dDesc = {};
+    texture2dDesc.Width = 1280;
+    texture2dDesc.Height = 720;
+    texture2dDesc.MipLevels = 1;
+    texture2dDesc.ArraySize = 1;
+    texture2dDesc.SampleDesc.Count = 1;
+    texture2dDesc.SampleDesc.Quality = 0;
+    texture2dDesc.Usage = D3D11_USAGE_DEFAULT;
+    texture2dDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+    texture2dDesc.CPUAccessFlags = 0;
+    texture2dDesc.MiscFlags = 0;
+
+    DXGI_FORMAT formats[] =
+    {
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        DXGI_FORMAT_R32G32B32A32_FLOAT,
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        DXGI_FORMAT_R32_FLOAT
+    };
+
+    for (int i = 0; i < static_cast<int>(GBufferId::Max); ++i)
+    {
+        texture2dDesc.Format = formats[i];
+
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> colorBuffer = {};
+        result = Graphics::Instance().GetDevice()->CreateTexture2D(&texture2dDesc, NULL, colorBuffer.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+        // RenderTargetView生成
+        result = Graphics::Instance().GetDevice()->CreateRenderTargetView(colorBuffer.Get(), NULL, gBufferRenderTargetView_[i].GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+        // ShaderResourceView生成
+        result = Graphics::Instance().GetDevice()->CreateShaderResourceView(colorBuffer.Get(), NULL, gBufferShaderResourceView_[i].GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+    }
+
+    CreatePsFromCso("./Resources/Shader/GltfModelGBufferPS.cso", gBufferPixelShader_.GetAddressOf());
 }

@@ -10,7 +10,7 @@ public:
     virtual ~Character() {}
 
     virtual void Update(const float& elapsedTime);
-    virtual void Render()                           = 0;
+    virtual void Render(ID3D11PixelShader* psShader) = 0;
     virtual void DrawDebug();
 
 public:

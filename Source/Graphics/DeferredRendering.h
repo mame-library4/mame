@@ -1,22 +1,19 @@
 #pragma once
 #include <d3d11.h>
+#include <memory>
 #include "FrameBuffer.h"
+#include "FullscreenQuad.h"
 
 class DeferredRendering
 {
 public:
-    DeferredRendering(const uint32_t& width, const uint32_t& height);
+    DeferredRendering();
     ~DeferredRendering() {}
 
-    void Activate();
-
-    void DrawDebug();
+    void Draw();
 
 private:
-    FrameBuffer baseColorBuffer_;
-    FrameBuffer normalBuffer_;
-    FrameBuffer worldBuffer_;
-    FrameBuffer shadowBuffer_;
-    FrameBuffer metalnessRoughnessBuffer_;
+    std::unique_ptr<FullscreenQuad> renderer_;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> psShader_;
 };
 

@@ -96,6 +96,25 @@ void GameScene::ShadowRender()
 
 void GameScene::DeferredRender()
 {
+    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
+    ID3D11PixelShader* gBufferPixelShader = Graphics::Instance().GetShader()->GetGBufferPixelShader();
+
+    deviceContext->PSSetShaderResources(32, 1, iblTextures_[0].GetAddressOf());
+    deviceContext->PSSetShaderResources(33, 1, iblTextures_[1].GetAddressOf());
+    deviceContext->PSSetShaderResources(34, 1, iblTextures_[2].GetAddressOf());
+    deviceContext->PSSetShaderResources(35, 1, iblTextures_[3].GetAddressOf());
+
+    // ステージ
+    for (int i = 0; i < stageMax; ++i)
+    {
+        stageNormal_[i]->Render(gBufferPixelShader);
+    }
+
+    // プレイヤー描画
+    PlayerManager::Instance().Render(gBufferPixelShader);
+
+    // 敵描画
+    EnemyManager::Instance().Render(gBufferPixelShader);
 }
 
 void GameScene::ForwardRender()

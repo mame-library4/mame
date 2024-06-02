@@ -9,7 +9,7 @@ public:
 
     void Initialize(const DirectX::XMFLOAT3& basePosition);
     void Update(const float& elapsedTime);
-    void Render(const float& scaleFacter);
+    void Render(const float& scaleFacter, ID3D11PixelShader* psShader = nullptr);
     void DrawDebug();
 
 private:

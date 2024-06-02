@@ -25,9 +25,9 @@ void PlayerManager::Update(const float& elapsedTime)
 }
 
 // ----- •`‰æ -----
-void PlayerManager::Render()
+void PlayerManager::Render(ID3D11PixelShader* psShader)
 {
-    player_->Render();
+    player_->Render(psShader);
 }
 
 // ----- ImGui—p -----

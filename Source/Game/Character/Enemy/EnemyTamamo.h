@@ -12,7 +12,7 @@ public:
     void Initialize()                       override;
     void Finalize()                         override;
     void Update(const float& elapsedTime)   override;
-    void Render()                           override;
+    void Render(ID3D11PixelShader* psShader = nullptr) override;
     void RenderUserInterface()              override;
     
     void DrawDebug()                        override;

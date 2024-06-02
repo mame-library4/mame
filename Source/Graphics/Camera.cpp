@@ -10,7 +10,7 @@
 void Camera::Initialize()
 {
     GetTransform()->SetRotationY(DirectX::XMConvertToRadians(180));
-    GetTransform()->SetRotationX(DirectX::XMConvertToRadians(-9));
+    //GetTransform()->SetRotationX(DirectX::XMConvertToRadians(-9));
 
     // TODO:‚©‚ß‚ç
     // ‚±‚±‚©‚çƒeƒXƒg‚µ‚Ä‚é‚¾‚¯‚È‚Ì‚Å•Ï‚¦‚é‘½•ª

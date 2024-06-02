@@ -19,9 +19,9 @@ void Object::Update(const float& elapsedTime)
 }
 
 // ----- •`‰æ -----
-void Object::Render(const float& scaleFactor)
+void Object::Render(const float& scaleFactor, ID3D11PixelShader* psShader)
 {
-    gltfModel_.Render(scaleFactor);
+    gltfModel_.Render(scaleFactor, psShader);
 }
 
 // ----- ImGui—p -----

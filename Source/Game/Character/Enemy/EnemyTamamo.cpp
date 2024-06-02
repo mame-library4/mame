@@ -157,13 +157,13 @@ void EnemyTamamo::Update(const float& elapsedTime)
 }
 
 // ----- 描画 -----
-void EnemyTamamo::Render()
+void EnemyTamamo::Render(ID3D11PixelShader* psShader)
 {
-    Object::Render(0.01f);
+    Object::Render(0.01f, psShader);
 
     for (int i = 0; i < maxStoneNum_; ++i)
     {
-        stones_[i]->Render(1.0f);
+        stones_[i]->Render(1.0f, psShader);
     }
 }
 

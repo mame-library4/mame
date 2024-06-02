@@ -346,6 +346,7 @@
     <None Include="Source\Shader\Bloom.hlsli" />
     <None Include="Source\Shader\DeferredRendering.hlsli" />
     <None Include="Source\Shader\FullScreenQuad.hlsli" />
+    <None Include="Source\Shader\GBuffer.hlsli" />
     <None Include="Source\Shader\gltfModel.hlsli" />
     <None Include="Source\Shader\imageBasedLighting.hlsli" />
     <None Include="Source\Shader\Noise.hlsli" />
@@ -392,6 +393,12 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="Source\Shader\GaussianBlurVerticalPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\GltfModelGBufferPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>

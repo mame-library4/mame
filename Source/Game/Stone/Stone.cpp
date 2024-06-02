@@ -79,9 +79,9 @@ void Stone::Update(const float& elapsedTime)
 }
 
 // ----- •`‰æ -----
-void Stone::Render(const float& scaleFacter)
+void Stone::Render(const float& scaleFacter, ID3D11PixelShader* psShader)
 {
-    Object::Render(scaleFacter);
+    Object::Render(scaleFacter, psShader);
 }
 
 // ----- ImGui—p -----

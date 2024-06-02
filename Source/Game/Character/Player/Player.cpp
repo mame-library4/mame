@@ -110,12 +110,12 @@ void Player::Update(const float& elapsedTime)
 }
 
 // ----- •`‰æ -----
-void Player::Render()
+void Player::Render(ID3D11PixelShader* psShader)
 {
     const float scaleFactor = 0.01f;
 
-    Object::Render(scaleFactor);
-    swordModel_.Render(scaleFactor);    
+    Object::Render(scaleFactor, psShader);
+    swordModel_.Render(scaleFactor, psShader);    
 
     swordTrail_.Render();
 }

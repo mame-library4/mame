@@ -191,9 +191,7 @@ public:
     bool UpdateBlendAnimation(const float& elapsedTime);
     void BlendAnimations(const std::vector<Node>* nodes[2], float factor, std::vector<Node>& node);
 
-    void Render(float scaleFactor);
-    void Render(ID3D11DeviceContext* deviceContext, const DirectX::XMFLOAT4X4& world,
-        const std::vector<Node>& animatedNodes);
+    void Render(const float& scaleFactor, ID3D11PixelShader* psShader = nullptr);
     void DrawDebug();
 
     void Animate(size_t animationIndex, float time, std::vector<Node>& animatedNodes);

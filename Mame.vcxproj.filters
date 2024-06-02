@@ -571,6 +571,9 @@
     <None Include="Source\Shader\PrimitiveRenderer.hlsli">
       <Filter>Mame\Shader\PrimiriveRenderer</Filter>
     </None>
+    <None Include="Source\Shader\GBuffer.hlsli">
+      <Filter>Mame\Shader\GltfModel</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shader\blur_ps.hlsl">
@@ -638,6 +641,9 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\PrimitiveRendererVS.hlsl">
       <Filter>Mame\Shader\PrimiriveRenderer</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\GltfModelGBufferPS.hlsl">
+      <Filter>Mame\Shader\GltfModel</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

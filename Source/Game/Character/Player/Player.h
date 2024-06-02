@@ -67,7 +67,7 @@ public:
     void Initialize();
     void Finalize();
     void Update(const float& elapsedTime)   override;
-    void Render()                           override;
+    void Render(ID3D11PixelShader* psShader)override;
     void DrawDebug()                        override;  
     void DebugRender(DebugRenderer* debugRenderer);
 

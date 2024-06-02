@@ -38,7 +38,7 @@ private:
     static const int stageMax = 3;
     std::unique_ptr<StageNormal> stageNormal_[stageMax];
 
-    bool isDebugRenderer_ = true;
+    bool isDebugRenderer_ = false;
 
     std::unique_ptr<Particles> particles_;
 };
