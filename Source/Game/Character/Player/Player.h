@@ -6,6 +6,8 @@
 #include "Graphics.h"
 #include "Effect/SwordTrail/SwordTrail.h"
 
+#define ActiveWalk 1 // •à‚«‚ğg‚¤
+
 class Player : public Character
 {
 public:// --- ’è” ---

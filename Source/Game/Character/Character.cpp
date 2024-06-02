@@ -30,8 +30,11 @@ void Character::DrawDebug()
         ImGui::TreePop();
     }
 
+    ImGui::DragFloat("CollisionRadius", &collisionRadius_);
+
     if (ImGui::TreeNode("Collision"))
     {
+
         if (ImGui::TreeNode("DamageDetection"))
         {
             for (DamageDetectionData& data : damageDetectionData_)
@@ -90,14 +93,15 @@ void Character::UpdateCollisions(const float& elapsedTime, const float& scaleFac
 // ----- ステージ外に出ないようにする -----
 void Character::CollisionCharacterVsStage()
 {
-    DirectX::XMFLOAT3 characterPos = GetTransform()->GetPosition();
-    DirectX::XMFLOAT3 stagePos = GameScene::stageCenter_;
+    const DirectX::XMFLOAT3 characterPos = GetTransform()->GetPosition();
+    const DirectX::XMFLOAT3 stagePos = GameScene::stageCenter_;
     DirectX::XMFLOAT3 vec = characterPos - stagePos;
-    float length = XMFloat3Length(vec);
-    if (length > GameScene::stageRadius_)
+    const float length = XMFloat3Length(vec);
+    const float radius = GameScene::stageRadius_ - collisionRadius_;
+    if (length > radius)
     {
         vec = XMFloat3Normalize(vec);
-        GetTransform()->SetPosition(GameScene::stageCenter_ + vec * GameScene::stageRadius_);
+        GetTransform()->SetPosition(GameScene::stageCenter_ + vec * radius);
     }
 }
 

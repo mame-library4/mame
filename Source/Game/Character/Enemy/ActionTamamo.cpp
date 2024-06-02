@@ -118,7 +118,6 @@ const ActionBase::State NonBattleWalkAction::Run(const float& elapsedTime)
             return ActionBase::State::Failed;
         }
 
-        owner_->CollisionCharacterVsStage();
 
         owner_->AddWeight(elapsedTime * 2.0f);
 
@@ -203,7 +202,6 @@ const ActionBase::State WalkAction::Run(const float& elapsedTime)
         break;
     case 1:
     {
-        owner_->CollisionCharacterVsStage();
 
         vec = XMFloat2Normalize(vec);
         // プレイヤーが右にいる

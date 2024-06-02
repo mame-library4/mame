@@ -103,6 +103,9 @@ void EnemyTamamo::Initialize()
 
     GetTransform()->SetPositionZ(10);
 
+    // ステージとの判定offset設定
+    SetCollisionRadius(2.5f);
+
     // 回転速度設定
     SetRotateSpeed(5.0f);
 
@@ -140,6 +143,9 @@ void EnemyTamamo::Update(const float& elapsedTime)
 
     // behaviorTree更新
     UpdateNode(elapsedTime);
+
+    // ステージの外に出ないようにする
+    CollisionCharacterVsStage();
 
     // sprite
     float health = GetHealth();
@@ -217,6 +223,8 @@ void EnemyTamamo::DebugRender(DebugRenderer* debugRenderer)
     DirectX::XMFLOAT3 forwardVec = GetTransform()->CalcForward();
     DirectX::XMFLOAT3 rightVec = GetTransform()->CalcRight();
 
+    debugRenderer->DrawCylinder(GetTransform()->GetPosition(), GetCollisionRadius(), 2.0f, { 1,1,1,1 });
+    
     if (isCollisionSphere_)
     {
         for (auto& data : GetCollisionDetectionData())

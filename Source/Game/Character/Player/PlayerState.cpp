@@ -109,7 +109,7 @@ namespace PlayerState
     // ----- XV -----
     void MoveState::Update(const float& elapsedTime)
     {
-#if 1
+#if ActiveWalk
         if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
         {
             owner_->PlayBlendAnimation(Player::Animation::Idle, Player::Animation::Run, true);

@@ -50,6 +50,8 @@ public:// --- 取得・設定 ---
     void SetHealth(const float& health) { health_ = health; }
     
     // -------------------- Collision用 --------------------
+    [[nodiscard]] const float GetCollisionRadius() const { return collisionRadius_; }
+    void SetCollisionRadius(const float& radius) { collisionRadius_ = radius; }
 
     // ---------- くらい判定 ----------
     void RegisterDamageDetectionData(const DamageDetectionData& data);
@@ -81,16 +83,18 @@ protected:
     std::vector<CollisionDetectionData>     collisionDetectionData_;// 押し出し判定
 
 private:
-    DirectX::XMFLOAT3   velocity_   = {};   // 速度
-    float               acceleration_ = 0.0f; // 速度
-    float               deceleration_ = 0.0f; // 減速
-    float               maxSpeed_   = 0.0f; // 最大速度
+    DirectX::XMFLOAT3   velocity_       = {};   // 速度
+    float               acceleration_   = 0.0f; // 速度
+    float               deceleration_   = 0.0f; // 減速
+    float               maxSpeed_       = 0.0f; // 最大速度
 
-    float               rotateSpeed_ = 1.0f; // 回転速度
+    float               rotateSpeed_    = 1.0f; // 回転速度
 
-    float               maxHealth_  = 1.0f;
-    float               health_     = 1.0f; // 体力
+    float               maxHealth_      = 1.0f;
+    float               health_         = 1.0f; // 体力
 
+
+    float collisionRadius_ = 0.0f;
 
     // ---------- 吹っ飛び --------------------
     DirectX::XMFLOAT3   blowDirection_  = {};

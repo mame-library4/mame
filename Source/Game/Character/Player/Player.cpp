@@ -43,6 +43,9 @@ void Player::Initialize()
     // 生成位置設定
     GetTransform()->SetPositionZ(60);
 
+    // ステージとの判定offset設定
+    SetCollisionRadius(0.2f);
+
     // 押し出し判定用変数設定
     RegisterCollisionDetectionData({ "collide0", 0.25f, { 0, 1.3f, 0} });
     RegisterCollisionDetectionData({ "collide1", 0.25f, { 0, 0.8f, 0} });
@@ -143,6 +146,8 @@ void Player::DebugRender(DebugRenderer* debugRenderer)
 {
     DirectX::XMFLOAT3 position = GetTransform()->GetPosition();
 
+    debugRenderer->DrawCylinder(GetTransform()->GetPosition(), GetCollisionRadius(), 2.0f, { 1,1,1,1 });
+
     if (isCollisionSphere_)
     {
         for (auto& data : GetCollisionDetectionData())
@@ -238,7 +243,7 @@ void Player::Move(const float& elapsedTime)
         float accelaration  = GetAcceleration();
         float maxSpeed      = GetMaxSpeed();
 
-#if 1
+#if ActiveWalk
         // 歩きの場合 加速度,移動速度上限ともに減らす
         if (GetCurrentBlendAnimationIndex() == static_cast<int>(Animation::Walk))
         {
