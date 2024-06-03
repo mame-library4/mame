@@ -13,17 +13,30 @@ void SwordTrail::Update(const DirectX::XMFLOAT3& startPosition, const DirectX::X
 		{
 			trailPositions[0][0] = { 0,0,0 };
 			trailPositions[1][0] = { 0,0,0 };
+			texcoord_[0][0] = { 0,0 };
+			texcoord_[1][0] = { 0,0 };
 		}
 		else
 		{
+			float factor = 1.0f / static_cast<float>(MAX_POLYGON);
+			//float factor = 1.0f / static_cast<float>(MAX_POLYGON);
 			trailPositions[0][x] = trailPositions[0][previousIndex];
 			trailPositions[1][x] = trailPositions[1][previousIndex];
+			texcoord_[0][x].y = 1.0f;
+			texcoord_[1][x].y = 0.0f;
+			texcoord_[0][x].x = texcoord_[0][previousIndex].x + factor;
+			texcoord_[1][x].x = texcoord_[1][previousIndex].x + factor;
+
+			texcoord_[0][x].x = min(texcoord_[0][x].x, 1.0f);
+			texcoord_[1][x].x = min(texcoord_[1][x].x, 1.0f);
 		}
 	}
 
 	// 現在の位置を保存する
 	trailPositions[0][0] = startPosition;
 	trailPositions[1][0] = endPosition;
+	texcoord_[0][0] = { 0,1 };
+	texcoord_[1][0] = { 0,0 };
 
 	DirectX::XMFLOAT4 color = { 1, 0, 0, 1 };
 	DirectX::XMFLOAT4 color2 = { 0, 0, 1, 1 };
@@ -42,6 +55,7 @@ void SwordTrail::Update(const DirectX::XMFLOAT3& startPosition, const DirectX::X
 	// 保存していた頂点バッファでポリゴンを作る
 	if (splineCurve_)
 	{
+#if 0
 		primitiveRenderer_.AddVertex(trailPositions[0][0], color, startTexcoord);
 		primitiveRenderer_.AddVertex(trailPositions[1][0], color2, endTexcoord);
 
@@ -102,17 +116,18 @@ void SwordTrail::Update(const DirectX::XMFLOAT3& startPosition, const DirectX::X
 		primitiveRenderer_.AddVertex(trailPositions[1][MAX_POLYGON - 2], color2, endTexcoord);
 		primitiveRenderer_.AddVertex(trailPositions[0][MAX_POLYGON - 1], color, startTexcoord);
 		primitiveRenderer_.AddVertex(trailPositions[1][MAX_POLYGON - 1], color2, endTexcoord);
+#endif
 	}
 	else
 	{
 		for (int i = 0; i < MAX_POLYGON; ++i)
 		{
-			primitiveRenderer_.AddVertex(trailPositions[0][i], color, startTexcoord);
-			primitiveRenderer_.AddVertex(trailPositions[1][i], color2, endTexcoord);
+			primitiveRenderer_.AddVertex(trailPositions[0][i], color, texcoord_[0][i]);
+			primitiveRenderer_.AddVertex(trailPositions[1][i], color2, texcoord_[1][i]);
 		}
 	}
 
-	primitiveRenderer_.SetTexcoord();
+	//primitiveRenderer_.SetTexcoord();
 }
 
 // ----- 描画 -----

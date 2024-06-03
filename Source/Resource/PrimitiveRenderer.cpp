@@ -39,12 +39,12 @@ PrimitiveRenderer::PrimitiveRenderer()
 }
 
 // ----- ’¸“_’Ç‰Á -----
-void PrimitiveRenderer::AddVertex(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT4& color, const float& texcoordY)
+void PrimitiveRenderer::AddVertex(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT4& color, const DirectX::XMFLOAT2& texcoord)
 {
     Vertex& v = vertices_.emplace_back();
     v.position_ = position;
     v.color_ = color;
-    v.texcoord_.y = texcoordY;
+    v.texcoord_ = texcoord;
 }
 
 void PrimitiveRenderer::SetTexcoord()

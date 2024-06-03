@@ -11,7 +11,7 @@ class PrimitiveRenderer
 public:
     PrimitiveRenderer();
 
-    void AddVertex(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT4& color, const float& texcoordY);
+    void AddVertex(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT4& color, const DirectX::XMFLOAT2& texcoord);
     void SetTexcoord();
     void Render(ID3D11PixelShader* pixelShader = nullptr);
     void ClearVertices();
