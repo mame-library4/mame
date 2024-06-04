@@ -1,18 +1,24 @@
 #include "DeferredRendering.hlsli"
-#include "bidirectionalReflectanceDistributionFunction.hlsli"
+#include "ShadingFunctions.hlsli"
 
-Texture2D<float4> gBufferBaseColor : register(t0);
-Texture2D<float4> gBufferEmissiveColor : register(t1);
-Texture2D<float4> gBufferNormal : register(t2);
-Texture2D<float4> gBufferParameter : register(t3);
-Texture2D<float> gBufferDepth : register(t4);
+Texture2D<float4> gBufferBaseColor      : register(t0);
+Texture2D<float4> gBufferEmissiveColor  : register(t1);
+Texture2D<float4> gBufferNormal         : register(t2);
+Texture2D<float4> gBufferParameter      : register(t3);
+Texture2D<float>  gBufferDepth          : register(t4);
+
+//  IBL用テクスチャ
+Texture2D   skybox          : register(t32);
+TextureCube diffuseIem      : register(t33);
+TextureCube specularPmrem   : register(t34);
+Texture2D   lutGgx          : register(t35);
 
 #define POINT 0
 #define LINEAR 1
 #define ANISOTROPIC 2
-//SamplerState samplerStates[3] : register(s0);
+SamplerState samplerStates[3] : register(s0);
 
-float4 main(VS_OUT psIn) : SV_TARGET
+PS_OUT main(VS_OUT psIn) : SV_TARGET
 {
     // GBufferテクスチャから情報をデコードする
     PSGBufferTextures gBufferTextures;
@@ -36,45 +42,30 @@ float4 main(VS_OUT psIn) : SV_TARGET
     // 垂直反射時のフレネル反射率 (非金属でも最低4%は鏡面反射する)
     float3 F0 = lerp(0.04f, albedo.rgb, data.metalness_);
     
-#if 1
-    //float3 diffuse = {};
-    //float3 specular = {};
-    //float3 L = normalize(lightDirection_.xyz);
     float3 diffuse = 0;
     float3 specular = 0;
+    float3 L = normalize(lightDirection_.xyz);
+    DirectBDRF(diffuseReflectance, F0, N, V, L, float3(1, 1, 1), data.roughness_, diffuse, specular);
     
-    const float3 f90 = 1.0;
-    float4 parameter = gBufferTextures.parameter_.Sample(samplerStates[LINEAR], psIn.texcoord);
-    const float alphaRoughness = parameter.g * parameter.g;
+    // IBL処理
+    diffuse += DiffuseIBL(N, V, data.roughness_, diffuseReflectance, F0, diffuseIem, samplerStates[LINEAR]);
+    specular += SpecularIBL(N, V, data.roughness_, F0, lutGgx, specularPmrem, samplerStates[LINEAR]);
     
-    float3 L = normalize(-lightDirection_.xyz);
-    float3 Li = float3(1.0, 1.0, 1.0); // Radiance of the light
-    const float NoL = max(0.0, dot(N, L));
-    const float NoV = max(0.0, dot(N, V));
-    if (NoL > 0.0 || NoV > 0.0)
-    {
-        const float3 R = reflect(-L, N);
-        const float3 H = normalize(V + L);
-
-        const float NoH = max(0.0, dot(N, H));
-        const float HoV = max(0.0, dot(H, V));
-
-        diffuse += Li * NoL * brdfLambertian(F0, f90, diffuseReflectance, HoV);
-        specular += Li * NoL * brdfSpecularGgx(F0, f90, alphaRoughness, HoV, NoL, NoV, NoH);
-    }
-
-    diffuse += iblRadianceLambertian(N, V, parameter.g, diffuseReflectance, F0);
-    specular += iblRadianceGgx(N, V, parameter.g, F0);
-
-    float3 emissive = gBufferEmissiveColor.Sample(samplerStates[LINEAR], psIn.texcoord).rgb;
-    diffuse = lerp(diffuse, diffuse * parameter.r, parameter.a);
-    specular = lerp(specular, specular * parameter.r, parameter.a);
-
-    float3 Lo = diffuse + specular + emissive * 2.0f;
+    // 自己遮蔽
+    diffuse = lerp(diffuse, diffuse * data.occlusionFactor_, data.occlusionStrength_);
+    specular = lerp(specular, specular * data.occlusionFactor_, data.occlusionStrength_);
     
-    float4 baseColor = gBufferBaseColor.Sample(samplerStates[POINT], psIn.texcoord);
-    return float4(Lo, baseColor.a);
-#endif
+    // 自己発行色加算
+    float3 color = diffuse + specular + emissiveColor;
     
-    //return gBufferBaseColor.Sample(samplerStates[POINT], psIn.texcoord);    
+    //  ガンマ係数
+    static const float GammaFactor = 2.2f;
+    color = pow(color, 1.0f / GammaFactor);
+    
+    //  深度値も出力する
+    PS_OUT output = (PS_OUT) 0;
+    output.color = float4(color, data.baseColor_.a);
+    output.depth = data.depth_;
+ 
+    return output;
 }

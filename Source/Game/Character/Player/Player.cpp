@@ -71,6 +71,9 @@ void Player::Initialize()
     SetAcceleration(50.0f);
     SetDeceleration(30.0f);
     SetMaxSpeed(6.0f);
+
+    // ‰ñ“]‘¬“xÝ’è
+    SetRotateSpeed(10.0f);
 }
 
 void Player::Finalize()
@@ -116,7 +119,10 @@ void Player::Render(ID3D11PixelShader* psShader)
 
     Object::Render(scaleFactor, psShader);
     swordModel_.Render(scaleFactor, psShader);    
+}
 
+void Player::RenderTrail()
+{
     swordTrail_.Render();
 }
 
@@ -179,6 +185,8 @@ void Player::Turn(const float& elapsedTime)
     float aLX = gamePad.GetAxisLX();
     float aLY = gamePad.GetAxisLY();
 
+    const float speed = GetRotateSpeed() * elapsedTime;
+
     DirectX::XMFLOAT2 input = { fabs(gamePad.GetAxisLX()), fabs(gamePad.GetAxisLY()) };
     DirectX::XMFLOAT3 cameraFront = Camera::Instance().CalcForward();
     DirectX::XMFLOAT3 cameraRight = Camera::Instance().CalcRight();
@@ -207,11 +215,11 @@ void Player::Turn(const float& elapsedTime)
 
         if (forwardCorss > 0)
         {
-            GetTransform()->AddRotationY(forwardDot);
+            GetTransform()->AddRotationY(forwardDot * speed);
         }
         else
         {
-            GetTransform()->AddRotationY(-forwardDot);
+            GetTransform()->AddRotationY(-forwardDot * speed);
         }
     }
 }

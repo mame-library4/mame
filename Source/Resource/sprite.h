@@ -90,16 +90,21 @@ private:
         void SetTexSizeX(const float& x) { texSize_.x = x; }
         void SetTexSizeY(const float& y) { texSize_.y = y; }
 
+        // --------------- OriginalSize ---------------
+        [[nodiscard]] const DirectX::XMFLOAT2 GetOriginalSize() const { return originalSize_; }
+        void SetOriginalSize(const DirectX::XMFLOAT2& originalSize) { originalSize_ = originalSize; }
+
         void DrawDebug();
 
     private:
-        DirectX::XMFLOAT2   position_   = {};               // 位置
-        DirectX::XMFLOAT2   size_       = {};               // 大きさ
-        DirectX::XMFLOAT4   color_      = { 1, 1, 1, 1 };   // 色
-        float               angle_      = 0.0f;             // 角度
-        DirectX::XMFLOAT2   texPos_     = {};               // テクスチャ座標
-        DirectX::XMFLOAT2   texSize_    = {};               // テクスチャサイズ
-        bool                isSizeFactor_ = false;          // ImGui用
+        DirectX::XMFLOAT2   position_       = {};               // 位置
+        DirectX::XMFLOAT2   size_           = {};               // 大きさ
+        DirectX::XMFLOAT4   color_          = { 1, 1, 1, 1 };   // 色
+        float               angle_          = 0.0f;             // 角度
+        DirectX::XMFLOAT2   texPos_         = {};               // テクスチャ座標
+        DirectX::XMFLOAT2   texSize_        = {};               // テクスチャサイズ
+        DirectX::XMFLOAT2   originalSize_   = {};               // オリジナルサイズ
+        bool                isSizeFactor_   = false;          // ImGui用
     };
 
 public:
@@ -134,7 +139,7 @@ public:
     {
         DirectX::XMFLOAT3 position_;
         DirectX::XMFLOAT4 color_;
-        DirectX::XMFLOAT2 texcord_;
+        DirectX::XMFLOAT2 texcoord_;
     };
     Microsoft::WRL::ComPtr<ID3D11Buffer> GetVertexBuffer() { return vertexBuffer_; }
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> GetShaderResourceView() { return shaderResourceView_; }

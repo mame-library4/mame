@@ -178,7 +178,7 @@ void EnemyTamamo::RenderUserInterface()
 // ----- ImGui用 -----
 void EnemyTamamo::DrawDebug()
 {
-    if (ImGui::Begin("Tamamo"))
+    if (ImGui::BeginMenu("Tamamo"))
     {
         hpBackSprite_->DrawDebug();
         hpSprite_->DrawDebug();
@@ -212,7 +212,7 @@ void EnemyTamamo::DrawDebug()
 
         Object::DrawDebug();
 
-        ImGui::End();
+        ImGui::EndMenu();
     }
 }
 

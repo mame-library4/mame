@@ -57,6 +57,7 @@ Sprite::Sprite(const wchar_t* filename)
     // 画像サイズを設定
     GetTransform()->SetSize(DirectX::XMFLOAT2(texture2dDesc.Width, texture2dDesc.Height));
     GetTransform()->SetTexSize(DirectX::XMFLOAT2(texture2dDesc.Width, texture2dDesc.Height));
+    GetTransform()->SetOriginalSize(DirectX::XMFLOAT2(texture2dDesc.Width, texture2dDesc.Height));
 
     // ImGui名前設定
     std::string name = "Sprite" + std::to_string(nameNum_++);
@@ -231,10 +232,14 @@ void Sprite::Render(ID3D11PixelShader* psShader)
         vertices[3].position_ = { x3, y3, 0 };
         vertices[0].color_ = vertices[1].color_ = vertices[2].color_ = vertices[3].color_ = GetTransform()->GetColor();
 
-        vertices[0].texcord_ = { GetTransform()->GetTexPosX() / GetTransform()->GetSizeX(), GetTransform()->GetTexPosY() / GetTransform()->GetSizeY() };
-        vertices[1].texcord_ = { (GetTransform()->GetTexPosX() + GetTransform()->GetTexSizeX()) / GetTransform()->GetSizeX(), GetTransform()->GetTexPosY() / GetTransform()->GetSizeY() };
-        vertices[2].texcord_ = { GetTransform()->GetTexPosX() / GetTransform()->GetSizeX(), (GetTransform()->GetTexPosY() + GetTransform()->GetTexSizeY()) / GetTransform()->GetSizeY() };
-        vertices[3].texcord_ = { (GetTransform()->GetTexPosX() + GetTransform()->GetTexSizeX()) / GetTransform()->GetSizeX(), (GetTransform()->GetTexPosY() + GetTransform()->GetTexSizeY()) / GetTransform()->GetSizeY() };
+        const DirectX::XMFLOAT2 texPos = GetTransform()->GetTexPos();
+        const DirectX::XMFLOAT2 texSize = GetTransform()->GetTexSize();
+        const DirectX::XMFLOAT2 originSize = GetTransform()->GetOriginalSize();
+
+        vertices[0].texcoord_ = { texPos.x / originSize.x, texPos.y / originSize.y };
+        vertices[1].texcoord_ = { (texPos.x + texSize.x) / originSize.x, texPos.y / originSize.y };
+        vertices[2].texcoord_ = { texPos.x / originSize.x, (texPos.y + texSize.y) / originSize.y };
+        vertices[3].texcoord_ = { (texPos.x + texSize.x) / originSize.x, (texPos.y + texSize.y) / originSize.y };
     }
     deviceContext->Unmap(vertexBuffer_.Get(), 0);
 

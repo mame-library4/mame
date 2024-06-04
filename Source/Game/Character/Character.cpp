@@ -29,6 +29,13 @@ void Character::DrawDebug()
 
         ImGui::TreePop();
     }
+    if (ImGui::TreeNode("Rotate"))
+    {
+        ImGui::DragFloat("Speed", &rotateSpeed_);
+
+        ImGui::TreePop();
+    }
+
 
     ImGui::DragFloat("CollisionRadius", &collisionRadius_);
 

@@ -574,6 +574,9 @@
     <None Include="Source\Shader\GBuffer.hlsli">
       <Filter>Mame\Shader\GltfModel</Filter>
     </None>
+    <None Include="Source\Shader\ShadingFunctions.hlsli">
+      <Filter>Mame\Shader\GltfModel</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shader\blur_ps.hlsl">

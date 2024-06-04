@@ -30,6 +30,11 @@ void PlayerManager::Render(ID3D11PixelShader* psShader)
     player_->Render(psShader);
 }
 
+void PlayerManager::RenderTrail()
+{
+    player_->RenderTrail();
+}
+
 // ----- ImGui—p -----
 void PlayerManager::DrawDebug()
 {

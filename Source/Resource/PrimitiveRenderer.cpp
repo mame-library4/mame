@@ -106,7 +106,7 @@ void PrimitiveRenderer::Render(ID3D11PixelShader* pixelShader)
 
     Graphics::Instance().SetBlendState(Shader::BLEND_STATE::ALPHA);
     Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_ON_ZW_ON);
-    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::SOLID);
+    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
 
     while (start < totalVertexCount)
     {

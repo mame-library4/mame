@@ -53,7 +53,7 @@ PSGBufferOut EncodeGBuffer(in GBufferData data, matrix viewProjection)
     ret.parameter_.a = data.occlusionStrength_;
     
     // ê[ìxÇÕ depth RT4 Ç…èoóÕ
-    float4 position = mul(float4(data.worldNormal_, 1.0f), viewProjection);
+    float4 position = mul(float4(data.worldPosition_, 1.0f), viewProjection);
     ret.depth_ = position.z / position.w;
     return ret;
 }

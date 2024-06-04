@@ -6,7 +6,7 @@
 #include "Graphics.h"
 #include "Effect/SwordTrail/SwordTrail.h"
 
-#define ActiveWalk 1 // •à‚«‚ğg‚¤
+#define ActiveWalk 0 // •à‚«‚ğg‚¤
 
 class Player : public Character
 {
@@ -49,6 +49,9 @@ public:// --- ’è” ---
 
         Damage0,
         Damage1,
+
+        CounterStance,
+        CounterAttack,
     };
 
     enum class NextInput
@@ -68,6 +71,7 @@ public:
     void Finalize();
     void Update(const float& elapsedTime)   override;
     void Render(ID3D11PixelShader* psShader)override;
+    void RenderTrail();
     void DrawDebug()                        override;  
     void DebugRender(DebugRenderer* debugRenderer);
 
@@ -114,6 +118,7 @@ public:// --- æ“¾Eİ’è ---
     [[nodiscard]] bool GetLightAttackKeyDown() { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_X; }
     [[nodiscard]] bool GetStrongAttackKeyUp() { return Input::Instance().GetGamePad().GetButtonUp() & GamePad::BTN_Y; }
     [[nodiscard]] bool GetStrongAttackKeyDown() { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y; }
+    [[nodiscard]] bool GetCounterStanceKeyDown() { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B && Input::Instance().GetGamePad().GetButtonDown() && GamePad::BTN_RIGHT_SHOULDER; }
 
 #pragma endregion [Get, Set] Function
 

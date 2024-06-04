@@ -115,6 +115,10 @@ void GameScene::DeferredRender()
 
     // “G•`‰æ
     EnemyManager::Instance().Render(gBufferPixelShader);
+
+    // ---------- ”¼“§–¾•`‰æ ----------
+    // TODO: ‚±‚¢‚Â‚Ç‚¤‚É‚©‚µ‚È‚¢‚Æ‚¢‚¯‚È‚¢
+    PlayerManager::Instance().RenderTrail();
 }
 
 void GameScene::ForwardRender()
@@ -137,6 +141,10 @@ void GameScene::ForwardRender()
 
     // “G•`‰æ
     EnemyManager::Instance().Render();
+
+
+    // ---------- ”¼“§–¾•`‰æ ----------
+    PlayerManager::Instance().RenderTrail();
 
 
     Shader* shader = Graphics::Instance().GetShader();

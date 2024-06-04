@@ -354,6 +354,7 @@
     <None Include="Source\Shader\PostEffect.hlsli" />
     <None Include="Source\Shader\PostProcess.hlsli" />
     <None Include="Source\Shader\PrimitiveRenderer.hlsli" />
+    <None Include="Source\Shader\ShadingFunctions.hlsli" />
     <None Include="Source\Shader\SkyBox.hlsli" />
     <None Include="Source\Shader\sprite.hlsli" />
   </ItemGroup>

@@ -24,6 +24,13 @@ namespace PlayerState
         // 攻撃入力受付 ( ステートが変更された場合ここで終了 )
         if (owner_->CheckAttackButton(Player::NextInput::None)) return;
 
+        // カウンター受付
+        if (owner_->GetCounterStanceKeyDown())
+        {
+            owner_->ChangeState(Player::STATE::Counter);
+            return;
+        }
+
         GamePad gamePad = Input::Instance().GetGamePad();
         float aLX = fabs(gamePad.GetAxisLX());
         float aLY = fabs(gamePad.GetAxisLY());
@@ -102,7 +109,7 @@ namespace PlayerState
     void MoveState::Initialize()
     {
         // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::Idle, Player::Animation::Walk, true);
+        owner_->PlayBlendAnimation(Player::Animation::Idle, Player::Animation::Run, true);
         owner_->SetWeight(0.0f);
     }
 
@@ -421,16 +428,14 @@ namespace PlayerState
     // ----- 初期化 -----
     void CounterState::Initialize()
     {
-        return;
         // アニメーション設定
-        //owner_->PlayAnimation(Player::Animation::Protect, false);
+        owner_->PlayBlendAnimation(Player::Animation::CounterStance, false);
+        //owner_->PlayBlendAnimation(Player::Animation::CounterAttack, false);
     }
 
     // ----- 更新 -----
     void CounterState::Update(const float& elapsedTime)
     {
-        owner_->ChangeState(Player::STATE::Idle);
-        return;
         // アニメーション再生終了
         if (!owner_->IsPlayAnimation())
         {
@@ -440,7 +445,8 @@ namespace PlayerState
 
         // カウンター成功
         // TODO:ここつくる。カウンター
-        if (GetAsyncKeyState('B') & 1)
+        //if (GetAsyncKeyState('B') & 1)
+        if(owner_->GetStrongAttackKeyDown())
         {
             owner_->ChangeState(Player::STATE::CounterAttack);
             return;
@@ -459,7 +465,7 @@ namespace PlayerState
     // ----- 初期化 -----
     void CounterAttackState::Initialize()
     {
-        owner_->PlayAnimation(Player::Animation::StrongAttack0, false);
+        owner_->PlayAnimation(Player::Animation::CounterAttack, false);
     }
 
     // ----- 更新 -----

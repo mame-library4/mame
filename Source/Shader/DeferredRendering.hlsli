@@ -4,6 +4,12 @@ struct VS_OUT
     float2 texcoord : TEXCOORD;
 };
 
+struct PS_OUT
+{
+    float4 color : SV_TARGET;
+    float depth : SV_DEPTH;
+};
+
 cbuffer SCENE_CONSTANT_BUFFER : register(b1)
 {
     row_major float4x4 viewProjection_;
