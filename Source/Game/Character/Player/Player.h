@@ -114,11 +114,11 @@ public:// --- éÊìæÅEê›íË ---
     void SetIsAvoidance(const bool& isAvoidance) { isAvoidance_ = isAvoidance; }
 
     // ---------- ÉLÅ[ì¸óÕ ----------
-    [[nodiscard]] bool GetLightAttackKeyUp() { return Input::Instance().GetGamePad().GetButtonUp() & GamePad::BTN_X; }
-    [[nodiscard]] bool GetLightAttackKeyDown() { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_X; }
+    [[nodiscard]] bool GetLightAttackKeyUp() { return Input::Instance().GetGamePad().GetButtonUp() & GamePad::BTN_B; }
+    [[nodiscard]] bool GetLightAttackKeyDown() { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
     [[nodiscard]] bool GetStrongAttackKeyUp() { return Input::Instance().GetGamePad().GetButtonUp() & GamePad::BTN_Y; }
     [[nodiscard]] bool GetStrongAttackKeyDown() { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y; }
-    [[nodiscard]] bool GetCounterStanceKeyDown() { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B && Input::Instance().GetGamePad().GetButtonDown() && GamePad::BTN_RIGHT_SHOULDER; }
+    [[nodiscard]] bool GetCounterStanceKey() { return Input::Instance().GetGamePad().GetButton() & GamePad::BTN_B && Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_TRIGGER; }
 
 #pragma endregion [Get, Set] Function
 

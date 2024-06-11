@@ -241,7 +241,7 @@
     <ClCompile Include="Source\Graphics\PostProcess\PostProcess.cpp" />
     <ClCompile Include="Source\Graphics\Shader.cpp" />
     <ClCompile Include="Source\Graphics\ShadowMap.cpp" />
-    <ClCompile Include="Source\Graphics\SkyBox.cpp" />
+    <ClCompile Include="Source\Graphics\SkyMap.cpp" />
     <ClCompile Include="Source\Input\GamePad.cpp" />
     <ClCompile Include="Source\Input\Input.cpp" />
     <ClCompile Include="Source\Input\Mouse.cpp" />
@@ -310,7 +310,7 @@
     <ClInclude Include="Source\Graphics\PostProcess\PostProcess.h" />
     <ClInclude Include="Source\Graphics\Shader.h" />
     <ClInclude Include="Source\Graphics\ShadowMap.h" />
-    <ClInclude Include="Source\Graphics\SkyBox.h" />
+    <ClInclude Include="Source\Graphics\SkyMap.h" />
     <ClInclude Include="Source\Input\GamePad.h" />
     <ClInclude Include="Source\Input\Input.h" />
     <ClInclude Include="Source\Input\Mouse.h" />
@@ -355,7 +355,6 @@
     <None Include="Source\Shader\PostProcess.hlsli" />
     <None Include="Source\Shader\PrimitiveRenderer.hlsli" />
     <None Include="Source\Shader\ShadingFunctions.hlsli" />
-    <None Include="Source\Shader\SkyBox.hlsli" />
     <None Include="Source\Shader\sprite.hlsli" />
   </ItemGroup>
   <ItemGroup>
@@ -457,7 +456,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
-    <FxCompile Include="Source\Shader\SkyBoxPS.hlsl">
+    <FxCompile Include="Source\Shader\SkyMapPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>

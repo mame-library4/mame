@@ -2,6 +2,17 @@
 #include "../../../AI/BehaviorTree/ActionBase.h"
 #include "Enemy.h"
 
+// collisionの有効化,無効化を制御する構造体
+struct CollisionState
+{
+    float   startFrame_ = 0.0f;
+    float   endFrame_ = 0.0f;   
+    bool    isStart_ = false;
+    bool    isEnd_ = false;
+
+    void Initialize(const float& startFrame, const float& endFrame, const bool& isStart = false, const bool& isEnd = false);
+};
+
 // 死亡行動
 class DeathAction : public ActionBase
 {
@@ -130,11 +141,10 @@ private:
     void UpdateAttackCollision();
 
 private:
-    // ---------- 攻撃判定 ---------------
-    float   attackCollisionStartFrame_  = 1.9f;     // 攻撃判定有効フレーム
-    float   attackCollisionEndFrame_    = 3.0f;     // 攻撃判定無効フレーム
-    bool    isAttackCollisionStart_     = false;    // 制御フラグ
-    bool    isAttackCollisionEnd_       = false;    // 制御フラグ
+    // ---------- 判定フラグ ---------------
+    CollisionState collisionDetection_;
+    CollisionState attackDetection_;
+    float   disableCollisionPushStartFrame_ = 1.6f; // 押し出し判定無効フレーム
 
 
     float               stateChangeFrame_   = 1.3f; // ステートを切り替えるアニメーションのフレーム

@@ -3,16 +3,14 @@ cbuffer PARTICLE_CONSTANTS : register(b9)
     float3 emitterPosition; // emitter: 発光素子
     float particleSize;
     float4 particleColor;
-    float time;
-    float deltaTime;
     
-    float2 scrollDirection; // スクロール方向
-    float options;          // タイム
+    float deltaTime;    
+    float   animationSpeed;
+    float2  size;
     
-    float2 dissolveParameters; // x : ディゾルブ適応量、 y : 縁の閾値
-    float something; // ダミー
+    float2  texSize;    // 画像サイズ
     
-    float4 edgeColor;   // 縁の色
+    bool animationLoopFlag;
 };
 
 cbuffer SCENE_CONSTANT_BUFFER : register(b1)
@@ -32,17 +30,20 @@ struct GS_OUT
     float4 position : SV_POSITION;
     float4 color : COLOR;
     float2 texcoord : TEXCOORD;    
-    
-    float2 scrollTexcoord : TEXCOORD;
 };
 
 struct Particle
 {
     float4 color;
     float3 position;
-    float3 velocity;
     float age;
+    float3 velocity;
     int state;
+    
+    float2  size;           // 画像全体の大きさ
+    float2  texPos;         // 切り抜き始まり
+    float   animationTime;
+    float3 dummy;
 };
 
 #define NUMTHREADS_X 16

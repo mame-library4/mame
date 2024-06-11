@@ -18,6 +18,8 @@ public:// Šî–{“I‚ÈŠÖ”
     void DeferredRender()                   override;
     void ForwardRender()                    override;
     void UserInterfaceRender()              override;
+    
+    void Render() override {};
 
     void DrawDebug()                        override; // ImGui—p
 

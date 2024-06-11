@@ -117,21 +117,44 @@ void Application::Render()
     DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->inverseViewProjection_, DirectX::XMMatrixInverse(NULL, camera.GetViewMatrix() * camera.GetProjectionMatrix()));
     sceneConstants_.Activate(1, true, true, true, true);
 
+
+
     // ShadowMap Set 9
     deviceContext->PSSetShaderResources(9, 1, shadowMap_.shaderResourceView.GetAddressOf());
-
+    
+#if 1
     // --- deferred rendering ---
     if (isDeferred_)
     {
         Graphics::Instance().GetShader()->SetGBuffer();
         Graphics::Instance().SetBlendState(Shader::BLEND_STATE::MRT);
+        Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::SOLID);
+        Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_ON_ZW_ON);
         SceneManager::Instance().DeferredRender();
 
         deviceContext->ClearRenderTargetView(renderTargetView, color);
         deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
         deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+     
+        postProcess_.Activate();
+
+        // SkyMap
+        skymap_.Render();
 
         deferredRendering_.Draw();
+               
+        SceneManager::Instance().Render();
+
+        // デバッグレンダラ
+#if _DEBUG
+        DirectX::XMFLOAT4X4 view, projection;
+        DirectX::XMStoreFloat4x4(&view, Camera::Instance().GetViewMatrix());
+        DirectX::XMStoreFloat4x4(&projection, Camera::Instance().GetProjectionMatrix());
+        Graphics::Instance().GetDebugRenderer()->Render(deviceContext, view, projection);
+#endif
+
+        postProcess_.Deactivate();
+        postProcess_.Draw();
     }
     // --- forward rendering ---
     else
@@ -139,8 +162,16 @@ void Application::Render()
         // ポストプロセス開始
         postProcess_.Activate();
 
+        // SkyMap
+        skymap_.Render();
+
         // シーン
+        Graphics::Instance().SetBlendState(Shader::BLEND_STATE::NONE);
+        Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::SOLID);
+        Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_ON_ZW_ON);
         SceneManager::Instance().ForwardRender();
+
+        SceneManager::Instance().Render();
 
         // デバッグレンダラ
 #if _DEBUG
@@ -157,6 +188,44 @@ void Application::Render()
         postProcess_.Deactivate();
         postProcess_.Draw();
     }
+#else
+
+    Graphics::Instance().GetShader()->SetGBuffer();
+    Graphics::Instance().SetBlendState(Shader::BLEND_STATE::MRT);
+    SceneManager::Instance().DeferredRender();
+
+    deviceContext->ClearRenderTargetView(renderTargetView, color);
+    deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+
+
+    // ポストプロセス開始
+    postProcess_.Activate();
+
+    // シーン
+    SceneManager::Instance().ForwardRender();
+
+    // デバッグレンダラ
+#if _DEBUG
+    DirectX::XMFLOAT4X4 view, projection;
+    DirectX::XMStoreFloat4x4(&view, Camera::Instance().GetViewMatrix());
+    DirectX::XMStoreFloat4x4(&projection, Camera::Instance().GetProjectionMatrix());
+    Graphics::Instance().GetDebugRenderer()->Render(deviceContext, view, projection);
+#endif
+
+    Graphics::Instance().SetBlendState(Shader::BLEND_STATE::ALPHA);
+    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
+    Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_OFF_ZW_OFF);
+
+    deferredRendering_.Draw();
+
+    postProcess_.Deactivate();
+    postProcess_.Draw();
+
+#endif
+
+    ID3D11ShaderResourceView* nullShaderResourceViews[]{ nullptr };
+    deviceContext->PSSetShaderResources(9, 1, nullShaderResourceViews);
 
     Graphics::Instance().SetBlendState(Shader::BLEND_STATE::ALPHA);
     Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);

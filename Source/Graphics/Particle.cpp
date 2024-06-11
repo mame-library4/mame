@@ -1,6 +1,7 @@
 #include "Particle.h"
 #include "Graphics.h"
 #include "Misc.h"
+#include "Texture.h"
 
 #include "../Core/Application.h"
 
@@ -51,6 +52,14 @@ Particles::Particles(size_t particleCount) : maxParticleCount(particleCount)
     Graphics::Instance().CreateGsFromCso("./Resources/Shader/ParticleGS.cso", particleGS.ReleaseAndGetAddressOf());
     Graphics::Instance().CreateCsFromCso("./Resources/Shader/ParticleCS.cso", particleCS.ReleaseAndGetAddressOf());
     Graphics::Instance().CreateCsFromCso("./Resources/Shader/ParticleInitializerCS.cso", particleInitializerCS.ReleaseAndGetAddressOf());
+
+    D3D11_TEXTURE2D_DESC texture2dDesc = {};
+    Texture::Instance().LoadTexture(L"./Resources/Image/bomb.png", shaderResourceView_.GetAddressOf(), &texture2dDesc);
+    particleData.Size_ = { static_cast<float>(texture2dDesc.Width), static_cast<float>(texture2dDesc.Height) };
+    particleData.texSize_ = { 256.0f,256.0f };
+    //particleData.texSize_ = { static_cast<float>(texture2dDesc.Width), static_cast<float>(texture2dDesc.Height) };
+    particleData.animationSpeed = 20.0f;
+    particleData.animationLoopFlag = true;
 }
 
 UINT align(UINT num, UINT alignment)
@@ -64,9 +73,7 @@ void Particles::Integrate(float deltaTime)
 
     deviceContext->CSSetUnorderedAccessViews(0, 1, particleBufferUav.GetAddressOf(), NULL);
 
-    particleData.time += deltaTime;
     particleData.deltaTime = deltaTime;
-    particleData.options = deltaTime;
 
     deviceContext->UpdateSubresource(constantBuffer.Get(), 0, 0, &particleData, 0, 0);
     deviceContext->CSSetConstantBuffers(9, 1, constantBuffer.GetAddressOf());
@@ -86,9 +93,7 @@ void Particles::Initialize(float deltaTime)
 
     deviceContext->CSSetUnorderedAccessViews(0, 1, particleBufferUav.GetAddressOf(), NULL);
 
-    particleData.time += deltaTime;
     particleData.deltaTime = deltaTime;
-    particleData.options = deltaTime;
 
     deviceContext->UpdateSubresource(constantBuffer.Get(), 0, 0, &particleData, 0, 0);
 
@@ -115,6 +120,8 @@ void Particles::Render()
     deviceContext->PSSetConstantBuffers(9, 1, constantBuffer.GetAddressOf());
     deviceContext->GSSetConstantBuffers(9, 1, constantBuffer.GetAddressOf());
 
+    deviceContext->PSSetShaderResources(0, 1, shaderResourceView_.GetAddressOf());
+
     deviceContext->IASetInputLayout(NULL);
     deviceContext->IASetVertexBuffers(0, 0, NULL, NULL, NULL);
     deviceContext->IASetIndexBuffer(NULL, DXGI_FORMAT_R32_UINT, 0);
@@ -135,15 +142,15 @@ void Particles::DrawDebug()
         ImGui::DragFloat3("emitterPosition", &particleData.emitterPosition.x);
         ImGui::DragFloat("particleSize", &particleData.particleSize);
         ImGui::ColorEdit4("color", &particleData.color.x);
-        ImGui::DragFloat("time", &particleData.time);
         ImGui::DragFloat("deltaTime", &particleData.deltaTime);
-
-        ImGui::DragFloat2("scrollDirection", &particleData.scrollDirection.x);
-        ImGui::DragFloat("options", &particleData.options);
-
-        ImGui::SliderFloat("dissolve", &particleData.dissolveParameters.x,0.0f,1.0f);
-        ImGui::SliderFloat("threshold", &particleData.dissolveParameters.y,0.0f,1.0f);
-        ImGui::ColorEdit4("thresholdColor", &particleData.edgeColor.x);
+        
+        if (ImGui::TreeNode("Animation"))
+        {
+            ImGui::DragFloat2("TexSize", &particleData.texSize_.x);
+            ImGui::DragFloat("AnimationSpeed", &particleData.animationSpeed);
+            ImGui::Checkbox("Loop", &particleData.animationLoopFlag);
+            ImGui::TreePop();
+        }
 
         ImGui::TreePop();
     }

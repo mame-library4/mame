@@ -19,6 +19,8 @@ public:// 基本的な関数
     void ForwardRender()                    override;
     void UserInterfaceRender()              override;
 
+    void Render() override {};
+
     void DrawDebug()    override;
     
 private:// スレッド関係

@@ -1,5 +1,5 @@
 #pragma once
-#include "../../../AI/StateMachine/State.h"
+#include "StateMachine/State.h"
 #include "Player.h"
 
 namespace PlayerState
@@ -86,6 +86,11 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+
+    private:
+        float power_ = 0.0f;
+        float addForceFrame_ = 0.0f;
+        bool isAddForce_ = false;
     };
 
     // ----- カウンター攻撃 -----
@@ -98,6 +103,10 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+
+    private:
+        float addForceFrame_ = 0.0f;
+        bool isAddForce_ = false;
     };
 
 #pragma endregion

@@ -194,5 +194,5 @@ struct CollisionDetectionData
 
 private:
     CollisionSphereData collisionSphereData_;
-    bool                isActive_ = false;      // Œ»İ—LŒø‚©
+    bool                isActive_ = true;      // Œ»İ—LŒø‚©
 };

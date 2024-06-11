@@ -120,6 +120,7 @@ public:// --- éÊìæÅEê›íË ---
     virtual void SetSlashAttackFlag(const bool& activeFlag = true) {}
     virtual void SetTailSwipeAttackFlag(const bool& activeFlag = true) {}
     virtual void SetSlamAttackFlag(const bool& activeFlag = true) {}
+    virtual void SetSlamCollisionFlag(const bool& activeFlag = true) {}
 
     virtual void InitializeStones() {}
 

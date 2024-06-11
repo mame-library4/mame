@@ -30,6 +30,11 @@ Player::Player()
         // 一番初めのステートを設定する
         GetStateMachine()->SetState(static_cast<UINT>(STATE::Idle));
     }
+
+    // -------------------- LookAt処理 -------------------------
+    // ----- (初期姿勢時の頭ノードのローカル空間前方向を求める) -----
+    LookAtInitilaize("R:R:j_Head");
+    //LookAtInitilaize("R:R:j_Head_end");
 }
 
 // ----- デストラクタ -----
@@ -110,6 +115,9 @@ void Player::Update(const float& elapsedTime)
     swordTrail_.Update(startPos, endPos);
 
     //GetTransform()->SetPositionY(0.0f);
+
+    // LookAt
+    //LookAtUpdate();
 }
 
 // ----- 描画 -----
@@ -131,6 +139,7 @@ void Player::DrawDebug()
 {
     if (ImGui::BeginMenu("Player"))
     {
+        GetStateMachine()->DrawDebug();
 
         Character::DrawDebug();
         Object::DrawDebug();
@@ -187,7 +196,7 @@ void Player::Turn(const float& elapsedTime)
 
     const float speed = GetRotateSpeed() * elapsedTime;
 
-    DirectX::XMFLOAT2 input = { fabs(gamePad.GetAxisLX()), fabs(gamePad.GetAxisLY()) };
+    DirectX::XMFLOAT2 input = { fabsf(gamePad.GetAxisLX()), fabsf(gamePad.GetAxisLY()) };
     DirectX::XMFLOAT3 cameraFront = Camera::Instance().CalcForward();
     DirectX::XMFLOAT3 cameraRight = Camera::Instance().CalcRight();
 

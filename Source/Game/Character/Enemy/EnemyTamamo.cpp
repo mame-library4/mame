@@ -13,74 +13,9 @@ EnemyTamamo::EnemyTamamo()
     }
 
     // BehaviorTree設定
-#pragma region BehaviorTree設定
     behaviorData_ = std::make_unique<BehaviorData>();       // BehaviorData生成
     behaviorTree_ = std::make_unique<BehaviorTree>(this);   // BehaviorTree生成
-
-    // Behavior Node追加
-    behaviorTree_->AddNode("", "Root", 0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
-
-    // --------------- 死亡 ---------------
-#pragma region 死亡
-    behaviorTree_->AddNode("Root", "Death", 0, BehaviorTree::SelectRule::None, new DeathJudgment(this), new DeathAction(this));
-
-#pragma endregion 死亡
-
-    // --------------- 怯み ---------------
-#pragma region ひるみ
-    behaviorTree_->AddNode("Root", "Flinch", 1, BehaviorTree::SelectRule::None, new FlinchJudgment(this), new FlinchAction(this));
-
-#pragma endregion ひるみ
-
-    // --------------- 非戦闘 ---------------
-#pragma region 非戦闘
-    behaviorTree_->AddNode("Root", "NonBattle", 2, BehaviorTree::SelectRule::Priority, new NonBattleJudgment(this), nullptr);
-    
-    behaviorTree_->AddNode("NonBattle", "Idle(NonBattle)", 0, BehaviorTree::SelectRule::None, new NonBattleIdleJudgment(this), new NonBattleIdleAction(this)); // 非戦闘時待機
-    behaviorTree_->AddNode("NonBattle", "Walk(NonBattle)", 0, BehaviorTree::SelectRule::None, new NonBattleWalkJudgment(this), new NonBattleWalkAction(this)); // 非戦闘時歩き
-
-#pragma endregion 非戦闘
-
-    // --------------- 戦闘 ---------------
-#pragma region 戦闘
-    behaviorTree_->AddNode("Root", "Battle", 3, BehaviorTree::SelectRule::Priority, nullptr, nullptr); // 戦闘 (中間ノード)
-
-    // ---------- 待機系 ----------
-    behaviorTree_->AddNode("Battle", "Idle", 1, BehaviorTree::SelectRule::Priority, nullptr, nullptr); // 待機 (中間ノード)
-    
-    behaviorTree_->AddNode("Idle", "Walk", 0, BehaviorTree::SelectRule::None, new WalkJudgment(this), new WalkAction(this)); // 歩き
-    behaviorTree_->AddNode("Idle", "Step", 1, BehaviorTree::SelectRule::None, nullptr, new StepAction(this)); // ステップ
-
-    // ---------- 攻撃系 ----------
-    behaviorTree_->AddNode("Battle", "Attack", 0, BehaviorTree::SelectRule::Priority, new AttackJudgment(this), nullptr); // 攻撃 (中間ノード)
-    
-    // ----- 距離近い -----
-    behaviorTree_->AddNode("Attack", "Near", 1, BehaviorTree::SelectRule::Priority, new NearAttackJudgment(this), nullptr); // 近距離 (中間ノード)
-    
-    behaviorTree_->AddNode("Near", "Bite",   1, BehaviorTree::SelectRule::None, new BiteJudgment(this), new BiteAction(this)); // 嚙みつき
-    behaviorTree_->AddNode("Near", "Slash",  1, BehaviorTree::SelectRule::None, nullptr, new SlashAction(this)); // ひっかき
-    behaviorTree_->AddNode("Near", "Tail",   0, BehaviorTree::SelectRule::None, new TailSwipeJudgment(this), new TailSwipeAction(this)); // 尻尾
-    // behaviorTree_->AddNode("Near", "Spin",   1, BehaviorTree::SelectRule::None, nullptr, nullptr); // 回転
-    // behaviorTree_->AddNode("Near", "Pounce", 1, BehaviorTree::SelectRule::None, nullptr, nullptr); // 飛びつき
-    
-    // ----- 距離遠い -----
-    behaviorTree_->AddNode("Attack", "Far", 2, BehaviorTree::SelectRule::Priority, new FarAttackJudgment(this), nullptr); // 遠距離 (中間ノード)
-    
-    behaviorTree_->AddNode("Far", "Slam",  0, BehaviorTree::SelectRule::None, nullptr, new SlamAction(this)); // たたきつけ
-    behaviorTree_->AddNode("Far", "Spine",  1, BehaviorTree::SelectRule::None, nullptr, nullptr); // 棘
-    behaviorTree_->AddNode("Far", "Tackle", 1, BehaviorTree::SelectRule::None, nullptr, nullptr); // 突進
-    behaviorTree_->AddNode("Far", "Pounce", 1, BehaviorTree::SelectRule::None, nullptr, nullptr); // 飛びつき
-
-    // --- 叫ぶ系 -----
-    behaviorTree_->AddNode("Attack", "Shout", 0, BehaviorTree::SelectRule::Priority, new ShoutJudgment(this), nullptr); // 叫ぶ系判定 (中間ノード)
-
-    behaviorTree_->AddNode("Shout", "Roar",       0, BehaviorTree::SelectRule::None, new RoarJudgment(this), new RoarAction(this)); // 咆哮
-    behaviorTree_->AddNode("Shout", "Intimidate", 1, BehaviorTree::SelectRule::None, new IntimidateJudgment(this), new IntimidateAction(this)); // 威嚇
-
-
-#pragma endregion 戦闘
-
-#pragma endregion BehaviorTree設定
+    RegisterBehaviorNode();                                 // BehaviorNode登録
 
     // collisionData登録
     RegisterCollisionData();
@@ -345,6 +280,82 @@ void EnemyTamamo::SetSlamAttackFlag(const bool& activeFlag)
     GetAttackDetectionData("R:R_Middle_Finger_2").SetIsActive(activeFlag);
     GetAttackDetectionData("R:L_Arm_2").SetIsActive(activeFlag);
     GetAttackDetectionData("R:L_Middle_Finger_2").SetIsActive(activeFlag);
+}
+
+// ----- たたきつけ押し出し判定設定 -----
+void EnemyTamamo::SetSlamCollisionFlag(const bool& activeFlag)
+{
+    // 必要な押し出し判定を設定する
+    GetCollisionDetectionData("R:C_Tail_3").SetIsActive(activeFlag);
+    GetCollisionDetectionData("R:C_Tail_5").SetIsActive(activeFlag);
+    GetCollisionDetectionData("R:C_Tail_8").SetIsActive(activeFlag);
+}
+
+// ----- behavior登録 -----
+void EnemyTamamo::RegisterBehaviorNode()
+{
+    // Behavior Node追加
+    behaviorTree_->AddNode("", "Root", 0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+
+    // --------------- 死亡 ---------------
+#pragma region 死亡
+    behaviorTree_->AddNode("Root", "Death", 0, BehaviorTree::SelectRule::None, new DeathJudgment(this), new DeathAction(this));
+
+#pragma endregion 死亡
+
+    // --------------- 怯み ---------------
+#pragma region ひるみ
+    behaviorTree_->AddNode("Root", "Flinch", 1, BehaviorTree::SelectRule::None, new FlinchJudgment(this), new FlinchAction(this));
+
+#pragma endregion ひるみ
+
+    // --------------- 非戦闘 ---------------
+#pragma region 非戦闘
+    behaviorTree_->AddNode("Root", "NonBattle", 2, BehaviorTree::SelectRule::Priority, new NonBattleJudgment(this), nullptr);
+
+    behaviorTree_->AddNode("NonBattle", "Idle(NonBattle)", 0, BehaviorTree::SelectRule::None, new NonBattleIdleJudgment(this), new NonBattleIdleAction(this)); // 非戦闘時待機
+    behaviorTree_->AddNode("NonBattle", "Walk(NonBattle)", 0, BehaviorTree::SelectRule::None, new NonBattleWalkJudgment(this), new NonBattleWalkAction(this)); // 非戦闘時歩き
+
+#pragma endregion 非戦闘
+
+    // --------------- 戦闘 ---------------
+#pragma region 戦闘
+    behaviorTree_->AddNode("Root", "Battle", 3, BehaviorTree::SelectRule::Priority, nullptr, nullptr); // 戦闘 (中間ノード)
+
+    // ---------- 待機系 ----------
+    behaviorTree_->AddNode("Battle", "Idle", 1, BehaviorTree::SelectRule::Priority, nullptr, nullptr); // 待機 (中間ノード)
+
+    behaviorTree_->AddNode("Idle", "Walk", 0, BehaviorTree::SelectRule::None, new WalkJudgment(this), new WalkAction(this)); // 歩き
+    behaviorTree_->AddNode("Idle", "Step", 1, BehaviorTree::SelectRule::None, nullptr, new StepAction(this)); // ステップ
+
+    // ---------- 攻撃系 ----------
+    behaviorTree_->AddNode("Battle", "Attack", 0, BehaviorTree::SelectRule::Priority, new AttackJudgment(this), nullptr); // 攻撃 (中間ノード)
+
+    // ----- 距離近い -----
+    behaviorTree_->AddNode("Attack", "Near", 1, BehaviorTree::SelectRule::Priority, new NearAttackJudgment(this), nullptr); // 近距離 (中間ノード)
+
+    behaviorTree_->AddNode("Near", "Bite", 1, BehaviorTree::SelectRule::None, new BiteJudgment(this), new BiteAction(this)); // 嚙みつき
+    behaviorTree_->AddNode("Near", "Slash", 1, BehaviorTree::SelectRule::None, nullptr, new SlashAction(this)); // ひっかき
+    behaviorTree_->AddNode("Near", "Tail", 0, BehaviorTree::SelectRule::None, new TailSwipeJudgment(this), new TailSwipeAction(this)); // 尻尾
+    // behaviorTree_->AddNode("Near", "Spin",   1, BehaviorTree::SelectRule::None, nullptr, nullptr); // 回転
+    // behaviorTree_->AddNode("Near", "Pounce", 1, BehaviorTree::SelectRule::None, nullptr, nullptr); // 飛びつき
+
+    // ----- 距離遠い -----
+    behaviorTree_->AddNode("Attack", "Far", 2, BehaviorTree::SelectRule::Priority, new FarAttackJudgment(this), nullptr); // 遠距離 (中間ノード)
+
+    behaviorTree_->AddNode("Far", "Slam", 0, BehaviorTree::SelectRule::None, nullptr, new SlamAction(this)); // たたきつけ
+    behaviorTree_->AddNode("Far", "Spine", 1, BehaviorTree::SelectRule::None, nullptr, nullptr); // 棘
+    behaviorTree_->AddNode("Far", "Tackle", 1, BehaviorTree::SelectRule::None, nullptr, nullptr); // 突進
+    behaviorTree_->AddNode("Far", "Pounce", 1, BehaviorTree::SelectRule::None, nullptr, nullptr); // 飛びつき
+
+    // --- 叫ぶ系 -----
+    behaviorTree_->AddNode("Attack", "Shout", 0, BehaviorTree::SelectRule::Priority, new ShoutJudgment(this), nullptr); // 叫ぶ系判定 (中間ノード)
+
+    behaviorTree_->AddNode("Shout", "Roar", 0, BehaviorTree::SelectRule::None, new RoarJudgment(this), new RoarAction(this)); // 咆哮
+    behaviorTree_->AddNode("Shout", "Intimidate", 1, BehaviorTree::SelectRule::None, new IntimidateJudgment(this), new IntimidateAction(this)); // 威嚇
+
+
+#pragma endregion 戦闘
 }
 
 // ----- collisionData登録 -----

@@ -89,6 +89,9 @@ void PlayerManager::CollisionPlayerVsEnemy()
         {
             auto enemyData = enemy->GetCollisionDetectionData(enemyDataIndex);
 
+            // 現在アクティブではないので処理をしない
+            if (enemyData.GetIsActive() == false) continue;
+
             DirectX::XMFLOAT3 resultPos = {};
             if (Collision::IntersectSphereVsSphereNotConsiderY(
                 enemyData.GetPosition(), enemyData.GetRadius(),

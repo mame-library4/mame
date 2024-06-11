@@ -52,6 +52,7 @@ public:
 
     void SetGBuffer();
     void SetGBufferShaderResourceView();
+    void SetDepthBuffer();
     ID3D11ShaderResourceView** GetGBufferBaseColorShaderResourceView() { return gBufferShaderResourceView_[0].GetAddressOf(); }
     ID3D11PixelShader* GetGBufferPixelShader() { return gBufferPixelShader_.Get(); }
 

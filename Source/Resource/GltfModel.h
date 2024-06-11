@@ -40,6 +40,8 @@ public:
             0,0,1,0,
             0,0,0,1
         };
+
+        DirectX::XMFLOAT4X4 parentGlobalTransform_;
     };
 
     struct BufferView
@@ -218,6 +220,13 @@ public:
     // ----- JointPosiion -----
     DirectX::XMFLOAT3 GetJointPosition(const size_t& nodeIndex, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {});
     DirectX::XMFLOAT3 GetJointPosition(const std::string& nodeName, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {});
+    DirectX::XMMATRIX GetJointGlobalTransform(const size_t& nodeIndex, const float& scaleFacter);
+    DirectX::XMMATRIX GetJointGlobalTransform(const std::string& nodeName, const float& scaleFacter);
+    DirectX::XMMATRIX GetJointWorldTransform(const std::string& nodeName, const float& scaleFacter);
+
+    // ----- Node -----
+    [[nodiscard]] const int GetNodeIndex(const std::string& nodeName);
+    std::vector<Node>* GetNodes() { return &nodes_; }
 
     // ----- weight’l -----
     [[nodiscard]] const float GetWeight() const { return weight_; }

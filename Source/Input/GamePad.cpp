@@ -280,6 +280,7 @@ void GamePad::VibrationUpdate(const float& elapsedTime)
 	XINPUT_VIBRATION vibration;
 	ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
 
+	//vibration.wLeftMotorSpeed = static_cast<WORD>(Easing::InCubic(vibrationTime, vibrationTimer, 65535.0f * vibrationValue, 0.0f));
 	vibration.wLeftMotorSpeed = static_cast<WORD>(Easing::InSine(vibrationTime, vibrationTimer, 65535.0f * vibrationValue, 0.0f));
 	vibration.wRightMotorSpeed = vibration.wLeftMotorSpeed;// use any value between 0-65535 here
 	XInputSetState(0, &vibration);

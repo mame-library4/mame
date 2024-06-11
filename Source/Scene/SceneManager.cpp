@@ -63,6 +63,13 @@ void SceneManager::UserInterfaceRender()
     currentScene->UserInterfaceRender();
 }
 
+void SceneManager::Render()
+{
+    if (!currentScene) return;
+
+    currentScene->Render();
+}
+
 // デバッグ用
 void SceneManager::DrawDebug()
 {

@@ -26,10 +26,13 @@ public:// --- çUåÇîªíËê›íËä÷êî ---
     void SetBiteAttackFlag(const bool& activeFlag = true) override;
     void SetSlashAttackFlag(const bool& activeFlag = true) override;
     void SetTailSwipeAttackFlag(const bool& activeFlag = true) override;
-    void SetSlamAttackFlag(const bool& activeFlag = true) override;
+    
+    void SetSlamAttackFlag(const bool& activeFlag = true)       override;
+    void SetSlamCollisionFlag(const bool& activeFlag = true)    override;
 
 private:
-    void RegisterCollisionData(); // collisionDataìoò^
+    void RegisterBehaviorNode();        // behaviorìoò^
+    void RegisterCollisionData();   // collisionDataìoò^
 
 private:
     bool isCollisionSphere_ = true;

@@ -23,6 +23,11 @@ public:
     // ---------- JointPosition ----------
     [[nodiscard]] const DirectX::XMFLOAT3 GetJointPosition(const size_t& nodeIndex, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {}) { return gltfModel_.GetJointPosition(nodeIndex, scaleFactor, offsetPosition); }
     [[nodiscard]] const DirectX::XMFLOAT3 GetJointPosition(const std::string& nodeName, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {}) { return gltfModel_.GetJointPosition(nodeName, scaleFactor, offsetPosition); }
+    
+    DirectX::XMMATRIX GetJointGlobalTransform(const size_t& nodeIndex, const float& scaleFacter) { return gltfModel_.GetJointGlobalTransform(nodeIndex, scaleFacter); }
+    DirectX::XMMATRIX GetJointGlobalTransform(const std::string& nodeName, const float& scaleFacter) { return gltfModel_.GetJointGlobalTransform(nodeName, scaleFacter); }
+    DirectX::XMMATRIX GetJointWorldTransform(const std::string& nodeName, const float& scaleFacter) { return gltfModel_.GetJointWorldTransform(nodeName, scaleFacter); }
+
 
     // ---------- Animation ----------
     [[nodiscard]] const int GetCurrentBlendAnimationIndex() const { return gltfModel_.GetCurrentBlendAnimationIndex(); }
@@ -32,6 +37,10 @@ public:
     [[nodiscard]] const float GetWeight() { return gltfModel_.GetWeight(); }
     virtual void SetWeight(const float& weight) { gltfModel_.SetWeight(weight); }
     virtual void AddWeight(const float& weight);
+
+    // ---------- Node ----------
+    [[nodiscard]] const int GetNodeIndex(const std::string& nodeName) { return gltfModel_.GetNodeIndex(nodeName); }
+    std::vector<GltfModel::Node>* GetNodes() { return gltfModel_.GetNodes(); }
 
 private:
     GltfModel gltfModel_;

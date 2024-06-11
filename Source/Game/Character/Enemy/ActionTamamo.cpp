@@ -419,8 +419,8 @@ const ActionBase::State SlamAction::Run(const float& elapsedTime)
         owner_->SetWeight(0.0f);
         
         // 変数初期化
-        isAttackCollisionStart_ = false;
-        isAttackCollisionEnd_ = false;
+        collisionDetection_.Initialize(1.6f, 2.1f);
+        attackDetection_.Initialize(1.9f, 3.0f);
 
         SetStep(Step::Search);
         break;
@@ -524,22 +524,46 @@ const ActionBase::State SlamAction::Run(const float& elapsedTime)
 // ----- アニメーションに合わせて攻撃判定を有効化、無効化の切り替え -----
 void SlamAction::UpdateAttackCollision()
 {
-    // アニメーションに合わせて攻撃判定を有効化する
-    if (owner_->GetBlendAnimationSeconds() > attackCollisionStartFrame_ &&
-        isAttackCollisionStart_ == false)
+    const float animationSeconds = owner_->GetBlendAnimationSeconds();
+
+    // アニメーションに合わせて押し出し判定を有効化する
+    if (animationSeconds > collisionDetection_.startFrame_ &&
+        collisionDetection_.isStart_ == false)
     {
         // 制御フラグを立てる
-        isAttackCollisionStart_ = true;
+        collisionDetection_.isStart_ = true;
+
+        // たたきつけ押し出し判定を有効化する
+        owner_->SetSlamCollisionFlag();
+    }
+    // アニメーションに合わせて押し出し判定を無効化する
+    else if (animationSeconds > collisionDetection_.endFrame_ &&
+        collisionDetection_.isEnd_ == false)
+    {
+        // 制御フラグを立てる
+        collisionDetection_.isEnd_ = true;
+
+        // たたきつけ押し出し判定を無効化する
+        owner_->SetSlamCollisionFlag(false);
+    }
+    
+
+    // アニメーションに合わせて攻撃判定を有効化する
+    if (animationSeconds > attackDetection_.startFrame_ &&
+        attackDetection_.isStart_ == false)
+    {
+        // 制御フラグを立てる
+        attackDetection_.isStart_ = true;
 
         // たたきつけ攻撃判定を有効化する
         owner_->SetSlamAttackFlag();
     }
     // アニメーションに合わせて攻撃判定を無効化する
-    else if (owner_->GetBlendAnimationSeconds() > attackCollisionEndFrame_ &&
-        isAttackCollisionEnd_ == false)
+    else if (animationSeconds > attackDetection_.endFrame_ &&
+        attackDetection_.isEnd_ == false)
     {
         // 制御フラグを立てる
-        isAttackCollisionEnd_ = true;
+        attackDetection_.isEnd_ = true;
 
         // たたきつけ攻撃判定を無効化する
         owner_->SetSlamAttackFlag(false);
@@ -582,4 +606,10 @@ const ActionBase::State IntimidateAction::Run(const float& elapsedTime)
 
 #pragma endregion 戦闘
 
-
+void CollisionState::Initialize(const float& startFrame, const float& endFrame, const bool& isStart, const bool& isEnd)
+{
+    startFrame_ = startFrame;
+    endFrame_ = endFrame;
+    isStart_ = isStart;
+    isEnd_ = isEnd;
+}

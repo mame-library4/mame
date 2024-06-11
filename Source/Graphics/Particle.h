@@ -10,9 +10,14 @@ struct Particle
 {
     DirectX::XMFLOAT4 color{ 1, 1, 1, 1 };
     DirectX::XMFLOAT3 position{ 0, 0, 0 };
-    DirectX::XMFLOAT3 velocity{ 0, 0, 0 };
     float age{};
+    DirectX::XMFLOAT3 velocity{ 0, 0, 0 };
     int state{};
+
+    DirectX::XMFLOAT2 size = {};
+    DirectX::XMFLOAT2 texPos = {};
+    float animationTime = 0.0f;
+    DirectX::XMFLOAT3 dummy_ = {};
 };
 
 class Particles
@@ -46,19 +51,22 @@ private:
     struct ParticleConstants
     {
         DirectX::XMFLOAT3 emitterPosition{};
-        float particleSize{ 0.02f };
+        float particleSize = 5.0f;
+        //float particleSize{ 0.02f };
+
         DirectX::XMFLOAT4 color{ 0.1f,0.1f,1.0f,1.0f };
-        float time{};
-        float deltaTime{};
+        
+        float deltaTime = 0.0f;
+        float animationSpeed = 1.0f;
+        DirectX::XMFLOAT2 Size_ = {};
+        DirectX::XMFLOAT2 texSize_ = {};
 
-        DirectX::XMFLOAT2 scrollDirection{ 1.0f, 0.0f };    // UVScroll方向
-        float options = 0.0f;                               // UVScroll用タイマー
-
-        DirectX::XMFLOAT2 dissolveParameters{}; // x : ディゾルブ適応量、 y : 縁の閾値
-        float something = 0; // ダミー
-
-        DirectX::XMFLOAT4 edgeColor{};   // 縁の色
+        bool animationLoopFlag = false;
+        bool dummy[3];
+        float dummy_;
 
     };
     ParticleConstants particleData;
+
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView_;
 };

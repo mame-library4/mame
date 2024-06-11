@@ -116,13 +116,11 @@ void GameScene::DeferredRender()
     // “G•`‰æ
     EnemyManager::Instance().Render(gBufferPixelShader);
 
-    // ---------- ”¼“§–¾•`‰æ ----------
-    // TODO: ‚±‚¢‚Â‚Ç‚¤‚É‚©‚µ‚È‚¢‚Æ‚¢‚¯‚È‚¢
-    PlayerManager::Instance().RenderTrail();
 }
 
 void GameScene::ForwardRender()
 {
+#if 1
     ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
 
     deviceContext->PSSetShaderResources(32, 1, iblTextures_[0].GetAddressOf());
@@ -141,16 +139,10 @@ void GameScene::ForwardRender()
 
     // “G•`‰æ
     EnemyManager::Instance().Render();
+#endif
 
 
-    // ---------- ”¼“§–¾•`‰æ ----------
-    PlayerManager::Instance().RenderTrail();
 
-
-    Shader* shader = Graphics::Instance().GetShader();
-    shader->SetBlendState(Shader::BLEND_STATE::ADD);
-    shader->SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
-    particles_->Render();
     
     DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
 #ifdef _DEBUG
@@ -177,6 +169,16 @@ void GameScene::UserInterfaceRender()
     Graphics::Instance().GetShader()->SetBlendState(Shader::BLEND_STATE::ALPHA);
 
     EnemyManager::Instance().RenderUserInterface();
+}
+
+void GameScene::Render()
+{   
+    Graphics::Instance().SetBlendState(Shader::BLEND_STATE::ALPHA);
+    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
+    Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_OFF_ZW_OFF);
+
+    PlayerManager::Instance().RenderTrail();
+    particles_->Render();
 }
 
 // ----- ImGui—p -----

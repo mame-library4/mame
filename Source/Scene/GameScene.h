@@ -5,7 +5,6 @@
 #include "../Game/Character/Enemy/EnemyTamamo.h"
 
 #include "../Graphics/Particle.h"
-#include "SkyBox.h"
 
 class GameScene : public BaseScene
 {
@@ -23,6 +22,8 @@ public:
     void ForwardRender()                    override;
     void UserInterfaceRender()              override;
 
+    void Render() override;
+
     void DrawDebug()                        override; // ImGui—p
 
 public:
@@ -38,7 +39,7 @@ private:
     static const int stageMax = 3;
     std::unique_ptr<StageNormal> stageNormal_[stageMax];
 
-    bool isDebugRenderer_ = false;
+    bool isDebugRenderer_ = true;
 
     std::unique_ptr<Particles> particles_;
 };

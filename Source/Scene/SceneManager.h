@@ -29,6 +29,8 @@ public:
     void ForwardRender();
     void UserInterfaceRender();
 
+    void Render();
+
     void DrawDebug();
 
     void Clear();   // シーンクリア

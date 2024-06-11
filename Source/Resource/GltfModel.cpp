@@ -540,6 +540,59 @@ DirectX::XMFLOAT3 GltfModel::GetJointPosition(const std::string& nodeName, const
     return DirectX::XMFLOAT3(0, 0, 0);
 }
 
+DirectX::XMMATRIX GltfModel::GetJointGlobalTransform(const size_t& nodeIndex, const float& scaleFacter)
+{
+    if (nodeIndex < 0 || nodeIndex > nodes_.size()) return DirectX::XMMATRIX();
+
+    const Node& node = nodes_.at(nodeIndex);
+    
+    return DirectX::XMLoadFloat4x4(&node.globalTransform_);
+}
+
+DirectX::XMMATRIX GltfModel::GetJointGlobalTransform(const std::string& nodeName, const float& scaleFacter)
+{
+    // ノードを名前検索する
+    for (Node& node : nodes_)
+    {
+        // 名前が一致しなかったら continue
+        if (node.name_ != nodeName) continue;
+
+        return DirectX::XMLoadFloat4x4(&node.globalTransform_);
+    }
+
+    return DirectX::XMMATRIX();
+}
+
+DirectX::XMMATRIX GltfModel::GetJointWorldTransform(const std::string& nodeName, const float& scaleFactor)
+{
+    // ノードを名前検索する
+    for (Node& node : nodes_)
+    {
+        // 名前が一致しなかったら continue
+        if (node.name_ != nodeName) continue;
+
+        DirectX::XMMATRIX M = DirectX::XMLoadFloat4x4(&node.globalTransform_) * GetTransform()->CalcWorldMatrix(scaleFactor);
+        
+        return M;
+    }
+
+    return DirectX::XMMATRIX();
+}
+
+// ----- ノードのインデックスを取得 -----
+const int GltfModel::GetNodeIndex(const std::string& nodeName)
+{
+    for (int nodeIndex = 0; nodeIndex < nodes_.size(); ++nodeIndex)
+    {
+        if (nodes_.at(nodeIndex).name_ == nodeName)
+        {
+            return nodeIndex;
+        }
+    }
+
+    return -1;
+}
+
 // ノードデータ取得
 void GltfModel::FetchNodes(const tinygltf::Model& gltfModel)
 {
@@ -963,6 +1016,33 @@ void GltfModel::FetchAnimation(const tinygltf::Model& gltfModel)
 
 void GltfModel::CumulateTransforms(std::vector<Node>& nodes)
 {
+#if 1
+    DirectX::XMFLOAT4X4 parentGlobalTransform = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
+
+    std::function<void(int)> traverse{ [&](int nodeIndex)->void
+        {
+            Node& node = nodes.at(nodeIndex);
+            DirectX::XMMATRIX S{ DirectX::XMMatrixScaling(node.scale_.x, node.scale_.y, node.scale_.z) };
+            DirectX::XMMATRIX R{ DirectX::XMMatrixRotationQuaternion(
+            DirectX::XMVectorSet(node.rotation_.x, node.rotation_.y, node.rotation_.z, node.rotation_.w)) };
+            DirectX::XMMATRIX T{ DirectX::XMMatrixTranslation(node.translation_.x, node.translation_.y, node.translation_.z) };
+            DirectX::XMStoreFloat4x4(&node.globalTransform_, S * R * T * DirectX::XMLoadFloat4x4(&parentGlobalTransform));
+
+            // 親保存
+            node.parentGlobalTransform_ = parentGlobalTransform;
+
+            for (int childIndex : node.children_)
+            {
+                parentGlobalTransform = node.globalTransform_;
+                traverse(childIndex);
+            }
+    } };
+    for (std::vector<int>::value_type nodeIndex : scenes_.at(0).nodes_)
+    {
+        parentGlobalTransform = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
+        traverse(nodeIndex);
+    }
+#else
     std::stack<DirectX::XMFLOAT4X4> parentGlobalTransforms;
     std::function<void(int)> traverse{ [&](int nodeIndex)->void
         {
@@ -992,6 +1072,7 @@ void GltfModel::CumulateTransforms(std::vector<Node>& nodes)
         traverse(nodeIndex);
         parentGlobalTransforms.pop();
     }
+#endif
 }
 
 GltfModel::BufferView GltfModel::MakeBufferView(const tinygltf::Accessor& accessor)

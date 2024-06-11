@@ -26,6 +26,10 @@ public:
     void AddForce(const DirectX::XMFLOAT3& direction, const float& power);
     void AddDamage(const float& damage) { health_ -= damage; }
 
+    // ----- LookAt -----
+    void LookAtInitilaize(const std::string& nodeName);
+    void LookAtUpdate();
+
 public:// --- éÊìæÅEê›íË ---
 #pragma region [Get, Set] Function
     // ---------- ë¨ìx ----------
@@ -74,6 +78,11 @@ public:// --- éÊìæÅEê›íË ---
     CollisionDetectionData& GetCollisionDetectionData(const std::string& name);
     CollisionDetectionData& GetCollisionDetectionData(const int& index);
 
+    // ---------- LookAt ----------
+    [[nodiscard]] const DirectX::XMFLOAT3 GetHeadLocalForward() const { return headLocalForward_; }
+    [[nodiscard]] const DirectX::XMFLOAT3 GetLookAtTargetPosition() const { return lookAtTargetPosition_; }
+    void SetLookAtTargetPosition(const DirectX::XMFLOAT3& targetPosition) { lookAtTargetPosition_ = targetPosition; }
+
 #pragma endregion [Get, Set] Function
 
 protected:
@@ -99,5 +108,11 @@ private:
     // ---------- êÅÇ¡îÚÇ— --------------------
     DirectX::XMFLOAT3   blowDirection_  = {};
     float               blowPower_      = 0.0f;
+
+    // ---------- LookAt --------------------
+    DirectX::XMFLOAT3   headLocalForward_       = {};
+    DirectX::XMFLOAT3   lookAtTargetPosition_   = {};
+    std::string         headNodeName_           = {};
+
 };
 

@@ -35,5 +35,8 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     //p.age = 10.0 * f2;
     p.state = 0;
     
+    p.animationTime = 0.0f;
+    p.texPos = float2(0, 0);
+    
     particleBuffer[id] = p;
 }

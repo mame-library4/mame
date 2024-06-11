@@ -14,6 +14,7 @@
 #include "ShadowMap.h"
 #include "../Graphics/DeferredRendering.h"
 #include "../Graphics/PostProcess/PostProcess.h"
+#include "SkyMap.h"
 
 CONST LONG SCREEN_WIDTH{ 1280 };
 CONST LONG SCREEN_HEIGHT{ 720 };
@@ -60,13 +61,13 @@ private:
 	PostProcess			postProcess_;
 	DeferredRendering	deferredRendering_;
 
-
+	SkyMap skymap_;
 
 	HighResolutionTimer tictoc_;
 	uint32_t			frames_			= 0;
 	float				elapsedTime_	= 0.0f;
 
-	bool isDeferred_ = false; // deferredを使うか
+	bool isDeferred_ = true; // deferredを使うか
 
 	// --- シーン定数バッファー ---
 	ConstantBuffer<SceneConstants> sceneConstants_;

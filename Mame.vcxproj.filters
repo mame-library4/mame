@@ -64,7 +64,7 @@
     <ClCompile Include="Source\Graphics\ShadowMap.cpp">
       <Filter>Mame\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graphics\SkyBox.cpp">
+    <ClCompile Include="Source\Graphics\SkyMap.cpp">
       <Filter>Mame\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="Source\Graphics\Camera.cpp">
@@ -259,7 +259,7 @@
     <ClInclude Include="Source\Graphics\ShadowMap.h">
       <Filter>Mame\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Graphics\SkyBox.h">
+    <ClInclude Include="Source\Graphics\SkyMap.h">
       <Filter>Mame\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Source\Graphics\Camera.h">
@@ -550,9 +550,6 @@
     <None Include="Source\Shader\PostEffect.hlsli">
       <Filter>Mame\Shader</Filter>
     </None>
-    <None Include="Source\Shader\SkyBox.hlsli">
-      <Filter>Mame\Shader</Filter>
-    </None>
     <None Include="Source\Shader\sprite.hlsli">
       <Filter>Mame\Shader</Filter>
     </None>
@@ -606,7 +603,7 @@
     <FxCompile Include="Source\Shader\ParticleVS.hlsl">
       <Filter>Mame\Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Source\Shader\SkyBoxPS.hlsl">
+    <FxCompile Include="Source\Shader\SkyMapPS.hlsl">
       <Filter>Mame\Shader</Filter>
     </FxCompile>
     <FxCompile Include="Source\Shader\sprite_ps.hlsl">

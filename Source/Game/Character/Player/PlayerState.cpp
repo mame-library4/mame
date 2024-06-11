@@ -21,20 +21,21 @@ namespace PlayerState
     {
         owner_->AddWeight(elapsedTime * 4.0f);
 
-        // 攻撃入力受付 ( ステートが変更された場合ここで終了 )
-        if (owner_->CheckAttackButton(Player::NextInput::None)) return;
-
         // カウンター受付
-        if (owner_->GetCounterStanceKeyDown())
+        if (owner_->GetCounterStanceKey())
         {
             owner_->ChangeState(Player::STATE::Counter);
             return;
         }
 
+        // 攻撃入力受付 ( ステートが変更された場合ここで終了 )
+        if (owner_->CheckAttackButton(Player::NextInput::None)) return;
+
+
         GamePad gamePad = Input::Instance().GetGamePad();
-        float aLX = fabs(gamePad.GetAxisLX());
-        float aLY = fabs(gamePad.GetAxisLY());
-        if (aLX != 0.0f && aLY != 0.0f)
+        float aLX = fabsf(gamePad.GetAxisLX());
+        float aLY = fabsf(gamePad.GetAxisLY());
+        if (aLX != 0.0f || aLY != 0.0f)
         {
             owner_->ChangeState(Player::STATE::Move);
             return;
@@ -85,8 +86,8 @@ namespace PlayerState
     {
         GamePad gamePad = Input::Instance().GetGamePad();
 
-        float aLX = fabs(gamePad.GetAxisLX());
-        float aLY = fabs(gamePad.GetAxisLY());
+        float aLX = fabsf(gamePad.GetAxisLX());
+        float aLY = fabsf(gamePad.GetAxisLY());
 
         // 入力値が 0.5以上だったら走りの状態なので ２ を返す
         if (aLX > 0.5f || aLY > 0.5f) return 2;
@@ -126,6 +127,13 @@ namespace PlayerState
             owner_->PlayBlendAnimation(Player::Animation::Idle, Player::Animation::Walk, true);
         }
 #endif
+
+        // カウンター受付
+        if (owner_->GetCounterStanceKey())
+        {
+            owner_->ChangeState(Player::STATE::Counter);
+            return;
+        }
 
         // 攻撃入力受付 ( ステートが変更された場合ここで終了 )
         if (owner_->CheckAttackButton(Player::NextInput::None)) return;
@@ -430,12 +438,75 @@ namespace PlayerState
     {
         // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::CounterStance, false);
-        //owner_->PlayBlendAnimation(Player::Animation::CounterAttack, false);
+        owner_->SetWeight(1.0f);
+
+        // 変数初期化
+        power_ = 0.5f;
+        addForceFrame_ = 0.16f;
+        isAddForce_ = false;
     }
 
     // ----- 更新 -----
     void CounterState::Update(const float& elapsedTime)
     {
+        const float currentAnimationFrame = owner_->GetBlendAnimationSeconds();
+        if (currentAnimationFrame > addForceFrame_ &&
+            isAddForce_ == false)
+        {
+            // 左スティックの入力があるか判定
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
+            {
+                // カメラから見た左スティックの傾きを適応した方向を算出する
+                const DirectX::XMFLOAT3 cameraForward = Camera::Instance().CalcForward();
+                const DirectX::XMFLOAT3 cameraRight = Camera::Instance().CalcRight();
+                DirectX::XMFLOAT3 direction =
+                {
+                    aLy * cameraForward.x + aLx * cameraRight.x,
+                    0,
+                    aLy * cameraForward.z + aLx * cameraRight.z
+                };
+                direction = XMFloat3Normalize(direction);
+                direction = direction * -1;
+
+                owner_->AddForce(direction, power_);
+
+                // 一気にスティックを反対方向に向けると、プレイヤーが違う方向を向くので修正
+                DirectX::XMFLOAT2 cameraForward_float2 = { -direction.x, -direction.z };
+                cameraForward_float2 = XMFloat2Normalize(cameraForward_float2);
+
+                DirectX::XMFLOAT2 ownerForward = { owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z };
+                ownerForward = XMFloat2Normalize(ownerForward);
+
+                // 外積をしてどちらに回転するのかを判定する
+                float forwardCorss = XMFloat2Cross(cameraForward_float2, ownerForward);
+
+                // 内積で回転幅を算出
+                float forwardDot = XMFloat2Dot(cameraForward_float2, ownerForward) - 1.0f;
+
+                if (forwardCorss > 0)
+                {
+                    owner_->GetTransform()->AddRotationY(forwardDot);
+                }
+                else
+                {
+                    owner_->GetTransform()->AddRotationY(-forwardDot);
+                }
+            }
+            // 左スティックの入力がない場合後ろ方向に引く
+            else
+            {
+                const DirectX::XMFLOAT3 forwardVec = owner_->GetTransform()->CalcForward();
+                const DirectX::XMFLOAT3 direction = forwardVec * -1.0f;
+
+                owner_->AddForce(direction, power_);
+            }
+
+            isAddForce_ = true;
+        }
+
+
         // アニメーション再生終了
         if (!owner_->IsPlayAnimation())
         {
@@ -446,7 +517,8 @@ namespace PlayerState
         // カウンター成功
         // TODO:ここつくる。カウンター
         //if (GetAsyncKeyState('B') & 1)
-        if(owner_->GetStrongAttackKeyDown())
+        //if(owner_->GetStrongAttackKeyDown())
+        if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_A)
         {
             owner_->ChangeState(Player::STATE::CounterAttack);
             return;
@@ -465,12 +537,31 @@ namespace PlayerState
     // ----- 初期化 -----
     void CounterAttackState::Initialize()
     {
-        owner_->PlayAnimation(Player::Animation::CounterAttack, false);
+        // アニメーション再生
+        owner_->PlayBlendAnimation(Player::Animation::CounterAttack, false);
+        owner_->SetWeight(1.0f);
+
+        // 変数初期化
+        addForceFrame_ = 0.3f;
+        isAddForce_ = false;
+
+        Input::Instance().GetGamePad().Vibration(0.3f, 1.0f);
     }
 
     // ----- 更新 -----
     void CounterAttackState::Update(const float& elapsedTime)
     {
+        const float currentAnimationFrame = owner_->GetBlendAnimationSeconds();
+        if (currentAnimationFrame > addForceFrame_ &&
+            isAddForce_ == false)
+        {
+            // 前方向に進む
+            const DirectX::XMFLOAT3 forwardVec = owner_->GetTransform()->CalcForward();
+            owner_->AddForce(forwardVec, 0.6f);
+
+            isAddForce_ = true;
+        }
+
         // アニメーション終了
         if (!owner_->IsPlayAnimation())
         {

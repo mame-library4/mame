@@ -266,6 +266,12 @@ void Shader::SetGBufferShaderResourceView()
     deviceContext->PSSetShaderResources(4, 1, gBufferShaderResourceView_[4].GetAddressOf());
 }
 
+void Shader::SetDepthBuffer()
+{
+    //Graphics::Instance().GetDeviceContext()->OMSetDepthStencilState()
+    //Graphics::Instance().GetDeviceContext()->ClearDepthStencilView(gBufferShaderResourceView_[4].GetAddressOf())
+}
+
 // ----- ブレンドステート作成 -----
 void Shader::CreateBlendStates()
 {
