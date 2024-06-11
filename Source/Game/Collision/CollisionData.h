@@ -166,7 +166,7 @@ private:
 struct CollisionDetectionData
 {
     CollisionDetectionData(const std::string& name, const float& radius, const DirectX::XMFLOAT3& offsetPosition = {})
-        : collisionSphereData_(name, radius, offsetPosition, { 0, 0, 0, 1 })
+        : collisionSphereData_(name, radius, offsetPosition, { 0, 1, 1, 1 })
     {}
     CollisionDetectionData() = default;
 

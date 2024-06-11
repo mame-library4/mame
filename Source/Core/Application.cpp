@@ -1,5 +1,6 @@
 ﻿#include "Application.h"
 #include <sstream>
+#include "PostProcess/PostProcess.h"
 
 #include "../Scene/SceneManager.h"
 #include "../Scene/TitleScene.h"
@@ -15,7 +16,6 @@ Application::Application(HWND hwnd)
     graphics_(hwnd, FALSE),
     input_(hwnd),
     shadowMap_(SCREEN_WIDTH, SCREEN_HEIGHT),
-    postProcess_(SCREEN_WIDTH, SCREEN_HEIGHT),
     deferredRendering_(),
     sceneConstants_()
 {
@@ -136,7 +136,7 @@ void Application::Render()
         deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
         deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
      
-        postProcess_.Activate();
+        PostProcess::Instance().Activate();
 
         // SkyMap
         skymap_.Render();
@@ -153,14 +153,14 @@ void Application::Render()
         Graphics::Instance().GetDebugRenderer()->Render(deviceContext, view, projection);
 #endif
 
-        postProcess_.Deactivate();
-        postProcess_.Draw();
+        PostProcess::Instance().Deactivate();
+        PostProcess::Instance().Draw();
     }
     // --- forward rendering ---
     else
     {        
         // ポストプロセス開始
-        postProcess_.Activate();
+        PostProcess::Instance().Activate();
 
         // SkyMap
         skymap_.Render();
@@ -185,8 +185,8 @@ void Application::Render()
         Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
         Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_OFF_ZW_OFF);
         
-        postProcess_.Deactivate();
-        postProcess_.Draw();
+        PostProcess::Instance().Deactivate();
+        PostProcess::Instance().Draw();
     }
 #else
 
@@ -247,7 +247,7 @@ void Application::DrawDebug()
 #ifdef USE_IMGUI
     shadowMap_.DrawDebug();
 
-    postProcess_.DrawDebug();
+    PostProcess::Instance().DrawDebug();
 
     Camera::Instance().DrawDebug();
 

@@ -171,6 +171,15 @@ class RoarAction : public ActionBase
 public:
     RoarAction(Enemy* owner) : ActionBase(owner) {}
     const ActionBase::State Run(const float& elapsedTime) override;
+
+private:
+    float   blurStartFrame_ = 0.0f; // ブラー開始フレーム
+    float   blurEndFrame_   = 0.0f; // ブラー終了フレーム
+    float   maxBlurPower_   = 0.0f; // ブラーの強さ
+    float   blurTimer_      = 0.0f; // ブラーのEasing用タイマー
+    float   maxBlurTime_    = 0.0f; // ブラー用
+
+    bool    isVibration_    = false;// コントローラー振動
 };
 
 // 威嚇行動

@@ -5,6 +5,8 @@
 #include "../Player/PlayerManager.h"
 #include "Camera.h"
 
+#include "PostProcess/PostProcess.h"
+
 // ----- 死亡行動 -----
 const ActionBase::State DeathAction::Run(const float& elapsedTime)
 {
@@ -534,7 +536,7 @@ void SlamAction::UpdateAttackCollision()
         collisionDetection_.isStart_ = true;
 
         // たたきつけ押し出し判定を有効化する
-        owner_->SetSlamCollisionFlag();
+        owner_->SetSlamCollisionFlag(false);
     }
     // アニメーションに合わせて押し出し判定を無効化する
     else if (animationSeconds > collisionDetection_.endFrame_ &&
@@ -544,7 +546,7 @@ void SlamAction::UpdateAttackCollision()
         collisionDetection_.isEnd_ = true;
 
         // たたきつけ押し出し判定を無効化する
-        owner_->SetSlamCollisionFlag(false);
+        owner_->SetSlamCollisionFlag(true);
     }
     
 
@@ -576,13 +578,51 @@ void SlamAction::UpdateAttackCollision()
 // ----- 咆哮行動 -----
 const ActionBase::State RoarAction::Run(const float& elapsedTime)
 {
+    const float currentAnimationFrame = owner_->GetBlendAnimationSeconds();
+
     switch (owner_->GetStep())
     {
     case 0:
-        //owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Roar, false);
+        // アニメーション再生
+        owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Roar, false);
+
+        // 変数初期化
+        blurStartFrame_ = 2.27f;
+        blurEndFrame_ = 4.4f;
+
+        maxBlurPower_ = 0.03f;
+        maxBlurTime_ = 0.5f;
+        blurTimer_ = 0.0f;
+
+        isVibration_ = false;
+        
         owner_->SetStep(1);
         break;
     case 1:
+        if (currentAnimationFrame > blurEndFrame_)
+        {
+            PostProcess::Instance().GetConstants()->GetData()->blurPower_ =
+                Easing::InSine(blurTimer_, maxBlurTime_, maxBlurPower_, 0.0f);
+
+            blurTimer_ -= elapsedTime;
+            blurTimer_ = std::max(blurTimer_, 0.0f);
+        }
+        else if (currentAnimationFrame > blurStartFrame_)
+        {
+            PostProcess::Instance().GetConstants()->GetData()->blurPower_ =
+                Easing::InQuint(blurTimer_, maxBlurTime_, maxBlurPower_, 0.0f);
+
+            blurTimer_ += elapsedTime;
+            blurTimer_ = std::min(blurTimer_, maxBlurTime_);
+
+            // コントローラー振動の設定をする
+            if (currentAnimationFrame > blurStartFrame_ + 0.3f &&
+                isVibration_ == false)
+            {
+                Input::Instance().GetGamePad().Vibration(2.0f, 1.0f);
+                isVibration_ = true;
+            }
+        }
 
         if (!owner_->IsPlayAnimation())
         {

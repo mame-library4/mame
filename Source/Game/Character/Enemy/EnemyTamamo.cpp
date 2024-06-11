@@ -164,6 +164,9 @@ void EnemyTamamo::DebugRender(DebugRenderer* debugRenderer)
     {
         for (auto& data : GetCollisionDetectionData())
         {
+            // 現在アクティブではないので表示しない
+            if (data.GetIsActive() == false) continue;
+
             debugRenderer->DrawSphere(data.GetPosition(), data.GetRadius(), data.GetColor());
         }
     }

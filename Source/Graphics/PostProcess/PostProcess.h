@@ -7,9 +7,22 @@
 
 class PostProcess
 {
-public:
-    PostProcess(const uint32_t& width, const uint32_t& height);
+private:
+    struct Constants
+    {
+        float blurPower_ = 0.0f;
+        DirectX::XMFLOAT3 dummy_;
+    };
+
+    PostProcess();
     ~PostProcess();
+
+public:
+    static PostProcess& Instance()
+    {
+        static PostProcess instance;
+        return instance;
+    }
 
     void Activate();
     void Deactivate();
@@ -17,10 +30,14 @@ public:
 
     void DrawDebug();
 
+    ConstantBuffer<Constants>* GetConstants() { return constant_.get(); }
+
 private:
     std::unique_ptr<FullscreenQuad>             renderer_;
     std::unique_ptr<FrameBuffer>                postProcess_;
     Microsoft::WRL::ComPtr<ID3D11PixelShader>   postProcessPS_;
+
+    std::unique_ptr<ConstantBuffer<Constants>> constant_;
 
     Bloom   bloom_;
 };

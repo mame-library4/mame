@@ -13,8 +13,9 @@
 
 #include "ShadowMap.h"
 #include "../Graphics/DeferredRendering.h"
-#include "../Graphics/PostProcess/PostProcess.h"
 #include "SkyMap.h"
+
+#include "ConstantBuffer.h"
 
 CONST LONG SCREEN_WIDTH{ 1280 };
 CONST LONG SCREEN_HEIGHT{ 720 };
@@ -58,7 +59,6 @@ private:
 	Input input_;
 
 	ShadowMap shadowMap_;
-	PostProcess			postProcess_;
 	DeferredRendering	deferredRendering_;
 
 	SkyMap skymap_;

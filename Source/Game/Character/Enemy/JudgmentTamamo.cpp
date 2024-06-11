@@ -170,6 +170,8 @@ const bool FarAttackJudgment::Judgment()
 // ‹©‚ÔŒn”»’è
 const bool ShoutJudgment::Judgment()
 {
+    return true;
+
     // ˜A‘±UŒ‚‰ñ”‚ªˆê’è”’´‚¦‚½‚ç‹©‚ÔB
     if (owner_->GetAttackComboCount() > shoutThreshold_)
     {
