@@ -441,7 +441,7 @@ namespace PlayerState
         owner_->SetWeight(1.0f);
 
         // •Ï”‰Šú‰»
-        power_ = 0.5f;
+        power_ = 0.4f;
         addForceFrame_ = 0.16f;
         isAddForce_ = false;
     }
@@ -557,7 +557,7 @@ namespace PlayerState
         {
             // ‘O•ûŒü‚Éi‚Þ
             const DirectX::XMFLOAT3 forwardVec = owner_->GetTransform()->CalcForward();
-            owner_->AddForce(forwardVec, 0.6f);
+            owner_->AddForce(forwardVec, 0.7f);
 
             isAddForce_ = true;
         }
