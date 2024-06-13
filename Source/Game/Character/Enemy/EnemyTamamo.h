@@ -44,6 +44,5 @@ private:
 
     std::unique_ptr<Sprite> hpSprite_;
     std::unique_ptr<Sprite> hpBackSprite_;
-    std::unique_ptr<Sprite> winSprite_;
 };
 

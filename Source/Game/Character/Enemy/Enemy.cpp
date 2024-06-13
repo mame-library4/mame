@@ -117,6 +117,11 @@ bool Enemy::PlayBlendAnimation(const TamamoAnimation& index, const bool& loop, c
         SetWeight(1.0f);
     }
 
+    if (currentAnimationIndex != static_cast<int>(TamamoAnimation::Roar))
+    {
+        SetWeight(0.0f);
+    }
+
     Object::PlayBlendAnimation(static_cast<int>(index), loop, speed);
     return true;
 }

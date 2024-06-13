@@ -645,5 +645,8 @@
     <FxCompile Include="Source\Shader\GltfModelGBufferPS.hlsl">
       <Filter>Mame\Shader\GltfModel</Filter>
     </FxCompile>
+    <FxCompile Include="Source\Shader\PostProcessRoarPS.hlsl">
+      <Filter>Mame\Shader\PostProcess</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

@@ -76,9 +76,6 @@ public:
     // ---------- 自分自身からプレイヤーへのベクトル ----------
     [[nodiscard]] const DirectX::XMFLOAT3 CalcDirectionToPlayer();
 
-    // TODO:消す。これほんまにいらん
-    bool isWin_ = false;
-
 public:// --- 取得・設定 ---
 #pragma region [Get, Set] Function
     // ----- BehaviorTree用 -----
@@ -126,6 +123,10 @@ public:// --- 取得・設定 ---
 
 #pragma endregion 九尾用 攻撃判定設定
 
+    [[nodiscard]] const bool GetIsRoar() { return isRoar_; }
+    void SetIsRoar(const bool& isRoar) { isRoar_ = isRoar; }
+
+
 protected:
     std::unique_ptr<BehaviorTree>   behaviorTree_;
     std::unique_ptr<BehaviorData>   behaviorData_;
@@ -145,5 +146,7 @@ protected:
     int     attackComboCount_ = 0; // 連続攻撃回数
 
     float walkSpeed_ = 0.0f; // 歩行速度
+
+    bool isRoar_ = false;
 };
 

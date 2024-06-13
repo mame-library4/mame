@@ -24,7 +24,6 @@ const ActionBase::State DeathAction::Run(const float& elapsedTime)
 
         if (timer_ > 1.0f)
         {
-            owner_->isWin_ = true;
             owner_->SetStep(2);
         }
 
@@ -596,9 +595,13 @@ const ActionBase::State RoarAction::Run(const float& elapsedTime)
 
         isVibration_ = false;
         
+        owner_->SetIsRoar(true);
+
         owner_->SetStep(1);
         break;
     case 1:
+        owner_->AddWeight(2.0f * elapsedTime);
+
         if (currentAnimationFrame > blurEndFrame_)
         {
             PostProcess::Instance().GetConstants()->GetData()->blurPower_ =
@@ -626,6 +629,7 @@ const ActionBase::State RoarAction::Run(const float& elapsedTime)
 
         if (!owner_->IsPlayAnimation())
         {
+            owner_->SetIsRoar(false);
             owner_->SetStep(0);
             return ActionBase::State::Failed;
         }

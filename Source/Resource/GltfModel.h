@@ -210,6 +210,9 @@ public:
     void PlayBlendAnimation(const int& index1, const int& index2, const bool& loop, const float& speed);
     void PlayBlendAnimation(const int& index, const bool& loop, const float& speed);
     const bool IsPlayAnimation();
+    
+    [[nodiscard]] const float GetAnimationSpeed() const { return animationSpeed_; }
+    void SetAnimationSpeed(const float& speed) { animationSpeed_ = speed; }
 
     // ----- BlendAnimationSeconds -----
     [[nodiscard]] const float GetBlendAnimationSeconds() const { return blendAnimationSeconds_; }

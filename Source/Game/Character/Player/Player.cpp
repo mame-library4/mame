@@ -131,7 +131,7 @@ void Player::Render(ID3D11PixelShader* psShader)
 
 void Player::RenderTrail()
 {
-    swordTrail_.Render();
+    //swordTrail_.Render();
 }
 
 // ----- ImGui—p -----
@@ -140,6 +140,8 @@ void Player::DrawDebug()
     if (ImGui::BeginMenu("Player"))
     {
         GetStateMachine()->DrawDebug();
+
+        ImGui::DragFloat("SlowSpeed", &slowAnimationSpeed_, 0.1f);
 
         Character::DrawDebug();
         Object::DrawDebug();

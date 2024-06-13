@@ -22,7 +22,6 @@ EnemyTamamo::EnemyTamamo()
 
     hpSprite_ = std::make_unique<Sprite>(L"./Resources/Image/White.png");
     hpBackSprite_ = std::make_unique<Sprite>(L"./Resources/Image/White.png");
-    winSprite_ = std::make_unique<Sprite>(L"./Resources/Image/youwin.png");
 }
 
 // ----- デストラクタ -----
@@ -106,8 +105,6 @@ void EnemyTamamo::RenderUserInterface()
 {
     hpBackSprite_->Render();
     hpSprite_->Render();
-
-    if (isWin_) winSprite_->Render();
 }
 
 // ----- ImGui用 -----

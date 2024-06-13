@@ -444,12 +444,26 @@ namespace PlayerState
         power_ = 0.4f;
         addForceFrame_ = 0.16f;
         isAddForce_ = false;
+
+        animationSlowStartFrame_ = 0.5f;
+        animationSlowEndFrame_ = 0.7f;
     }
 
     // ----- 更新 -----
     void CounterState::Update(const float& elapsedTime)
     {
         const float currentAnimationFrame = owner_->GetBlendAnimationSeconds();
+     
+        // 指定のアニメーションの間の時間を設定する
+        if (currentAnimationFrame > animationSlowStartFrame_ && currentAnimationFrame < animationSlowEndFrame_)
+        {
+            owner_->SetAnimationSpeed(owner_->slowAnimationSpeed_);
+        }
+        else
+        {
+            owner_->SetAnimationSpeed(1.0f);
+        }
+        
         if (currentAnimationFrame > addForceFrame_ &&
             isAddForce_ == false)
         {
@@ -520,6 +534,8 @@ namespace PlayerState
         //if(owner_->GetStrongAttackKeyDown())
         if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_A)
         {
+            if (currentAnimationFrame >= animationSlowEndFrame_) return;
+
             owner_->ChangeState(Player::STATE::CounterAttack);
             return;
         }

@@ -91,6 +91,9 @@ namespace PlayerState
         float power_ = 0.0f;
         float addForceFrame_ = 0.0f;
         bool isAddForce_ = false;
+
+        float animationSlowStartFrame_ = 0.0f;
+        float animationSlowEndFrame_ = 0.0f;
     };
 
     // ----- カウンター攻撃 -----
