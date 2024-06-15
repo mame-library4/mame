@@ -12,13 +12,13 @@ void StageNormal::Update(const float& elapsedTime)
 }
 
 // ----- •`‰æ -----
-void StageNormal::Render(ID3D11PixelShader* psShader)
+void StageNormal::Render(const float& scaleFacter, ID3D11PixelShader* psShader)
 {
-    Object::Render(0.01f, psShader);
+    Stage::Render(0.01f, psShader);
 }
 
 // ----- ImGui -----
 void StageNormal::DrawDebug()
 {
-    Object::DrawDebug();
+    Stage::DrawDebug();
 }

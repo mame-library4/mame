@@ -8,7 +8,7 @@ public:
     ~StageNormal() override {}
 
     void Update(const float& elapsedTime)               override;
-    void Render(ID3D11PixelShader* psShader = nullptr)  override;
+    void Render(const float& scaleFacter, ID3D11PixelShader* psShader = nullptr)  override;
     void DrawDebug()                                    override;
 };
 

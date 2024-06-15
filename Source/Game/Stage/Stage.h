@@ -1,14 +1,19 @@
 #pragma once
-#include "../Object.h"
+#include "GltfModelStaticMesh.h"
 
-class Stage : public Object
+class Stage
 {
 public:
     Stage(std::string filename);
     virtual ~Stage() {}
 
     virtual void Update(const float& elapsedTime)   = 0;
-    virtual void Render(ID3D11PixelShader* psShader = nullptr) = 0;
-    virtual void DrawDebug()                        = 0;
+    virtual void Render(const float& scaleFacter, ID3D11PixelShader* psShader = nullptr);
+    virtual void DrawDebug();
+
+    Transform* GetTransform() { return model_.GetTransform(); }
+
+protected:
+    GltfModelStaticMesh model_;
 };
 

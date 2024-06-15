@@ -194,6 +194,7 @@ public:
     void BlendAnimations(const std::vector<Node>* nodes[2], float factor, std::vector<Node>& node);
 
     void Render(const float& scaleFactor, ID3D11PixelShader* psShader = nullptr);
+    void Render(const DirectX::XMFLOAT4X4& world, ID3D11PixelShader* psShader = nullptr);
     void DrawDebug();
 
     void Animate(size_t animationIndex, float time, std::vector<Node>& animatedNodes);
@@ -223,8 +224,8 @@ public:
     // ----- JointPosiion -----
     DirectX::XMFLOAT3 GetJointPosition(const size_t& nodeIndex, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {});
     DirectX::XMFLOAT3 GetJointPosition(const std::string& nodeName, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {});
-    DirectX::XMMATRIX GetJointGlobalTransform(const size_t& nodeIndex, const float& scaleFacter);
-    DirectX::XMMATRIX GetJointGlobalTransform(const std::string& nodeName, const float& scaleFacter);
+    DirectX::XMMATRIX GetJointGlobalTransform(const size_t& nodeIndex);
+    DirectX::XMMATRIX GetJointGlobalTransform(const std::string& nodeName);
     DirectX::XMMATRIX GetJointWorldTransform(const std::string& nodeName, const float& scaleFacter);
 
     // ----- Node -----

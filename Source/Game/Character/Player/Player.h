@@ -37,10 +37,12 @@ public:// --- íËêî ---
     enum class Animation
     {
         Idle,       // ë“ã@
-        Walk,
         Run,        // ëñÇË   
         
         LightAttack0,
+        
+        Walk,
+        
         LightAttack1,
         LightAttack2,
 
@@ -86,12 +88,12 @@ public:
     void PlayAnimation(const Animation& index, const bool& loop, const float& speed = 1.0f)
     {
         Object::PlayAnimation(static_cast<int>(index), loop, speed);
-        swordModel_.PlayAnimation(static_cast<int>(index), loop, speed);
+        //swordModel_.PlayAnimation(static_cast<int>(index), loop, speed);
     }
     void SetAnimationSpeed(const float& speed)
     {
         Object::SetAnimationSpeed(speed);
-        swordModel_.SetAnimationSpeed(speed);
+        //swordModel_.SetAnimationSpeed(speed);
     }
     float slowAnimationSpeed_ = 0.15f;
     //float slowAnimationSpeed_ = 0.25f;
@@ -150,4 +152,11 @@ private:
     DirectX::XMFLOAT3 offset_ = {};
 
     SwordTrail swordTrail_;
+
+
+    DirectX::XMFLOAT3 socketLocation_ = { 770, 12000, 2500};
+    DirectX::XMFLOAT3 socketRotation_ = { -110, 0, 0 };
+    DirectX::XMFLOAT3 socketScale_ = { 1,1,1 };
+    float toRadian_ = 0.01745f;
+    float toMetric_ = 0.01f;
 };

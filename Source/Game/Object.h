@@ -15,7 +15,7 @@ public:
     void PlayBlendAnimation(const int& index1, const int& index2, const bool& loop, const float& speed) { gltfModel_.PlayBlendAnimation(index1, index2, loop, speed); }
     void PlayBlendAnimation(const int& index, const bool& loop, const float& speed) { gltfModel_.PlayBlendAnimation(index, loop, speed); }
     const bool IsPlayAnimation() { return gltfModel_.IsPlayAnimation(); }
-    [[nodiscard]] const float GetAnimationSpeed() const { gltfModel_.GetAnimationSpeed(); }
+    [[nodiscard]] const float GetAnimationSpeed() const { return gltfModel_.GetAnimationSpeed(); }
     void SetAnimationSpeed(const float& speed) { gltfModel_.SetAnimationSpeed(speed); }
 
 public:
@@ -26,8 +26,8 @@ public:
     [[nodiscard]] const DirectX::XMFLOAT3 GetJointPosition(const size_t& nodeIndex, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {}) { return gltfModel_.GetJointPosition(nodeIndex, scaleFactor, offsetPosition); }
     [[nodiscard]] const DirectX::XMFLOAT3 GetJointPosition(const std::string& nodeName, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {}) { return gltfModel_.GetJointPosition(nodeName, scaleFactor, offsetPosition); }
     
-    DirectX::XMMATRIX GetJointGlobalTransform(const size_t& nodeIndex, const float& scaleFacter) { return gltfModel_.GetJointGlobalTransform(nodeIndex, scaleFacter); }
-    DirectX::XMMATRIX GetJointGlobalTransform(const std::string& nodeName, const float& scaleFacter) { return gltfModel_.GetJointGlobalTransform(nodeName, scaleFacter); }
+    DirectX::XMMATRIX GetJointGlobalTransform(const size_t& nodeIndex) { return gltfModel_.GetJointGlobalTransform(nodeIndex); }
+    DirectX::XMMATRIX GetJointGlobalTransform(const std::string& nodeName) { return gltfModel_.GetJointGlobalTransform(nodeName); }
     DirectX::XMMATRIX GetJointWorldTransform(const std::string& nodeName, const float& scaleFacter) { return gltfModel_.GetJointWorldTransform(nodeName, scaleFacter); }
 
 

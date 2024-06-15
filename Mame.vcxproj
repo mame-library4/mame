@@ -249,6 +249,7 @@
     <ClCompile Include="Source\Resource\Audio.cpp" />
     <ClCompile Include="Source\Resource\AudioManager.cpp" />
     <ClCompile Include="Source\Resource\GltfModel.cpp" />
+    <ClCompile Include="Source\Resource\GltfModelStaticMesh.cpp" />
     <ClCompile Include="Source\Resource\Model.cpp" />
     <ClCompile Include="Source\Resource\NoiseTexture.cpp" />
     <ClCompile Include="Source\Resource\PrimitiveRenderer.cpp" />
@@ -322,6 +323,7 @@
     <ClInclude Include="Source\Resource\Audio.h" />
     <ClInclude Include="Source\Resource\AudioManager.h" />
     <ClInclude Include="Source\Resource\GltfModel.h" />
+    <ClInclude Include="Source\Resource\GltfModelStaticMesh.h" />
     <ClInclude Include="Source\Resource\Model.h" />
     <ClInclude Include="Source\Resource\NoiseTexture.h" />
     <ClInclude Include="Source\Resource\PrimitiveRenderer.h" />
@@ -407,6 +409,12 @@
     <FxCompile Include="Source\Shader\gltfModelPs.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\GltfModelStaticBatchingVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="Source\Shader\gltfModelVs.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>

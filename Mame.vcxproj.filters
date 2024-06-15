@@ -187,6 +187,9 @@
     <ClCompile Include="Source\Graphics\Effect\SwordTrail\SwordTrail.cpp">
       <Filter>Mame\Graphics\Effect\SwordTrail</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Resource\GltfModelStaticMesh.cpp">
+      <Filter>Mame\Resource\GltfModel</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -402,6 +405,9 @@
     </ClInclude>
     <ClInclude Include="Source\Graphics\Effect\SwordTrail\SwordTrail.h">
       <Filter>Mame\Graphics\Effect\SwordTrail</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Resource\GltfModelStaticMesh.h">
+      <Filter>Mame\Resource\GltfModel</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -647,6 +653,9 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\PostProcessRoarPS.hlsl">
       <Filter>Mame\Shader\PostProcess</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\GltfModelStaticBatchingVS.hlsl">
+      <Filter>Mame\Shader\GltfModel</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

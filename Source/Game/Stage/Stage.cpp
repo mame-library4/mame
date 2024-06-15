@@ -2,6 +2,16 @@
 
 // ----- コンストラクタ -----
 Stage::Stage(std::string filename)
-    : Object(filename)
+    : model_(filename)
 {
+}
+
+void Stage::Render(const float& scaleFacter, ID3D11PixelShader* psShader)
+{
+    model_.Render(scaleFacter, psShader);
+}
+
+void Stage::DrawDebug()
+{
+    GetTransform()->DrawDebug();
 }

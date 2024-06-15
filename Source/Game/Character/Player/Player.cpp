@@ -5,9 +5,12 @@
 
 // ----- コンストラクタ -----
 Player::Player()
-    : Character("./Resources/Model/Character/Player.glb"),
+    //: Character("./Resources/Model/Character/SKM_Manny.glb"),
+    : Character("./Resources/Model/Character/swordmanGirl.glb"),
+    //: Character("./Resources/Model/Character/Player.glb"),
     swordModel_("./Resources/Model/Character/Sword.glb")
 {
+    //return;
     // --- ステートマシン ---
     {
         stateMachine_.reset(new StateMachine<State<Player>>);
@@ -45,6 +48,7 @@ Player::~Player()
 // ----- 初期化 -----
 void Player::Initialize()
 {
+    //return;
     // 生成位置設定
     GetTransform()->SetPositionZ(60);
 
@@ -88,6 +92,7 @@ void Player::Finalize()
 // ----- 更新 -----
 void Player::Update(const float& elapsedTime)
 {
+    //return;
     swordModel_.GetTransform()->SetPosition(GetTransform()->GetPosition());
     swordModel_.GetTransform()->SetRotation(GetTransform()->GetRotation());
     
@@ -99,7 +104,7 @@ void Player::Update(const float& elapsedTime)
 
     // アニメーション更新
     Character::Update(elapsedTime);
-    swordModel_.UpdateAnimation(elapsedTime);
+    //swordModel_.UpdateAnimation(elapsedTime);
 
     Camera::Instance().SetTarget(GetTransform()->GetPosition() + offset_);
 
@@ -110,14 +115,14 @@ void Player::Update(const float& elapsedTime)
 
    
     //const DirectX::XMFLOAT3 startPos = swordModel_.GetJointPosition("R1:R:j_middle", 0.01f);
-    const DirectX::XMFLOAT3 startPos = swordModel_.GetJointPosition("R1:R:j_bottom", 0.01f);
-    const DirectX::XMFLOAT3 endPos = swordModel_.GetJointPosition("R1:R:j_top", 0.01f);
-    swordTrail_.Update(startPos, endPos);
+    //const DirectX::XMFLOAT3 startPos = swordModel_.GetJointPosition("R1:R:j_bottom", 0.01f);
+    //const DirectX::XMFLOAT3 endPos = swordModel_.GetJointPosition("R1:R:j_top", 0.01f);
+    //swordTrail_.Update(startPos, endPos);
 
     //GetTransform()->SetPositionY(0.0f);
 
     // LookAt
-    //LookAtUpdate();
+    LookAtUpdate();
 }
 
 // ----- 描画 -----
@@ -126,7 +131,25 @@ void Player::Render(ID3D11PixelShader* psShader)
     const float scaleFactor = 0.01f;
 
     Object::Render(scaleFactor, psShader);
-    swordModel_.Render(scaleFactor, psShader);    
+
+    DirectX::XMMATRIX W = GetTransform()->CalcWorldMatrix(scaleFactor);
+    DirectX::XMFLOAT4X4 world;
+    DirectX::XMStoreFloat4x4(&world, W);
+
+    // 剣の描画
+    DirectX::XMFLOAT4X4 weaponWorld = {};
+    DirectX::XMMATRIX boneTransform = GetJointGlobalTransform("hand_r");
+    DirectX::XMMATRIX socketTransform =
+        DirectX::XMMatrixScaling(socketScale_.x, socketScale_.y, socketScale_.z)
+        * DirectX::XMMatrixRotationX(-socketRotation_.x * toRadian_)
+        * DirectX::XMMatrixRotationY(-socketRotation_.y * toRadian_)
+        * DirectX::XMMatrixRotationZ(socketRotation_.z * toRadian_)
+        * DirectX::XMMatrixTranslation(socketLocation_.x * toMetric_, socketLocation_.y * toMetric_, socketLocation_.z * toMetric_);
+    DirectX::XMMATRIX dx_ue5 = DirectX::XMMatrixSet(-1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1); // LHS Y-Up Z-Forward(DX) -> LHS Z-Up Y-Forward(UE5) 
+    DirectX::XMMATRIX ue5_gltf = DirectX::XMMatrixSet(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1); // LHS Z-Up Y-Forward(UE5) -> RHS Y-Up Z-Forward(glTF) 
+    DirectX::XMStoreFloat4x4(&weaponWorld, dx_ue5 * socketTransform * ue5_gltf * boneTransform * DirectX::XMLoadFloat4x4(&world));
+
+    swordModel_.Render(weaponWorld, psShader);
 }
 
 void Player::RenderTrail()
@@ -139,6 +162,12 @@ void Player::DrawDebug()
 {
     if (ImGui::BeginMenu("Player"))
     {
+        ImGui::DragFloat3("socketLocation", &socketLocation_.x);
+        ImGui::DragFloat3("socketRotation", &socketRotation_.x);
+        ImGui::DragFloat3("socketScale", &socketScale_.x);
+        ImGui::DragFloat("toradian", &toRadian_);
+        ImGui::DragFloat("toMetric_", &toMetric_);
+
         GetStateMachine()->DrawDebug();
 
         ImGui::DragFloat("SlowSpeed", &slowAnimationSpeed_, 0.1f);
@@ -337,7 +366,7 @@ void Player::ResetFlags()
 void Player::PlayBlendAnimation(const Animation& index1, const Animation& index2, const bool& loop, const float& speed)
 {
     Object::PlayBlendAnimation(static_cast<int>(index1), static_cast<int>(index2), loop, speed);
-    swordModel_.PlayBlendAnimation(static_cast<int>(index1), static_cast<int>(index2), loop, speed);
+    //swordModel_.PlayBlendAnimation(static_cast<int>(index1), static_cast<int>(index2), loop, speed);
 }
 
 void Player::PlayBlendAnimation(const Animation& index, const bool& loop, const float& speed)
@@ -345,7 +374,7 @@ void Player::PlayBlendAnimation(const Animation& index, const bool& loop, const 
     const int currentAnimationIndex = GetCurrentBlendAnimationIndex();
     
     Object::PlayBlendAnimation(static_cast<int>(index), loop, speed);
-    swordModel_.PlayBlendAnimation(static_cast<int>(index), loop, speed);
+    //swordModel_.PlayBlendAnimation(static_cast<int>(index), loop, speed);
 }
 
 void Player::UpdateCollisions(const float& elapsedTime, const float& scaleFactor)

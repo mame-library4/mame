@@ -13,7 +13,8 @@ namespace PlayerState
     {
         // アニメーション設定
         owner_->SetWeight(1.0f);
-        owner_->PlayBlendAnimation(Player::Animation::Walk, Player::Animation::Idle, true);
+        owner_->PlayBlendAnimation(Player::Animation::Run, Player::Animation::Idle, true);
+        //owner_->PlayBlendAnimation(Player::Animation::Walk, Player::Animation::Idle, true);
     }
 
     // ----- 更新 -----

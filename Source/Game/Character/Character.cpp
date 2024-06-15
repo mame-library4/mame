@@ -168,8 +168,8 @@ void Character::LookAtUpdate()
         GltfModel::Node& node = GetNodes()->at(nodeIndex);
         DirectX::XMMATRIX S = DirectX::XMMatrixScaling(node.scale_.x, node.scale_.y, node.scale_.z);
         DirectX::XMMATRIX R = DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&node.rotation_));
-        //DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(node.translation_.x, node.translation_.y, node.translation_.z);
-        DirectX::XMMATRIX T = DirectX::XMMatrixTranslationFromVector(HeadPosition);
+        DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(node.translation_.x, node.translation_.y, node.translation_.z);
+        //DirectX::XMMATRIX T = DirectX::XMMatrixTranslationFromVector(HeadPosition);
         DirectX::XMStoreFloat4x4(&node.globalTransform_, S * R * T * DirectX::XMLoadFloat4x4(&node.parentGlobalTransform_));
         //DirectX::XMStoreFloat4x4(&node.globalTransform_, S * R * T);// *DirectX::XMLoadFloat4x4(&parentGlobalTransforms));
         
@@ -241,11 +241,11 @@ void Character::LookAtUpdate()
     DirectX::XMVECTOR HeadLocalForward = DirectX::XMLoadFloat3(&headLocalForward_);
 
     // 頭のワールド座標位置取得
-    DirectX::XMMATRIX HeadGlobalMatrix = GetJointGlobalTransform(headNodeName_, 1.00f);
+    DirectX::XMMATRIX HeadGlobalMatrix = GetJointGlobalTransform(headNodeName_);
 
     DirectX::XMVECTOR HeadPosition = HeadGlobalMatrix.r[3];
     
-
+    DirectX::XMFLOAT3 characterFront = GetTransform()->CalcForward();
 
     // ターゲットのワールド位置
     DirectX::XMVECTOR TargetPosition = DirectX::XMLoadFloat3(&lookAtTargetPosition_);
@@ -259,42 +259,60 @@ void Character::LookAtUpdate()
 
     DirectX::XMVECTOR HeadPositionWorld = DirectX::XMVector3TransformCoord(HeadPosition, World);
 
+    DirectX::XMVECTOR characterFrontInverse = DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&characterFront), InverseWorld);
+
+
     // ワールド空間のターゲット方向ベクトルを計算し、ローカル空間に変換
-    DirectX::XMVECTOR TargetLocalDirection = DirectX::XMVector3Normalize(
-        DirectX::XMVectorSubtract(TargetPosition, HeadPosition));
+    //DirectX::XMVECTOR TargetLocalDirection = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(TargetPosition, HeadPosition));
+    DirectX::XMVECTOR TargetLocalDirection = TargetPosition;
 
     DirectX::XMVECTOR TargetLocalDirectionWorld = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract({}, HeadPositionWorld));
     DirectX::XMVECTOR HeadLocalForwardWorld = DirectX::XMVector3Normalize(DirectX::XMVector3TransformNormal(HeadLocalForward, World));
     HeadLocalForward = HeadLocalForwardWorld;
-    TargetLocalDirection = DirectX::XMVector3Normalize(DirectX::XMVector3TransformNormal(TargetLocalDirectionWorld, InverseWorld));
+    //TargetLocalDirection = DirectX::XMVector3Normalize(DirectX::XMVector3TransformNormal(TargetLocalDirectionWorld, InverseWorld));
+    //TargetLocalDirection = DirectX::XMVector3Normalize(DirectX::XMVector3TransformNormal(TargetLocalDirection, InverseWorld));
 
     // 回転軸計算
-    DirectX::XMVECTOR Axis = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(HeadLocalForward, TargetLocalDirectionWorld));
-    Axis = DirectX::XMVector3Normalize(DirectX::XMVector3TransformNormal(Axis, InverseWorld));
+    //DirectX::XMVECTOR Axis = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(HeadLocalForward, TargetLocalDirectionWorld));
+    DirectX::XMVECTOR Axis = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(TargetLocalDirection, characterFrontInverse));
+    //Axis = DirectX::XMVector3Normalize(DirectX::XMVector3TransformNormal(Axis, InverseWorld));
     // 回転角計算
-    const float angle = acosf(DirectX::XMVectorGetX(DirectX::XMVector3Dot(HeadLocalForward, TargetLocalDirectionWorld)));
-
+   // const float angle = acosf(DirectX::XMVectorGetX(DirectX::XMVector3Dot(HeadLocalForward, TargetLocalDirectionWorld)));
+    characterFrontInverse = DirectX::XMVector3Normalize(characterFrontInverse);
+    DirectX::XMVECTOR TargetLocalDirectionNormalize = DirectX::XMVector3Normalize(TargetLocalDirection);
+    float angle = acosf(DirectX::XMVectorGetX(DirectX::XMVector3Dot(TargetLocalDirectionNormalize, characterFrontInverse)));
+    angle = acosf(DirectX::XMVectorGetX(DirectX::XMVector3Dot(
+        DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(DirectX::XMLoadFloat3(&lookAtTargetPosition_), HeadPositionWorld)),
+        DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&characterFront)))));
+    DirectX::XMVECTOR wAxis = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(
+        DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&characterFront)),
+        DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(DirectX::XMLoadFloat3(&lookAtTargetPosition_), HeadPositionWorld))));
+    DirectX::XMVECTOR gAxis = DirectX::XMVector3Normalize(DirectX::XMVector3TransformCoord(wAxis, InverseWorld));
+    gAxis = DirectX::XMVector3Normalize(World.r[2]);
     // 回転角が微小な場合は回転しない
     if (fabsf(angle) > 1e-8f)
     {
         const int nodeIndex = GetNodeIndex(headNodeName_);
 
         // 回転軸と回転角から回転クォータニオンを求める
-        const DirectX::XMVECTOR Q = DirectX::XMQuaternionRotationAxis(Axis, angle);
+        const DirectX::XMVECTOR Q = DirectX::XMQuaternionRotationAxis(wAxis, angle);
 
         // 頭のローカル回転値に回転クォータニオンを合成する
         DirectX::XMFLOAT4 headRotate = GetNodes()->at(nodeIndex).rotation_;
         DirectX::XMVECTOR Rotation = DirectX::XMLoadFloat4(&headRotate);
+
+        DirectX::XMMATRIX lMat = DirectX::XMMatrixRotationQuaternion(Rotation);
+        DirectX::XMVECTOR wMatF = DirectX::XMVector3TransformCoord(lMat.r[2], World);
+        DirectX::XMVECTOR wMatF2 = World.r[2];
         Rotation = DirectX::XMQuaternionMultiply(Rotation, Q);
         DirectX::XMStoreFloat4(&headRotate, Rotation);
 
         // 頭ノードとその子ノードのワールド行列更新
-        GetNodes()->at(nodeIndex).rotation_ = headRotate;
+    //    GetNodes()->at(nodeIndex).rotation_ = headRotate;
 
     
         //UpdateWorldTransforms(nodeIndex);
-        UpdateWorldTransforms(nodeIndex, HeadPosition);
-      
+    //    UpdateWorldTransforms(nodeIndex, HeadPosition);
     }
 #endif
 }

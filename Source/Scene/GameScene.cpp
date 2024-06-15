@@ -5,6 +5,8 @@
 #include "../Game/Character/Player/PlayerManager.h"
 #include "../Game/Character/Enemy/EnemyManager.h"
 
+#define USE_DEBUG 0
+
 // ----- ステージの真ん中位置 -----
 DirectX::XMFLOAT3 GameScene::stageCenter_ = {};
 
@@ -14,9 +16,12 @@ void GameScene::CreateResource()
     // プレイヤー生成
     PlayerManager::Instance().GetPlayer() = std::make_unique<Player>();
 
+    //stageNormal_[0] = std::make_unique<StageNormal>("./Resources/Model/Stage/tomorrow.glb");
     stageNormal_[0] = std::make_unique<StageNormal>("./Resources/Model/Stage/shrine.glb");
     stageNormal_[1] = std::make_unique<StageNormal>("./Resources/Model/Stage/torii.glb");
-    stageNormal_[2] = std::make_unique<StageNormal>("./Resources/Model/Stage/circle.glb");
+    //stageNormal_[2] = std::make_unique<StageNormal>("./Resources/Model/Stage/circle.glb");
+    stageNormal_[2] = std::make_unique<StageNormal>("./Resources/Model/Stage/tomorrow.glb");
+
 
     EnemyManager::Instance().Register(new EnemyTamamo);
 
@@ -44,7 +49,7 @@ void GameScene::Initialize()
     stageNormal_[1]->GetTransform()->SetPositionZ(9);
     
     stageNormal_[2]->GetTransform()->SetPositionZ(35.5f);
-    stageNormal_[2]->GetTransform()->SetScaleFactor(1.53f);
+    stageNormal_[2]->GetTransform()->SetScaleFactor(100.0f);
 
     stageCenter_ = stageNormal_[2]->GetTransform()->GetPosition();
 
@@ -104,11 +109,13 @@ void GameScene::DeferredRender()
     deviceContext->PSSetShaderResources(34, 1, iblTextures_[2].GetAddressOf());
     deviceContext->PSSetShaderResources(35, 1, iblTextures_[3].GetAddressOf());
 
+#if USE_DEBUG
     // ステージ
     for (int i = 0; i < stageMax; ++i)
     {
-        stageNormal_[i]->Render(gBufferPixelShader);
+        stageNormal_[i]->Render(0.01f, gBufferPixelShader);
     }
+#endif
 
     // プレイヤー描画
     PlayerManager::Instance().Render(gBufferPixelShader);
@@ -131,7 +138,7 @@ void GameScene::ForwardRender()
     // ステージ
     for (int i = 0; i < stageMax; ++i)
     {
-        stageNormal_[i]->Render();
+        stageNormal_[i]->Render(0.01f);
     }
 
     // プレイヤー描画
