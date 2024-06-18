@@ -5,8 +5,61 @@
 #include <DirectXMath.h>
 #include "../../External/tinygltf/tiny_gltf.h"
 #include <unordered_map>
-
 #include "../Other/Transform.h"
+
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/set.hpp>
+#include <cereal/types/unordered_map.hpp>
+
+namespace DirectX
+{  
+    template<class T>
+    void serialize(T& archive, DirectX::XMFLOAT2& v)
+    {
+        archive(
+            cereal::make_nvp("x", v.x),
+            cereal::make_nvp("y", v.y)
+        );
+    }
+
+    template<class T>
+    void serialize(T& archive, DirectX::XMFLOAT3& v)
+    {
+        archive(
+            cereal::make_nvp("x", v.x),
+            cereal::make_nvp("y", v.y),
+            cereal::make_nvp("z", v.z)
+        );
+    }
+
+    template<class T>
+    void serialize(T& archive, DirectX::XMFLOAT4& v)
+    {
+        archive(
+            cereal::make_nvp("x", v.x),
+            cereal::make_nvp("y", v.y),
+            cereal::make_nvp("z", v.z),
+            cereal::make_nvp("w", v.w)
+        );
+    }
+
+    template<class T>
+    void serialize(T& archive, DirectX::XMFLOAT4X4& m)
+    {
+        archive(
+            cereal::make_nvp("_11", m._11), cereal::make_nvp("_12", m._12),
+            cereal::make_nvp("_13", m._13), cereal::make_nvp("_14", m._14),
+            cereal::make_nvp("_21", m._21), cereal::make_nvp("_22", m._22),
+            cereal::make_nvp("_23", m._23), cereal::make_nvp("_24", m._24),
+            cereal::make_nvp("_31", m._31), cereal::make_nvp("_32", m._32),
+            cereal::make_nvp("_33", m._33), cereal::make_nvp("_34", m._34),
+            cereal::make_nvp("_41", m._41), cereal::make_nvp("_42", m._42),
+            cereal::make_nvp("_43", m._43), cereal::make_nvp("_44", m._44)
+        );
+    }
+}
 
 class GltfModel
 {
@@ -19,6 +72,12 @@ public:
     {
         std::string name_;
         std::vector<int> nodes_;
+
+        template<class T>
+        void serialize(T& archive)
+        {
+            archive(name_, nodes_);
+        }
     };
 
     struct Node
@@ -41,7 +100,13 @@ public:
             0,0,0,1
         };
 
-        DirectX::XMFLOAT4X4 parentGlobalTransform_;
+        DirectX::XMFLOAT4X4 parentGlobalTransform_ = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
+
+        template<class T>
+        void serialize(T& archive)
+        {
+            archive(name_, skin_, mesh_, children_, rotation_, scale_, translation_, globalTransform_, parentGlobalTransform_);
+        }
     };
 
     struct BufferView
@@ -54,6 +119,17 @@ public:
         {
             return sizeInBytes_ / strideInBytes_;
         }
+        
+        std::vector<UINT8> verticesBinary_;
+        //std::unique_ptr<UINT8[]> verticesBinary_;
+
+        //const void* bufferData_;
+
+        template<class T>
+        void serialize(T& archive)
+        {
+            archive(format_, strideInBytes_, sizeInBytes_, verticesBinary_);
+        }
     };
 
     struct Mesh
@@ -64,14 +140,32 @@ public:
             int material_;
             std::map<std::string, BufferView> vertexBufferViews_;
             BufferView indexBufferView_;
+
+            template<class T>
+            void serialize(T& archive)
+            {
+                archive(material_, vertexBufferViews_, indexBufferView_);
+            }
         };
         std::vector<Primitive> primitives_;
+
+        template<class T>
+        void serialize(T& archive)
+        {
+            archive(name_, primitives_);
+        }
     };
 
     struct TextureInfo
     {
         int index_      = -1;
         int texcoord_   = 0;
+
+        template<class T>
+        void serialize(T& archive)
+        {
+            archive(index_, texcoord_);
+        }
     };
    
     struct NormalTextureInfo
@@ -79,6 +173,12 @@ public:
         int index_      = -1;
         int texcoord_   = 0;
         float scale_    = 1;
+
+        template<class T>
+        void serialize(T& archive)
+        {
+            archive(index_, texcoord_, scale_);
+        }
     };
 
     struct OcclusionTextureInfo
@@ -86,6 +186,12 @@ public:
         int index_      = -1;
         int texcoord_   = 0;
         float strength_ = 1;
+
+        template<class T>
+        void serialize(T& archive)
+        {
+            archive(index_, texcoord_, strength_);
+        }
     };
 
     struct PbrMetaricRoughness
@@ -95,6 +201,12 @@ public:
         float       metallicFactor_ = 1;
         float       roughnessFactor_ = 1;
         TextureInfo metallicRoughnessTexture_;
+
+        template<class T>
+        void serialize(T& archive)
+        {
+            archive(baseColorFactor_, baseColorTexture_, metallicFactor_, roughnessFactor_, metallicRoughnessTexture_);
+        }
     };
 
     struct Material
@@ -113,34 +225,68 @@ public:
             NormalTextureInfo       normalTexture_;
             OcclusionTextureInfo    occlusionTexture_;
             TextureInfo             emissiveTexture_;
+
+            template<class T>
+            void serialize(T& archive)
+            {
+                archive(emissiveFactor_, alphaMode_, alphaCutoff_, doubleSided_, pbrMetallicRoughness_,
+                    normalTexture_, occlusionTexture_, emissiveTexture_);
+            }
         };
         Cbuffer data_;
+
+        template<class T>
+        void serialize(T& archive)
+        {
+            archive(name_, data_);
+        }
     };
 
     struct TextureData
     {
         std::string name_;
         int source_ = -1;
+
+        template<class T>
+        void serialize(T& archive)
+        {
+            archive(name_, source_);
+        }
     };
 
     struct Image
     {
+        std::string uri_;
+        std::wstring filename_;
         std::string name_;
         int         width_      = -1;
         int         height_     = -1;
-        int         component   = -1;
+        int         component_  = -1;
         int         bits_       = -1;
         int         pixelType_  = -1 ;
         int         bufferView_ = 0;
         std::string mimeType_;
-        std::string uri_;
         bool        asIs_       = false;
+
+
+        template<class T>
+        void serialize(T& archive)
+        {
+            archive(name_, width_, height_, component_, bits_, pixelType_, bufferView_,
+                mimeType_, uri_, asIs_, filename_);
+        }
     };
 
     struct Skin
     {
         std::vector<DirectX::XMFLOAT4X4> inverseBindMatrices_;
         std::vector<int> joints_;
+
+        template<class T>
+        void serialize(T& archive)
+        {
+            archive(inverseBindMatrices_, joints_);
+        }
     };
         
     struct Animation
@@ -153,6 +299,12 @@ public:
             int sampler_ = -1;
             int targetNode_ = -1;
             std::string targetPath_;
+
+            template<class T>
+            void serialize(T& archive)
+            {
+                archive(sampler_, targetNode_, targetPath_);
+            }
         };
         std::vector<Channel> channels_;
 
@@ -161,6 +313,12 @@ public:
             int input_ = -1;
             int output_ = -1;
             std::string interpolation_;  // ï‚ä‘
+
+            template<class T>
+            void serialize(T& archive)
+            {
+                archive(input_, output_, interpolation_);
+            }
         };
         std::vector<Sampler> samplers_;
 
@@ -168,6 +326,12 @@ public:
         std::unordered_map<int, std::vector<DirectX::XMFLOAT3>> scales_;
         std::unordered_map<int, std::vector<DirectX::XMFLOAT4>> rotations_;
         std::unordered_map<int, std::vector<DirectX::XMFLOAT3>> translations_;
+
+        template<class T>
+        void serialize(T& archive)
+        {
+            archive(name_, duration_, channels_, samplers_, timelines_, scales_, rotations_, translations_);
+        }
     };
         
     static const size_t PRIMITIVE_MAX_JOINT = 512;
@@ -219,7 +383,8 @@ public:
     [[nodiscard]] const float GetBlendAnimationSeconds() const { return blendAnimationSeconds_; }
 
     // ----- AnimationIndex -----
-    [[nodiscard]] const int GetCurrentBlendAnimationIndex() const { return blendAnimationIndex2_; }
+    [[nodiscard]] const int GetBlendAnimationIndex1() const { return blendAnimationIndex1_; }
+    [[nodiscard]] const int GetBlendAnimationIndex2() const { return blendAnimationIndex2_; }
 
     // ----- JointPosiion -----
     DirectX::XMFLOAT3 GetJointPosition(const size_t& nodeIndex, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {});

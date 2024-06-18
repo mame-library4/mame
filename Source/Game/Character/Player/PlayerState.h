@@ -16,11 +16,10 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
-        int isInputMove();  // “ü—Í‚É‰‚¶‚ÄØ‚è‘Ö‚¦‚éƒXƒe[ƒg‚ğ”»’f‚·‚é
+        void SetAnimation();
     };
 
-    // ---- ˆÚ“® -----
-#pragma region ˆÚ“®
+    // ----- ˆÚ“® -----
     class MoveState : public State<Player>
     {
     public:
@@ -32,38 +31,30 @@ namespace PlayerState
         void Finalize()                         override;
     };
 
-
-    // ----- •à‚« -----
-    class WalkState : public State<Player>
+    // ----- ƒ_ƒ[ƒW -----
+    class DamageState : public State<Player>
     {
     public:
-        WalkState(Player* player) : State(player, "WalkState") {}
-        ~WalkState() {}
-
-        void Initialize()                       override;
-        void Update(const float& elapsedTime)   override;
-        void Finalize()                         override;
-
-    private:
-        int isInputMove();  // “ü—Í’l‚É‰‚¶‚Ä’l‚ğ•Ô‚·
-    };
-
-    // ----- ‘–‚è -----
-    class RunState : public State<Player>
-    {
-    public:
-        RunState(Player* player) : State(player, "RunState") {}
-        ~RunState() {}
+        DamageState(Player* player) : State(player, "DamageState") {}
+        ~DamageState() {}
 
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
     };
 
-#pragma endregion ˆÚ“®
+    // ----- €–S -----
+    class DeathState : public State<Player>
+    {
+    public:
+        DeathState(Player* player) : State(player, "DeathState") {}
+        ~DeathState() {}
 
-    // ---- ‰ñ”ğ -----
-#pragma region
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+    };
+
     // ----- ‰ñ”ğ -----
     class AvoidanceState : public State<Player>
     {
@@ -97,11 +88,11 @@ namespace PlayerState
     };
 
     // ----- ƒJƒEƒ“ƒ^[UŒ‚ -----
-    class CounterAttackState : public State<Player>
+    class CounterComboState : public State<Player>
     {
     public:
-        CounterAttackState(Player* player) : State(player, "Counter") {}
-        ~CounterAttackState() {}
+        CounterComboState(Player* player) : State(player, "CounterComboState") {}
+        ~CounterComboState() {}
 
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
@@ -112,94 +103,84 @@ namespace PlayerState
         bool isAddForce_ = false;
     };
 
-#pragma endregion
-
-    // ----- ãUŒ‚ -----
-#pragma region ãUŒ‚
-
-    // ----- ãUŒ‚‚O -----
-    class LightAttack0State : public State<Player>
+    // ----- ƒRƒ“ƒ{0_0 -----
+    class ComboAttack0_0 : public State<Player>
     {
     public:
-        LightAttack0State(Player* player) : State(player, "LightAttack0State") {}
-        ~LightAttack0State() {}
-
-        void Initialize()                       override;
-        void Update(const float& elapsedTime)   override;
-        void Finalize()                         override;
-
-    private:
-        float comboAttackFrame_ = 0.34f; // Ÿ‚ÌUŒ‚‚ÉˆÚ‚éƒtƒŒ[ƒ€
-        //float animationEndFrame_ = 0.68f;
-    };
-
-    // ----- ãUŒ‚‚P -----
-    class LightAttack1State : public State<Player>
-    {
-    public:
-        LightAttack1State(Player* player) : State(player, "LightAttack1State") {}
-        ~LightAttack1State() {}
-
-        void Initialize()                       override;
-        void Update(const float& elapsedTime)   override;
-        void Finalize()                         override;
-
-    private:
-        float comboAttackFrame_ = 0.4f; // Ÿ‚ÌUŒ‚‚ÉˆÚ‚éƒtƒŒ[ƒ€
-    };
-
-    // ----- ãUŒ‚‚Q -----
-    class LightAttack2State : public State<Player>
-    {
-    public:
-        LightAttack2State(Player* player) : State(player, "LightAttack2State") {}
-        ~LightAttack2State() {}
+        ComboAttack0_0(Player* player) : State(player, "ComboAttack0_0") {}
+        ~ComboAttack0_0() {}
 
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
     };
 
-#pragma endregion ãUŒ‚
-
-    // ----- ‹­UŒ‚ -----
-#pragma region ‹­UŒ‚
-
-    // ----- ‹­UŒ‚‚O -----
-    class StrongAttack0State : public State<Player>
+    // ----- ƒRƒ“ƒ{0_1 -----
+    class ComboAttack0_1 : public State<Player>
     {
     public:
-        StrongAttack0State(Player* player) : State(player, "StrongAttack0State") {}
-        ~StrongAttack0State() {}
-
-        void Initialize()                       override;
-        void Update(const float& elapsedTime)   override;
-        void Finalize()                         override;
-
-    private:
-        float comboAttackFrame_ = 0.7f; // Ÿ‚ÌUŒ‚‚ÉˆÚ‚éƒtƒŒ[ƒ€
-    };
-
-    // ----- ‹­UŒ‚‚P -----
-    class StrongAttack1State : public State<Player>
-    {
-    public:
-        StrongAttack1State(Player* player) : State(player, "StrongAttack1State") {}
-        ~StrongAttack1State() {}
+        ComboAttack0_1(Player* player) : State(player, "ComboAttack0_1") {}
+        ~ComboAttack0_1() {}
 
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
     };
 
-#pragma endregion ‹­UŒ‚
-
-    // ----- ƒ_ƒ[ƒWH‚ç‚¢ -----
-    class DamageState : public State<Player>
+    // ----- ƒRƒ“ƒ{0_2 -----
+    class ComboAttack0_2 : public State<Player>
     {
     public:
-        DamageState(Player* player) : State(player, "DamageState") {}
-        ~DamageState() {}
+        ComboAttack0_2(Player* player) : State(player, "ComboAttack0_2") {}
+        ~ComboAttack0_2() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+    };
+
+    // ----- ƒRƒ“ƒ{0_3 -----
+    class ComboAttack0_3 : public State<Player>
+    {
+    public:
+        ComboAttack0_3(Player* player) : State(player, "ComboAttack0_3") {}
+        ~ComboAttack0_3() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+    };
+
+    // ----- ƒRƒ“ƒ{1_0 -----
+    class ComboAttack1_0 : public State<Player>
+    {
+    public:
+        ComboAttack1_0(Player* player) : State(player, "ComboAttack1_0") {}
+        ~ComboAttack1_0() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+    };
+
+    // ----- ƒRƒ“ƒ{1_1 -----
+    class ComboAttack1_1 : public State<Player>
+    {
+    public:
+        ComboAttack1_1(Player* player) : State(player, "ComboAttack1_1") {}
+        ~ComboAttack1_1() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+    };
+
+    // ----- ƒRƒ“ƒ{1_2 -----
+    class ComboAttack1_2 : public State<Player>
+    {
+    public:
+        ComboAttack1_2(Player* player) : State(player, "ComboAttack1_2") {}
+        ~ComboAttack1_2() {}
 
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;

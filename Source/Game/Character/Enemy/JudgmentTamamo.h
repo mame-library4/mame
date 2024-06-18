@@ -2,48 +2,7 @@
 #include "../../../AI/BehaviorTree/JudgmentBase.h"
 #include "Enemy.h"
 
-// €–S”»’è
-class DeathJudgment : public JudgmentBase
-{
-public:
-    DeathJudgment(Enemy* owner) : JudgmentBase(owner) {}
-    const bool Judgment() override;
-};
 
-// ‚Ğ‚é‚İ”»’è
-class FlinchJudgment : public JudgmentBase
-{
-public:
-    FlinchJudgment(Enemy* owner) : JudgmentBase(owner) {}
-    const bool Judgment() override;
-};
-
-#pragma region ”ñí“¬
-// ”ñí“¬”»’è
-class NonBattleJudgment : public JudgmentBase
-{
-public:
-    NonBattleJudgment(Enemy* owner) : JudgmentBase(owner) {}
-    const bool Judgment() override;
-};
-
-// ”ñí“¬‘Ò‹@”»’è
-class NonBattleIdleJudgment : public JudgmentBase
-{
-public:
-    NonBattleIdleJudgment(Enemy* owner) : JudgmentBase(owner) {}
-    const bool Judgment() override;
-};
-
-// ”ñí“¬•à‚«”»’è
-class NonBattleWalkJudgment : public JudgmentBase
-{
-public:
-    NonBattleWalkJudgment(Enemy* owner) : JudgmentBase(owner) {}
-    const bool Judgment() override;
-};
-
-#pragma endregion ”ñí“¬
 
 #pragma region í“¬
 

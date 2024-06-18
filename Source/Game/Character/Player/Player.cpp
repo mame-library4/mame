@@ -5,30 +5,27 @@
 
 // ----- コンストラクタ -----
 Player::Player()
-    //: Character("./Resources/Model/Character/SKM_Manny.glb"),
-    : Character("./Resources/Model/Character/swordmanGirl.glb"),
-    //: Character("./Resources/Model/Character/Player.glb"),
-    swordModel_("./Resources/Model/Character/Sword.glb")
+    : Character("./Resources/Model/Character/Player/Orc.gltf")
 {
-    //return;
     // --- ステートマシン ---
     {
         stateMachine_.reset(new StateMachine<State<Player>>);
 
         // ステートを登録する
-        GetStateMachine()->RegisterState(new PlayerState::IdleState(this));                 // 待機
-        GetStateMachine()->RegisterState(new PlayerState::MoveState(this));                 // 移動
-        //GetStateMachine()->RegisterState(new PlayerState::WalkState(this));                 // 歩き
-        //GetStateMachine()->RegisterState(new PlayerState::RunState(this));                  // 走り
-        GetStateMachine()->RegisterState(new PlayerState::AvoidanceState(this));            // 回避
-        GetStateMachine()->RegisterState(new PlayerState::CounterState(this));              // カウンター
-        GetStateMachine()->RegisterState(new PlayerState::CounterAttackState(this));        // カウンター攻撃
-        GetStateMachine()->RegisterState(new PlayerState::LightAttack0State(this));         // 弱攻撃0
-        GetStateMachine()->RegisterState(new PlayerState::LightAttack1State(this));         // 弱攻撃1
-        GetStateMachine()->RegisterState(new PlayerState::LightAttack2State(this));         // 弱攻撃2
-        GetStateMachine()->RegisterState(new PlayerState::StrongAttack0State(this));        // 強攻撃0
-        GetStateMachine()->RegisterState(new PlayerState::StrongAttack1State(this));        // 強攻撃1       
-        GetStateMachine()->RegisterState(new PlayerState::DamageState(this));               // ダメージ
+        GetStateMachine()->RegisterState(new PlayerState::IdleState(this));             // 待機
+        GetStateMachine()->RegisterState(new PlayerState::MoveState(this));             // 移動
+        GetStateMachine()->RegisterState(new PlayerState::DamageState(this));           // ダメージ
+        GetStateMachine()->RegisterState(new PlayerState::DeathState(this));            // 死亡
+        GetStateMachine()->RegisterState(new PlayerState::AvoidanceState(this));        // 回避
+        GetStateMachine()->RegisterState(new PlayerState::CounterState(this));          // カウンター
+        GetStateMachine()->RegisterState(new PlayerState::CounterComboState(this));     // カウンターコンボ
+        GetStateMachine()->RegisterState(new PlayerState::ComboAttack0_0(this));        // コンボ0_0
+        GetStateMachine()->RegisterState(new PlayerState::ComboAttack0_1(this));        // コンボ0_1
+        GetStateMachine()->RegisterState(new PlayerState::ComboAttack0_2(this));        // コンボ0_2
+        GetStateMachine()->RegisterState(new PlayerState::ComboAttack0_3(this));        // コンボ0_3
+        GetStateMachine()->RegisterState(new PlayerState::ComboAttack1_0(this));        // コンボ1_0
+        GetStateMachine()->RegisterState(new PlayerState::ComboAttack1_1(this));        // コンボ1_1
+        GetStateMachine()->RegisterState(new PlayerState::ComboAttack1_2(this));        // コンボ1_2
 
         // 一番初めのステートを設定する
         GetStateMachine()->SetState(static_cast<UINT>(STATE::Idle));
@@ -48,9 +45,11 @@ Player::~Player()
 // ----- 初期化 -----
 void Player::Initialize()
 {
-    //return;
     // 生成位置設定
     GetTransform()->SetPositionZ(60);
+
+    // サイズ設定
+    GetTransform()->SetScaleFactor(0.75f);
 
     // ステージとの判定offset設定
     SetCollisionRadius(0.2f);
@@ -91,11 +90,7 @@ void Player::Finalize()
 
 // ----- 更新 -----
 void Player::Update(const float& elapsedTime)
-{
-    //return;
-    swordModel_.GetTransform()->SetPosition(GetTransform()->GetPosition());
-    swordModel_.GetTransform()->SetRotation(GetTransform()->GetRotation());
-    
+{    
     // Collisionデータ更新
     UpdateCollisions(elapsedTime, 0.01f);
     GetCollisionDetectionData("collide0").SetPosition(GetTransform()->GetPosition());
@@ -128,28 +123,9 @@ void Player::Update(const float& elapsedTime)
 // ----- 描画 -----
 void Player::Render(ID3D11PixelShader* psShader)
 {
-    const float scaleFactor = 0.01f;
+    const float scaleFactor = 1.0f;
 
     Object::Render(scaleFactor, psShader);
-
-    DirectX::XMMATRIX W = GetTransform()->CalcWorldMatrix(scaleFactor);
-    DirectX::XMFLOAT4X4 world;
-    DirectX::XMStoreFloat4x4(&world, W);
-
-    // 剣の描画
-    DirectX::XMFLOAT4X4 weaponWorld = {};
-    DirectX::XMMATRIX boneTransform = GetJointGlobalTransform("hand_r");
-    DirectX::XMMATRIX socketTransform =
-        DirectX::XMMatrixScaling(socketScale_.x, socketScale_.y, socketScale_.z)
-        * DirectX::XMMatrixRotationX(-socketRotation_.x * toRadian_)
-        * DirectX::XMMatrixRotationY(-socketRotation_.y * toRadian_)
-        * DirectX::XMMatrixRotationZ(socketRotation_.z * toRadian_)
-        * DirectX::XMMatrixTranslation(socketLocation_.x * toMetric_, socketLocation_.y * toMetric_, socketLocation_.z * toMetric_);
-    DirectX::XMMATRIX dx_ue5 = DirectX::XMMatrixSet(-1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1); // LHS Y-Up Z-Forward(DX) -> LHS Z-Up Y-Forward(UE5) 
-    DirectX::XMMATRIX ue5_gltf = DirectX::XMMatrixSet(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1); // LHS Z-Up Y-Forward(UE5) -> RHS Y-Up Z-Forward(glTF) 
-    DirectX::XMStoreFloat4x4(&weaponWorld, dx_ue5 * socketTransform * ue5_gltf * boneTransform * DirectX::XMLoadFloat4x4(&world));
-
-    swordModel_.Render(weaponWorld, psShader);
 }
 
 void Player::RenderTrail()
@@ -162,11 +138,6 @@ void Player::DrawDebug()
 {
     if (ImGui::BeginMenu("Player"))
     {
-        ImGui::DragFloat3("socketLocation", &socketLocation_.x);
-        ImGui::DragFloat3("socketRotation", &socketRotation_.x);
-        ImGui::DragFloat3("socketScale", &socketScale_.x);
-        ImGui::DragFloat("toradian", &toRadian_);
-        ImGui::DragFloat("toMetric_", &toMetric_);
 
         GetStateMachine()->DrawDebug();
 
@@ -291,15 +262,6 @@ void Player::Move(const float& elapsedTime)
         float accelaration  = GetAcceleration();
         float maxSpeed      = GetMaxSpeed();
 
-#if ActiveWalk
-        // 歩きの場合 加速度,移動速度上限ともに減らす
-        if (GetCurrentBlendAnimationIndex() == static_cast<int>(Animation::Walk))
-        {
-            accelaration *= 0.08f;
-            maxSpeed *= 0.3f;
-        }
-#endif
-
         velocity.x += moveDirection_.x * accelaration * elapsedTime;
         velocity.z += moveDirection_.z * accelaration * elapsedTime;
 
@@ -317,41 +279,41 @@ void Player::Move(const float& elapsedTime)
     SetWeight(weight);
 }
 
-// ----- 攻撃ボタンが押されたか ( ステートが変更された場合trueを返す ) ( 先行入力も見る ) -----
-bool Player::CheckAttackButton(const Player::NextInput& nextInput)
+// ----- 先行入力を受付してる -----
+bool Player::CheckNextInput(const Player::NextInput& nextInput)
 {
-    // 弱攻撃のボタンが押された場合
-    if(GetLightAttackKeyDown())
+    // 回避入力があった時
+    if (GetAvoidanceKeyDown())
     {
-        // 先行入力受付がない
         if (nextInput == NextInput::None)
         {
-            // ステートを変更して終了
-            ChangeState(STATE::LightAttack0);
+            ChangeState(STATE::Avoidance);
             return true;
         }
 
-        // 先行入力受付
-        if (nextInput == NextInput::LightAttack)
-        {
-            nextInput_ = static_cast<int>(NextInput::LightAttack);
-        }
-        // nextInputがStrongAttackの場合、弱攻撃の先行入力は受け付けない
+        nextInput_ = NextInput::Avoidance;
     }
 
-    // 強攻撃のボタンが押された場合
-    if (GetStrongAttackKeyDown())
+    if (GetComboAttack0KeyDown())
     {
-        // 先行入力受付がない
         if (nextInput == NextInput::None)
         {
-            // ステートを変更して終了
-            ChangeState(STATE::StrongAttack0);          
+            ChangeState(STATE::ComboAttack0_0);
             return true;
         }
 
-        // 先行入力受付
-        nextInput_ = static_cast<int>(NextInput::StrongAttack);
+        nextInput_ = NextInput::ComboAttack0;
+    }
+
+    if (GetComboAttack1KeyDown())
+    {
+        if (nextInput == NextInput::None)
+        {
+            ChangeState(STATE::ComboAttack1_0);
+            return true;
+        }
+
+        nextInput_ = NextInput::ComboAttack1;
     }
 
     return false;
@@ -359,22 +321,18 @@ bool Player::CheckAttackButton(const Player::NextInput& nextInput)
 
 void Player::ResetFlags()
 {
-    nextInput_ = static_cast<int>(NextInput::None); // 先行入力管理フラグ
+    nextInput_ = NextInput::None; // 先行入力管理フラグ
     SetIsAvoidance(false);                          // 回避入力判定用フラグ
 }
 
 void Player::PlayBlendAnimation(const Animation& index1, const Animation& index2, const bool& loop, const float& speed)
 {
     Object::PlayBlendAnimation(static_cast<int>(index1), static_cast<int>(index2), loop, speed);
-    //swordModel_.PlayBlendAnimation(static_cast<int>(index1), static_cast<int>(index2), loop, speed);
 }
 
 void Player::PlayBlendAnimation(const Animation& index, const bool& loop, const float& speed)
-{
-    const int currentAnimationIndex = GetCurrentBlendAnimationIndex();
-    
+{    
     Object::PlayBlendAnimation(static_cast<int>(index), loop, speed);
-    //swordModel_.PlayBlendAnimation(static_cast<int>(index), loop, speed);
 }
 
 void Player::UpdateCollisions(const float& elapsedTime, const float& scaleFactor)
@@ -391,7 +349,7 @@ void Player::UpdateCollisions(const float& elapsedTime, const float& scaleFactor
     for (AttackDetectionData& data : attackDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(swordModel_.GetJointPosition(data.GetName(), scaleFactor, data.GetOffsetPosition()));
+        //data.SetJointPosition(swordModel_.GetJointPosition(data.GetName(), scaleFactor, data.GetOffsetPosition()));
     }
     // 押し出し判定更新
     for (CollisionDetectionData& data : collisionDetectionData_)
@@ -404,18 +362,11 @@ void Player::UpdateCollisions(const float& elapsedTime, const float& scaleFactor
 void Player::SetWeight(const float& weight)
 {
     Object::SetWeight(weight);
-    swordModel_.SetWeight(weight);
 }
 
 void Player::AddWeight(const float& weight)
 {
     Object::AddWeight(weight);
-
-    // weightは0~1の間に収める
-    float w = swordModel_.GetWeight();
-    w += weight;
-    w = std::clamp(w, 0.0f, 1.0f);
-    swordModel_.SetWeight(w);
 }
 
 void Player::SetAttackFlag(const bool& activeFlag)

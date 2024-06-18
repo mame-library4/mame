@@ -6,61 +6,66 @@
 #include "Graphics.h"
 #include "Effect/SwordTrail/SwordTrail.h"
 
-#define ActiveWalk 0 // 歩きを使う
-
 class Player : public Character
 {
 public:// --- 定数 ---
 #pragma region 定数 
     enum class STATE
     {
-        Idle,               // 待機
-
-        Move,
-        //Walk,               // 歩き
-        //Run,                // 走り
-
-        Avoidance,          // 回避
-        Counter,            // カウンター
-        CounterAttack,      // カウンター攻撃 
-
-        LightAttack0,       // 弱攻撃0
-        LightAttack1,       // 弱攻撃1
-        LightAttack2,       // 弱攻撃2
-
-        StrongAttack0,      // 強攻撃0
-        StrongAttack1,      // 強攻撃1
-
-        Damage,
+        Idle,           // 待機
+        Move,           // 移動
+        Damage,         // ダメージ
+        Death,          // 死亡
+        Avoidance,      // 回避
+        Counter,        // カウンター
+        CounterCombo,   // カウンターコンボ
+        ComboAttack0_0,   // コンボ0
+        ComboAttack0_1,   // コンボ0
+        ComboAttack0_2,   // コンボ0
+        ComboAttack0_3,   // コンボ0
+        ComboAttack1_0,   // コンボ1
+        ComboAttack1_1,   // コンボ1
+        ComboAttack1_2,   // コンボ1
     };
 
     enum class Animation
     {
-        Idle,       // 待機
-        Run,        // 走り   
-        
-        LightAttack0,
-        
-        Walk,
-        
-        LightAttack1,
-        LightAttack2,
+        Idle,               // 待機        
+        Walk,               // 歩き
+        Run,                // 走り
+        GetHit,             // ダメージ食らい
+        Down,               // ダウン
+        Death,              // 死亡
+        GetUp,              // 起き上がり
+        StepFront,          // 回避前
+        StepBack,           // 回避後ろ
+        StepRight,          // 回避右
+        StepLeft,           // 回避左
 
-        StrongAttack0,
-        StrongAttack1,
+        Attack0,
+        Attack1,
+        Attack2,
 
-        Damage0,
-        Damage1,
+        Counter,
 
-        CounterStance,
-        CounterAttack,
+        Attack3,
+
+        ComboAttack0_1,
+        ComboAttack0_2,
+        ComboAttack0_3,
+        ComboAttack0_4,
+
+        ComboAttack1_0,
+        ComboAttack1_1,
+        ComboAttack1_2,
     };
 
     enum class NextInput
     {
         None,           // 先行入力なし
-        LightAttack,    // 弱攻撃
-        StrongAttack,   // 強攻撃
+        ComboAttack0,   // コンボ攻撃0
+        ComboAttack1,   // コンボ攻撃1
+        Avoidance,      // 回避
     };
 
 #pragma endregion 定数
@@ -80,7 +85,7 @@ public:
     void Turn(const float& elapsedTime);
     void Move(const float& elapsedTime);
 
-    bool CheckAttackButton(const Player::NextInput& nextInput);
+    bool CheckNextInput(const Player::NextInput& nextInput);
 
     void ResetFlags(); // フラグをリセットする
 
@@ -117,23 +122,19 @@ public:// --- 取得・設定 ---
     void ChangeState(const STATE& state) { stateMachine_.get()->ChangeState(static_cast<int>(state)); }
 
     // ---------- 行動 -------------------------------------------------------
-    [[nodiscard]] const int GetNextInput() const { return nextInput_; }
+    [[nodiscard]] const NextInput GetNextInput() const { return nextInput_; }
     [[nodiscard]] const bool GetIsAvoidance() const { return isAvoidance_; }
     void SetIsAvoidance(const bool& isAvoidance) { isAvoidance_ = isAvoidance; }
 
     // ---------- キー入力 ----------
-    [[nodiscard]] bool GetLightAttackKeyUp() { return Input::Instance().GetGamePad().GetButtonUp() & GamePad::BTN_B; }
-    [[nodiscard]] bool GetLightAttackKeyDown() { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
-    [[nodiscard]] bool GetStrongAttackKeyUp() { return Input::Instance().GetGamePad().GetButtonUp() & GamePad::BTN_Y; }
-    [[nodiscard]] bool GetStrongAttackKeyDown() { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y; }
-    [[nodiscard]] bool GetCounterStanceKey() { return Input::Instance().GetGamePad().GetButton() & GamePad::BTN_B && Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_TRIGGER; }
+    [[nodiscard]] bool GetComboAttack0KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
+    [[nodiscard]] bool GetComboAttack1KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y; }
+    [[nodiscard]] bool GetAvoidanceKeyDown()    const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_A; }
+    [[nodiscard]] bool GetCounterStanceKey()    const { return Input::Instance().GetGamePad().GetButton() & GamePad::BTN_B && Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_TRIGGER; }
 
 #pragma endregion [Get, Set] Function
 
 private:
-    // ---------- 剣 ----------
-    GltfModel swordModel_;
-
     // ---------- ステートマシン --------------------
     std::unique_ptr<StateMachine<State<Player>>> stateMachine_;
 
@@ -141,7 +142,7 @@ private:
     DirectX::XMFLOAT3 moveDirection_ = {};
 
     // ---------- 行動 ------------------------------
-    int nextInput_ = false; // 先行入力
+    NextInput nextInput_ = NextInput::None; // 先行入力
     bool isAvoidance_ = false; // 回避
 
     // ---------- Debug用 --------------------
@@ -152,11 +153,4 @@ private:
     DirectX::XMFLOAT3 offset_ = {};
 
     SwordTrail swordTrail_;
-
-
-    DirectX::XMFLOAT3 socketLocation_ = { 770, 12000, 2500};
-    DirectX::XMFLOAT3 socketRotation_ = { -110, 0, 0 };
-    DirectX::XMFLOAT3 socketScale_ = { 1,1,1 };
-    float toRadian_ = 0.01745f;
-    float toMetric_ = 0.01f;
 };

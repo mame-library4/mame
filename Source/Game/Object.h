@@ -32,7 +32,8 @@ public:
 
 
     // ---------- Animation ----------
-    [[nodiscard]] const int GetCurrentBlendAnimationIndex() const { return gltfModel_.GetCurrentBlendAnimationIndex(); }
+    [[nodiscard]] const int GetBlendAnimationIndex1() const { return gltfModel_.GetBlendAnimationIndex1(); }
+    [[nodiscard]] const int GetBlendAnimationIndex2() const { return gltfModel_.GetBlendAnimationIndex2(); }
     [[nodiscard]] const float GetBlendAnimationSeconds() const { return gltfModel_.GetBlendAnimationSeconds(); }
 
     // ---------- weight ----------

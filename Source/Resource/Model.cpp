@@ -146,7 +146,8 @@ void Model::CreateComObjects(ID3D11Device* device, const char* fbxFileName)
         }
         else
         {
-            Texture::Instance().MakeDummyTexture(iterator->second.shaderResourceViews[0].GetAddressOf(), 0xFFFFFFFF, 4);       }
+            Texture::Instance().MakeDummyTexture(iterator->second.shaderResourceViews[0].GetAddressOf(), 0xFFFFFFFF, 4);     
+        }
 
         // Normal
         if (iterator->second.textureFilenames[1].size() > 0)

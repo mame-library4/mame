@@ -2,22 +2,7 @@
 #include "../Other/MathHelper.h"
 #include "../Player/PlayerManager.h"
 
-// ----- 死亡判定 -----
-const bool DeathJudgment::Judgment()
-{
-    // HPが０より小さかったら死んでいる
-    if (owner_->GetHealth() <= 0) return true;
-
-    return false;
-}
-
-// ----- 怯み移行判定 -----
-const bool FlinchJudgment::Judgment()
-{
-    // ひるみフラグがたっていれば、"ひるみ"
-    return owner_->GetIsFlinch();
-}
-
+#if 0
 #pragma region 非戦闘
 // ----- 非戦闘判定 -----
 const bool NonBattleJudgment::Judgment()
@@ -200,3 +185,4 @@ const bool IntimidateJudgment::Judgment()
 #pragma endregion 戦闘
 
 
+#endif

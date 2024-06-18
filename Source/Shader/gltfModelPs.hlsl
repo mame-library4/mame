@@ -144,7 +144,6 @@ float4 main(VS_OUT pin) : SV_TARGET
     }
     
 #endif    
-    
     return float4(Lo * shadowFactor, baseColorFactor.a);
 #else
     MaterialConstants m = materials[material];

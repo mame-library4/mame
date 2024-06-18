@@ -13,7 +13,6 @@ public:
     void Finalize()                         override;
     void Update(const float& elapsedTime)   override;
     void Render(ID3D11PixelShader* psShader = nullptr) override;
-    void RenderUserInterface()              override;
     
     void DrawDebug()                        override;
     void DebugRender(DebugRenderer* debugRenderer);
@@ -21,14 +20,6 @@ public:
     void InitializeStones();
     void UpdateStones(const float& elapsedTime);
 
-public:// --- çUåÇîªíËê›íËä÷êî ---
-    void SetAllAttackFlag(const bool& activeFlag = false) override;
-    void SetBiteAttackFlag(const bool& activeFlag = true) override;
-    void SetSlashAttackFlag(const bool& activeFlag = true) override;
-    void SetTailSwipeAttackFlag(const bool& activeFlag = true) override;
-    
-    void SetSlamAttackFlag(const bool& activeFlag = true)       override;
-    void SetSlamCollisionFlag(const bool& activeFlag = true)    override;
 
 private:
     void RegisterBehaviorNode();        // behaviorìoò^

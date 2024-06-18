@@ -2,7 +2,6 @@
 #include "BaseScene.h"
 #include <memory>
 #include "../Game/Stage/StageNormal.h"
-#include "../Game/Character/Enemy/EnemyTamamo.h"
 
 #include "../Graphics/Particle.h"
 

@@ -1,49 +1,106 @@
 #pragma once
 #include <memory>
 #include "../Character.h"
-#include "../Graphics/Graphics.h"
-
-#if 1
+#include "Graphics.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorData.h"
 #include "BehaviorTree/NodeBase.h"
-#else
-class BehaviorTree;
-class BehaviorData;
-class NodeBase;
-#endif
 
 class Enemy : public Character
 {
 public:
-    enum class TamamoAnimation
+    enum class DragonAnimation
     {
-        Idle,       // 待機
-        Walk,       // 歩き
-        WalkRight,  // 斜め歩き (右)
-        WalkLeft,   // 斜め歩き (左)
-        Bite,       // 噛みつき
-        Slash,      // ひっかき
-        TailSwipe,  // 尻尾
-        Roar,       // 咆哮
-        Filnch,     // ひるみ
-        Slam,       // たたきつけ
-
-#if 0
-        Bite,           // 噛みつき
-        Slash,          // ひっかき
-        TailSwipe,      // 尻尾
-        SpinAttack,     // 回転
-        SpineShot,      // 棘
-        Tackle,         // 突進
-        Pounce,         // とびかかる
-        Roar,           // 咆哮
-        Intimidate,     // 威嚇
-        Filnch,         // ひるみ
+        Idle0,          // 待機0
+        Idle1,          // 待機１
         Walk,           // 歩き
-        Step,           // ステップ
-        Idle,           // 待機
-#endif
+        Run,            // 走り
+        
+        // ----- ダメージ食らい -----
+        GetHitStart,    // 食らい始め    
+        GetHitLoop,     // 食らいループ
+        GetHitEnd,      // 食らい終わり
+
+        // ----- 死亡 -----
+        Death,          // 死亡
+        DeathLoop,      // 死亡ループ
+
+        Roar,           // 咆哮
+        
+        AttackSlam0,
+        AttackSlam1,
+
+        AttackStep,
+
+        // ----- 突進攻撃 -----
+        AttackTackle0,  // 予備動作
+        AttackTackle1,  // 突進始まり
+        AttackTackle2,  // 突進
+        AttackTackle3,  // 後隙
+
+        BackStep,       // バックステップ
+
+        // ----- 上昇攻撃 -----
+        AttackRise,     // 上昇
+        AttackRiseLoop, // 上昇ループ
+        AttackRiseEnd,  // 攻撃
+
+        // ----- 空中からたたきつけ攻撃 -----
+        AttackFly0,     // 空中へ飛ぶ
+        AttackFly1,     // 空中待機
+        AttackFly2,     // たたきつけ攻撃
+
+        AttackFront,
+
+        BackStepRoar,   // バックステップ後,咆哮
+
+        MoveRoar, // 移動しながら咆哮
+
+        // ----- 吹き飛ばし攻撃 -----
+        AttackKnockBackStart,
+        AttackKnockBackLoop,
+        AttackKnockBackEnd0,
+        AttackKnockBackEnd1,
+
+        SleepEnd,
+
+        // ----- クリティカル -----
+        CriticalStart,
+        CriticalLoop,
+        CriticalEnd,
+
+        // ----- コンボたたきつけ攻撃 -----
+        AttackComboSlam0,
+        AttackComboSlam1,
+        AttackComboSlamEnd,
+
+        // ----- 叫びコンボ -----
+        ComboRoarStart,
+        ComboRoarLoop,
+        ComboRoarEnd0,
+        ComboRoarEnd1,
+
+        BackStepAttack,
+
+        // ----- コンボ溜め攻撃 -----
+        AttackComboCharge0,
+        AttackComboCharge1,
+        AttackComboCharge2,
+        AttackComboCharge3,
+        AttackComboCharge4,
+        AttackComboCharge5,
+
+        // ----- 回転攻撃 -----
+        AttackTurnStart,
+        AttackTurn0,
+        AttackTurn1,
+        AttackTurnEnd,
+
+        AttackMove0,
+        AttackMove1,
+        AttackMove2,
+        AttackMove3,
+        AttackMove4,
     };
 
 public:
@@ -54,7 +111,6 @@ public:
     virtual void Finalize()                         = 0;
     virtual void Update(const float& elapsedTime)   = 0;
     virtual void Render(ID3D11PixelShader* psShader = nullptr) = 0;
-    virtual void RenderUserInterface()              = 0;
     virtual void DrawDebug()                        = 0;
     virtual void DebugRender(DebugRenderer* debugRenderer) = 0;
 
@@ -66,9 +122,9 @@ public:
     void UpdateNode(const float& elapsedTime);
 
     // ---------- アニメーション関連 ----------
-    void PlayAnimation(const TamamoAnimation& index, const bool& loop, const float& speed = 1.0f) { Object::PlayAnimation(static_cast<int>(index), loop, speed); }
-    void PlayBlendAnimation(const TamamoAnimation& index1, const TamamoAnimation& index2, const bool& loop, const float& speed = 1.0f) { Object::PlayBlendAnimation(static_cast<int>(index1), static_cast<int>(index2), loop, speed); }
-    bool PlayBlendAnimation(const TamamoAnimation& index, const bool& loop, const float& speed = 1.0f);
+    void PlayAnimation(const DragonAnimation& index, const bool& loop, const float& speed = 1.0f) { Object::PlayAnimation(static_cast<int>(index), loop, speed); }
+    void PlayBlendAnimation(const DragonAnimation& index1, const DragonAnimation& index2, const bool& loop, const float& speed = 1.0f) { Object::PlayBlendAnimation(static_cast<int>(index1), static_cast<int>(index2), loop, speed); }
+    bool PlayBlendAnimation(const DragonAnimation& index, const bool& loop, const float& speed = 1.0f);
 
     // ---------- プレイヤーまでの距離を算出 ----------
     [[nodiscard]] const float CalcDistanceToPlayer();
@@ -111,20 +167,6 @@ public:// --- 取得・設定 ---
 
 #pragma endregion [Get, Set] Function
 
-#pragma region 九尾用 攻撃判定設定
-    virtual void SetAllAttackFlag(const bool& activeFlag = false) {}
-    virtual void SetBiteAttackFlag(const bool& activeFlag = true) {}
-    virtual void SetSlashAttackFlag(const bool& activeFlag = true) {}
-    virtual void SetTailSwipeAttackFlag(const bool& activeFlag = true) {}
-    virtual void SetSlamAttackFlag(const bool& activeFlag = true) {}
-    virtual void SetSlamCollisionFlag(const bool& activeFlag = true) {}
-
-    virtual void InitializeStones() {}
-
-#pragma endregion 九尾用 攻撃判定設定
-
-    [[nodiscard]] const bool GetIsRoar() { return isRoar_; }
-    void SetIsRoar(const bool& isRoar) { isRoar_ = isRoar; }
 
 
 protected:
@@ -146,7 +188,5 @@ protected:
     int     attackComboCount_ = 0; // 連続攻撃回数
 
     float walkSpeed_ = 0.0f; // 歩行速度
-
-    bool isRoar_ = false;
 };
 

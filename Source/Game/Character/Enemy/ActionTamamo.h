@@ -2,6 +2,7 @@
 #include "../../../AI/BehaviorTree/ActionBase.h"
 #include "Enemy.h"
 
+#if 0
 // collisionの有効化,無効化を制御する構造体
 struct CollisionState
 {
@@ -13,44 +14,7 @@ struct CollisionState
     void Initialize(const float& startFrame, const float& endFrame, const bool& isStart = false, const bool& isEnd = false);
 };
 
-// 死亡行動
-class DeathAction : public ActionBase
-{
-public:
-    DeathAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
 
-private:
-    float timer_ = 0.0f;
-
-};
-
-// ひるみ行動
-class FlinchAction : public ActionBase
-{
-public:
-    FlinchAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
-
-#pragma region 非戦闘
-// 非戦闘待機行動
-class NonBattleIdleAction : public ActionBase
-{
-public:
-    NonBattleIdleAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
-
-// 非戦闘歩き行動
-class NonBattleWalkAction : public ActionBase
-{
-public:
-    NonBattleWalkAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
-
-#pragma endregion 非戦闘
 
 #pragma region 戦闘
 
@@ -193,3 +157,5 @@ public:
 #pragma endregion 叫ぶ系
 
 #pragma endregion 戦闘
+
+#endif

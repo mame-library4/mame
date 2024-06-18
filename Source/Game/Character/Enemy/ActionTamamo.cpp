@@ -7,6 +7,7 @@
 
 #include "PostProcess/PostProcess.h"
 
+#if 0
 // ----- 死亡行動 -----
 const ActionBase::State DeathAction::Run(const float& elapsedTime)
 {
@@ -52,7 +53,7 @@ const ActionBase::State FlinchAction::Run(const float& elapsedTime)
     {
     case 0:// 初期化
         // ひるみアニメーション再生
-        owner_->PlayAnimation(Enemy::TamamoAnimation::Filnch, false, 1.0f);
+        owner_->PlayAnimation(Enemy::DragonAnimation::Filnch, false, 1.0f);
 
         owner_->SetStep(1);
         break;
@@ -75,7 +76,7 @@ const ActionBase::State FlinchAction::Run(const float& elapsedTime)
 const ActionBase::State NonBattleIdleAction::Run(const float& elapsedTime)
 {
     // アニメーション再生 ( Idle )
-    //owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Walk, Enemy::TamamoAnimation::Idle, true);
+    //owner_->PlayBlendAnimation(Enemy::DragonAnimation::Walk, Enemy::DragonAnimation::Idle, true);
 
     return ActionBase::State::Run;
 }
@@ -93,12 +94,12 @@ const ActionBase::State NonBattleWalkAction::Run(const float& elapsedTime)
         // アニメーション再生
         if (owner_->GetCurrentBlendAnimationIndex() < 0)
         {
-            owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Idle, Enemy::TamamoAnimation::Walk, true);
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle, Enemy::DragonAnimation::Walk, true);
             owner_->SetWeight(1.0f);
         }
         else
         {
-            owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Walk, true);
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::Walk, true);
             owner_->SetWeight(0.0f);
         }
 
@@ -108,7 +109,7 @@ const ActionBase::State NonBattleWalkAction::Run(const float& elapsedTime)
 
         owner_->SetStep(1);
     }
-        break;
+    break;
     case 1:
     {
         // 戦闘状態になる
@@ -147,7 +148,7 @@ const ActionBase::State NonBattleWalkAction::Run(const float& elapsedTime)
         owner_->Turn(elapsedTime, owner_->GetMovePosition());
 
     }
-        break;
+    break;
     }
 
     return ActionBase::State::Run;
@@ -179,7 +180,7 @@ const ActionBase::State WalkAction::Run(const float& elapsedTime)
         if (playerSide_ == Side::Left)
         {
             // 今回設定するアニメーションが前回と同じでなければ初期化する
-            if (owner_->PlayBlendAnimation(Enemy::TamamoAnimation::WalkRight, true))
+            if (owner_->PlayBlendAnimation(Enemy::DragonAnimation::WalkRight, true))
             {
                 // ウェイト値初期化
                 owner_->SetWeight(0.0f);
@@ -188,7 +189,7 @@ const ActionBase::State WalkAction::Run(const float& elapsedTime)
         else
         {
             // 今回設定するアニメーションが前回と同じでなければ初期化する
-            if (owner_->PlayBlendAnimation(Enemy::TamamoAnimation::WalkLeft, true))
+            if (owner_->PlayBlendAnimation(Enemy::DragonAnimation::WalkLeft, true))
             {
                 // ウェイト値初期化
                 owner_->SetWeight(0.0f);
@@ -200,7 +201,7 @@ const ActionBase::State WalkAction::Run(const float& elapsedTime)
 
         owner_->SetStep(1);
     }
-        break;
+    break;
     case 1:
     {
 
@@ -223,27 +224,27 @@ const ActionBase::State WalkAction::Run(const float& elapsedTime)
     }
 
 
-        // 旋回処理
-        owner_->Turn(elapsedTime, PlayerManager::Instance().GetTransform()->GetPosition());
+    // 旋回処理
+    owner_->Turn(elapsedTime, PlayerManager::Instance().GetTransform()->GetPosition());
 
-        owner_->AddWeight(elapsedTime * 2.0f);
-        actionTimer_ -= elapsedTime;
-        if (actionTimer_ <= 0.0f)
+    owner_->AddWeight(elapsedTime * 2.0f);
+    actionTimer_ -= elapsedTime;
+    if (actionTimer_ <= 0.0f)
+    {
+        // プイレイヤーが範囲外に出た時
+        if (owner_->SearchPlayer() == false)
         {
-            // プイレイヤーが範囲外に出た時
-            if (owner_->SearchPlayer() == false)
-            {
-                owner_->SetStep(0);
-                return ActionBase::State::Complete;
-            }
-            else
-            {
-                owner_->SetStep(0);
-                return ActionBase::State::Failed;
-            }
+            owner_->SetStep(0);
+            return ActionBase::State::Complete;
         }
+        else
+        {
+            owner_->SetStep(0);
+            return ActionBase::State::Failed;
+        }
+    }
 
-        break;
+    break;
     }
 
     return ActionBase::State::Run;
@@ -273,14 +274,14 @@ const ActionBase::State BiteAction::Run(const float& elapsedTime)
     {
     case 0:
         // アニメーション設定 ( 噛みつき )
-        owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Bite, false);
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::Bite, false);
 
         // 噛みつき攻撃判定有効化
         owner_->SetBiteAttackFlag();
 
         // 変数初期化
         isAttackCollisionEnd_ = false;
-        isAddForce_ = false;    
+        isAddForce_ = false;
 
         owner_->SetWeight(0.0f);
 
@@ -328,7 +329,7 @@ const ActionBase::State SlashAction::Run(const float& elapsedTime)
     {
     case 0:
         // アニメーション設定 ( ひっかき )
-        owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Slash, false);
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::Slash, false);
 
         // ひっかき攻撃判定設定
         owner_->SetSlashAttackFlag();
@@ -344,7 +345,7 @@ const ActionBase::State SlashAction::Run(const float& elapsedTime)
         // アニメーションに合わせて攻撃判定を無効化する
         if (owner_->GetBlendAnimationSeconds() > attackCollisionEndFrame_ &&
             isAttackCollisionEnd_ == false)
-        {            
+        {
             // 一度だけしか処理しないように制御する
             isAttackCollisionEnd_ = true;
 
@@ -373,7 +374,7 @@ const ActionBase::State TailSwipeAction::Run(const float& elapsedTime)
     {
     case 0:
         // アニメーション設定 ( 尻尾 )
-        owner_->PlayBlendAnimation(Enemy::TamamoAnimation::TailSwipe, false);
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::TailSwipe, false);
 
         // 尻尾攻撃判定設定
         owner_->SetTailSwipeAttackFlag();
@@ -416,9 +417,9 @@ const ActionBase::State SlamAction::Run(const float& elapsedTime)
     {
     case Step::Initialize:// 初期設定
         // アニメーション再生 ( たたきつけ )
-        owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Slam, false);
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::Slam, false);
         owner_->SetWeight(0.0f);
-        
+
         // 変数初期化
         collisionDetection_.Initialize(1.6f, 2.1f);
         attackDetection_.Initialize(1.9f, 3.0f);
@@ -442,7 +443,7 @@ const ActionBase::State SlamAction::Run(const float& elapsedTime)
             length_ = XMFloat2Length(targetPos - ownerPos);
 
             SetStep(Step::Ascend);
-        }        
+        }
 
         break;
     case Step::Ascend:// 上昇する
@@ -451,7 +452,7 @@ const ActionBase::State SlamAction::Run(const float& elapsedTime)
         easingTimer_ += elapsedTime;
         ownerPosition.y = Easing::InCirc(easingTimer_, ascendEndFrame_ - stateChangeFrame_, maxAscend_, 0.0f);
         owner_->GetTransform()->SetPositionY(ownerPosition.y);
-                
+
         // XZ 方向移動
         DirectX::XMFLOAT2 moveVec = XMFloat2Normalize(targetPos - ownerPos);
         float moveLength = (length_ / 3) / (ascendEndFrame_ - stateChangeFrame_) * elapsedTime;
@@ -471,7 +472,7 @@ const ActionBase::State SlamAction::Run(const float& elapsedTime)
             SetStep(Step::Attack);
         }
     }
-        break;
+    break;
     case Step::Attack:// 実際にたたきつけ攻撃に入る
     {
         easingTimer_ += elapsedTime;
@@ -480,7 +481,7 @@ const ActionBase::State SlamAction::Run(const float& elapsedTime)
 
         // XZ 方向移動
         DirectX::XMFLOAT2 moveVec = XMFloat2Normalize(targetPos - ownerPos);
-        float moveLength = (length_ / 3)  / (attackEndFrame_ - ascendEndFrame_) * elapsedTime;
+        float moveLength = (length_ / 3) / (attackEndFrame_ - ascendEndFrame_) * elapsedTime;
         moveVec = moveVec * moveLength;
         owner_->GetTransform()->AddPositionX(moveVec.x);
         owner_->GetTransform()->AddPositionZ(moveVec.y);
@@ -497,7 +498,7 @@ const ActionBase::State SlamAction::Run(const float& elapsedTime)
 
             // 位置を０に設定
             owner_->GetTransform()->SetPositionY(0.0f);
-            
+
             // タイマーリセット
             easingTimer_ = 0.0f;
 
@@ -505,7 +506,7 @@ const ActionBase::State SlamAction::Run(const float& elapsedTime)
         }
 
     }
-        break;
+    break;
     case Step::Wait:
 
         // アニメーションが終わったら終了
@@ -547,7 +548,7 @@ void SlamAction::UpdateAttackCollision()
         // たたきつけ押し出し判定を無効化する
         owner_->SetSlamCollisionFlag(true);
     }
-    
+
 
     // アニメーションに合わせて攻撃判定を有効化する
     if (animationSeconds > attackDetection_.startFrame_ &&
@@ -583,7 +584,7 @@ const ActionBase::State RoarAction::Run(const float& elapsedTime)
     {
     case 0:
         // アニメーション再生
-        owner_->PlayBlendAnimation(Enemy::TamamoAnimation::Roar, false);
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::Roar, false);
 
         // 変数初期化
         blurStartFrame_ = 2.27f;
@@ -594,7 +595,7 @@ const ActionBase::State RoarAction::Run(const float& elapsedTime)
         blurTimer_ = 0.0f;
 
         isVibration_ = false;
-        
+
         owner_->SetIsRoar(true);
 
         owner_->SetStep(1);
@@ -657,3 +658,4 @@ void CollisionState::Initialize(const float& startFrame, const float& endFrame, 
     isStart_ = isStart;
     isEnd_ = isEnd;
 }
+#endif

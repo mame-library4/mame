@@ -66,14 +66,6 @@ void EnemyManager::Render(ID3D11PixelShader* psShader)
     }
 }
 
-void EnemyManager::RenderUserInterface()
-{
-    for (Enemy*& enemy : enemies_)
-    {
-        enemy->RenderUserInterface();
-    }
-}
-
 // ----- ImGui—p -----
 void EnemyManager::DrawDebug()
 {

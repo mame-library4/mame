@@ -190,6 +190,15 @@
     <ClCompile Include="Source\Resource\GltfModelStaticMesh.cpp">
       <Filter>Mame\Resource\GltfModel</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\Character\Enemy\EnemyDragon.cpp">
+      <Filter>Mame\Game\Object\Character\Enemy\Dragon</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Character\Enemy\ActionDragon.cpp">
+      <Filter>Mame\Game\Object\Character\Enemy\Dragon</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Character\Enemy\JudgmentDragon.cpp">
+      <Filter>Mame\Game\Object\Character\Enemy\Dragon</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -409,6 +418,15 @@
     <ClInclude Include="Source\Resource\GltfModelStaticMesh.h">
       <Filter>Mame\Resource\GltfModel</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\Character\Enemy\EnemyDragon.h">
+      <Filter>Mame\Game\Object\Character\Enemy\Dragon</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Character\Enemy\ActionDragon.h">
+      <Filter>Mame\Game\Object\Character\Enemy\Dragon</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Character\Enemy\JudgmentDragon.h">
+      <Filter>Mame\Game\Object\Character\Enemy\Dragon</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -528,6 +546,12 @@
     <Filter Include="Mame\Graphics\Effect\SwordTrail">
       <UniqueIdentifier>{9b436e63-edbe-43d0-9efa-9ccf922c282b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mame\Shader\Particle">
+      <UniqueIdentifier>{27f8f89c-d9fc-4077-aa8a-f9a8e6d783bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\Object\Character\Enemy\Dragon">
+      <UniqueIdentifier>{e458e582-a230-485f-80c4-29c236381a16}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -548,9 +572,6 @@
       <Filter>Mame\Shader</Filter>
     </None>
     <None Include="Source\Shader\Noise.hlsli">
-      <Filter>Mame\Shader</Filter>
-    </None>
-    <None Include="Source\Shader\Particle.hlsli">
       <Filter>Mame\Shader</Filter>
     </None>
     <None Include="Source\Shader\PostEffect.hlsli">
@@ -580,6 +601,9 @@
     <None Include="Source\Shader\ShadingFunctions.hlsli">
       <Filter>Mame\Shader\GltfModel</Filter>
     </None>
+    <None Include="Source\Shader\Particle.hlsli">
+      <Filter>Mame\Shader\Particle</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shader\blur_ps.hlsl">
@@ -592,21 +616,6 @@
       <Filter>Mame\Shader</Filter>
     </FxCompile>
     <FxCompile Include="Source\Shader\FullScreenQuadVS.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\ParticleCS.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\ParticleGS.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\ParticleInitializerCS.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\ParticlePS.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\ParticleVS.hlsl">
       <Filter>Mame\Shader</Filter>
     </FxCompile>
     <FxCompile Include="Source\Shader\SkyMapPS.hlsl">
@@ -656,6 +665,21 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\GltfModelStaticBatchingVS.hlsl">
       <Filter>Mame\Shader\GltfModel</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\ParticleCS.hlsl">
+      <Filter>Mame\Shader\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\ParticleGS.hlsl">
+      <Filter>Mame\Shader\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\ParticleInitializerCS.hlsl">
+      <Filter>Mame\Shader\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\ParticlePS.hlsl">
+      <Filter>Mame\Shader\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\ParticleVS.hlsl">
+      <Filter>Mame\Shader\Particle</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

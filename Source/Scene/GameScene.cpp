@@ -1,9 +1,10 @@
 #include "GameScene.h"
 #include "SceneManager.h"
-#include "../Graphics/Graphics.h"
+#include "Graphics.h"
 #include "Texture.h"
-#include "../Game/Character/Player/PlayerManager.h"
-#include "../Game/Character/Enemy/EnemyManager.h"
+#include "Character/Player/PlayerManager.h"
+#include "Character/Enemy/EnemyManager.h"
+#include "Character/Enemy/EnemyDragon.h"
 
 #define USE_DEBUG 0
 
@@ -20,10 +21,11 @@ void GameScene::CreateResource()
     stageNormal_[0] = std::make_unique<StageNormal>("./Resources/Model/Stage/shrine.glb");
     stageNormal_[1] = std::make_unique<StageNormal>("./Resources/Model/Stage/torii.glb");
     //stageNormal_[2] = std::make_unique<StageNormal>("./Resources/Model/Stage/circle.glb");
-    stageNormal_[2] = std::make_unique<StageNormal>("./Resources/Model/Stage/tomorrow.glb");
+    //stageNormal_[2] = std::make_unique<StageNormal>("./Resources/Model/Stage/tomorrow.glb");
+    stageNormal_[2] = std::make_unique<StageNormal>("./Resources/Model/Stage/arena.glb");
 
 
-    EnemyManager::Instance().Register(new EnemyTamamo);
+    EnemyManager::Instance().Register(new EnemyDragon);
 
     // IBLテクスチャ
     D3D11_TEXTURE2D_DESC textureDesc = {};
@@ -175,7 +177,6 @@ void GameScene::UserInterfaceRender()
 {
     Graphics::Instance().GetShader()->SetBlendState(Shader::BLEND_STATE::ALPHA);
 
-    EnemyManager::Instance().RenderUserInterface();
 }
 
 void GameScene::Render()
@@ -185,7 +186,7 @@ void GameScene::Render()
     Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_OFF_ZW_OFF);
 
     PlayerManager::Instance().RenderTrail();
-    particles_->Render();
+    //particles_->Render();
 }
 
 // ----- ImGui用 -----
