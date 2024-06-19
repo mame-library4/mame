@@ -14,7 +14,7 @@ void StageNormal::Update(const float& elapsedTime)
 // ----- •`‰æ -----
 void StageNormal::Render(const float& scaleFacter, ID3D11PixelShader* psShader)
 {
-    Stage::Render(0.01f, psShader);
+    Stage::Render(scaleFacter, psShader);
 }
 
 // ----- ImGui -----

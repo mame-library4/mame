@@ -108,6 +108,8 @@ public:// Setter,Getter, etc...
 	void AddRotationY(const float& rotY) { rotation_.y += rotY; }
 	void AddRotationZ(const float& rotZ) { rotation_.z += rotZ; }
 
+	[[nodiscard]] const DirectX::XMFLOAT4X4 GetCoordinateSystemTransforms(const CoordinateSystem& coordinateSystem) { return CoordinateSystemTransforms_[static_cast<int>(coordinateSystem)]; }
+
 private:
 	DirectX::XMFLOAT3 position_;
 	DirectX::XMFLOAT3 scale_;

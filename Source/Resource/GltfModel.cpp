@@ -587,7 +587,8 @@ void GltfModel::Animate(size_t animationIndex, float time, std::vector<Node>& an
             }
             else if (time < timelines.at(0))
             {
-                interpolationFactor = 0.0f;
+                //interpolationFactor = 0.0f;
+                interpolationFactor = timelines.at(0);
                 return 0;
             }
             size_t keyframeIndex{ 0 };
@@ -1347,6 +1348,9 @@ GltfModel::BufferView GltfModel::MakeBufferView(const tinygltf::Accessor& access
     case TINYGLTF_TYPE_VEC4:
         switch (accessor.componentType)
         {
+        case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+            bufferView.format_ = DXGI_FORMAT_R8G8B8A8_UINT;
+            bufferView.strideInBytes_ = sizeof(BYTE) * 4;
         case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
             bufferView.format_ = DXGI_FORMAT_R16G16B16A16_UINT;
             bufferView.strideInBytes_ = sizeof(USHORT) * 4;

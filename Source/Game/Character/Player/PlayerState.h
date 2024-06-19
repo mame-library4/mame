@@ -65,6 +65,9 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+
+    private:
+        void SetAnimation();
     };
 
     // ----- カウンター -----
@@ -113,6 +116,17 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+
+    private:
+        // ----- 先行入力用 -----
+        float nextInputStartFrame_  = 0.0f;
+        float nextInputEndFrame_    = 0.0f;
+
+        // ----- アニメーション制御用 -----
+        float slowAnimationStartFrame_  = 0.0f;
+        bool  isSlowAnimation_          = false;
+        const float normalAnimationSpeed_   = 0.9f;
+        const float slowAnimationSpeed_     = 0.5f;
     };
 
     // ----- コンボ0_1 -----
@@ -125,6 +139,11 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+
+    private:
+        // ----- 先行入力用 -----
+        float nextInputStartFrame_ = 0.0f;
+        float nextInputEndFrame_   = 0.0f;
     };
 
     // ----- コンボ0_2 -----
@@ -137,6 +156,11 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+
+    private:
+        // ----- 先行入力用 -----
+        float nextInputStartFrame_ = 0.0f;
+        float nextInputEndFrame_ = 0.0f;
     };
 
     // ----- コンボ0_3 -----

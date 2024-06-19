@@ -30,6 +30,8 @@ public:
     void LookAtInitilaize(const std::string& nodeName);
     void LookAtUpdate();
 
+
+
 public:// --- éÊìæÅEê›íË ---
 #pragma region [Get, Set] Function
     // ---------- ë¨ìx ----------
@@ -113,6 +115,8 @@ private:
     DirectX::XMFLOAT3   headLocalForward_       = {};
     DirectX::XMFLOAT3   lookAtTargetPosition_   = {};
     std::string         headNodeName_           = {};
+
+
 
 };
 

@@ -5,7 +5,8 @@
 
 // ----- コンストラクタ -----
 Player::Player()
-    : Character("./Resources/Model/Character/Player/Orc.gltf")
+    : Character("./Resources/Model/Character/aaa.glb")
+    //: Character("./Resources/Model/Character/Player/Orc.gltf")
 {
     // --- ステートマシン ---
     {
@@ -45,6 +46,9 @@ Player::~Player()
 // ----- 初期化 -----
 void Player::Initialize()
 {
+    // RootMotion
+    RootMotionInitialize();
+
     // 生成位置設定
     GetTransform()->SetPositionZ(60);
 
@@ -100,6 +104,10 @@ void Player::Update(const float& elapsedTime)
     // アニメーション更新
     Character::Update(elapsedTime);
     //swordModel_.UpdateAnimation(elapsedTime);
+    
+    // RootMotion
+    RootMotionUpdate(elapsedTime, "mixamorig:Hips");
+    //RootMotionUpdate(elapsedTime, "root");
 
     Camera::Instance().SetTarget(GetTransform()->GetPosition() + offset_);
 

@@ -35,8 +35,7 @@ public:
 private:
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> iblTextures_[4];
 
-    static const int stageMax = 3;
-    std::unique_ptr<StageNormal> stageNormal_[stageMax];
+    std::unique_ptr<StageNormal> stage_;
 
     bool isDebugRenderer_ = true;
 

@@ -50,10 +50,10 @@ public:// --- íËêî ---
 
         Attack3,
 
+        ComboAttack0_0,
         ComboAttack0_1,
         ComboAttack0_2,
         ComboAttack0_3,
-        ComboAttack0_4,
 
         ComboAttack1_0,
         ComboAttack1_1,

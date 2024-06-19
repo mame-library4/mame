@@ -45,7 +45,17 @@ public:
     [[nodiscard]] const int GetNodeIndex(const std::string& nodeName) { return gltfModel_.GetNodeIndex(nodeName); }
     std::vector<GltfModel::Node>* GetNodes() { return gltfModel_.GetNodes(); }
 
+    // ----- RootMotion -----
+    void RootMotionInitialize();
+    void RootMotionUpdate(const float& elapsedTime, const std::string& rootName);
+
 private:
     GltfModel gltfModel_;
+
+    // ---------- RootMotion ----------
+    std::vector<GltfModel::Node>    animatedNodes_;
+    std::vector<GltfModel::Node>    zeroAnimatedNodes_;
+    DirectX::XMFLOAT3               previousPosition_    = {};
+
 };
 
