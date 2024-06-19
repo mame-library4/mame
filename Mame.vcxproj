@@ -258,6 +258,7 @@
     <ClCompile Include="Source\Resource\ResourceManager.cpp" />
     <ClCompile Include="Source\Resource\Sprite.cpp" />
     <ClCompile Include="Source\Resource\Texture.cpp" />
+    <ClCompile Include="Source\Scene\DemoScene.cpp" />
     <ClCompile Include="Source\Scene\GameScene.cpp" />
     <ClCompile Include="Source\Scene\LoadingScene.cpp" />
     <ClCompile Include="Source\Scene\SceneManager.cpp" />
@@ -335,6 +336,7 @@
     <ClInclude Include="Source\Resource\Sprite.h" />
     <ClInclude Include="Source\Resource\Texture.h" />
     <ClInclude Include="Source\Scene\BaseScene.h" />
+    <ClInclude Include="Source\Scene\DemoScene.h" />
     <ClInclude Include="Source\Scene\GameScene.h" />
     <ClInclude Include="Source\Scene\LoadingScene.h" />
     <ClInclude Include="Source\Scene\SceneManager.h" />

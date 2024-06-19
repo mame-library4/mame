@@ -196,6 +196,7 @@
     <ClCompile Include="Source\Game\Character\Enemy\JudgmentDragon.cpp">
       <Filter>Mame\Game\Object\Character\Enemy\Dragon</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Scene\DemoScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -421,6 +422,7 @@
     <ClInclude Include="Source\Game\Character\Enemy\JudgmentDragon.h">
       <Filter>Mame\Game\Object\Character\Enemy\Dragon</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Scene\DemoScene.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -542,6 +544,9 @@
     </Filter>
     <Filter Include="Mame\Game\Object\Character\Enemy\Dragon">
       <UniqueIdentifier>{e458e582-a230-485f-80c4-29c236381a16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Scene\DemoScene">
+      <UniqueIdentifier>{e766a156-cebe-4d07-858e-f1556546fa5d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

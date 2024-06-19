@@ -48,6 +48,7 @@ public:
     // ----- RootMotion -----
     void RootMotionInitialize();
     void RootMotionUpdate(const float& elapsedTime, const std::string& rootName);
+    void RootMotionUpdate(const float& elapsedTime, const std::string& rootName, const int& animationIndex);
 
 private:
     GltfModel gltfModel_;
@@ -56,6 +57,6 @@ private:
     std::vector<GltfModel::Node>    animatedNodes_;
     std::vector<GltfModel::Node>    zeroAnimatedNodes_;
     DirectX::XMFLOAT3               previousPosition_    = {};
-
+    float rootMotionTimer_ = 0;
 };
 
