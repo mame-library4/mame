@@ -195,9 +195,9 @@ inline const DirectX::XMFLOAT2 operator+(
 inline const DirectX::XMFLOAT2 operator +=(
     DirectX::XMFLOAT2& float2_1,
     const DirectX::XMFLOAT2& float2_2)
-{
-    float2_1.x + float2_2.x;
-    float2_1.y + float2_2.y;
+{    
+    float2_1.x += float2_2.x;
+    float2_1.y += float2_2.y;
 
     return float2_1;
 }

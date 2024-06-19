@@ -55,10 +55,10 @@ public:
     void Activate(const int& slot, const bool& vsSet = true, const bool& psSet = true,
         const bool& csSet = false, const bool& gsSet = false, const bool& hsSet = false)
     {
-        HRESULT result = S_OK;
         ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
 
 #ifdef USAGE_DYNAMIC
+        HRESULT result = S_OK;
         D3D11_MAP map = D3D11_MAP_WRITE_DISCARD;
         D3D11_MAPPED_SUBRESOURCE mappedBuffer;
 

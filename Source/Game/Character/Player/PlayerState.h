@@ -125,7 +125,7 @@ namespace PlayerState
         // ----- アニメーション制御用 -----
         float slowAnimationStartFrame_  = 0.0f;
         bool  isSlowAnimation_          = false;
-        const float normalAnimationSpeed_   = 0.9f;
+        const float normalAnimationSpeed_   = 1.5f;
         const float slowAnimationSpeed_     = 0.5f;
     };
 

@@ -150,7 +150,7 @@ private:
     bool isDamageSphere_ = true;
     bool isAttackSphere_ = true;
 
-    DirectX::XMFLOAT3 offset_ = {};
+
 
     SwordTrail swordTrail_;
 };

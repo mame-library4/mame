@@ -28,7 +28,7 @@ public:
     void Remove(Enemy* enemy);      // íœ
     void Clear();                   // ‘Síœ
 
-    const int GetEnemyCount() const { return enemies_.size(); }
+    const int GetEnemyCount() const { return static_cast<int>(enemies_.size()); }
     Enemy* GetEnemy(const int& index) { return enemies_.at(index); }
 
 private:

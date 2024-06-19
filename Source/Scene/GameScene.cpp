@@ -5,6 +5,7 @@
 #include "Character/Player/PlayerManager.h"
 #include "Character/Enemy/EnemyManager.h"
 #include "Character/Enemy/EnemyDragon.h"
+#include "Camera.h"
 
 
 // ----- ステージの真ん中位置 -----
@@ -17,7 +18,8 @@ void GameScene::CreateResource()
     PlayerManager::Instance().GetPlayer() = std::make_unique<Player>();
 
     //stageNormal_[2] = std::make_unique<StageNormal>("./Resources/Model/Stage/tomorrow.glb");
-    stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/arena.glb");
+    stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/circle.glb");
+    //stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/arena.glb");
 
 
     EnemyManager::Instance().Register(new EnemyDragon);
@@ -41,8 +43,8 @@ void GameScene::Initialize()
 {
     SceneManager::Instance().SetCurrentSceneName(SceneManager::SceneName::Game);
 
-    stage_->GetTransform()->SetScaleFactor(4.7f);
-    stage_->GetTransform()->SetPositionY(-1.0f);
+    stage_->GetTransform()->SetScaleFactor(1.5f);
+
     stageCenter_ = stage_->GetTransform()->GetPosition();
 
     // プレイヤー初期化
@@ -76,6 +78,8 @@ void GameScene::Update(const float& elapsedTime)
     // ステージ位置更新
     stageCenter_ = stage_->GetTransform()->GetPosition();
 
+    // カメラの位置更新
+    Camera::Instance().SetTarget(PlayerManager::Instance().GetTransform()->GetPosition());
 
     if (GetAsyncKeyState('T') & 0x8000)
     {
@@ -102,7 +106,7 @@ void GameScene::DeferredRender()
     deviceContext->PSSetShaderResources(35, 1, iblTextures_[3].GetAddressOf());
 
     // ステージ
-    stage_->Render(1.0f, gBufferPixelShader);
+    stage_->Render(0.01f, gBufferPixelShader);
 
     // プレイヤー描画
     PlayerManager::Instance().Render(gBufferPixelShader);
@@ -123,7 +127,7 @@ void GameScene::ForwardRender()
     deviceContext->PSSetShaderResources(35, 1, iblTextures_[3].GetAddressOf());
 
     // ステージ
-    stage_->Render(1.0f);
+    stage_->Render(0.01f);
 
     // プレイヤー描画
     PlayerManager::Instance().Render();

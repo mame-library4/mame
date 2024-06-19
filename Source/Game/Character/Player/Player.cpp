@@ -110,7 +110,6 @@ void Player::Update(const float& elapsedTime)
 
     // アニメーション更新
     Character::Update(elapsedTime);
-    //swordModel_.UpdateAnimation(elapsedTime);
     
 #if USE_ROOT_MOTION
     // RootMotion
@@ -131,9 +130,8 @@ void Player::Update(const float& elapsedTime)
     //const DirectX::XMFLOAT3 endPos = swordModel_.GetJointPosition("R1:R:j_top", 0.01f);
     //swordTrail_.Update(startPos, endPos);
 
-    //GetTransform()->SetPositionY(0.0f);
 
-    Camera::Instance().SetTarget(GetTransform()->GetPosition() + offset_);
+
 
     // LookAt
     LookAtUpdate();
@@ -164,8 +162,6 @@ void Player::DrawDebug()
 
         Character::DrawDebug();
         Object::DrawDebug();
-
-        ImGui::DragFloat3("offset", &offset_.x);
 
         ImGui::Checkbox("Collision", &isCollisionSphere_);
         ImGui::Checkbox("Damage", &isDamageSphere_);

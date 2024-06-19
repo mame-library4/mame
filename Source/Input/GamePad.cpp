@@ -11,15 +11,15 @@ int GamePad::GAMEPAD_OR_KEYBOARD = 0;
 
 void GamePad::Update(const float& elapsedTime)
 {
-	axisLx = axisLy = 0.0f;
-	axisRx = axisRy = 0.0f;
-	triggerL = triggerR = 0.0f;
+	axisLx_ = axisLy_ = 0.0f;
+	axisRx_ = axisRy_ = 0.0f;
+	triggerL_ = triggerR_ = 0.0f;
 
 	GamePadButton newButtonState = 0;
 
 	// ボタン情報取得
 	XINPUT_STATE xinputState;
-	if (XInputGetState(slot, &xinputState) == ERROR_SUCCESS)
+	if (XInputGetState(slot_, &xinputState) == ERROR_SUCCESS)
 	{
 		//XINPUT_CAPABILITIES caps;
 		//XInputGetCapabilities(m_slot, XINPUT_FLAG_GAMEPAD, &caps);
@@ -56,12 +56,12 @@ void GamePad::Update(const float& elapsedTime)
 			pad.sThumbRY = 0;
 		}
 
-		triggerL = static_cast<float>(pad.bLeftTrigger) / 255.0f;
-		triggerR = static_cast<float>(pad.bRightTrigger) / 255.0f;
-		axisLx = static_cast<float>(pad.sThumbLX) / static_cast<float>(0x8000);
-		axisLy = static_cast<float>(pad.sThumbLY) / static_cast<float>(0x8000);
-		axisRx = static_cast<float>(pad.sThumbRX) / static_cast<float>(0x8000);
-		axisRy = static_cast<float>(pad.sThumbRY) / static_cast<float>(0x8000);
+		triggerL_ = static_cast<float>(pad.bLeftTrigger) / 255.0f;
+		triggerR_ = static_cast<float>(pad.bRightTrigger) / 255.0f;
+		axisLx_ = static_cast<float>(pad.sThumbLX) / static_cast<float>(0x8000);
+		axisLy_ = static_cast<float>(pad.sThumbLY) / static_cast<float>(0x8000);
+		axisRx_ = static_cast<float>(pad.sThumbRX) / static_cast<float>(0x8000);
+		axisRy_ = static_cast<float>(pad.sThumbRY) / static_cast<float>(0x8000);
 
 
 		if (pad.wButtons & (XINPUT_GAMEPAD_DPAD_UP) ||
@@ -194,7 +194,7 @@ void GamePad::Update(const float& elapsedTime)
 		if (GetAsyncKeyState('J') & 0x8000) rx = -1.0f;
 		if (GetAsyncKeyState('K') & 0x8000) ry = -1.0f;
 		if (GetAsyncKeyState('L') & 0x8000) rx = 1.0f;
-		if (GetAsyncKeyState(' ') & 0x8000) triggerR = 1.0f;
+		if (GetAsyncKeyState(' ') & 0x8000) triggerR_ = 1.0f;
 		if (GetAsyncKeyState(' ') & 0x8000) newButtonState |= BTN_A;
 		//if (GetAsyncKeyState(VK_RETURN)) newButtonState |= BTN_A;
 		if (GetAsyncKeyState(VK_RETURN) & 0x8000) newButtonState |= BTN_B;
@@ -219,15 +219,15 @@ void GamePad::Update(const float& elapsedTime)
 		if (lx >= 1.0f || lx <= -1.0f || ly >= 1.0f || ly <= -1.0)
 		{
 			float power = ::sqrtf(lx * lx + ly * ly);
-			axisLx = lx / power;
-			axisLy = ly / power;
+			axisLx_ = lx / power;
+			axisLy_ = ly / power;
 		}
 
 		if (rx >= 1.0f || rx <= -1.0f || ry >= 1.0f || ry <= -1.0)
 		{
 			float power = ::sqrtf(rx * rx + ry * ry);
-			axisRx = rx / power;
-			axisRy = ry / power;
+			axisRx_ = rx / power;
+			axisRy_ = ry / power;
 		}
 	}
 
@@ -235,11 +235,11 @@ void GamePad::Update(const float& elapsedTime)
 
 	// ボタン情報の更新
 	{
-		buttonState[1] = buttonState[0];	// スイッチ履歴
-		buttonState[0] = newButtonState;
+		buttonState_[1] = buttonState_[0];	// スイッチ履歴
+		buttonState_[0] = newButtonState;
 
-		buttonDown = ~buttonState[1] & newButtonState;	// 押した瞬間
-		buttonUp = ~newButtonState & buttonState[1];	// 離した瞬間
+		buttonDown_ = ~buttonState_[1] & newButtonState;	// 押した瞬間
+		buttonUp_ = ~newButtonState & buttonState_[1];	// 離した瞬間
 	}
 
 	VibrationUpdate(elapsedTime);
@@ -247,27 +247,27 @@ void GamePad::Update(const float& elapsedTime)
 
 void GamePad::Vibration(float time, float power)
 {
-	if (vibrationTimer <= 0)
+	if (vibrationTimer_ <= 0)
 	{
-		vibrationTime = time;
-		vibrationValue = power;
-		vibrationTimer = vibrationTime;
+		vibrationTime_ = time;
+		vibrationValue_ = power;
+		vibrationTimer_ = vibrationTime_;
 	}
 	else
 	{
 		//振動中の場合はより強い振動が優先される
-		if (vibrationValue <= power)
+		if (vibrationValue_ <= power)
 		{
-			vibrationTime = time;
-			vibrationValue = power;
-			vibrationTimer = vibrationTime;
+			vibrationTime_ = time;
+			vibrationValue_ = power;
+			vibrationTimer_ = vibrationTime_;
 		}
 	}
 }
 
 void GamePad::VibrationUpdate(const float& elapsedTime)
 {
-	if (vibrationTimer <= 0)
+	if (vibrationTimer_ <= 0)
 	{
 		XINPUT_VIBRATION vibration;
 		ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
@@ -295,6 +295,5 @@ void GamePad::VibrationUpdate(const float& elapsedTime)
 	XInputSetState(0, &vibration);
 
 	//vibrationTimer -= 0.001f;
-	vibrationTimer -= elapsedTime;
-	//vibrationTimer -= Argent::Timer::ArTimer::Instance().DeltaTime();
+	vibrationTimer_ -= elapsedTime;
 }

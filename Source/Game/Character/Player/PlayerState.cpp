@@ -108,6 +108,8 @@ namespace PlayerState
     // ----- 終了化 -----
     void MoveState::Finalize()
     {
+        // 速度をリセットする
+        owner_->SetVelocity({});
     }
 }
 
@@ -171,6 +173,8 @@ namespace PlayerState
 
         // フラグをリセットする
         owner_->ResetFlags();
+
+
     }
 
     // ----- 更新 -----
@@ -191,8 +195,80 @@ namespace PlayerState
     // ----- アニメーション設定 -----
     void AvoidanceState::SetAnimation()
     {
-        owner_->PlayBlendAnimation(Player::Animation::StepFront, false);
+        const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+        const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+        
+        // 入力値がある場合
+        if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
+        {
+            // カメラから見たスティックの入力値を算出する
+            const DirectX::XMFLOAT3 cameraFront = Camera::Instance().GetTransform()->CalcForward();
+            const DirectX::XMFLOAT3 cameraRight = Camera::Instance().GetTransform()->CalcRight();
+            DirectX::XMFLOAT2 cameraInput =
+            {
+                aLy * cameraFront.x + aLx * cameraRight.x,
+                aLy * cameraFront.z + aLx * cameraRight.z,
+            };
+            cameraInput = XMFloat2Normalize(cameraInput);
+            DirectX::XMFLOAT2 ownerFront = { owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z };
+            ownerFront = XMFloat2Normalize(ownerFront);
+            
+            // 内積で角度を算出
+            float dot = XMFloat2Dot(cameraInput, ownerFront);
 
+            // 左右判定
+            float corss = XMFloat2Cross(cameraInput, ownerFront);
+
+            // 回転角が９０度よりも小さければ 前,右,左 の三択
+            if (dot < DirectX::XM_PIDIV2)
+            {
+                // 回転角が４５度よりも小さければ 前方向
+                if (dot < DirectX::XM_PIDIV4)
+                {
+                    owner_->PlayBlendAnimation(Player::Animation::StepFront, false);
+                    return;
+                }
+
+                // 右方向
+                if (corss > 0)
+                {
+                    owner_->PlayBlendAnimation(Player::Animation::StepRight, false);
+                }
+                // 左方向
+                else
+                {
+                    owner_->PlayBlendAnimation(Player::Animation::StepLeft, false);
+                }
+
+            }
+            // 回転角が９０度よりも大きければ 後,右,左 の三択
+            else
+            {
+                // 回転角が１３５度よりも大きければ 後方向
+                if (dot < DirectX::XM_PIDIV2 + DirectX::XM_PIDIV4)
+                {
+                    owner_->PlayBlendAnimation(Player::Animation::StepBack, false);
+                    return;
+                }
+
+                // 右方向
+                if (corss > 0)
+                {
+                    owner_->PlayBlendAnimation(Player::Animation::StepRight, false);
+                }
+                // 左方向
+                else
+                {
+                    owner_->PlayBlendAnimation(Player::Animation::StepLeft, false);
+                }
+            }
+        }
+        // 入力値がない場合前方向のアニメーションを設定する
+        else
+        {
+            owner_->PlayBlendAnimation(Player::Animation::StepFront, false);
+            return;
+        }
     }
 }
 
@@ -387,7 +463,7 @@ namespace PlayerState
     // ----- 更新 -----
     void ComboAttack0_0::Update(const float& elapsedTime)
     {
-        owner_->AddWeight(1.5f * elapsedTime);
+        owner_->AddWeight(5.0f * elapsedTime);
 
         const float currentAnimationSeconds = owner_->GetBlendAnimationSeconds();
 
@@ -425,8 +501,6 @@ namespace PlayerState
         if (owner_->IsPlayAnimation() == false)
         {
             owner_->ChangeState(Player::STATE::Idle);
-
-            owner_->SetVelocity({});
             return;
         }
     }

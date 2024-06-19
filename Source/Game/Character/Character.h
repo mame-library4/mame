@@ -61,21 +61,21 @@ public:// --- éÊìæÅEê›íË ---
 
     // ---------- Ç≠ÇÁÇ¢îªíË ----------
     void RegisterDamageDetectionData(const DamageDetectionData& data);
-    [[nodiscard]] const int GetDamageDetectionDataCount() const { return damageDetectionData_.size(); }
+    [[nodiscard]] const int GetDamageDetectionDataCount() const { return static_cast<int>(damageDetectionData_.size()); }
     std::vector<DamageDetectionData> GetDamageDetectionData() { return damageDetectionData_; }
     DamageDetectionData& GetDamageDetectionData(const std::string& name);
     DamageDetectionData& GetDamageDetectionData(const int& index);
 
     // ---------- çUåÇîªíË ----------
     void RegisterAttackDetectionData(const AttackDetectionData& data);
-    [[nodiscard]] const int GetAttackDetectionDataCount() const { return attackDetectionData_.size(); }
+    [[nodiscard]] const int GetAttackDetectionDataCount() const { return static_cast<int>(attackDetectionData_.size()); }
     std::vector<AttackDetectionData> GetAttackDetectionData() { return attackDetectionData_; }
     AttackDetectionData& GetAttackDetectionData(const std::string& name);
     AttackDetectionData& GetAttackDetectionData(const int& index);
 
     // ---------- âüÇµèoÇµîªíË ----------
     void RegisterCollisionDetectionData(const CollisionDetectionData& data);
-    [[nodiscard]] const int GetCollisionDetectionDataCount() const { return collisionDetectionData_.size(); }
+    [[nodiscard]] const int GetCollisionDetectionDataCount() const { return static_cast<int>(collisionDetectionData_.size()); }
     std::vector<CollisionDetectionData> GetCollisionDetectionData() { return collisionDetectionData_; }
     CollisionDetectionData& GetCollisionDetectionData(const std::string& name);
     CollisionDetectionData& GetCollisionDetectionData(const int& index);
