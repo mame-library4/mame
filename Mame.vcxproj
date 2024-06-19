@@ -228,7 +228,6 @@
     <ClCompile Include="Source\Game\Object.cpp" />
     <ClCompile Include="Source\Game\Stage\Stage.cpp" />
     <ClCompile Include="Source\Game\Stage\StageNormal.cpp" />
-    <ClCompile Include="Source\Game\Stone\Stone.cpp" />
     <ClCompile Include="Source\Graphics\Camera.cpp" />
     <ClCompile Include="Source\Graphics\ConstantBuffer.cpp" />
     <ClCompile Include="Source\Graphics\DebugRenderer.cpp" />
@@ -301,7 +300,6 @@
     <ClInclude Include="Source\Game\Object.h" />
     <ClInclude Include="Source\Game\Stage\Stage.h" />
     <ClInclude Include="Source\Game\Stage\StageNormal.h" />
-    <ClInclude Include="Source\Game\Stone\Stone.h" />
     <ClInclude Include="Source\Graphics\Camera.h" />
     <ClInclude Include="Source\Graphics\ConstantBuffer.h" />
     <ClInclude Include="Source\Graphics\DebugRenderer.h" />

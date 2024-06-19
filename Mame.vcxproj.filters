@@ -172,9 +172,6 @@
     <ClCompile Include="Source\Game\Character\Enemy\EnemyManager.cpp">
       <Filter>Mame\Game\Object\Character\Enemy</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Game\Stone\Stone.cpp">
-      <Filter>Mame\Game\Object\Stone</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Game\Collision\CollisionData.cpp">
       <Filter>Mame\Game\Collision</Filter>
     </ClCompile>
@@ -400,9 +397,6 @@
     <ClInclude Include="Source\Game\Character\Enemy\EnemyManager.h">
       <Filter>Mame\Game\Object\Character\Enemy</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\Stone\Stone.h">
-      <Filter>Mame\Game\Object\Stone</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Game\Collision\CollisionData.h">
       <Filter>Mame\Game\Collision</Filter>
     </ClInclude>
@@ -533,9 +527,6 @@
     </Filter>
     <Filter Include="Mame\Shader\PostProcess\Bloom">
       <UniqueIdentifier>{0ae50862-4b54-48a7-8d48-237b7f8d632d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Mame\Game\Object\Stone">
-      <UniqueIdentifier>{1df10b1f-b605-47fd-9b5b-7df16a1c975a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Mame\Resource\PrimitiveRenderer">
       <UniqueIdentifier>{b5e83c12-c967-4dbe-a9ed-ffe26f67bca7}</UniqueIdentifier>

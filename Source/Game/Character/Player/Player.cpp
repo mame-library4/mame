@@ -3,10 +3,15 @@
 #include "Graphics.h"
 #include "Camera.h"
 
+#define USE_ROOT_MOTION 0
+
 // ----- コンストラクタ -----
 Player::Player()
+#if USE_ROOT_MOTION
     : Character("./Resources/Model/Character/aaa.glb")
-    //: Character("./Resources/Model/Character/Player/Orc.gltf")
+#else
+    : Character("./Resources/Model/Character/Player/Orc.gltf")
+#endif
 {
     // --- ステートマシン ---
     {
@@ -46,8 +51,10 @@ Player::~Player()
 // ----- 初期化 -----
 void Player::Initialize()
 {
+#if USE_ROOT_MOTION
     // RootMotion
     RootMotionInitialize();
+#endif
 
     // 生成位置設定
     GetTransform()->SetPositionZ(60);
@@ -105,11 +112,13 @@ void Player::Update(const float& elapsedTime)
     Character::Update(elapsedTime);
     //swordModel_.UpdateAnimation(elapsedTime);
     
+#if USE_ROOT_MOTION
     // RootMotion
     RootMotionUpdate(elapsedTime, "mixamorig:Hips");
     //RootMotionUpdate(elapsedTime, "root");
+#endif
 
-    Camera::Instance().SetTarget(GetTransform()->GetPosition() + offset_);
+    
 
     GetStateMachine()->Update(elapsedTime);
 
@@ -123,6 +132,8 @@ void Player::Update(const float& elapsedTime)
     //swordTrail_.Update(startPos, endPos);
 
     //GetTransform()->SetPositionY(0.0f);
+
+    Camera::Instance().SetTarget(GetTransform()->GetPosition() + offset_);
 
     // LookAt
     LookAtUpdate();
