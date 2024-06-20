@@ -42,8 +42,8 @@ bool Application::Initialize()
     Camera::Instance().Initialize();
 
     // --- シーン初期化 ---
-    SceneManager::Instance().ChangeScene(new DemoScene);
-    //SceneManager::Instance().ChangeScene(new GameScene);
+    //SceneManager::Instance().ChangeScene(new DemoScene);
+    SceneManager::Instance().ChangeScene(new GameScene);
     //SceneManager::Instance().ChangeScene(new TitleScene);
 
 //#ifndef _DEBUG

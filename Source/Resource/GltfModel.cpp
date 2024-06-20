@@ -186,252 +186,45 @@ GltfModel::GltfModel(const std::string& filename) : filename_(filename)
     }
 }
 
-// ----- アニメーション更新 -----
-void GltfModel::UpdateAnimation(const float& elapsedTime)
+
+void GltfModel::BlendAnimations(const std::vector<Node>& fromNodes, const std::vector<Node>& toNodes, float factor, std::vector<Node>& outNodes)
 {
-    // アニメーション再生してなかったら処理しない
-    if (!IsPlayAnimation()) return;
+    _ASSERT_EXPR(fromNodes.size() == toNodes.size(), "The size of the two node arrays must be the same.");
 
-    // 最終フレーム処理 ( 再生終了フラグがたっていれば再生終了 )
-    if (animationEndFlag_)
-    {
-        animationEndFlag_       = false;    // 終了フラグをリセット
-        currentAnimationIndex_  = -1;       // アニメーション番号をリセット
-        blendAnimationIndex1_ = -1;
-        return;
-    }
+    size_t nodeCount = fromNodes.size();
+    _ASSERT_EXPR(nodeCount == outNodes.size(), "The size of node must be input nodes.");
 
-    // ブレンドアニメーション再生 ( ブレンドアニメーションの場合はここで終了 )
-    if (UpdateBlendAnimation(elapsedTime)) return;
-
-    // アニメーション再生時間経過
-    currentAnimationSeconds_ += elapsedTime * animationSpeed_;
-
-    // アニメーションの最終フレームを取ってくる
-    float duration = animations_.at(currentAnimationIndex_).duration_;
-
-    // アニメーションが再生しきっている場合
-    if (currentAnimationSeconds_ > duration)
-    {
-        if (animationLoopFlag_)
-        {
-            currentAnimationSeconds_ = 0.0f;
-            return;
-        }
-        else
-        {
-            animationEndFlag_ = true;
-            return;
-        }
-    }
-
-    // アニメーション更新
-    Animate(currentAnimationIndex_, currentAnimationSeconds_, nodes_);
-}
-
-// ----- ブレンドアニメーション更新 ( 更新していたら true ) -----
-bool GltfModel::UpdateBlendAnimation(const float& elapsedTime)
-{
-    // アニメーション番号が入ってない場合は return false
-    if (blendAnimationIndex1_ < 0) return false;
-
-    // weight値を０～１の間に収める
-    weight_ = std::clamp(weight_, 0.0f, 1.0f);
-
-    // アニメーション再生時間更新
-    blendAnimationSeconds_ += elapsedTime * animationSpeed_;
-
-    // アニメーションの最終フレームを取得
-    float duration1 = animations_.at(blendAnimationIndex1_).duration_;
-    float duration2 = animations_.at(blendAnimationIndex2_).duration_;
-
-    // 基準となるアニメーションにフレーム数を合わせる
-    float maxDuration = duration1;
-    if (blendThreshold_ < weight_) maxDuration = duration2;
-
-    // アニメーションが再生しきっている場合
-    if (blendAnimationSeconds_ > maxDuration)
-    {
-        if (animationLoopFlag_)
-        {
-            blendAnimationSeconds_ = 0.0f;
-            return true;
-        }
-        else
-        {
-            animationEndFlag_ = true;
-            return true;
-        }
-    }
-
-    // ２つのアニメーションの姿勢を取ってくる
-    Animate(blendAnimationIndex1_, blendAnimationSeconds_, nodes_);
-    std::vector<Node> node1 = nodes_;
-    Animate(blendAnimationIndex2_, blendAnimationSeconds_, nodes_);
-    std::vector<Node> node2 = nodes_;
-
-    // ２つのアニメーションのブレンドをする
-    const std::vector<Node>* keyframes[2] = { &node1, &node2 };
-    std::vector<Node> result = node1;
-    BlendAnimations(keyframes, weight_, result);
-
-    CumulateTransforms(result);
-    nodes_ = result;
-
-    return true;
-}
-
-void GltfModel::BlendAnimations(const std::vector<Node>* nodes[2], float factor, std::vector<Node>& node)
-{
-    size_t nodeCount = nodes[0]->size();
-    node.resize(nodeCount);
     for (size_t nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
     {
         DirectX::XMVECTOR S[2] =
         {
-            DirectX::XMLoadFloat3(&nodes[0]->at(nodeIndex).scale_),
-            DirectX::XMLoadFloat3(&nodes[1]->at(nodeIndex).scale_)
+            DirectX::XMLoadFloat3(&fromNodes.at(nodeIndex).scale_),
+            DirectX::XMLoadFloat3(&toNodes.at(nodeIndex).scale_)
         };
-        DirectX::XMStoreFloat3(&node.at(nodeIndex).scale_, DirectX::XMVectorLerp(S[0], S[1], factor));
+        DirectX::XMStoreFloat3(&outNodes.at(nodeIndex).scale_, DirectX::XMVectorLerp(S[0], S[1], factor));
 
         DirectX::XMVECTOR R[2] =
         {
-            DirectX::XMLoadFloat4(&nodes[0]->at(nodeIndex).rotation_),
-            DirectX::XMLoadFloat4(&nodes[1]->at(nodeIndex).rotation_)
+            DirectX::XMLoadFloat4(&fromNodes.at(nodeIndex).rotation_),
+            DirectX::XMLoadFloat4(&toNodes.at(nodeIndex).rotation_)
         };
-        DirectX::XMStoreFloat4(&node.at(nodeIndex).rotation_, DirectX::XMQuaternionSlerp(R[0], R[1], factor));
+        DirectX::XMStoreFloat4(&outNodes.at(nodeIndex).rotation_, DirectX::XMQuaternionSlerp(R[0], R[1], factor));
 
         DirectX::XMVECTOR T[2] =
         {
-            DirectX::XMLoadFloat3(&nodes[0]->at(nodeIndex).translation_),
-            DirectX::XMLoadFloat3(&nodes[1]->at(nodeIndex).translation_),
+            DirectX::XMLoadFloat3(&fromNodes.at(nodeIndex).translation_),
+            DirectX::XMLoadFloat3(&toNodes.at(nodeIndex).translation_),
         };
-        DirectX::XMStoreFloat3(&node.at(nodeIndex).translation_, DirectX::XMVectorLerp(T[0], T[1], factor));
+        DirectX::XMStoreFloat3(&outNodes.at(nodeIndex).translation_, DirectX::XMVectorLerp(T[0], T[1], factor));
     }
+    CumulateTransforms(outNodes);
 }
 
 
-// ----- 描画 -----
-void GltfModel::Render(const float& scaleFactor, ID3D11PixelShader* psShader)
-{ 
-    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
-
-    DirectX::XMMATRIX W = transform_.CalcWorldMatrix(scaleFactor);
-    DirectX::XMFLOAT4X4 world;
-    DirectX::XMStoreFloat4x4(&world, W);
-
-    deviceContext->PSSetShaderResources(0, 1, materialResourceView_.GetAddressOf());
-    deviceContext->VSSetShader(vertexShader_.Get(), nullptr, 0);
-    psShader ? deviceContext->PSSetShader(psShader, nullptr, 0) : deviceContext->PSSetShader(pixelShader_.Get(), nullptr, 0);
-    deviceContext->IASetInputLayout(inputLayout_.Get());
-    deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-    std::function<void(int)> traverse{ [&](int nodeIndex)->void {
-        const Node& node{nodes_.at(nodeIndex)};
-        if (node.mesh_ > -1)
-        {
-            const Mesh& mesh{ meshes_.at(node.mesh_) };
-            for (std::vector<Mesh::Primitive>::const_reference primitive : mesh.primitives_)
-            {
-                ID3D11Buffer* vertexBuffers[]
-                {
-                    primitive.vertexBufferViews_.at("POSITION").buffer_.Get(),
-                    primitive.vertexBufferViews_.at("NORMAL").buffer_.Get(),
-                    primitive.vertexBufferViews_.at("TANGENT").buffer_.Get(),
-                    primitive.vertexBufferViews_.at("TEXCOORD_0").buffer_.Get(),
-                    primitive.vertexBufferViews_.at("JOINTS_0").buffer_.Get(),
-                    primitive.vertexBufferViews_.at("WEIGHTS_0").buffer_.Get(),
-                    primitive.vertexBufferViews_.at("JOINTS_1").buffer_.Get(),
-                    primitive.vertexBufferViews_.at("WEIGHTS_1").buffer_.Get(),
-                };
-                UINT strides[]
-                {
-                    static_cast<UINT>(primitive.vertexBufferViews_.at("POSITION").strideInBytes_),
-                    static_cast<UINT>(primitive.vertexBufferViews_.at("NORMAL").strideInBytes_),
-                    static_cast<UINT>(primitive.vertexBufferViews_.at("TANGENT").strideInBytes_),
-                    static_cast<UINT>(primitive.vertexBufferViews_.at("TEXCOORD_0").strideInBytes_),
-                    static_cast<UINT>(primitive.vertexBufferViews_.at("JOINTS_0").strideInBytes_),
-                    static_cast<UINT>(primitive.vertexBufferViews_.at("WEIGHTS_0").strideInBytes_),
-                    static_cast<UINT>(primitive.vertexBufferViews_.at("JOINTS_1").strideInBytes_),
-                    static_cast<UINT>(primitive.vertexBufferViews_.at("WEIGHTS_1").strideInBytes_),
-                };
-                UINT offsets[_countof(vertexBuffers)]{ 0 };
-                deviceContext->IASetVertexBuffers(0, _countof(vertexBuffers), vertexBuffers, strides, offsets);
-                deviceContext->IASetIndexBuffer(primitive.indexBufferView_.buffer_.Get(),
-                    primitive.indexBufferView_.format_, 0);
-
-                primitiveConstants primitiveData{};
-                primitiveData.material_ = primitive.material_;
-                primitiveData.hasTangent_ = primitive.vertexBufferViews_.at("TANGENT").buffer_ != NULL;
-                primitiveData.skin_ = node.skin_;
-                primitiveData.emissiveIntencity_ = emissiveIntencity_;
-                
-                DirectX::XMStoreFloat4x4(&primitiveData.world_,
-                    DirectX::XMLoadFloat4x4(&node.globalTransform_) * DirectX::XMLoadFloat4x4(&world));
-                deviceContext->UpdateSubresource(primitiveCbuffer_.Get(), 0, 0, &primitiveData, 0, 0);
-                deviceContext->VSSetConstantBuffers(0, 1, primitiveCbuffer_.GetAddressOf());
-                deviceContext->PSSetConstantBuffers(0, 1, primitiveCbuffer_.GetAddressOf());
-
-                // texture
-                {
-                    const Material& material{ materials_.at(primitive.material_) };
-                    const int textureIndices[]
-                    {
-                        material.data_.pbrMetallicRoughness_.baseColorTexture_.index_,
-                        material.data_.pbrMetallicRoughness_.metallicRoughnessTexture_.index_,
-                        material.data_.normalTexture_.index_,
-                        material.data_.emissiveTexture_.index_,
-                        material.data_.occlusionTexture_.index_,
-                    };
-                    ID3D11ShaderResourceView* nullShaderResourceView{};
-                    std::vector<ID3D11ShaderResourceView*> shaderResourceViews(_countof(textureIndices));
-                    for (int textureIndex = 0; textureIndex < shaderResourceViews.size(); ++textureIndex)
-                    {
-                        shaderResourceViews.at(textureIndex) = textureIndices[textureIndex] > -1 ?
-                            textureResourceViews_.at(textures_.at(textureIndices[textureIndex]).source_).Get() :
-                            nullShaderResourceView;
-                    }
-                    deviceContext->PSSetShaderResources(1, static_cast<UINT>(shaderResourceViews.size()),
-                        shaderResourceViews.data());
-                }
-
-                // animation
-                {
-                    if (node.skin_ > -1)
-                    {
-                        const Skin& skin{ skins_.at(node.skin_) };
-                        PrimitiveJointConstants primitiveJointData{};
-                        auto size__ = skin.joints_.size();
-                        for (size_t jointIndex = 0; jointIndex < skin.joints_.size(); ++jointIndex)
-                        {
-                            DirectX::XMStoreFloat4x4(&primitiveJointData.matrices_[jointIndex],
-                                DirectX::XMLoadFloat4x4(&skin.inverseBindMatrices_.at(jointIndex)) *
-                                DirectX::XMLoadFloat4x4(&nodes_.at(skin.joints_.at(jointIndex)).globalTransform_) *
-                                DirectX::XMMatrixInverse(NULL, DirectX::XMLoadFloat4x4(&node.globalTransform_))
-                            );
-                        }
-                        deviceContext->UpdateSubresource(primitiveJointCbuffer_.Get(), 0, 0, &primitiveJointData, 0, 0);
-                        deviceContext->VSSetConstantBuffers(2, 1, primitiveJointCbuffer_.GetAddressOf());
-                    }
-                }
-
-                deviceContext->DrawIndexed(static_cast<UINT>(primitive.indexBufferView_.count()), 0, 0);
-            }
-        }
-        for (std::vector<int>::value_type childIndex : node.children_)
-        {
-            traverse(childIndex);
-        }
-    } };
-    for (std::vector<int>::value_type nodeIndex : scenes_.at(0).nodes_)
-    {
-        traverse(nodeIndex);
-    }
-}
-
-void GltfModel::Render(const DirectX::XMFLOAT4X4& world, ID3D11PixelShader* psShader)
+void GltfModel::Render(const DirectX::XMFLOAT4X4& world, const std::vector<Node>& animatedNodes, ID3D11PixelShader* psShader)
 {
     ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
+    const std::vector<Node>& nodes = animatedNodes.size() > 0 ? animatedNodes : nodes_;
 
     deviceContext->PSSetShaderResources(0, 1, materialResourceView_.GetAddressOf());
     deviceContext->VSSetShader(vertexShader_.Get(), nullptr, 0);
@@ -440,13 +233,29 @@ void GltfModel::Render(const DirectX::XMFLOAT4X4& world, ID3D11PixelShader* psSh
     deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     std::function<void(int)> traverse{ [&](int nodeIndex)->void {
-        const Node& node{nodes_.at(nodeIndex)};
+        const Node& node = nodes.at(nodeIndex);
+        
+        if (node.skin_ > -1)
+        {
+            const Skin& skin = skins_.at(node.skin_);;
+            _ASSERT_EXPR(skin.joints_.size() <= PRIMITIVE_MAX_JOINT, L"The size of the joint array insufficient, please expand it.");
+            PrimitiveJointConstants primitiveJointData = {};
+            for (size_t jointIndex = 0; jointIndex < skin.joints_.size(); ++jointIndex)
+            {
+                DirectX::XMStoreFloat4x4(&primitiveJointData.matrices_[jointIndex],
+                    DirectX::XMLoadFloat4x4(&skin.inverseBindMatrices_.at(jointIndex)) *
+                    DirectX::XMLoadFloat4x4(&nodes.at(skin.joints_.at(jointIndex)).globalTransform_) *
+                    DirectX::XMMatrixInverse(NULL, DirectX::XMLoadFloat4x4(&node.globalTransform_)));
+            }
+            deviceContext->UpdateSubresource(primitiveJointCbuffer_.Get(), 0, 0, &primitiveJointData, 0, 0);
+            deviceContext->VSSetConstantBuffers(2, 1, primitiveJointCbuffer_.GetAddressOf());
+        }
         if (node.mesh_ > -1)
         {
-            const Mesh& mesh{ meshes_.at(node.mesh_) };
+            const Mesh& mesh = meshes_.at(node.mesh_);
             for (std::vector<Mesh::Primitive>::const_reference primitive : mesh.primitives_)
             {
-                ID3D11Buffer* vertexBuffers[]
+                ID3D11Buffer* vertexBuffers[] =
                 {
                     primitive.vertexBufferViews_.at("POSITION").buffer_.Get(),
                     primitive.vertexBufferViews_.at("NORMAL").buffer_.Get(),
@@ -454,10 +263,8 @@ void GltfModel::Render(const DirectX::XMFLOAT4X4& world, ID3D11PixelShader* psSh
                     primitive.vertexBufferViews_.at("TEXCOORD_0").buffer_.Get(),
                     primitive.vertexBufferViews_.at("JOINTS_0").buffer_.Get(),
                     primitive.vertexBufferViews_.at("WEIGHTS_0").buffer_.Get(),
-                    primitive.vertexBufferViews_.at("JOINTS_1").buffer_.Get(),
-                    primitive.vertexBufferViews_.at("WEIGHTS_1").buffer_.Get(),
                 };
-                UINT strides[]
+                UINT strides[] =
                 {
                     static_cast<UINT>(primitive.vertexBufferViews_.at("POSITION").strideInBytes_),
                     static_cast<UINT>(primitive.vertexBufferViews_.at("NORMAL").strideInBytes_),
@@ -465,68 +272,36 @@ void GltfModel::Render(const DirectX::XMFLOAT4X4& world, ID3D11PixelShader* psSh
                     static_cast<UINT>(primitive.vertexBufferViews_.at("TEXCOORD_0").strideInBytes_),
                     static_cast<UINT>(primitive.vertexBufferViews_.at("JOINTS_0").strideInBytes_),
                     static_cast<UINT>(primitive.vertexBufferViews_.at("WEIGHTS_0").strideInBytes_),
-                    static_cast<UINT>(primitive.vertexBufferViews_.at("JOINTS_1").strideInBytes_),
-                    static_cast<UINT>(primitive.vertexBufferViews_.at("WEIGHTS_1").strideInBytes_),
                 };
                 UINT offsets[_countof(vertexBuffers)]{ 0 };
                 deviceContext->IASetVertexBuffers(0, _countof(vertexBuffers), vertexBuffers, strides, offsets);
-                deviceContext->IASetIndexBuffer(primitive.indexBufferView_.buffer_.Get(),
-                    primitive.indexBufferView_.format_, 0);
+                deviceContext->IASetIndexBuffer(primitive.indexBufferView_.buffer_.Get(), primitive.indexBufferView_.format_, 0);
 
-                primitiveConstants primitiveData{};
+                primitiveConstants primitiveData = {};
                 primitiveData.material_ = primitive.material_;
                 primitiveData.hasTangent_ = primitive.vertexBufferViews_.at("TANGENT").buffer_ != NULL;
                 primitiveData.skin_ = node.skin_;
-                primitiveData.emissiveIntencity_ = emissiveIntencity_;
-
-                DirectX::XMStoreFloat4x4(&primitiveData.world_,
-                    DirectX::XMLoadFloat4x4(&node.globalTransform_) * DirectX::XMLoadFloat4x4(&world));
+                DirectX::XMStoreFloat4x4(&primitiveData.world_, DirectX::XMLoadFloat4x4(&node.globalTransform_) * DirectX::XMLoadFloat4x4(&world));
                 deviceContext->UpdateSubresource(primitiveCbuffer_.Get(), 0, 0, &primitiveData, 0, 0);
                 deviceContext->VSSetConstantBuffers(0, 1, primitiveCbuffer_.GetAddressOf());
                 deviceContext->PSSetConstantBuffers(0, 1, primitiveCbuffer_.GetAddressOf());
 
-                // texture
+                const Material& material = materials_.at(primitive.material_);
+                const int textureIndices[] =
                 {
-                    const Material& material{ materials_.at(primitive.material_) };
-                    const int textureIndices[]
-                    {
-                        material.data_.pbrMetallicRoughness_.baseColorTexture_.index_,
-                        material.data_.pbrMetallicRoughness_.metallicRoughnessTexture_.index_,
-                        material.data_.normalTexture_.index_,
-                        material.data_.emissiveTexture_.index_,
-                        material.data_.occlusionTexture_.index_,
-                    };
-                    ID3D11ShaderResourceView* nullShaderResourceView{};
-                    std::vector<ID3D11ShaderResourceView*> shaderResourceViews(_countof(textureIndices));
-                    for (int textureIndex = 0; textureIndex < shaderResourceViews.size(); ++textureIndex)
-                    {
-                        shaderResourceViews.at(textureIndex) = textureIndices[textureIndex] > -1 ?
-                            textureResourceViews_.at(textures_.at(textureIndices[textureIndex]).source_).Get() :
-                            nullShaderResourceView;
-                    }
-                    deviceContext->PSSetShaderResources(1, static_cast<UINT>(shaderResourceViews.size()),
-                        shaderResourceViews.data());
-                }
-
-                // animation
+                    material.data_.pbrMetallicRoughness_.baseColorTexture_.index_,
+                    material.data_.pbrMetallicRoughness_.metallicRoughnessTexture_.index_,
+                    material.data_.normalTexture_.index_,
+                    material.data_.emissiveTexture_.index_,
+                    material.data_.occlusionTexture_.index_
+                };
+                ID3D11ShaderResourceView* nullShaderResourceView = {};
+                std::vector<ID3D11ShaderResourceView*> shaderResoruceView(_countof(textureIndices));
+                for (size_t textureIndex = 0; textureIndex < shaderResoruceView.size(); ++textureIndex)
                 {
-                    if (node.skin_ > -1)
-                    {
-                        const Skin& skin{ skins_.at(node.skin_) };
-                        PrimitiveJointConstants primitiveJointData{};
-                        auto size__ = skin.joints_.size();
-                        for (size_t jointIndex = 0; jointIndex < skin.joints_.size(); ++jointIndex)
-                        {
-                            DirectX::XMStoreFloat4x4(&primitiveJointData.matrices_[jointIndex],
-                                DirectX::XMLoadFloat4x4(&skin.inverseBindMatrices_.at(jointIndex)) *
-                                DirectX::XMLoadFloat4x4(&nodes_.at(skin.joints_.at(jointIndex)).globalTransform_) *
-                                DirectX::XMMatrixInverse(NULL, DirectX::XMLoadFloat4x4(&node.globalTransform_))
-                            );
-                        }
-                        deviceContext->UpdateSubresource(primitiveJointCbuffer_.Get(), 0, 0, &primitiveJointData, 0, 0);
-                        deviceContext->VSSetConstantBuffers(2, 1, primitiveJointCbuffer_.GetAddressOf());
-                    }
+                    shaderResoruceView.at(textureIndex) = textureIndices[textureIndex] > -1 ? textureResourceViews_.at(textures_.at(textureIndices[textureIndex]).source_).Get() : nullShaderResourceView;
                 }
+                deviceContext->PSSetShaderResources(1, static_cast<UINT>(shaderResoruceView.size()), shaderResoruceView.data());
 
                 deviceContext->DrawIndexed(static_cast<UINT>(primitive.indexBufferView_.count()), 0, 0);
             }
@@ -544,71 +319,42 @@ void GltfModel::Render(const DirectX::XMFLOAT4X4& world, ID3D11PixelShader* psSh
 
 void GltfModel::DrawDebug()
 {
-    GetTransform()->DrawDebug();
     ImGui::DragFloat("emissive", &emissiveIntencity_, 0.01f);
-    if (ImGui::TreeNode("Animation"))
-    {
-        if (ImGui::TreeNode("DefaultAnimation"))
-        {
-            ImGui::DragInt("AnimationIndex", &currentAnimationIndex_);
-            ImGui::DragFloat("AnimationTimer", &currentAnimationSeconds_);
-
-            ImGui::TreePop();
-        }
-        if (ImGui::TreeNode("BlendAnimation"))
-        {
-            ImGui::DragInt("BlendAnimationIndex1", &blendAnimationIndex1_);
-            ImGui::DragInt("BlendAnimationIndex2", &blendAnimationIndex2_);
-            ImGui::DragFloat("BlendAnimationTimer", &blendAnimationSeconds_);
-            ImGui::DragFloat("BlendWeight", &weight_, 0.1f, 0.0f, 1.0f);
-
-            ImGui::TreePop();
-        }
-        ImGui::DragFloat("AnimationSpeed", &animationSpeed_, 0.1f);
-        ImGui::Checkbox("AnimationLoop", &animationLoopFlag_);
-        ImGui::Checkbox("AnimationEnd", &animationEndFlag_);
-
-        ImGui::TreePop();
-    }
 }
 
 void GltfModel::Animate(size_t animationIndex, float time, std::vector<Node>& animatedNodes)
 {
-    std::function<size_t(const std::vector<float>&, float, float&)> indexof
-    {
-        [](const std::vector<float>& timelines, float time, float& interpolationFactor)->size_t
-        {
-            const size_t keyframeCount{timelines.size()}; 
+    _ASSERT_EXPR(animations_.size() > animationIndex, L"");
+    _ASSERT_EXPR(animatedNodes.size() == nodes_.size(), L"");
 
-            if (time > timelines.at(keyframeCount - 1))
-            {
-                interpolationFactor = 1.0f;
-                return keyframeCount - 2;
-            }
-            else if (time < timelines.at(0))
-            {
-                //interpolationFactor = 0.0f;
-                interpolationFactor = timelines.at(0);
-                return 0;
-            }
-            size_t keyframeIndex{ 0 };
-            for (size_t timeIndex = 1; timeIndex < keyframeCount; ++timeIndex)
-            {
-                if (time < timelines.at(timeIndex))
-                {
-                    keyframeIndex = std::max<size_t>(0LL, timeIndex - 1);
-                    break;
-                }
-            }
-            interpolationFactor = (time - timelines.at(keyframeIndex + 0)) /
-                (timelines.at(keyframeIndex + 1) - timelines.at(keyframeIndex + 0));
-            return keyframeIndex;
+    std::function<size_t(const std::vector<float>&, float, float&)> indexof{ [](const std::vector<float>& timelines, float time, float& interpolationFactor)->size_t {
+        const size_t keyframeCount = timelines.size();
+        if (time > timelines.at(keyframeCount - 1))
+        {
+            interpolationFactor = 1.0f;
+            return keyframeCount - 2;
         }
-    };
+        else if (time < timelines.at(0))
+        {
+            interpolationFactor = timelines.at(0);
+            return 0;
+        }
+        size_t keyframeIndex = 0;
+        for (size_t timeIndex = 1; timeIndex < keyframeCount; ++timeIndex)
+        {
+            if (time < timelines.at(timeIndex))
+            {
+                keyframeIndex = std::max<size_t>(0LL, timeIndex - 1);
+                break;
+            }
+        }
+        interpolationFactor = (time - timelines.at(keyframeIndex + 0)) / (timelines.at(keyframeIndex + 1) - timelines.at(keyframeIndex + 0));
+        return keyframeIndex;
+    } };
 
     if (animations_.size() > 0)
     {
-        const Animation& animation{ animations_.at(animationIndex) };
+        const Animation& animation = animations_.at(animationIndex);
         for (std::vector<Animation::Channel>::const_reference channel : animation.channels_)
         {
             const Animation::Sampler& sampler{ animation.samplers_.at(channel.sampler_) };
@@ -651,75 +397,7 @@ void GltfModel::Animate(size_t animationIndex, float time, std::vector<Node>& an
     }
 }
 
-// ----- アニメーション再生 -----
-void GltfModel::PlayAnimation(const int& index, const bool& loop, const float& speed)
-{
-    if (index == currentAnimationIndex_) return;
-
-    currentAnimationIndex_      = index;    // アニメーション番号を設定
-    currentAnimationSeconds_    = 0.0f;     // タイマーをリセットする
-    
-    blendAnimationIndex1_ = -1; // 使用しないので-1
-
-    animationLoopFlag_          = loop;     // アニメーションループフラグを設定する
-    animationEndFlag_           = false;    // 再生終了フラグをリセット
-
-    animationSpeed_             = speed;    // アニメーション再生速度を設定
-}
-
-// ----- ブレンドアニメーション再生 -----
-void GltfModel::PlayBlendAnimation(const int& index1, const int& index2, const bool& loop, const float& speed)
-{
-    // 設定用のアニメーション番号が現在のアニメーション番号と同じ場合はreturn
-    if (blendAnimationIndex1_ == index1 && blendAnimationIndex2_ == index2) return;
-    
-    // 通常アニメーション番号をリセット
-    currentAnimationIndex_ = -1;
-
-    blendAnimationIndex1_ = index1;    // 再生するアニメーション番号を設定
-    blendAnimationIndex2_ = index2;    // 再生するアニメーション番号を設定
-    blendAnimationSeconds_ = 0.0f;     // アニメーション再生時間リセット
-
-    animationLoopFlag_  = loop;     // ループさせるか
-    animationEndFlag_   = false;    // 再生終了フラグをリセット
-
-    animationSpeed_     = speed;    // アニメーション再生速度
-}
-
-// ----- ブレンドアニメーション再生 ( 初回以降使用可能 ) -----
-void GltfModel::PlayBlendAnimation(const int& index, const bool& loop, const float& speed)
-{
-    // 再生するindex番号が現在と同じ場合 return
-    if (blendAnimationIndex2_ == index) return;
-
-    // 通常アニメーション番号リセット
-    currentAnimationIndex_ = -1;
-
-    blendAnimationIndex1_ = blendAnimationIndex2_;  // 再生するアニメーション番号を設定
-    blendAnimationIndex2_ = index;                  // 再生するアニメーション番号を設定
-
-    blendAnimationSeconds_ = 0.0f;     // アニメーション再生時間リセット
-
-    animationLoopFlag_ = loop;     // ループさせるか
-    animationEndFlag_ = false;    // 再生終了フラグをリセット
-
-    animationSpeed_ = speed;    // アニメーション再生速度
-}
-
-// ----- アニメーションが再生中なら true -----
-const bool GltfModel::IsPlayAnimation()
-{
-    // アニメーション再生されていない
-    if (currentAnimationIndex_ < 0 && blendAnimationIndex1_ < 0) return false;
-
-    // アニメーション番号が存在しない
-    const int animatinIndexEnd = static_cast<int>(animations_.size());
-    if (currentAnimationIndex_ >= animatinIndexEnd && blendAnimationIndex1_ >= animatinIndexEnd) return false;
-    
-
-    return true;
-}
-
+#if 0
 // ----- 指定したジョイントの位置を取得 -----
 DirectX::XMFLOAT3 GltfModel::GetJointPosition(const size_t& nodeIndex, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition)
 {
@@ -752,6 +430,7 @@ DirectX::XMFLOAT3 GltfModel::GetJointPosition(const std::string& nodeName, const
     // 見つからなかった。
     return DirectX::XMFLOAT3(0, 0, 0);
 }
+#endif
 
 DirectX::XMMATRIX GltfModel::GetJointGlobalTransform(const size_t& nodeIndex)
 {
@@ -776,6 +455,7 @@ DirectX::XMMATRIX GltfModel::GetJointGlobalTransform(const std::string& nodeName
     return DirectX::XMMATRIX();
 }
 
+#if 0
 DirectX::XMMATRIX GltfModel::GetJointWorldTransform(const std::string& nodeName, const float& scaleFactor)
 {
     // ノードを名前検索する
@@ -791,6 +471,7 @@ DirectX::XMMATRIX GltfModel::GetJointWorldTransform(const std::string& nodeName,
 
     return DirectX::XMMATRIX();
 }
+#endif
 
 // ----- ノードのインデックスを取得 -----
 const int GltfModel::GetNodeIndex(const std::string& nodeName)
@@ -1241,37 +922,10 @@ void GltfModel::FetchAnimation(const tinygltf::Model& gltfModel)
 
 void GltfModel::CumulateTransforms(std::vector<Node>& nodes)
 {
-#if 1
-    DirectX::XMFLOAT4X4 parentGlobalTransform = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
-
-    std::function<void(int)> traverse{ [&](int nodeIndex)->void
-        {
-            Node& node = nodes.at(nodeIndex);
-            DirectX::XMMATRIX S{ DirectX::XMMatrixScaling(node.scale_.x, node.scale_.y, node.scale_.z) };
-            DirectX::XMMATRIX R{ DirectX::XMMatrixRotationQuaternion(
-            DirectX::XMVectorSet(node.rotation_.x, node.rotation_.y, node.rotation_.z, node.rotation_.w)) };
-            DirectX::XMMATRIX T{ DirectX::XMMatrixTranslation(node.translation_.x, node.translation_.y, node.translation_.z) };
-            DirectX::XMStoreFloat4x4(&node.globalTransform_, S * R * T * DirectX::XMLoadFloat4x4(&parentGlobalTransform));
-
-            // 親保存
-            node.parentGlobalTransform_ = parentGlobalTransform;
-
-            for (int childIndex : node.children_)
-            {
-                parentGlobalTransform = node.globalTransform_;
-                traverse(childIndex);
-            }
-    } };
-    for (std::vector<int>::value_type nodeIndex : scenes_.at(0).nodes_)
-    {
-        parentGlobalTransform = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
-        traverse(nodeIndex);
-    }
-#else
     std::stack<DirectX::XMFLOAT4X4> parentGlobalTransforms;
     std::function<void(int)> traverse{ [&](int nodeIndex)->void
-        {
-            Node& node{nodes.at(nodeIndex)};
+    {
+            Node& node = nodes.at(nodeIndex);
             DirectX::XMMATRIX S{ DirectX::XMMatrixScaling(node.scale_.x, node.scale_.y, node.scale_.z) };
             DirectX::XMMATRIX R{ DirectX::XMMatrixRotationQuaternion(
             DirectX::XMVectorSet(node.rotation_.x, node.rotation_.y, node.rotation_.z, node.rotation_.w)) };
@@ -1297,7 +951,6 @@ void GltfModel::CumulateTransforms(std::vector<Node>& nodes)
         traverse(nodeIndex);
         parentGlobalTransforms.pop();
     }
-#endif
 }
 
 GltfModel::BufferView GltfModel::MakeBufferView(const tinygltf::Accessor& accessor)

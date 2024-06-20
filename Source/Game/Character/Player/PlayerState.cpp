@@ -49,6 +49,9 @@ namespace PlayerState
     // ----- アニメーション設定 -----
     void IdleState::SetAnimation()
     {
+        owner_->PlayAnimation(Player::Animation::Idle, true);
+
+#if 0
         // アニメーションが設定されていない
         if (owner_->GetBlendAnimationIndex1() == -1)
         {
@@ -67,6 +70,7 @@ namespace PlayerState
         }
 
         owner_->SetWeight(1.0f);
+#endif
     }
 }
 
@@ -77,9 +81,7 @@ namespace PlayerState
     void MoveState::Initialize()
     {
         // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::Idle, Player::Animation::Walk, true);
-        //owner_->PlayBlendAnimation(Player::Animation::Idle, Player::Animation::Run, true);
-        owner_->SetWeight(0.0f);
+        owner_->PlayBlendAnimation(Player::Animation::Walk, true);
 
         // フラグをリセットする
         owner_->ResetFlags();
@@ -280,7 +282,7 @@ namespace PlayerState
     {
         // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::Counter, false);
-        owner_->SetWeight(1.0f);
+        
 
         // 変数初期化
         power_ = 0.4f;
@@ -297,16 +299,16 @@ namespace PlayerState
     // ----- 更新 -----
     void CounterState::Update(const float& elapsedTime)
     {
-        const float currentAnimationFrame = owner_->GetBlendAnimationSeconds();
+        const float currentAnimationFrame = owner_->GetCurrentAnimationSeconds();
 
         // 指定のアニメーションの間の時間を設定する
         if (currentAnimationFrame > animationSlowStartFrame_ && currentAnimationFrame < animationSlowEndFrame_)
         {
-            owner_->SetAnimationSpeed(owner_->slowAnimationSpeed_);
+            //owner_->SetAnimationSpeed(owner_->slowAnimationSpeed_);
         }
         else
         {
-            owner_->SetAnimationSpeed(1.0f);
+            //owner_->SetAnimationSpeed(1.0f);
         }
 
         if (currentAnimationFrame > addForceFrame_ &&
@@ -400,7 +402,7 @@ namespace PlayerState
     {
         // アニメーション再生
         owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_3, false);
-        owner_->SetWeight(1.0f);
+        
 
         // 変数初期化
         addForceFrame_ = 0.3f;
@@ -415,7 +417,7 @@ namespace PlayerState
     // ----- 更新 -----
     void CounterComboState::Update(const float& elapsedTime)
     {
-        const float currentAnimationFrame = owner_->GetBlendAnimationSeconds();
+        const float currentAnimationFrame = owner_->GetCurrentAnimationSeconds();
         if (currentAnimationFrame > addForceFrame_ &&
             isAddForce_ == false)
         {
@@ -447,8 +449,8 @@ namespace PlayerState
     void ComboAttack0_0::Initialize()
     {
         // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_0, false, normalAnimationSpeed_);
-        owner_->SetWeight(0.0f);
+        owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_0, false);
+        //owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_0, false, normalAnimationSpeed_);
 
         // フラグをリセットする
         owner_->ResetFlags();
@@ -463,14 +465,12 @@ namespace PlayerState
     // ----- 更新 -----
     void ComboAttack0_0::Update(const float& elapsedTime)
     {
-        owner_->AddWeight(5.0f * elapsedTime);
-
-        const float currentAnimationSeconds = owner_->GetBlendAnimationSeconds();
+        const float currentAnimationSeconds = owner_->GetCurrentAnimationSeconds();
 
         // アニメーションの速度を制御する
         if (currentAnimationSeconds > slowAnimationStartFrame_ && isSlowAnimation_ == false)
         {
-            owner_->SetAnimationSpeed(slowAnimationSpeed_);
+            //owner_->SetAnimationSpeed(slowAnimationSpeed_);
             isSlowAnimation_ = true;
         }
 
@@ -518,8 +518,7 @@ namespace PlayerState
     void ComboAttack0_1::Initialize()
     {
         // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_1, false, 1.0f);
-        owner_->SetWeight(1.0f);
+        owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_1, false);
 
         // フラグをリセットする
         owner_->ResetFlags();
@@ -532,7 +531,7 @@ namespace PlayerState
     // ----- 更新 -----
     void ComboAttack0_1::Update(const float& elapsedTime)
     {
-        const float currentAnimationSeconds = owner_->GetBlendAnimationSeconds();
+        const float currentAnimationSeconds = owner_->GetCurrentAnimationSeconds();
 
         // 先行入力が有効なフレーム
         if (currentAnimationSeconds > nextInputStartFrame_ && currentAnimationSeconds < nextInputEndFrame_)
@@ -576,7 +575,7 @@ namespace PlayerState
     {
         // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_2, false);
-        owner_->SetWeight(1.0f);
+        
 
         // フラグをリセットする
         owner_->ResetFlags();
@@ -589,7 +588,7 @@ namespace PlayerState
     // ----- 更新 -----
     void ComboAttack0_2::Update(const float& elapsedTime)
     {
-        const float currentAnimationSeconds = owner_->GetBlendAnimationSeconds();
+        const float currentAnimationSeconds = owner_->GetCurrentAnimationSeconds();
 
         // 先行入力が有効なフレーム
         if (currentAnimationSeconds > nextInputStartFrame_ && currentAnimationSeconds < nextInputEndFrame_)
@@ -633,7 +632,7 @@ namespace PlayerState
     {
         // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_3, false);
-        owner_->SetWeight(1.0f);
+        
 
         // フラグをリセットする
         owner_->ResetFlags();
@@ -660,7 +659,7 @@ namespace PlayerState
     {
         // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::ComboAttack1_0, false);
-        owner_->SetWeight(1.0f);
+        
     }
 
     void ComboAttack1_0::Update(const float& elapsedTime)
@@ -684,7 +683,6 @@ namespace PlayerState
     {
         // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::ComboAttack1_1, false);
-        owner_->SetWeight(1.0f);
     }
 
     void ComboAttack1_1::Update(const float& elapsedTime)
@@ -708,7 +706,7 @@ namespace PlayerState
     {
         // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::ComboAttack1_2, false);
-        owner_->SetWeight(1.0f);
+        
     }
 
     void ComboAttack1_2::Update(const float& elapsedTime)

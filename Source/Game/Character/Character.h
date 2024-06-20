@@ -26,9 +26,6 @@ public:
     void AddForce(const DirectX::XMFLOAT3& direction, const float& power);
     void AddDamage(const float& damage) { health_ -= damage; }
 
-    // ----- LookAt -----
-    void LookAtInitilaize(const std::string& nodeName);
-    void LookAtUpdate();
 
 
 

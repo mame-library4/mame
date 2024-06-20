@@ -39,7 +39,7 @@ Player::Player()
 
     // -------------------- LookAt処理 -------------------------
     // ----- (初期姿勢時の頭ノードのローカル空間前方向を求める) -----
-    LookAtInitilaize("R:R:j_Head");
+    //LookAtInitilaize("R:R:j_Head");
     //LookAtInitilaize("R:R:j_Head_end");
 }
 
@@ -133,8 +133,7 @@ void Player::Update(const float& elapsedTime)
 
 
 
-    // LookAt
-    LookAtUpdate();
+
 }
 
 // ----- 描画 -----
@@ -290,8 +289,7 @@ void Player::Move(const float& elapsedTime)
     GetTransform()->AddPosition(velocity * elapsedTime);
 
     // アニメーションをいい感じにする
-    const float weight = std::min(1.0f, length / GetMaxSpeed());
-    SetWeight(weight);
+    //const float weight = std::min(1.0f, length / GetMaxSpeed());
 }
 
 // ----- 先行入力を受付してる -----
@@ -340,49 +338,30 @@ void Player::ResetFlags()
     SetIsAvoidance(false);                          // 回避入力判定用フラグ
 }
 
-void Player::PlayBlendAnimation(const Animation& index1, const Animation& index2, const bool& loop, const float& speed)
-{
-    Object::PlayBlendAnimation(static_cast<int>(index1), static_cast<int>(index2), loop, speed);
-}
-
-void Player::PlayBlendAnimation(const Animation& index, const bool& loop, const float& speed)
-{    
-    Object::PlayBlendAnimation(static_cast<int>(index), loop, speed);
-}
-
 void Player::UpdateCollisions(const float& elapsedTime, const float& scaleFactor)
 {
-    // くらい判定更新
-    for (DamageDetectionData& data : damageDetectionData_)
-    {
-        // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetName(), scaleFactor, data.GetOffsetPosition()));
+    //// くらい判定更新
+    //for (DamageDetectionData& data : damageDetectionData_)
+    //{
+    //    // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
+    //    data.SetJointPosition(GetJointPosition(data.GetName(), scaleFactor, data.GetOffsetPosition()));
 
-        data.Update(elapsedTime);
-    }
-    // 攻撃判定更新
-    for (AttackDetectionData& data : attackDetectionData_)
-    {
-        // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        //data.SetJointPosition(swordModel_.GetJointPosition(data.GetName(), scaleFactor, data.GetOffsetPosition()));
-    }
-    // 押し出し判定更新
-    for (CollisionDetectionData& data : collisionDetectionData_)
-    {
-        // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetName(), scaleFactor, data.GetOffsetPosition()));
-    }
+    //    data.Update(elapsedTime);
+    //}
+    //// 攻撃判定更新
+    //for (AttackDetectionData& data : attackDetectionData_)
+    //{
+    //    // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
+    //    //data.SetJointPosition(swordModel_.GetJointPosition(data.GetName(), scaleFactor, data.GetOffsetPosition()));
+    //}
+    //// 押し出し判定更新
+    //for (CollisionDetectionData& data : collisionDetectionData_)
+    //{
+    //    // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
+    //    data.SetJointPosition(GetJointPosition(data.GetName(), scaleFactor, data.GetOffsetPosition()));
+    //}
 }
 
-void Player::SetWeight(const float& weight)
-{
-    Object::SetWeight(weight);
-}
-
-void Player::AddWeight(const float& weight)
-{
-    Object::AddWeight(weight);
-}
 
 void Player::SetAttackFlag(const bool& activeFlag)
 {

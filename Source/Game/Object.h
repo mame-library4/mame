@@ -1,5 +1,6 @@
 #pragma once
-#include "../Resource/GltfModel.h"
+#include "GltfModel.h"
+#include "Transform.h"
 
 class Object
 {
@@ -11,52 +12,42 @@ public:
     void Render(const float& scaleFactor, ID3D11PixelShader* psShader = nullptr);
     void DrawDebug();
 
-    void PlayAnimation(const int& index, const bool& loop, const float& speed) { gltfModel_.PlayAnimation(index, loop, speed); }
-    void PlayBlendAnimation(const int& index1, const int& index2, const bool& loop, const float& speed) { gltfModel_.PlayBlendAnimation(index1, index2, loop, speed); }
-    void PlayBlendAnimation(const int& index, const bool& loop, const float& speed) { gltfModel_.PlayBlendAnimation(index, loop, speed); }
-    const bool IsPlayAnimation() { return gltfModel_.IsPlayAnimation(); }
-    [[nodiscard]] const float GetAnimationSpeed() const { return gltfModel_.GetAnimationSpeed(); }
-    void SetAnimationSpeed(const float& speed) { gltfModel_.SetAnimationSpeed(speed); }
+    // ---------- Animation ----------
+    void PlayAnimation(const int& animationIndex, const bool& loop);
+    void PlayBlendAnimation(const int& blendAnimationIndex, const bool& loop);
+    void UpdateAnimation(const float& elapsedTime);
+    [[nodiscard]] const bool IsPlayAnimation() const { return !animationEndFlag_; }
+    const float GetCurrentAnimationSeconds() const { return currentAnimationSeconds_; }
 
 public:
     // ---------- Transform ----------
-    Transform* GetTransform() { return gltfModel_.GetTransform(); }
+    Transform* GetTransform() { return &transform_; }
 
     // ---------- JointPosition ----------
-    [[nodiscard]] const DirectX::XMFLOAT3 GetJointPosition(const size_t& nodeIndex, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {}) { return gltfModel_.GetJointPosition(nodeIndex, scaleFactor, offsetPosition); }
-    [[nodiscard]] const DirectX::XMFLOAT3 GetJointPosition(const std::string& nodeName, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {}) { return gltfModel_.GetJointPosition(nodeName, scaleFactor, offsetPosition); }
+    //[[nodiscard]] const DirectX::XMFLOAT3 GetJointPosition(const size_t& nodeIndex, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {}) { return gltfModel_.GetJointPosition(nodeIndex, scaleFactor, offsetPosition); }
+    //[[nodiscard]] const DirectX::XMFLOAT3 GetJointPosition(const std::string& nodeName, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {}) { return gltfModel_.GetJointPosition(nodeName, scaleFactor, offsetPosition); }
     
-    DirectX::XMMATRIX GetJointGlobalTransform(const size_t& nodeIndex) { return gltfModel_.GetJointGlobalTransform(nodeIndex); }
-    DirectX::XMMATRIX GetJointGlobalTransform(const std::string& nodeName) { return gltfModel_.GetJointGlobalTransform(nodeName); }
-    DirectX::XMMATRIX GetJointWorldTransform(const std::string& nodeName, const float& scaleFacter) { return gltfModel_.GetJointWorldTransform(nodeName, scaleFacter); }
-
-
-    // ---------- Animation ----------
-    [[nodiscard]] const int GetBlendAnimationIndex1() const { return gltfModel_.GetBlendAnimationIndex1(); }
-    [[nodiscard]] const int GetBlendAnimationIndex2() const { return gltfModel_.GetBlendAnimationIndex2(); }
-    [[nodiscard]] const float GetBlendAnimationSeconds() const { return gltfModel_.GetBlendAnimationSeconds(); }
-
-    // ---------- weight ----------
-    [[nodiscard]] const float GetWeight() { return gltfModel_.GetWeight(); }
-    virtual void SetWeight(const float& weight) { gltfModel_.SetWeight(weight); }
-    virtual void AddWeight(const float& weight);
+    //DirectX::XMMATRIX GetJointGlobalTransform(const size_t& nodeIndex) { return gltfModel_.GetJointGlobalTransform(nodeIndex); }
+    //DirectX::XMMATRIX GetJointGlobalTransform(const std::string& nodeName) { return gltfModel_.GetJointGlobalTransform(nodeName); }
+    //DirectX::XMMATRIX GetJointWorldTransform(const std::string& nodeName, const float& scaleFacter) { return gltfModel_.GetJointWorldTransform(nodeName, scaleFacter); }
 
     // ---------- Node ----------
     [[nodiscard]] const int GetNodeIndex(const std::string& nodeName) { return gltfModel_.GetNodeIndex(nodeName); }
     std::vector<GltfModel::Node>* GetNodes() { return gltfModel_.GetNodes(); }
 
-    // ----- RootMotion -----
-    void RootMotionInitialize();
-    void RootMotionUpdate(const float& elapsedTime, const std::string& rootName);
-    void RootMotionUpdate(const float& elapsedTime, const std::string& rootName, const int& animationIndex);
-
 private:
     GltfModel gltfModel_;
+    Transform transform_;
 
-    // ---------- RootMotion ----------
-    std::vector<GltfModel::Node>    animatedNodes_;
-    std::vector<GltfModel::Node>    zeroAnimatedNodes_;
-    DirectX::XMFLOAT3               previousPosition_    = {};
-    float rootMotionTimer_ = 0;
+    // ---------- Animation ----------
+    std::vector<GltfModel::Node>    animatedNodes_[2];
+    std::vector<GltfModel::Node>    blendAnimatedNodes_;
+    int                             currentAnimationIndex_      = -1;
+    float                           currentAnimationSeconds_    = 0.0f;
+    float                           animationFactor_            = 0.0f;
+    float                           transitionTime_             = 1.0f;
+    bool                            isBlendAnimation_           = false;
+    bool                            animationLoopFlag_          = false;
+    bool                            animationEndFlag_           = false;
 };
 

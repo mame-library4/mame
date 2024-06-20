@@ -9,9 +9,7 @@ void DemoScene::CreateResource()
 
 void DemoScene::Initialize()
 {
-    model_->PlayAnimation(1, true, 0.2f);
-
-    model_->RootMotionInitialize();
+    model_->PlayAnimation(1, true);
 }
 
 void DemoScene::Finalize()
@@ -23,7 +21,6 @@ void DemoScene::Update(const float& elapsedTime)
     Camera::Instance().SetTarget(target_);
 
 
-    model_->RootMotionUpdate(elapsedTime, "mixamorig:Hips", 0);
     model_->Update(elapsedTime);
 }
 

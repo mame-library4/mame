@@ -5,7 +5,6 @@
 #include <DirectXMath.h>
 #include "../../External/tinygltf/tiny_gltf.h"
 #include <unordered_map>
-#include "../Other/Transform.h"
 
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/memory.hpp>
@@ -100,12 +99,10 @@ public:
             0,0,0,1
         };
 
-        DirectX::XMFLOAT4X4 parentGlobalTransform_ = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
-
         template<class T>
         void serialize(T& archive)
         {
-            archive(name_, skin_, mesh_, children_, rotation_, scale_, translation_, globalTransform_, parentGlobalTransform_);
+            archive(name_, skin_, mesh_, children_, rotation_, scale_, translation_, globalTransform_);
         }
     };
 
@@ -352,54 +349,23 @@ public:
     std::vector<Animation>  animations_;
     Microsoft::WRL::ComPtr<ID3D11Buffer> primitiveJointCbuffer_;
 
-public:
-    void UpdateAnimation(const float& elapsedTime);
-    bool UpdateBlendAnimation(const float& elapsedTime);
-    void BlendAnimations(const std::vector<Node>* nodes[2], float factor, std::vector<Node>& node);
-
-    void Render(const float& scaleFactor, ID3D11PixelShader* psShader = nullptr);
-    void Render(const DirectX::XMFLOAT4X4& world, ID3D11PixelShader* psShader = nullptr);
+public:    
+    void Render(const DirectX::XMFLOAT4X4& world, const std::vector<Node>& animatedNodes, ID3D11PixelShader* psShader = nullptr);
     void DrawDebug();
 
     void Animate(size_t animationIndex, float time, std::vector<Node>& animatedNodes);
-
-
-    Transform* GetTransform() { return &transform_; }
-
-    // アニメーション関連
-    void SetAnimationIndex(int index) { currentAnimationIndex_  = index; }
-    int GetAnimationIndex() { return currentAnimationIndex_; }
-
-    // アニメーション再生
-    void PlayAnimation(const int& animationIndex, const bool& loop, const float& speed);
-    void PlayBlendAnimation(const int& index1, const int& index2, const bool& loop, const float& speed);
-    void PlayBlendAnimation(const int& index, const bool& loop, const float& speed);
-    const bool IsPlayAnimation();
-    
-    [[nodiscard]] const float GetAnimationSpeed() const { return animationSpeed_; }
-    void SetAnimationSpeed(const float& speed) { animationSpeed_ = speed; }
-
-    // ----- BlendAnimationSeconds -----
-    [[nodiscard]] const float GetBlendAnimationSeconds() const { return blendAnimationSeconds_; }
-
-    // ----- AnimationIndex -----
-    [[nodiscard]] const int GetBlendAnimationIndex1() const { return blendAnimationIndex1_; }
-    [[nodiscard]] const int GetBlendAnimationIndex2() const { return blendAnimationIndex2_; }
+    void BlendAnimations(const std::vector<Node>& fromNodes, const std::vector<Node>& toNodes, float factor, std::vector<Node>& outNodes);
 
     // ----- JointPosiion -----
-    DirectX::XMFLOAT3 GetJointPosition(const size_t& nodeIndex, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {});
-    DirectX::XMFLOAT3 GetJointPosition(const std::string& nodeName, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {});
+    //DirectX::XMFLOAT3 GetJointPosition(const size_t& nodeIndex, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {});
+    //DirectX::XMFLOAT3 GetJointPosition(const std::string& nodeName, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {});
     DirectX::XMMATRIX GetJointGlobalTransform(const size_t& nodeIndex);
     DirectX::XMMATRIX GetJointGlobalTransform(const std::string& nodeName);
-    DirectX::XMMATRIX GetJointWorldTransform(const std::string& nodeName, const float& scaleFacter);
+    //DirectX::XMMATRIX GetJointWorldTransform(const std::string& nodeName, const float& scaleFacter);
 
     // ----- Node -----
     [[nodiscard]] const int GetNodeIndex(const std::string& nodeName);
     std::vector<Node>* GetNodes() { return &nodes_; }
-
-    // ----- weight値 -----
-    [[nodiscard]] const float GetWeight() const { return weight_; }
-    void SetWeight(const float& weight) { weight_ = weight; }
 
 private:
     void FetchNodes(const tinygltf::Model& gltfModel);
@@ -414,8 +380,6 @@ private:
 private:
     std::string filename_;
 
-    Transform transform_ = {};
-
     Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader_;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader_;
     Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout_;
@@ -429,19 +393,4 @@ private:
     };
     Microsoft::WRL::ComPtr<ID3D11Buffer> primitiveCbuffer_;
     float emissiveIntencity_ = 1.0f;
-
-    // ----- Animation -----
-    int     currentAnimationIndex_      = -1;       // 現在のアニメーション番号
-    float   currentAnimationSeconds_    = 0.0f;     // 現在のアニメーション再生時間
-    int     currentKeyframeIndex_       = 0;        // 現在のアニメーション再生フレーム
-    bool    animationLoopFlag_          = false;    // アニメーションをループするか 
-    bool    animationEndFlag_           = false;    // アニメーションが終了したか
-
-    int     blendAnimationIndex1_       = -1;       // １つ目ブレンド用アニメーション番号
-    int     blendAnimationIndex2_       = -1;       // ２つ目ブレンド用アニメーション番号
-    float   blendAnimationSeconds_      = 0.0f;     // 現在のアニメーション再生時間
-    float   blendThreshold_             = 0.0f;     // ブレンドアニメーションのベースとなるアニメーションの切り替え閾値
-
-    float   weight_                     = 0.0f;     // 影響値
-    float   animationSpeed_             = 1.0f;     // アニメーション再生速度
 };

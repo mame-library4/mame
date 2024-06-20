@@ -8,8 +8,8 @@ const ActionBase::State DeathAction::Run(const float& elapsedTime)
     {
     case 0:
         // アニメーション設定
-        owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, Enemy::DragonAnimation::Death, false);
-        owner_->SetWeight(1.0f);
+        //owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, Enemy::DragonAnimation::Death, false);
+        
 
         owner_->SetStep(1);
         break;
@@ -18,8 +18,8 @@ const ActionBase::State DeathAction::Run(const float& elapsedTime)
         if (owner_->IsPlayAnimation() == false)
         {
             // 死亡ループモーションを流す
-            owner_->PlayBlendAnimation(Enemy::DragonAnimation::DeathLoop, false);
-            owner_->SetWeight(1.0f);
+          //  owner_->PlayBlendAnimation(Enemy::DragonAnimation::DeathLoop, false);
+            
 
             owner_->SetStep(2);
             break;

@@ -6,6 +6,10 @@
 Object::Object(const std::string filename)
     : gltfModel_(filename)
 {
+    // AnimationNode
+    animatedNodes_[0] = gltfModel_.nodes_;
+    animatedNodes_[1] = gltfModel_.nodes_;
+    blendAnimatedNodes_ = gltfModel_.nodes_;
 }
 
 // ----- デストラクタ -----
@@ -15,13 +19,24 @@ Object::~Object()
 
 void Object::Update(const float& elapsedTime)
 {
-    gltfModel_.UpdateAnimation(elapsedTime);
+    UpdateAnimation(elapsedTime);
 }
 
 // ----- 描画 -----
 void Object::Render(const float& scaleFactor, ID3D11PixelShader* psShader)
 {
-    gltfModel_.Render(scaleFactor, psShader);
+    DirectX::XMFLOAT4X4 world;
+    DirectX::XMMATRIX World = GetTransform()->CalcWorldMatrix(scaleFactor);
+    DirectX::XMStoreFloat4x4(&world, World);
+
+    if (isBlendAnimation_)
+    {
+        gltfModel_.Render(world, blendAnimatedNodes_, psShader);
+    }
+    else
+    {
+        gltfModel_.Render(world, animatedNodes_[0], psShader);
+    }
 }
 
 // ----- ImGui用 -----
@@ -30,131 +45,66 @@ void Object::DrawDebug()
     gltfModel_.DrawDebug();
 }
 
-// ----- weight値加算 -----
-void Object::AddWeight(const float& weight)
+void Object::PlayAnimation(const int& animationIndex, const bool& loop)
 {
-    // weightは0~1の間に収める
-    float w = GetWeight();
-    w += weight;
-    w = std::clamp(w, 0.0f, 1.0f);
-    SetWeight(w);
+    currentAnimationIndex_ = animationIndex;
+
+    animationLoopFlag_ = loop;
+    animationEndFlag_ = false;
 }
 
-void Object::RootMotionInitialize()
+void Object::PlayBlendAnimation(const int& blendAnimationIndex, const bool& loop)
 {
-    animatedNodes_ = gltfModel_.nodes_;
-    gltfModel_.Animate(0, 0, animatedNodes_);
-    zeroAnimatedNodes_ = animatedNodes_;
+    gltfModel_.Animate(currentAnimationIndex_, currentAnimationSeconds_, animatedNodes_[0]);
+    gltfModel_.Animate(blendAnimationIndex, 0.0f, animatedNodes_[1]);
+    currentAnimationIndex_ = blendAnimationIndex;
+    currentAnimationSeconds_ = 0.0f;
+    animationFactor_ = 0.0f;
+    isBlendAnimation_ = true;
+
+    animationLoopFlag_ = loop;
+    animationEndFlag_ = false;
 }
 
-void Object::RootMotionUpdate(const float& elapsedTime, const std::string& rootName)
-{   
-    gltfModel_.Animate(GetBlendAnimationIndex2(), GetBlendAnimationSeconds(), animatedNodes_);
-    const int rootJointIndex = GetNodeIndex(rootName);
+void Object::UpdateAnimation(const float& elapsedTime)
+{
+    // アニメーション番号がないのでここで終了
+    if (currentAnimationIndex_ < 0) return;
 
-    GltfModel::Node& node = gltfModel_.nodes_.at(rootJointIndex);
-
-    if (GetBlendAnimationSeconds() == 0)
+    if (isBlendAnimation_)
     {
-        previousPosition_ = { node.globalTransform_._41, node.globalTransform_._42, node.globalTransform_._43 };
-    }
-
-    DirectX::XMFLOAT3 position = { node.globalTransform_._41, node.globalTransform_._42, node.globalTransform_._43 };
-    DirectX::XMFLOAT3 displacement = { position.x - previousPosition_.x, position.y - previousPosition_.y, position.z - previousPosition_.z };
-
-    DirectX::XMMATRIX C = DirectX::XMLoadFloat4x4(&GetTransform()->GetCoordinateSystemTransforms(Transform::CoordinateSystem::cRightYup));
-    DirectX::XMMATRIX S = DirectX::XMMatrixScaling(GetTransform()->GetScale().x, GetTransform()->GetScale().y, GetTransform()->GetScale().z);
-    DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(GetTransform()->GetRotationX(), GetTransform()->GetRotationY(), GetTransform()->GetRotationZ());
-    DirectX::XMStoreFloat3(&displacement, DirectX::XMVector3TransformNormal(DirectX::XMLoadFloat3(&displacement), C * S * R));
-
-    DirectX::XMFLOAT3 translation = GetTransform()->GetPosition();
-    translation.x += displacement.x;
-    translation.y += displacement.y;
-    translation.z += displacement.z;
-    GetTransform()->SetPosition(translation);
-
-    node.globalTransform_._41 = zeroAnimatedNodes_.at(GetBlendAnimationIndex2()).globalTransform_._41;
-    node.globalTransform_._42 = zeroAnimatedNodes_.at(GetBlendAnimationIndex2()).globalTransform_._42;
-    node.globalTransform_._43 = zeroAnimatedNodes_.at(GetBlendAnimationIndex2()).globalTransform_._43;
-
-    std::function<void(int, int)> traverse = [&](int parentIndex, int nodeIndex)
-    {
-        GltfModel::Node& node = animatedNodes_.at(nodeIndex);
-        if (parentIndex > -1)
+        animationFactor_ = currentAnimationSeconds_ / transitionTime_;
+        gltfModel_.BlendAnimations(animatedNodes_[0], animatedNodes_[1], animationFactor_, blendAnimatedNodes_);
+        currentAnimationSeconds_ += elapsedTime;
+        
+        // ブレンドしおわった
+        if (animationFactor_ > 1.0f)
         {
-            DirectX::XMMATRIX S = DirectX::XMMatrixScaling(node.scale_.x, node.scale_.y, node.scale_.z);
-            DirectX::XMMATRIX R = DirectX::XMMatrixRotationQuaternion(DirectX::XMVectorSet(node.rotation_.x, node.rotation_.y, node.rotation_.z, node.rotation_.w));
-            DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(node.translation_.x, node.translation_.y, node.translation_.z);
-            DirectX::XMStoreFloat4x4(&node.globalTransform_, S * R * T * DirectX::XMLoadFloat4x4(&animatedNodes_.at(parentIndex).globalTransform_));
+            isBlendAnimation_ = false;
+            currentAnimationSeconds_ = 0.0f;
         }
-        for (int childIndex : node.children_)
-        {
-            traverse(nodeIndex, childIndex);
-        }
-    };
-    traverse(-1, rootJointIndex);
-    
-    previousPosition_ = position;
-}
-
-void Object::RootMotionUpdate(const float& elapsedTime, const std::string& rootName, const int& animationIndex)
-{
-    //GetTransform()->SetPosition({});
-    //rootMotionTimer_ = 0;
-
-
-    gltfModel_.Animate(0, rootMotionTimer_, animatedNodes_);
-    const int rootJointIndex = GetNodeIndex(rootName);
-
-    //GltfModel::Node& node = gltfModel_.nodes_.at(rootJointIndex);
-    const int jointIndex = 64;
-    GltfModel::Node& node = animatedNodes_.at(jointIndex);
-
-    if (rootMotionTimer_ == 0)
-    {
-        previousPosition_ = { node.globalTransform_._41, node.globalTransform_._42, node.globalTransform_._43 };
     }
-
-    DirectX::XMFLOAT3 position = { node.globalTransform_._41, node.globalTransform_._42, node.globalTransform_._43 };
-    DirectX::XMFLOAT3 displacement = { position.x - previousPosition_.x, position.y - previousPosition_.y, position.z - previousPosition_.z };
-
-    DirectX::XMMATRIX C = DirectX::XMLoadFloat4x4(&GetTransform()->GetCoordinateSystemTransforms(Transform::CoordinateSystem::cRightYup));
-    DirectX::XMMATRIX S = DirectX::XMMatrixScaling(GetTransform()->GetScale().x, GetTransform()->GetScale().y, GetTransform()->GetScale().z);
-    DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(GetTransform()->GetRotationX(), GetTransform()->GetRotationY(), GetTransform()->GetRotationZ());
-    DirectX::XMStoreFloat3(&displacement, DirectX::XMVector3TransformNormal(DirectX::XMLoadFloat3(&displacement), C * S * R));
-
-    DirectX::XMFLOAT3 translation = GetTransform()->GetPosition();
-    translation.x += displacement.x;
-    translation.y += displacement.y;
-    translation.z += displacement.z;
-    GetTransform()->SetPosition(translation);
-
-    node.globalTransform_._41 = zeroAnimatedNodes_.at(animationIndex).globalTransform_._41;
-    node.globalTransform_._42 = zeroAnimatedNodes_.at(animationIndex).globalTransform_._42;
-    node.globalTransform_._43 = zeroAnimatedNodes_.at(animationIndex).globalTransform_._43;
-
-    std::function<void(int, int)> traverse = [&](int parentIndex, int nodeIndex)
-        {
-            GltfModel::Node& node = animatedNodes_.at(nodeIndex);
-            if (parentIndex > -1)
-            {
-                DirectX::XMMATRIX S = DirectX::XMMatrixScaling(node.scale_.x, node.scale_.y, node.scale_.z);
-                DirectX::XMMATRIX R = DirectX::XMMatrixRotationQuaternion(DirectX::XMVectorSet(node.rotation_.x, node.rotation_.y, node.rotation_.z, node.rotation_.w));
-                DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(node.translation_.x, node.translation_.y, node.translation_.z);
-                DirectX::XMStoreFloat4x4(&node.globalTransform_, S * R * T * DirectX::XMLoadFloat4x4(&animatedNodes_.at(parentIndex).globalTransform_));
-            }
-            for (int childIndex : node.children_)
-            {
-                traverse(nodeIndex, childIndex);
-            }
-        };
-    traverse(-1, rootJointIndex);
-
-    previousPosition_ = position;
-
-    rootMotionTimer_ += elapsedTime * 0.2f;
-    if (gltfModel_.animations_.at(0).duration_ < rootMotionTimer_)
+    else
     {
-        rootMotionTimer_ = 0;
+        // アニメーションが再生終わっているのでここで終了
+        if (animationEndFlag_) return;
+
+        currentAnimationSeconds_ += elapsedTime;
+        
+        // アニメーションが最後のフレームまで達した
+        if (gltfModel_.animations_.at(currentAnimationIndex_).duration_ < currentAnimationSeconds_)
+        {
+            if (animationLoopFlag_)
+            {
+                currentAnimationSeconds_ = 0.0f;
+            }
+            else
+            {
+                currentAnimationSeconds_ = gltfModel_.animations_.at(currentAnimationIndex_).duration_;
+                animationEndFlag_ = true;
+            }
+        }
+
+        gltfModel_.Animate(currentAnimationIndex_, currentAnimationSeconds_, animatedNodes_[0]);
     }
 }

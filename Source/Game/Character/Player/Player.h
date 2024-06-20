@@ -90,27 +90,16 @@ public:
     void ResetFlags(); // フラグをリセットする
 
 
-    void PlayAnimation(const Animation& index, const bool& loop, const float& speed = 1.0f)
-    {
-        Object::PlayAnimation(static_cast<int>(index), loop, speed);
-        //swordModel_.PlayAnimation(static_cast<int>(index), loop, speed);
-    }
-    void SetAnimationSpeed(const float& speed)
-    {
-        Object::SetAnimationSpeed(speed);
-        //swordModel_.SetAnimationSpeed(speed);
-    }
     float slowAnimationSpeed_ = 0.15f;
     //float slowAnimationSpeed_ = 0.25f;
 
-    void PlayBlendAnimation(const Animation& index1, const Animation& index2, const bool& loop, const float& speed = 1.0f);
-    void PlayBlendAnimation(const Animation& index, const bool& loop, const float& speed = 1.0f);
+    void PlayAnimation(const Animation& index, const bool& loop) { Object::PlayAnimation(static_cast<int>(index), loop); }
+    void PlayBlendAnimation(const Animation& index, const bool& loop) { Object::PlayBlendAnimation(static_cast<int>(index), loop); }
+
 
     void UpdateCollisions(const float& elapsedTime, const float& scaleFactor) override;
 
-    void SetWeight(const float& weight) override;
-    void AddWeight(const float& weight) override;
-
+ 
     // 攻撃判定有効フラグ設定
     void SetAttackFlag(const bool& activeFlag = true);
     bool GetIsActiveAttackFlag();
