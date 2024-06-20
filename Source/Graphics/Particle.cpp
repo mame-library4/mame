@@ -54,8 +54,14 @@ Particles::Particles(size_t particleCount) : maxParticleCount(particleCount)
     Graphics::Instance().CreateCsFromCso("./Resources/Shader/ParticleInitializerCS.cso", particleInitializerCS.ReleaseAndGetAddressOf());
 
     D3D11_TEXTURE2D_DESC texture2dDesc = {};
-    Texture::Instance().LoadTexture(L"./Resources/Image/bomb.png", shaderResourceView_.GetAddressOf(), &texture2dDesc);
+    //Texture::Instance().LoadTexture(L"./Resources/Image/bomb.png", shaderResourceView_.GetAddressOf(), &texture2dDesc);
+    Texture::Instance().LoadTexture(L"./Resources/Image/smoke.png", shaderResourceView_.GetAddressOf(), &texture2dDesc);
+    //Texture::Instance().LoadTexture(L"./Resources/Image/Fire1.png", shaderResourceView_.GetAddressOf(), &texture2dDesc);
+    //Texture::Instance().LoadTexture(L"./Resources/Image/smoke1.png", shaderResourceView_.GetAddressOf(), &texture2dDesc);
     particleData.Size_ = { static_cast<float>(texture2dDesc.Width), static_cast<float>(texture2dDesc.Height) };
+    //particleData.texSize_ = { 122.75f, 114.4f };
+    //particleData.texSize_ = { 256.0f,255.8f };
+    //particleData.texSize_ = { 64.0f,64.0f };
     particleData.texSize_ = { 256.0f,256.0f };
     //particleData.texSize_ = { static_cast<float>(texture2dDesc.Width), static_cast<float>(texture2dDesc.Height) };
     particleData.animationSpeed = 20.0f;

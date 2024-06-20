@@ -1253,6 +1253,15 @@ void GltfModel::CumulateTransforms(std::vector<Node>& nodes)
             DirectX::XMMATRIX T{ DirectX::XMMatrixTranslation(node.translation_.x, node.translation_.y, node.translation_.z) };
             DirectX::XMStoreFloat4x4(&node.globalTransform_, S * R * T * DirectX::XMLoadFloat4x4(&parentGlobalTransform));
 
+            // Œ»İ‚ÌOrc‚ÆDragon‚ªRoot‚ª‚P”Ô‚É“ü‚Á‚Ä‚é‚½‚ß‚±‚Ìˆ—‚ª‹–‚³‚ê‚Ä‚µ‚Ü‚¤B
+            // ‚Ù‚ñ‚Æ‚Í‚â‚Á‚Ä‚Í‚¢‚¯‚È‚¢
+            if (nodeIndex == 1)
+            {
+                node.globalTransform_._41 = 0;
+                node.globalTransform_._42 = 0;
+                node.globalTransform_._43 = 0;
+            }
+
             // e•Û‘¶
             node.parentGlobalTransform_ = parentGlobalTransform;
 

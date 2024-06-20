@@ -14,4 +14,5 @@ float4 main(GS_OUT psIn) : SV_TARGET
     float4 color = textureMap.Sample(samplerState[POINT], psIn.texcoord);
     
     return color;
+    //return float4(color.rgb * (psIn.color.rgb * 10.2), color.a);
 }

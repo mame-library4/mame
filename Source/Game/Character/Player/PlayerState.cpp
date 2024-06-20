@@ -77,7 +77,7 @@ namespace PlayerState
     void MoveState::Initialize()
     {
         // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::Idle, Player::Animation::Walk, true);
+        owner_->PlayBlendAnimation(Player::Animation::Idle, Player::Animation::Run, true);
         //owner_->PlayBlendAnimation(Player::Animation::Idle, Player::Animation::Run, true);
         owner_->SetWeight(0.0f);
 
@@ -214,7 +214,7 @@ namespace PlayerState
             ownerFront = XMFloat2Normalize(ownerFront);
             
             // 内積で角度を算出
-            float dot = XMFloat2Dot(cameraInput, ownerFront);
+            float dot = acosf(XMFloat2Dot(cameraInput, ownerFront));
 
             // 左右判定
             float corss = XMFloat2Cross(cameraInput, ownerFront);
@@ -230,7 +230,7 @@ namespace PlayerState
                 }
 
                 // 右方向
-                if (corss > 0)
+                if (corss < 0)
                 {
                     owner_->PlayBlendAnimation(Player::Animation::StepRight, false);
                 }
@@ -245,14 +245,14 @@ namespace PlayerState
             else
             {
                 // 回転角が１３５度よりも大きければ 後方向
-                if (dot < DirectX::XM_PIDIV2 + DirectX::XM_PIDIV4)
+                if (dot > DirectX::XM_PIDIV2 + DirectX::XM_PIDIV4)
                 {
                     owner_->PlayBlendAnimation(Player::Animation::StepBack, false);
                     return;
                 }
 
                 // 右方向
-                if (corss > 0)
+                if (corss < 0)
                 {
                     owner_->PlayBlendAnimation(Player::Animation::StepRight, false);
                 }
@@ -266,7 +266,7 @@ namespace PlayerState
         // 入力値がない場合前方向のアニメーションを設定する
         else
         {
-            owner_->PlayBlendAnimation(Player::Animation::StepFront, false);
+            owner_->PlayBlendAnimation(Player::Animation::StepBack, false);
             return;
         }
     }

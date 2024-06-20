@@ -239,13 +239,19 @@ void Player::Turn(const float& elapsedTime)
         // “àÏ‚Å‰ñ“]•‚ðŽZo
         float forwardDot = XMFloat2Dot(cameraForward, playerForward) - 1.0f;
 
+        if (forwardDot > -0.01f) return;
+
+        // -2.0 ~ 0.0;
+        float rotateY = forwardDot * speed;      
+        rotateY = std::min(rotateY, -0.7f * speed);
+
         if (forwardCorss > 0)
         {
-            GetTransform()->AddRotationY(forwardDot * speed);
+            GetTransform()->AddRotationY(rotateY);
         }
         else
         {
-            GetTransform()->AddRotationY(-forwardDot * speed);
+            GetTransform()->AddRotationY(-rotateY);
         }
     }
 }
