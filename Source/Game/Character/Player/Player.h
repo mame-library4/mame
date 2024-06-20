@@ -13,7 +13,9 @@ public:// --- 定数 ---
     enum class STATE
     {
         Idle,           // 待機
-        Move,           // 移動
+        //Move,           // 移動
+        Walk,
+        Run,
         Damage,         // ダメージ
         Death,          // 死亡
         Avoidance,      // 回避
@@ -108,6 +110,8 @@ public:
 
     void UpdateCollisions(const float& elapsedTime, const float& scaleFactor) override;
 
+
+    void SetMoveDirection(const DirectX::XMFLOAT3 direction) { moveDirection_ = direction; }
 
     // 攻撃判定有効フラグ設定
     void SetAttackFlag(const bool& activeFlag = true);

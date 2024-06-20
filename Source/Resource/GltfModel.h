@@ -362,7 +362,7 @@ public:
     void UpdateAnimation(const float& elapsedTime);
     [[nodiscard]] const bool IsPlayAnimation() { return !animationEndFlag_; }
     [[nodiscard]] const int GetAnimationIndex() const { return animationIndex_; }
-    [[nodiscard]] const float GetAnimationSeconds() const { return animationSeconds_; }
+    [[nodiscard]] const float GetAnimationSeconds() { return isBlendAnimation_ ? 0.0f : animationSeconds_; }
     [[nodiscard]] const float GetAnimationSpeed() const { return animationSpeed_; }
     [[nodiscard]] const float GetTransitionTime() const { return transitionTime_; }
     void SetAnimationSpeed(const float& speed) { animationSpeed_ = speed; }

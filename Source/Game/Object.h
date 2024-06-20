@@ -15,7 +15,7 @@ public:
     void PlayBlendAnimation(const int& index, const bool& loop, const float& speed) { gltfModel_.PlayBlendAnimation(index, loop, speed); }
     [[nodiscard]] const bool IsPlayAnimation() { return gltfModel_.IsPlayAnimation(); }
     [[nodiscard]] const int GetAnimationIndex() const { return gltfModel_.GetAnimationIndex(); }
-    [[nodiscard]] const float GetAnimationSeconds() const { return gltfModel_.GetAnimationSeconds(); }
+    [[nodiscard]] const float GetAnimationSeconds() { return gltfModel_.GetAnimationSeconds(); }
     [[nodiscard]] const float GetAnimationSpeed() const { return gltfModel_.GetAnimationSpeed(); }
     [[nodiscard]] const float GetTransitionTime() const { return gltfModel_.GetTransitionTime(); }
     void SetAnimationSpeed(const float& speed) { gltfModel_.SetAnimationSpeed(speed); }

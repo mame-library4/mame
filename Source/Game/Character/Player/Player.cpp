@@ -19,7 +19,9 @@ Player::Player()
 
         // ステートを登録する
         GetStateMachine()->RegisterState(new PlayerState::IdleState(this));             // 待機
-        GetStateMachine()->RegisterState(new PlayerState::MoveState(this));             // 移動
+        //GetStateMachine()->RegisterState(new PlayerState::MoveState(this));             // 移動
+        GetStateMachine()->RegisterState(new PlayerState::WalkState(this));
+        GetStateMachine()->RegisterState(new PlayerState::RunState(this));
         GetStateMachine()->RegisterState(new PlayerState::DamageState(this));           // ダメージ
         GetStateMachine()->RegisterState(new PlayerState::DeathState(this));            // 死亡
         GetStateMachine()->RegisterState(new PlayerState::AvoidanceState(this));        // 回避
@@ -118,8 +120,11 @@ void Player::Update(const float& elapsedTime)
 #endif
 
     
-
+    // ステートマシン更新
     GetStateMachine()->Update(elapsedTime);
+    
+    // 移動処理
+    Move(elapsedTime);
 
     // ステージの外に出ないようにする
     CollisionCharacterVsStage();
@@ -266,12 +271,12 @@ void Player::Move(const float& elapsedTime)
     if (fabs(moveDirection_.x) + fabs(moveDirection_.z) <= 0.001f &&
         length != 0.0f)
     {
+        //ChangeState(Player::STATE::Idle);
         const float deceleration = length - GetDeceleration() * elapsedTime;
         if (deceleration < 0.0f)
         {
             velocity = {};
             SetVelocity(velocity);
-            ChangeState(Player::STATE::Idle);
             return;
         }
 
@@ -294,10 +299,6 @@ void Player::Move(const float& elapsedTime)
 
     SetVelocity(velocity);
     GetTransform()->AddPosition(velocity * elapsedTime);
-
-    // アニメーションをいい感じにする
-    const float weight = std::min(1.0f, length / GetMaxSpeed());
-    //SetWeight(weight);
 }
 
 // ----- 先行入力を受付してる -----

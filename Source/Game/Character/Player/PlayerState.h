@@ -143,6 +143,7 @@ namespace PlayerState
         // ----- 先行入力用 -----
         float nextInputStartFrame_  = 0.0f;
         float nextInputEndFrame_    = 0.0f;
+        float nextAttackFrame_      = 0.0f;
 
         // ----- アニメーション制御用 -----
         float slowAnimationStartFrame_  = 0.0f;

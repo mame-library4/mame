@@ -16,6 +16,8 @@ namespace PlayerState
 
         // フラグをリセットする
         owner_->ResetFlags();
+
+        owner_->SetTransitionTime(0.15f);
     }
 
     // ----- 更新 -----
@@ -36,7 +38,13 @@ namespace PlayerState
         const float aLy = fabsf(Input::Instance().GetGamePad().GetAxisLY());
         if (aLx != 0.0f || aLy != 0.0f)
         {
-            owner_->ChangeState(Player::STATE::Move);
+            if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
+            {
+                owner_->ChangeState(Player::STATE::Run);
+                return;
+            }
+
+            owner_->ChangeState(Player::STATE::Walk);
             return;
         }
     }
@@ -58,37 +66,59 @@ namespace PlayerState
         {
             owner_->PlayBlendAnimation(Player::Animation::Idle, true);
         }
-
-        // アニメーションが設定されていない
-        //if (owner_->GetBlendAnimationIndex1() == -1)
-        //{
-        //    owner_->PlayBlendAnimation(Player::Animation::Walk, Player::Animation::Idle, true);
-        //}
-        //// 現在一つ目に設定しているモーションがWalkの場合設定し損ねるので対策
-        //else if (owner_->GetBlendAnimationIndex1() == static_cast<int>(Player::Animation::Walk))
-        //{
-        //    owner_->PlayBlendAnimation(Player::Animation::Walk, Player::Animation::Idle, true);
-        //    //owner_->PlayBlendAnimation(Player::Animation::Run, Player::Animation::Idle, true);
-        //}
-        //// それ以外はここに入る (基本的にここの処理になる)
-        //else
-        //{
-        //    owner_->PlayBlendAnimation(Player::Animation::Walk, Player::Animation::Idle, true);
-        //}
-
     }
 }
 
+// ----- 歩き -----
 namespace PlayerState
 {
+    // ----- 初期化 -----
     void WalkState::Initialize()
     {
+        // アニメーション設定
+        owner_->PlayBlendAnimation(Player::Animation::Walk, true);
+
+        owner_->ResetFlags();
+
+        // 最大速度を設定
+        owner_->SetMaxSpeed(2.5f);
     }
+
+    // ----- 更新 -----
     void WalkState::Update(const float& elapsedTime)
     {
+        // カウンター受付
+        if (owner_->GetCounterStanceKey())
+        {
+            owner_->ChangeState(Player::STATE::Counter);
+            return;
+        }
+
+        // 攻撃入力,回避入力受付
+        if (owner_->CheckNextInput(Player::NextInput::None)) return;
+
+        // 旋回
+        owner_->Turn(elapsedTime);
+
+        const float aLx = fabsf(Input::Instance().GetGamePad().GetAxisLX());
+        const float aLy = fabsf(Input::Instance().GetGamePad().GetAxisLY());
+        if (aLx == 0.0f || aLy == 0.0f)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+
+        if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
+        {
+            owner_->ChangeState(Player::STATE::Run);
+        }
     }
+
+    // ----- 終了化 -----
     void WalkState::Finalize()
     {
+        owner_->SetMoveDirection({});
+        owner_->SetVelocity({});
     }
 }
 
@@ -96,12 +126,47 @@ namespace PlayerState
 {
     void RunState::Initialize()
     {
+        // アニメーション設定
+        owner_->PlayBlendAnimation(Player::Animation::Run, true);
+
+        owner_->ResetFlags();
+
+        // 最大速度を設定
+        owner_->SetMaxSpeed(5.0f);
     }
     void RunState::Update(const float& elapsedTime)
     {
+        // カウンター受付
+        if (owner_->GetCounterStanceKey())
+        {
+            owner_->ChangeState(Player::STATE::Counter);
+            return;
+        }
+
+        // 攻撃入力,回避入力受付
+        if (owner_->CheckNextInput(Player::NextInput::None)) return;
+
+        // 旋回
+        owner_->Turn(elapsedTime);
+
+        const float aLx = fabsf(Input::Instance().GetGamePad().GetAxisLX());
+        const float aLy = fabsf(Input::Instance().GetGamePad().GetAxisLY());
+        if (aLx == 0.0f || aLy == 0.0f)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+
+        if ((Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER) == false)
+        {
+            owner_->ChangeState(Player::STATE::Walk);
+            return;
+        }
     }
     void RunState::Finalize()
     {
+        owner_->SetMoveDirection({});
+        owner_->SetVelocity({});
     }
 }
 
@@ -135,9 +200,6 @@ namespace PlayerState
 
         // 旋回
         owner_->Turn(elapsedTime);
-
-        // 移動
-        owner_->Move(elapsedTime);
     }
 
     // ----- 終了化 -----
@@ -208,8 +270,6 @@ namespace PlayerState
 
         // フラグをリセットする
         owner_->ResetFlags();
-
-
     }
 
     // ----- 更新 -----
@@ -481,8 +541,9 @@ namespace PlayerState
         owner_->ResetFlags();
 
         // 変数初期化
-        nextInputStartFrame_ = 0.1f;
-        nextInputEndFrame_ = 0.55f;
+        nextInputStartFrame_ = 0.3f;
+        nextInputEndFrame_ = 0.85f;
+        nextAttackFrame_ = 0.55f;
         slowAnimationStartFrame_ = 0.3f;
         isSlowAnimation_ = false;   
     }
@@ -490,38 +551,37 @@ namespace PlayerState
     // ----- 更新 -----
     void ComboAttack0_0::Update(const float& elapsedTime)
     {
-        
+        const float animationSeconds = owner_->GetAnimationSeconds();
 
-        //const float currentAnimationSeconds = owner_->GetBlendAnimationSeconds();
+        // アニメーションの速度を制御する
+        if (animationSeconds > slowAnimationStartFrame_ && isSlowAnimation_ == false)
+        {
+            owner_->SetAnimationSpeed(slowAnimationSpeed_);
+            isSlowAnimation_ = true;
+        }
 
-        //// アニメーションの速度を制御する
-        //if (currentAnimationSeconds > slowAnimationStartFrame_ && isSlowAnimation_ == false)
-        //{
-        //    owner_->SetAnimationSpeed(slowAnimationSpeed_);
-        //    isSlowAnimation_ = true;
-        //}
-
-        //// 先行入力が有効なフレーム
-        //if (currentAnimationSeconds > nextInputStartFrame_ && currentAnimationSeconds < nextInputEndFrame_)
-        //{
-        //    // 先行入力受付
-        //    owner_->CheckNextInput(Player::NextInput::ComboAttack0);
-        //}
-        //else if (currentAnimationSeconds > nextInputEndFrame_ && owner_->GetNextInput() != Player::NextInput::None)
-        //{
-        //    switch (owner_->GetNextInput())
-        //    {
-        //    case Player::NextInput::ComboAttack0:
-        //        owner_->ChangeState(Player::STATE::ComboAttack0_1);
-        //        break;
-        //    case Player::NextInput::ComboAttack1:
-        //        owner_->ChangeState(Player::STATE::ComboAttack1_0);
-        //        break;
-        //    case Player::NextInput::Avoidance:
-        //        owner_->ChangeState(Player::STATE::Avoidance);
-        //        break;
-        //    }
-        //}
+        // 先行入力が有効なフレーム
+        if (animationSeconds > nextInputStartFrame_ && animationSeconds < nextInputEndFrame_)
+        {
+            // 先行入力受付
+            owner_->CheckNextInput(Player::NextInput::ComboAttack0);
+            owner_->SetTransitionTime(0.1f);
+        }
+        if (animationSeconds > nextAttackFrame_ && owner_->GetNextInput() != Player::NextInput::None)
+        {
+            switch (owner_->GetNextInput())
+            {
+            case Player::NextInput::ComboAttack0:
+                owner_->ChangeState(Player::STATE::ComboAttack0_1);
+                break;
+            case Player::NextInput::ComboAttack1:
+                owner_->ChangeState(Player::STATE::ComboAttack1_0);
+                break;
+            case Player::NextInput::Avoidance:
+                owner_->ChangeState(Player::STATE::Avoidance);
+                break;
+            }
+        }
 
 
         // アニメーション再生終了
