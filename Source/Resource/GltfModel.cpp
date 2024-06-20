@@ -184,6 +184,10 @@ GltfModel::GltfModel(const std::string& filename) : filename_(filename)
         hr = device->CreateBuffer(&bufferDesc, nullptr, primitiveJointCbuffer_.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
     }
+
+    animatedNodes_[0] = nodes_;
+    animatedNodes_[1] = nodes_;
+    blendedAnimationNodes_ = nodes_;
 }
 
 // ----- アニメーション更新 -----
@@ -192,30 +196,21 @@ void GltfModel::UpdateAnimation(const float& elapsedTime)
     // アニメーション再生してなかったら処理しない
     if (!IsPlayAnimation()) return;
 
-    // 最終フレーム処理 ( 再生終了フラグがたっていれば再生終了 )
-    if (animationEndFlag_)
-    {
-        animationEndFlag_       = false;    // 終了フラグをリセット
-        currentAnimationIndex_  = -1;       // アニメーション番号をリセット
-        blendAnimationIndex1_ = -1;
-        return;
-    }
-
     // ブレンドアニメーション再生 ( ブレンドアニメーションの場合はここで終了 )
     if (UpdateBlendAnimation(elapsedTime)) return;
 
     // アニメーション再生時間経過
-    currentAnimationSeconds_ += elapsedTime * animationSpeed_;
+    animationSeconds_ += elapsedTime * animationSpeed_;
 
     // アニメーションの最終フレームを取ってくる
-    float duration = animations_.at(currentAnimationIndex_).duration_;
+    float duration = animations_.at(animationIndex_).duration_;
 
     // アニメーションが再生しきっている場合
-    if (currentAnimationSeconds_ > duration)
+    if (animationSeconds_ > duration)
     {
         if (animationLoopFlag_)
         {
-            currentAnimationSeconds_ = 0.0f;
+            animationSeconds_ = 0.0f;
             return;
         }
         else
@@ -226,57 +221,28 @@ void GltfModel::UpdateAnimation(const float& elapsedTime)
     }
 
     // アニメーション更新
-    Animate(currentAnimationIndex_, currentAnimationSeconds_, nodes_);
+    Animate(animationIndex_, animationSeconds_, nodes_);
 }
 
 // ----- ブレンドアニメーション更新 ( 更新していたら true ) -----
 bool GltfModel::UpdateBlendAnimation(const float& elapsedTime)
 {
-    // アニメーション番号が入ってない場合は return false
-    if (blendAnimationIndex1_ < 0) return false;
+    if (isBlendAnimation_ == false) return false;
 
-    // weight値を０～１の間に収める
-    weight_ = std::clamp(weight_, 0.0f, 1.0f);
+    weight_ = animationSeconds_ / transitionTime_;
+
+    const std::vector<Node>* nodes[2] = { &animatedNodes_[0], &animatedNodes_[1] };
+    BlendAnimations(nodes, weight_, blendedAnimationNodes_);
+    nodes_ = blendedAnimationNodes_;
 
     // アニメーション再生時間更新
-    blendAnimationSeconds_ += elapsedTime * animationSpeed_;
+    animationSeconds_ += elapsedTime * animationSpeed_;
 
-    // アニメーションの最終フレームを取得
-    float duration1 = animations_.at(blendAnimationIndex1_).duration_;
-    float duration2 = animations_.at(blendAnimationIndex2_).duration_;
-
-    // 基準となるアニメーションにフレーム数を合わせる
-    float maxDuration = duration1;
-    if (blendThreshold_ < weight_) maxDuration = duration2;
-
-    // アニメーションが再生しきっている場合
-    if (blendAnimationSeconds_ > maxDuration)
+    if (weight_ > 1.0f)
     {
-        if (animationLoopFlag_)
-        {
-            blendAnimationSeconds_ = 0.0f;
-            return true;
-        }
-        else
-        {
-            animationEndFlag_ = true;
-            return true;
-        }
+        animationSeconds_ = 0.0f;
+        isBlendAnimation_ = false;
     }
-
-    // ２つのアニメーションの姿勢を取ってくる
-    Animate(blendAnimationIndex1_, blendAnimationSeconds_, nodes_);
-    std::vector<Node> node1 = nodes_;
-    Animate(blendAnimationIndex2_, blendAnimationSeconds_, nodes_);
-    std::vector<Node> node2 = nodes_;
-
-    // ２つのアニメーションのブレンドをする
-    const std::vector<Node>* keyframes[2] = { &node1, &node2 };
-    std::vector<Node> result = node1;
-    BlendAnimations(keyframes, weight_, result);
-
-    CumulateTransforms(result);
-    nodes_ = result;
 
     return true;
 }
@@ -308,6 +274,8 @@ void GltfModel::BlendAnimations(const std::vector<Node>* nodes[2], float factor,
         };
         DirectX::XMStoreFloat3(&node.at(nodeIndex).translation_, DirectX::XMVectorLerp(T[0], T[1], factor));
     }
+
+    CumulateTransforms(node);
 }
 
 
@@ -429,145 +397,19 @@ void GltfModel::Render(const float& scaleFactor, ID3D11PixelShader* psShader)
     }
 }
 
-void GltfModel::Render(const DirectX::XMFLOAT4X4& world, ID3D11PixelShader* psShader)
-{
-    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
-
-    deviceContext->PSSetShaderResources(0, 1, materialResourceView_.GetAddressOf());
-    deviceContext->VSSetShader(vertexShader_.Get(), nullptr, 0);
-    psShader ? deviceContext->PSSetShader(psShader, nullptr, 0) : deviceContext->PSSetShader(pixelShader_.Get(), nullptr, 0);
-    deviceContext->IASetInputLayout(inputLayout_.Get());
-    deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-    std::function<void(int)> traverse{ [&](int nodeIndex)->void {
-        const Node& node{nodes_.at(nodeIndex)};
-        if (node.mesh_ > -1)
-        {
-            const Mesh& mesh{ meshes_.at(node.mesh_) };
-            for (std::vector<Mesh::Primitive>::const_reference primitive : mesh.primitives_)
-            {
-                ID3D11Buffer* vertexBuffers[]
-                {
-                    primitive.vertexBufferViews_.at("POSITION").buffer_.Get(),
-                    primitive.vertexBufferViews_.at("NORMAL").buffer_.Get(),
-                    primitive.vertexBufferViews_.at("TANGENT").buffer_.Get(),
-                    primitive.vertexBufferViews_.at("TEXCOORD_0").buffer_.Get(),
-                    primitive.vertexBufferViews_.at("JOINTS_0").buffer_.Get(),
-                    primitive.vertexBufferViews_.at("WEIGHTS_0").buffer_.Get(),
-                    primitive.vertexBufferViews_.at("JOINTS_1").buffer_.Get(),
-                    primitive.vertexBufferViews_.at("WEIGHTS_1").buffer_.Get(),
-                };
-                UINT strides[]
-                {
-                    static_cast<UINT>(primitive.vertexBufferViews_.at("POSITION").strideInBytes_),
-                    static_cast<UINT>(primitive.vertexBufferViews_.at("NORMAL").strideInBytes_),
-                    static_cast<UINT>(primitive.vertexBufferViews_.at("TANGENT").strideInBytes_),
-                    static_cast<UINT>(primitive.vertexBufferViews_.at("TEXCOORD_0").strideInBytes_),
-                    static_cast<UINT>(primitive.vertexBufferViews_.at("JOINTS_0").strideInBytes_),
-                    static_cast<UINT>(primitive.vertexBufferViews_.at("WEIGHTS_0").strideInBytes_),
-                    static_cast<UINT>(primitive.vertexBufferViews_.at("JOINTS_1").strideInBytes_),
-                    static_cast<UINT>(primitive.vertexBufferViews_.at("WEIGHTS_1").strideInBytes_),
-                };
-                UINT offsets[_countof(vertexBuffers)]{ 0 };
-                deviceContext->IASetVertexBuffers(0, _countof(vertexBuffers), vertexBuffers, strides, offsets);
-                deviceContext->IASetIndexBuffer(primitive.indexBufferView_.buffer_.Get(),
-                    primitive.indexBufferView_.format_, 0);
-
-                primitiveConstants primitiveData{};
-                primitiveData.material_ = primitive.material_;
-                primitiveData.hasTangent_ = primitive.vertexBufferViews_.at("TANGENT").buffer_ != NULL;
-                primitiveData.skin_ = node.skin_;
-                primitiveData.emissiveIntencity_ = emissiveIntencity_;
-
-                DirectX::XMStoreFloat4x4(&primitiveData.world_,
-                    DirectX::XMLoadFloat4x4(&node.globalTransform_) * DirectX::XMLoadFloat4x4(&world));
-                deviceContext->UpdateSubresource(primitiveCbuffer_.Get(), 0, 0, &primitiveData, 0, 0);
-                deviceContext->VSSetConstantBuffers(0, 1, primitiveCbuffer_.GetAddressOf());
-                deviceContext->PSSetConstantBuffers(0, 1, primitiveCbuffer_.GetAddressOf());
-
-                // texture
-                {
-                    const Material& material{ materials_.at(primitive.material_) };
-                    const int textureIndices[]
-                    {
-                        material.data_.pbrMetallicRoughness_.baseColorTexture_.index_,
-                        material.data_.pbrMetallicRoughness_.metallicRoughnessTexture_.index_,
-                        material.data_.normalTexture_.index_,
-                        material.data_.emissiveTexture_.index_,
-                        material.data_.occlusionTexture_.index_,
-                    };
-                    ID3D11ShaderResourceView* nullShaderResourceView{};
-                    std::vector<ID3D11ShaderResourceView*> shaderResourceViews(_countof(textureIndices));
-                    for (int textureIndex = 0; textureIndex < shaderResourceViews.size(); ++textureIndex)
-                    {
-                        shaderResourceViews.at(textureIndex) = textureIndices[textureIndex] > -1 ?
-                            textureResourceViews_.at(textures_.at(textureIndices[textureIndex]).source_).Get() :
-                            nullShaderResourceView;
-                    }
-                    deviceContext->PSSetShaderResources(1, static_cast<UINT>(shaderResourceViews.size()),
-                        shaderResourceViews.data());
-                }
-
-                // animation
-                {
-                    if (node.skin_ > -1)
-                    {
-                        const Skin& skin{ skins_.at(node.skin_) };
-                        PrimitiveJointConstants primitiveJointData{};
-                        auto size__ = skin.joints_.size();
-                        for (size_t jointIndex = 0; jointIndex < skin.joints_.size(); ++jointIndex)
-                        {
-                            DirectX::XMStoreFloat4x4(&primitiveJointData.matrices_[jointIndex],
-                                DirectX::XMLoadFloat4x4(&skin.inverseBindMatrices_.at(jointIndex)) *
-                                DirectX::XMLoadFloat4x4(&nodes_.at(skin.joints_.at(jointIndex)).globalTransform_) *
-                                DirectX::XMMatrixInverse(NULL, DirectX::XMLoadFloat4x4(&node.globalTransform_))
-                            );
-                        }
-                        deviceContext->UpdateSubresource(primitiveJointCbuffer_.Get(), 0, 0, &primitiveJointData, 0, 0);
-                        deviceContext->VSSetConstantBuffers(2, 1, primitiveJointCbuffer_.GetAddressOf());
-                    }
-                }
-
-                deviceContext->DrawIndexed(static_cast<UINT>(primitive.indexBufferView_.count()), 0, 0);
-            }
-        }
-        for (std::vector<int>::value_type childIndex : node.children_)
-        {
-            traverse(childIndex);
-        }
-    } };
-    for (std::vector<int>::value_type nodeIndex : scenes_.at(0).nodes_)
-    {
-        traverse(nodeIndex);
-    }
-}
-
 void GltfModel::DrawDebug()
 {
     GetTransform()->DrawDebug();
     ImGui::DragFloat("emissive", &emissiveIntencity_, 0.01f);
     if (ImGui::TreeNode("Animation"))
     {
-        if (ImGui::TreeNode("DefaultAnimation"))
-        {
-            ImGui::DragInt("AnimationIndex", &currentAnimationIndex_);
-            ImGui::DragFloat("AnimationTimer", &currentAnimationSeconds_);
-
-            ImGui::TreePop();
-        }
-        if (ImGui::TreeNode("BlendAnimation"))
-        {
-            ImGui::DragInt("BlendAnimationIndex1", &blendAnimationIndex1_);
-            ImGui::DragInt("BlendAnimationIndex2", &blendAnimationIndex2_);
-            ImGui::DragFloat("BlendAnimationTimer", &blendAnimationSeconds_);
-            ImGui::DragFloat("BlendWeight", &weight_, 0.1f, 0.0f, 1.0f);
-
-            ImGui::TreePop();
-        }
-        ImGui::DragFloat("AnimationSpeed", &animationSpeed_, 0.1f);
-        ImGui::Checkbox("AnimationLoop", &animationLoopFlag_);
-        ImGui::Checkbox("AnimationEnd", &animationEndFlag_);
-
+        ImGui::DragFloat("AnimationSeconds", &animationSeconds_);
+        ImGui::DragFloat("AnimationSpeed", &animationSpeed_);
+        ImGui::Text("Weight", &weight_);
+        ImGui::DragFloat("TransitionTime", &transitionTime_);
+        ImGui::Text("AnimationIndex", &animationIndex_);
+        ImGui::Checkbox("AnimationLoopFlag", &animationLoopFlag_);
+        ImGui::Checkbox("AnimationEndFlag", &animationEndFlag_);
         ImGui::TreePop();
     }
 }
@@ -654,70 +496,33 @@ void GltfModel::Animate(size_t animationIndex, float time, std::vector<Node>& an
 // ----- アニメーション再生 -----
 void GltfModel::PlayAnimation(const int& index, const bool& loop, const float& speed)
 {
-    if (index == currentAnimationIndex_) return;
+    if (animationIndex_ == index) return;
 
-    currentAnimationIndex_      = index;    // アニメーション番号を設定
-    currentAnimationSeconds_    = 0.0f;     // タイマーをリセットする
-    
-    blendAnimationIndex1_ = -1; // 使用しないので-1
+    animationIndex_ = index;
+    animationSeconds_ = 0.0f;
 
     animationLoopFlag_          = loop;     // アニメーションループフラグを設定する
     animationEndFlag_           = false;    // 再生終了フラグをリセット
-
     animationSpeed_             = speed;    // アニメーション再生速度を設定
 }
 
-// ----- ブレンドアニメーション再生 -----
-void GltfModel::PlayBlendAnimation(const int& index1, const int& index2, const bool& loop, const float& speed)
-{
-    // 設定用のアニメーション番号が現在のアニメーション番号と同じ場合はreturn
-    if (blendAnimationIndex1_ == index1 && blendAnimationIndex2_ == index2) return;
-    
-    // 通常アニメーション番号をリセット
-    currentAnimationIndex_ = -1;
-
-    blendAnimationIndex1_ = index1;    // 再生するアニメーション番号を設定
-    blendAnimationIndex2_ = index2;    // 再生するアニメーション番号を設定
-    blendAnimationSeconds_ = 0.0f;     // アニメーション再生時間リセット
-
-    animationLoopFlag_  = loop;     // ループさせるか
-    animationEndFlag_   = false;    // 再生終了フラグをリセット
-
-    animationSpeed_     = speed;    // アニメーション再生速度
-}
-
-// ----- ブレンドアニメーション再生 ( 初回以降使用可能 ) -----
 void GltfModel::PlayBlendAnimation(const int& index, const bool& loop, const float& speed)
 {
-    // 再生するindex番号が現在と同じ場合 return
-    if (blendAnimationIndex2_ == index) return;
+    if (animationIndex_ == index) return;
 
-    // 通常アニメーション番号リセット
-    currentAnimationIndex_ = -1;
+    Animate(animationIndex_, animationSeconds_, animatedNodes_[0]);
+    Animate(index, 0.0f, animatedNodes_[1]);
 
-    blendAnimationIndex1_ = blendAnimationIndex2_;  // 再生するアニメーション番号を設定
-    blendAnimationIndex2_ = index;                  // 再生するアニメーション番号を設定
+    animationIndex_ = index;
 
-    blendAnimationSeconds_ = 0.0f;     // アニメーション再生時間リセット
+    animationSeconds_ = 0.0f;
+    weight_ = 0.0f;
 
-    animationLoopFlag_ = loop;     // ループさせるか
-    animationEndFlag_ = false;    // 再生終了フラグをリセット
+    animationEndFlag_ = false;
+    animationLoopFlag_ = loop;
+    animationSpeed_ = speed;
 
-    animationSpeed_ = speed;    // アニメーション再生速度
-}
-
-// ----- アニメーションが再生中なら true -----
-const bool GltfModel::IsPlayAnimation()
-{
-    // アニメーション再生されていない
-    if (currentAnimationIndex_ < 0 && blendAnimationIndex1_ < 0) return false;
-
-    // アニメーション番号が存在しない
-    const int animatinIndexEnd = static_cast<int>(animations_.size());
-    if (currentAnimationIndex_ >= animatinIndexEnd && blendAnimationIndex1_ >= animatinIndexEnd) return false;
-    
-
-    return true;
+    isBlendAnimation_ = true;
 }
 
 // ----- 指定したジョイントの位置を取得 -----

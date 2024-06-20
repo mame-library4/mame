@@ -297,7 +297,7 @@ void Player::Move(const float& elapsedTime)
 
     // アニメーションをいい感じにする
     const float weight = std::min(1.0f, length / GetMaxSpeed());
-    SetWeight(weight);
+    //SetWeight(weight);
 }
 
 // ----- 先行入力を受付してる -----
@@ -346,10 +346,6 @@ void Player::ResetFlags()
     SetIsAvoidance(false);                          // 回避入力判定用フラグ
 }
 
-void Player::PlayBlendAnimation(const Animation& index1, const Animation& index2, const bool& loop, const float& speed)
-{
-    Object::PlayBlendAnimation(static_cast<int>(index1), static_cast<int>(index2), loop, speed);
-}
 
 void Player::PlayBlendAnimation(const Animation& index, const bool& loop, const float& speed)
 {    
@@ -380,15 +376,6 @@ void Player::UpdateCollisions(const float& elapsedTime, const float& scaleFactor
     }
 }
 
-void Player::SetWeight(const float& weight)
-{
-    Object::SetWeight(weight);
-}
-
-void Player::AddWeight(const float& weight)
-{
-    Object::AddWeight(weight);
-}
 
 void Player::SetAttackFlag(const bool& activeFlag)
 {

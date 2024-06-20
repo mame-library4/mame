@@ -12,11 +12,14 @@ public:
     void DrawDebug();
 
     void PlayAnimation(const int& index, const bool& loop, const float& speed) { gltfModel_.PlayAnimation(index, loop, speed); }
-    void PlayBlendAnimation(const int& index1, const int& index2, const bool& loop, const float& speed) { gltfModel_.PlayBlendAnimation(index1, index2, loop, speed); }
     void PlayBlendAnimation(const int& index, const bool& loop, const float& speed) { gltfModel_.PlayBlendAnimation(index, loop, speed); }
-    const bool IsPlayAnimation() { return gltfModel_.IsPlayAnimation(); }
+    [[nodiscard]] const bool IsPlayAnimation() { return gltfModel_.IsPlayAnimation(); }
+    [[nodiscard]] const int GetAnimationIndex() const { return gltfModel_.GetAnimationIndex(); }
+    [[nodiscard]] const float GetAnimationSeconds() const { return gltfModel_.GetAnimationSeconds(); }
     [[nodiscard]] const float GetAnimationSpeed() const { return gltfModel_.GetAnimationSpeed(); }
+    [[nodiscard]] const float GetTransitionTime() const { return gltfModel_.GetTransitionTime(); }
     void SetAnimationSpeed(const float& speed) { gltfModel_.SetAnimationSpeed(speed); }
+    void SetTransitionTime(const float& time) { gltfModel_.SetTransitionTime(time); }
 
 public:
     // ---------- Transform ----------
@@ -31,24 +34,11 @@ public:
     DirectX::XMMATRIX GetJointWorldTransform(const std::string& nodeName, const float& scaleFacter) { return gltfModel_.GetJointWorldTransform(nodeName, scaleFacter); }
 
 
-    // ---------- Animation ----------
-    [[nodiscard]] const int GetBlendAnimationIndex1() const { return gltfModel_.GetBlendAnimationIndex1(); }
-    [[nodiscard]] const int GetBlendAnimationIndex2() const { return gltfModel_.GetBlendAnimationIndex2(); }
-    [[nodiscard]] const float GetBlendAnimationSeconds() const { return gltfModel_.GetBlendAnimationSeconds(); }
-
-    // ---------- weight ----------
-    [[nodiscard]] const float GetWeight() { return gltfModel_.GetWeight(); }
-    virtual void SetWeight(const float& weight) { gltfModel_.SetWeight(weight); }
-    virtual void AddWeight(const float& weight);
-
     // ---------- Node ----------
     [[nodiscard]] const int GetNodeIndex(const std::string& nodeName) { return gltfModel_.GetNodeIndex(nodeName); }
     std::vector<GltfModel::Node>* GetNodes() { return gltfModel_.GetNodes(); }
 
-    // ----- RootMotion -----
-    void RootMotionInitialize();
-    void RootMotionUpdate(const float& elapsedTime, const std::string& rootName);
-    void RootMotionUpdate(const float& elapsedTime, const std::string& rootName, const int& animationIndex);
+
 
 private:
     GltfModel gltfModel_;

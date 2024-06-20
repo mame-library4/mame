@@ -90,16 +90,6 @@ void Enemy::UpdateNode(const float& elapsedTime)
 // ----- ブレンドアニメーション設定 -----
 bool Enemy::PlayBlendAnimation(const DragonAnimation& index, const bool& loop, const float& speed)
 {
-    const int currentAnimationIndex = GetBlendAnimationIndex2();
-    
-    // 現在のアニメーションと引数のアニメーションが同じ場合
-    if (currentAnimationIndex == static_cast<int>(index))
-    {
-        Object::PlayBlendAnimation(static_cast<int>(Enemy::DragonAnimation::Walk), static_cast<int>(index), loop, speed);
-        return true;
-    }
-
-    Object::PlayBlendAnimation(static_cast<int>(index), loop, speed);
     return true;
 
 #if 0

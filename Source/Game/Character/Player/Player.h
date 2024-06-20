@@ -103,13 +103,11 @@ public:
     float slowAnimationSpeed_ = 0.15f;
     //float slowAnimationSpeed_ = 0.25f;
 
-    void PlayBlendAnimation(const Animation& index1, const Animation& index2, const bool& loop, const float& speed = 1.0f);
+    
     void PlayBlendAnimation(const Animation& index, const bool& loop, const float& speed = 1.0f);
 
     void UpdateCollisions(const float& elapsedTime, const float& scaleFactor) override;
 
-    void SetWeight(const float& weight) override;
-    void AddWeight(const float& weight) override;
 
     // UŒ‚”»’è—LŒøƒtƒ‰ƒOİ’è
     void SetAttackFlag(const bool& activeFlag = true);

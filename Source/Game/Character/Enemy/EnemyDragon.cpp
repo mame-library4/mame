@@ -37,6 +37,8 @@ void EnemyDragon::Initialize()
     // ‘Ì—Íİ’è
     SetMaxHealth(3000.0f);
     SetHealth(GetMaxHealth());
+
+    PlayAnimation(Enemy::DragonAnimation::Idle0, true);
 }
 
 // ----- I—¹‰» -----

@@ -31,6 +31,28 @@ namespace PlayerState
         void Finalize()                         override;
     };
 
+    class WalkState : public State<Player>
+    {
+    public:
+        WalkState(Player* player) : State(player, "WalkState") {}
+        ~WalkState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+    };
+
+    class RunState : public State<Player>
+    {
+    public:
+        RunState(Player* player) : State(player, "RunState") {}
+        ~RunState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+    };
+
     // ----- É_ÉÅÅ[ÉW -----
     class DamageState : public State<Player>
     {

@@ -353,38 +353,23 @@ public:
     Microsoft::WRL::ComPtr<ID3D11Buffer> primitiveJointCbuffer_;
 
 public:
-    void UpdateAnimation(const float& elapsedTime);
-    bool UpdateBlendAnimation(const float& elapsedTime);
-    void BlendAnimations(const std::vector<Node>* nodes[2], float factor, std::vector<Node>& node);
-
     void Render(const float& scaleFactor, ID3D11PixelShader* psShader = nullptr);
-    void Render(const DirectX::XMFLOAT4X4& world, ID3D11PixelShader* psShader = nullptr);
     void DrawDebug();
 
-    void Animate(size_t animationIndex, float time, std::vector<Node>& animatedNodes);
-
-
-    Transform* GetTransform() { return &transform_; }
-
-    // アニメーション関連
-    void SetAnimationIndex(int index) { currentAnimationIndex_  = index; }
-    int GetAnimationIndex() { return currentAnimationIndex_; }
-
-    // アニメーション再生
-    void PlayAnimation(const int& animationIndex, const bool& loop, const float& speed);
-    void PlayBlendAnimation(const int& index1, const int& index2, const bool& loop, const float& speed);
+    // ---------- Animation ----------
+    void PlayAnimation(const int& index, const bool& loop, const float& speed);
     void PlayBlendAnimation(const int& index, const bool& loop, const float& speed);
-    const bool IsPlayAnimation();
-    
+    void UpdateAnimation(const float& elapsedTime);
+    [[nodiscard]] const bool IsPlayAnimation() { return !animationEndFlag_; }
+    [[nodiscard]] const int GetAnimationIndex() const { return animationIndex_; }
+    [[nodiscard]] const float GetAnimationSeconds() const { return animationSeconds_; }
     [[nodiscard]] const float GetAnimationSpeed() const { return animationSpeed_; }
+    [[nodiscard]] const float GetTransitionTime() const { return transitionTime_; }
     void SetAnimationSpeed(const float& speed) { animationSpeed_ = speed; }
+    void SetTransitionTime(const float& time) { transitionTime_ = time; }
 
-    // ----- BlendAnimationSeconds -----
-    [[nodiscard]] const float GetBlendAnimationSeconds() const { return blendAnimationSeconds_; }
-
-    // ----- AnimationIndex -----
-    [[nodiscard]] const int GetBlendAnimationIndex1() const { return blendAnimationIndex1_; }
-    [[nodiscard]] const int GetBlendAnimationIndex2() const { return blendAnimationIndex2_; }
+    // ---------- Transform ----------
+    Transform* GetTransform() { return &transform_; }
 
     // ----- JointPosiion -----
     DirectX::XMFLOAT3 GetJointPosition(const size_t& nodeIndex, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {});
@@ -397,10 +382,6 @@ public:
     [[nodiscard]] const int GetNodeIndex(const std::string& nodeName);
     std::vector<Node>* GetNodes() { return &nodes_; }
 
-    // ----- weight値 -----
-    [[nodiscard]] const float GetWeight() const { return weight_; }
-    void SetWeight(const float& weight) { weight_ = weight; }
-
 private:
     void FetchNodes(const tinygltf::Model& gltfModel);
     void FetchMeshes(ID3D11Device* device, const tinygltf::Model& gltfModel);
@@ -410,6 +391,11 @@ private:
 
     void CumulateTransforms(std::vector<Node>& nodes);
     GltfModel::BufferView MakeBufferView(const tinygltf::Accessor& accessor);
+
+    // ---------- Animation ----------
+    bool UpdateBlendAnimation(const float& elapsedTime);
+    void BlendAnimations(const std::vector<Node>* nodes[2], float factor, std::vector<Node>& node);
+    void Animate(size_t animationIndex, float time, std::vector<Node>& animatedNodes);
 
 private:
     std::string filename_;
@@ -430,18 +416,15 @@ private:
     Microsoft::WRL::ComPtr<ID3D11Buffer> primitiveCbuffer_;
     float emissiveIntencity_ = 1.0f;
 
-    // ----- Animation -----
-    int     currentAnimationIndex_      = -1;       // 現在のアニメーション番号
-    float   currentAnimationSeconds_    = 0.0f;     // 現在のアニメーション再生時間
-    int     currentKeyframeIndex_       = 0;        // 現在のアニメーション再生フレーム
-    bool    animationLoopFlag_          = false;    // アニメーションをループするか 
-    bool    animationEndFlag_           = false;    // アニメーションが終了したか
-
-    int     blendAnimationIndex1_       = -1;       // １つ目ブレンド用アニメーション番号
-    int     blendAnimationIndex2_       = -1;       // ２つ目ブレンド用アニメーション番号
-    float   blendAnimationSeconds_      = 0.0f;     // 現在のアニメーション再生時間
-    float   blendThreshold_             = 0.0f;     // ブレンドアニメーションのベースとなるアニメーションの切り替え閾値
-
-    float   weight_                     = 0.0f;     // 影響値
-    float   animationSpeed_             = 1.0f;     // アニメーション再生速度
+    // ---------- Animation ----------
+    int     animationIndex_     = -1;       // アニメーション番号
+    float   animationSeconds_   = 0.0f;     // アニメーション再生時間
+    float   animationSpeed_     = 1.0f;     // アニメーション再生速度
+    float   weight_             = 0.0f;     // 影響値
+    float   transitionTime_     = 0.15f;    // アニメーションブレンド速度
+    bool    animationLoopFlag_  = false;    // アニメーションループフラグ
+    bool    animationEndFlag_   = false;    // アニメーションエンドフラグ
+    bool    isBlendAnimation_   = false;    // ブレンドするかフラグ
+    std::vector<Node> animatedNodes_[2];
+    std::vector<Node> blendedAnimationNodes_;    
 };

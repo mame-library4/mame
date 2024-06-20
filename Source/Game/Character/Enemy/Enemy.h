@@ -123,7 +123,6 @@ public:
 
     // ---------- アニメーション関連 ----------
     void PlayAnimation(const DragonAnimation& index, const bool& loop, const float& speed = 1.0f) { Object::PlayAnimation(static_cast<int>(index), loop, speed); }
-    void PlayBlendAnimation(const DragonAnimation& index1, const DragonAnimation& index2, const bool& loop, const float& speed = 1.0f) { Object::PlayBlendAnimation(static_cast<int>(index1), static_cast<int>(index2), loop, speed); }
     bool PlayBlendAnimation(const DragonAnimation& index, const bool& loop, const float& speed = 1.0f);
 
     // ---------- プレイヤーまでの距離を算出 ----------
