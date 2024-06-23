@@ -406,8 +406,11 @@ namespace PlayerState
         power_[Direction::Back] = 0.4f;
         addForceFrame_[Direction::Front] = 0.66f;
         addForceFrame_[Direction::Back]  = 0.16f;
-        isAddForce_[Direction::Front] = false;
-        isAddForce_[Direction::Back]  = false;
+        //isAddForce_[Direction::Front] = false;
+        //isAddForce_[Direction::Back]  = false;
+        isAddForce_[Direction::Front] = true;
+        isAddForce_[Direction::Back] = true;
+
 
         animationSlowStartFrame_ = 0.5f;
         animationSlowEndFrame_ = 0.7f;
@@ -544,7 +547,8 @@ namespace PlayerState
 
         // •Ï”‰Šú‰»
         addForceFrame_ = 0.3f;
-        isAddForce_ = false;
+        isAddForce_ = true;
+        //isAddForce_ = false;
 
         Input::Instance().GetGamePad().Vibration(0.3f, 1.0f);
 
@@ -898,7 +902,8 @@ namespace PlayerState
         moveDirecion_ = owner_->GetTransform()->CalcForward();
         addForceFrame_ = 0.15f;
         power_ = 0.45f;
-        isAddForce_ = false;
+        isAddForce_ = true;
+        //isAddForce_ = false;
     }
 
     void ComboAttack1_0::Update(const float& elapsedTime)
@@ -936,7 +941,8 @@ namespace PlayerState
         moveDirecion_ = owner_->GetTransform()->CalcForward();
         addForceFrame_ = 0.2f;
         power_ = 0.4f;
-        isAddForce_ = false;
+        isAddForce_ = true;
+        //isAddForce_ = false;
     }
 
     void ComboAttack1_1::Update(const float& elapsedTime)
@@ -974,7 +980,8 @@ namespace PlayerState
         moveDirecion_ = owner_->GetTransform()->CalcForward();
         addForceFrame_ = 0.3f;
         power_ = 0.4f;
-        isAddForce_ = false;
+        //isAddForce_ = false;
+        isAddForce_ = true;
     }
 
     void ComboAttack1_2::Update(const float& elapsedTime)

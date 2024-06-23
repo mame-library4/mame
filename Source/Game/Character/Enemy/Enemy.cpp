@@ -87,47 +87,6 @@ void Enemy::UpdateNode(const float& elapsedTime)
     }
 }
 
-// ----- ブレンドアニメーション設定 -----
-bool Enemy::PlayBlendAnimation(const DragonAnimation& index, const bool& loop, const float& speed)
-{
-    return true;
-
-#if 0
-    // 現在のアニメーションと引数のアニメーションが同じ場合
-    if (currentAnimationIndex == static_cast<int>(index))
-    {
-        // 斜め歩きの時だけもう一度アニメーション再生してほしくないので処理を飛ばす
-        if (index == DragonAnimation::WalkLeft ||
-            index == DragonAnimation::WalkRight)
-        {
-            return false;
-        }
-
-        // 仮でwalkを一つ目のブレンド引数に入れておく
-        Object::PlayBlendAnimation(static_cast<int>(Enemy::DragonAnimation::Walk), static_cast<int>(index), loop, speed);
-        SetWeight(1.0f);
-        return true;
-    }
-
-    // 攻撃アニメーションの時はweight値を１にする
-    if (currentAnimationIndex != static_cast<int>(DragonAnimation::Idle) &&
-        currentAnimationIndex != static_cast<int>(DragonAnimation::Walk) &&
-        currentAnimationIndex != static_cast<int>(DragonAnimation::WalkLeft) &&
-        currentAnimationIndex != static_cast<int>(DragonAnimation::WalkRight))
-    {
-        SetWeight(1.0f);
-    }
-
-    if (currentAnimationIndex != static_cast<int>(DragonAnimation::Roar))
-    {
-        SetWeight(0.0f);
-    }
-
-    Object::PlayBlendAnimation(static_cast<int>(index), loop, speed);
-    return true;
-#endif
-}
-
 // ----- プレイヤーまでの距離を算出 -----
 const float Enemy::CalcDistanceToPlayer()
 {

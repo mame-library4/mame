@@ -1,7 +1,18 @@
 #pragma once
 #include "BaseScene.h"
-#include "Object.h"
+#include "Character/Character.h"
 #include <memory>
+
+class DemoChara : public Character
+{
+public:
+    DemoChara();
+    ~DemoChara() {};
+
+    void Update(const float& elapsedTime)override;
+    void Render(ID3D11PixelShader* psShader) override;
+    void DrawDebug()override;
+};
 
 class DemoScene : public BaseScene
 {
@@ -24,7 +35,7 @@ public:
     void DrawDebug()                        override; // ImGui—p
 
 private:
-    std::unique_ptr<Object> model_;
+    std::unique_ptr<DemoChara> model_;
     DirectX::XMFLOAT3 target_ = {};
 };
 

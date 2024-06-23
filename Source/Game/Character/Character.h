@@ -30,7 +30,8 @@ public:
     void LookAtInitilaize(const std::string& nodeName);
     void LookAtUpdate();
 
-
+    // ----- RootMotion -----
+    void UpdateRootMotion();
 
 public:// --- éÊìæÅEê›íË ---
 #pragma region [Get, Set] Function
@@ -105,18 +106,20 @@ private:
 
     float collisionRadius_ = 0.0f;
 
-    // ---------- êÅÇ¡îÚÇ— --------------------
+    // ---------- êÅÇ¡îÚÇ— -----------------------
     DirectX::XMFLOAT3   blowDirection_      = {};
     float               blowPower_          = 0.0f;
     float               decelerationForce_  = 0.0f;
 
-    // ---------- LookAt --------------------
+    // ---------- LookAt -------------------------
     DirectX::XMFLOAT3   headGlobalForward_      = {};
     DirectX::XMFLOAT3   lookAtTargetPosition_   = {};
     int                 headJointIndex_         = 0;
-    float oldAngle_ = 100.0f;
+    bool                isLookAt_               = false;
 
-
+    // ---------- RootMotion --------------------
+    std::vector<GltfModel::Node> zeroAnimatedNodes_;
+    DirectX::XMFLOAT3   previousPosition_   = {};
+    int                 rootJointIndex_     = 0;
 
 };
-

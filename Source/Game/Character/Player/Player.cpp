@@ -3,8 +3,6 @@
 #include "Graphics.h"
 #include "Camera.h"
 
-#define USE_LOOK_AT 1
-
 // ----- コンストラクタ -----
 Player::Player()
     : Character("./Resources/Model/Character/Player/Orc.gltf", 1.0f)
@@ -36,9 +34,7 @@ Player::Player()
     }
 
     // LookAt初期化
-#if USE_LOOK_AT
     LookAtInitilaize("Head");
-#endif
 }
 
 // ----- デストラクタ -----
@@ -119,10 +115,7 @@ void Player::Update(const float& elapsedTime)
     //const DirectX::XMFLOAT3 endPos = swordModel_.GetJointPosition("R1:R:j_top", 0.01f);
     //swordTrail_.Update(startPos, endPos);
 
-    // LookAt更新
-#if USE_LOOK_AT
-    LookAtUpdate();
-#endif
+    UpdateRootMotion();
 }
 
 // ----- 描画 -----
@@ -378,6 +371,18 @@ void Player::UpdateCollisions(const float& elapsedTime)
     }
 }
 
+// ----- RootMotion更新 -----
+void Player::UpdateRootMotion()
+{
+    if (GetAnimationIndex() == static_cast<int>(Player::Animation::Idle))
+    {
+        if (GetIsBlendAnimation() || GetAnimationSeconds() == 0.0f) Character::UpdateRootMotion();
+    }
+    else
+    {
+        Character::UpdateRootMotion();
+    }
+}
 
 void Player::SetAttackFlag(const bool& activeFlag)
 {

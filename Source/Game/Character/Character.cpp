@@ -1,13 +1,15 @@
 #include "Character.h"
 #include "../Scene/GameScene.h"
-#include "../Other/MathHelper.h"
+#include "MathHelper.h"
 
 // ----- コンストラクタ -----
 Character::Character(const std::string& filename, const float& scaleFactor)
     : Object(filename, scaleFactor)
 {
+    zeroAnimatedNodes_ = *GetNodes();
 }
 
+// ----- 更新 -----
 void Character::Update(const float& elapsedTime)
 {
     // アニメーション更新
@@ -15,6 +17,11 @@ void Character::Update(const float& elapsedTime)
 
     // 吹っ飛び更新
     UpdateForce(elapsedTime);
+
+    // LookAt更新
+    LookAtUpdate();
+
+    
 }
 
 // ----- ImGui用 -----
@@ -22,6 +29,7 @@ void Character::DrawDebug()
 {
     if (ImGui::TreeNode("LookAt"))
     {
+        ImGui::Checkbox("USE", &isLookAt_);
         ImGui::DragFloat3("GlobalForward", &headGlobalForward_.x);
         ImGui::DragFloat3("TargetPosition", &lookAtTargetPosition_.x);
         ImGui::DragInt("JointIndex", &headJointIndex_);
@@ -170,6 +178,9 @@ void Character::LookAtInitilaize(const std::string& nodeName)
 // ----- LookAt更新 -----
 void Character::LookAtUpdate()
 {
+    // LookAt処理をするか
+    if (isLookAt_ == false) return;
+
     // ワールド行列
     DirectX::XMMATRIX World = GetTransform()->CalcWorldMatrix(GetScaleFactor());
 
@@ -203,13 +214,6 @@ void Character::LookAtUpdate()
 
     // 回転角を求める
     float angle = DirectX::XMVectorGetX(DirectX::XMVector3AngleBetweenVectors(headLocalForward, headToTargetLocal));
-    
-    if (oldAngle_ < 10.0f)
-    {
-        const float diffAngle = oldAngle_ - angle;
-        //if(fabsf(diffAngle) > )
-    }
-    oldAngle_ = angle;
 
     // 回転行列を求める
     DirectX::XMMATRIX Rotation = DirectX::XMMatrixRotationAxis(DirectX::XMVector3Normalize(Axis), angle);
@@ -234,6 +238,54 @@ void Character::LookAtUpdate()
         }
     };
     UpdateGlobalTransforms(-1, headJointIndex_);
+}
+
+void Character::UpdateRootMotion()
+{
+    if (IsPlayAnimation() == false) return;    
+
+    rootJointIndex_ = 1;
+    GltfModel::Node& node = GetNodes()->at(rootJointIndex_);
+
+    if (GetAnimationSeconds() == 0)
+    {
+        previousPosition_ = { node.globalTransform_._41, node.globalTransform_._42, node.globalTransform_._43 };
+    }
+
+    DirectX::XMFLOAT3 position = { node.globalTransform_._41, node.globalTransform_._42, node.globalTransform_._43 };
+    DirectX::XMFLOAT3 displacement = { position.x - previousPosition_.x, position.y - previousPosition_.y, position.z - previousPosition_.z };
+
+    DirectX::XMMATRIX C = DirectX::XMLoadFloat4x4(&GetTransform()->GetCoordinateSystemTransforms(Transform::CoordinateSystem::cRightYup)) * DirectX::XMMatrixScaling(GetScaleFactor(), GetScaleFactor(), GetScaleFactor());
+    DirectX::XMMATRIX S = DirectX::XMMatrixScaling(GetTransform()->GetScale().x, GetTransform()->GetScale().y, GetTransform()->GetScale().z);
+    DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(GetTransform()->GetRotationX(), GetTransform()->GetRotationY(), GetTransform()->GetRotationZ());
+    DirectX::XMStoreFloat3(&displacement, DirectX::XMVector3TransformNormal(DirectX::XMLoadFloat3(&displacement), C * S * R));
+
+    DirectX::XMFLOAT3 translation = GetTransform()->GetPosition();
+    translation = translation + displacement;
+    GetTransform()->SetPosition(translation);
+
+    node.globalTransform_._41 = zeroAnimatedNodes_.at(rootJointIndex_).globalTransform_._41;
+    node.globalTransform_._42 = zeroAnimatedNodes_.at(rootJointIndex_).globalTransform_._42;
+    node.globalTransform_._43 = zeroAnimatedNodes_.at(rootJointIndex_).globalTransform_._43;
+
+    std::function<void(int, int)> traverse = [&](int parentIndex, int nodeIndex)
+    {
+        GltfModel::Node& node = GetNodes()->at(nodeIndex);
+        if (parentIndex > -1)
+        {
+            DirectX::XMMATRIX S = DirectX::XMMatrixScaling(node.scale_.x, node.scale_.y, node.scale_.z);
+            DirectX::XMMATRIX R = DirectX::XMMatrixRotationQuaternion(DirectX::XMVectorSet(node.rotation_.x, node.rotation_.y, node.rotation_.z, node.rotation_.w));
+            DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(node.translation_.x, node.translation_.y, node.translation_.z);
+            DirectX::XMStoreFloat4x4(&node.globalTransform_, S * R * T * DirectX::XMLoadFloat4x4(&GetNodes()->at(parentIndex).globalTransform_));
+        }
+        for (int childIndex : node.children_)
+        {
+            traverse(nodeIndex, childIndex);
+        }
+    };
+    traverse(-1, rootJointIndex_);
+
+    previousPosition_ = position;
 }
 
 

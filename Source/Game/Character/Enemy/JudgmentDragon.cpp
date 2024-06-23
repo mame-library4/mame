@@ -19,15 +19,16 @@ const bool FlinchJudgment::Judgment()
 // ----- ”ñí“¬”»’è -----
 const bool NonBattleJudgment::Judgment()
 {
+    return false;
     return true;
 
-    return false;
 }
 
 // ----- ”ñí“¬‘Ò‹@”»’è -----
 const bool NonBattleIdleJudgment::Judgment()
 {
     return true;
+
     return false;
 }
 
@@ -38,6 +39,8 @@ const bool RoarJudgment::Judgment()
 
 const bool ShoutJudgment::Judgment()
 {
+    return true;
+
     return false;
 }
 

@@ -405,9 +405,9 @@ void GltfModel::DrawDebug()
     {
         ImGui::DragFloat("AnimationSeconds", &animationSeconds_);
         ImGui::DragFloat("AnimationSpeed", &animationSpeed_);
-        ImGui::Text("Weight", &weight_);
+        ImGui::DragFloat("Weight", &weight_);
         ImGui::DragFloat("TransitionTime", &transitionTime_);
-        ImGui::Text("AnimationIndex", &animationIndex_);
+        ImGui::DragInt("AnimationIndex", &animationIndex_);
         ImGui::Checkbox("AnimationLoopFlag", &animationLoopFlag_);
         ImGui::Checkbox("AnimationEndFlag", &animationEndFlag_);
         ImGui::TreePop();

@@ -117,6 +117,10 @@ public:
     [[nodiscard]] const bool GetUseBlendAnimation() const { return useBlendAnimation_; }
     void SetUseBlendAnimation(const bool& flag) { useBlendAnimation_ = flag; }
 
+
+    // ---------- RootMotion ----------
+    void UpdateRootMotion();
+
     // UŒ‚”»’è—LŒøƒtƒ‰ƒOİ’è
     void SetAttackFlag(const bool& activeFlag = true);
     bool GetIsActiveAttackFlag();

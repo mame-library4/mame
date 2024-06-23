@@ -47,6 +47,7 @@ const ActionBase::State NonBattleIdleAction::Run(const float& elapsedTime)
         // アニメーション設定
         owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, true);
 
+        owner_->SetStep(1);
         break;
     case 1:
         break;
@@ -58,12 +59,43 @@ const ActionBase::State NonBattleIdleAction::Run(const float& elapsedTime)
 // ----- 非戦闘時歩き -----
 const ActionBase::State NonBattleWalkAction::Run(const float& elapsedTime)
 {
+    switch (owner_->GetStep())
+    {
+    case 0:// 初期化
+        // アニメーション設定
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::Walk, true);
+
+        owner_->SetStep(1);
+        break;
+    case 1:
+        break;
+    }
+
     return ActionBase::State();
 }
 
 const ActionBase::State RoarAction::Run(const float& elapsedTime)
 {
-    return ActionBase::State();
+    switch (owner_->GetStep())
+    {
+    case 0:// 初期化
+        // アニメーション設定
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::Roar, true);
+
+        owner_->SetStep(1);
+        break;
+    case 1:
+
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->SetStep(0);
+            return ActionBase::State::Complete;
+        }
+
+        break;
+    }
+
+    return ActionBase::State::Run;
 }
 
 const ActionBase::State BackStepRoarAction::Run(const float& elapsedTime)
