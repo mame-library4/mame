@@ -40,13 +40,13 @@ void PostProcess::Draw()
 {
     constant_->Activate(0);
 
-    //if (EnemyManager::Instance().GetEnemy(0)->GetIsRoar())
+    if (EnemyManager::Instance().GetEnemy(0)->GetIsRoar())
     {
         renderer_->Draw(bloom_.GetShaderResourceView(), 0, 1, roarPS_.Get());
     }
-    //else
+    else
     {
-      //  renderer_->Draw(bloom_.GetShaderResourceView(), 0, 1, postProcessPS_.Get());
+      renderer_->Draw(bloom_.GetShaderResourceView(), 0, 1, postProcessPS_.Get());
     }
 
 }

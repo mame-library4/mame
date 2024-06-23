@@ -24,6 +24,9 @@ class NonBattleJudgment : public JudgmentBase
 public:
     NonBattleJudgment(Enemy* owner) : JudgmentBase(owner) {}
     const bool Judgment() override;
+
+private:
+    int num_ = 0;
 };
 
 // ”ñí“¬‘Ò‹@”»’è

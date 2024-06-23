@@ -19,9 +19,16 @@ const bool FlinchJudgment::Judgment()
 // ----- ”ñí“¬”»’è -----
 const bool NonBattleJudgment::Judgment()
 {
-    return false;
-    return true;
-
+    if (num_ == 0)
+    {
+        ++num_;
+        return true;
+    }
+    else
+    {
+        num_ = 0;
+        return false;
+    }
 }
 
 // ----- ”ñí“¬‘Ò‹@”»’è -----

@@ -27,6 +27,9 @@ class NonBattleIdleAction : public ActionBase
 public:
     NonBattleIdleAction(Enemy* owner) : ActionBase(owner) {}
     const ActionBase::State Run(const float& elapsedTime) override;
+
+private:
+    float timer_ = 0.0f;
 };
 
 // 非戦闘歩き行動
@@ -43,6 +46,18 @@ class RoarAction : public ActionBase
 public:
     RoarAction(Enemy* owner) : ActionBase(owner) {}
     const ActionBase::State Run(const float& elapsedTime) override;
+
+private:
+    float vibrationStartFrame_[3] = { 1.0f, 1.55f, 3.0f };
+    bool isVibration_[3] = {};
+
+    // ----- Blur -----
+    float   blurStartFrame_ = 0.0f; // ブラー開始フレーム
+    float   blurEndFrame_   = 0.0f; // ブラー終了フレーム
+    float   maxBlurPower_   = 0.0f; // ブラーの強さ
+    float   blurTimer_      = 0.0f; // ブラーのEasing用タイマー
+    float   maxBlurTime_    = 0.0f; // ブラー用
+
 };
 
 // バックステップ咆哮行動

@@ -164,6 +164,9 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const float GetWalkSpeed() const { return walkSpeed_; }
     void SetWalkSpeed(const float& speed) { walkSpeed_ = speed; }
 
+    [[nodiscard]] const bool GetIsRoar() const { return isRoar_; }
+    void SetIsRoar(const bool& flag) { isRoar_ = flag; }
+
 #pragma endregion [Get, Set] Function
 
 
@@ -175,6 +178,8 @@ protected:
 
     int     step_       = 0;        // 行動ステップ
     bool    isFlinch_   = false;    // ひるみフラグ
+
+    bool isRoar_ = false;
 
     // ---------- 戦闘判定範囲変数 ----------
     float               battleRadius_       = 20.0f;// 戦闘開始範囲
