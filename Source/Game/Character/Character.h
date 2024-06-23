@@ -6,7 +6,7 @@
 class Character : public Object
 {
 public:
-    Character(std::string filename);
+    Character(const std::string& filename, const float& scaleFactor);
     virtual ~Character() {}
 
     virtual void Update(const float& elapsedTime);
@@ -15,7 +15,7 @@ public:
 
 public:
     // ----- CollisionçXêV -----
-    virtual void UpdateCollisions(const float& elapsedTime, const float& scaleFactor);
+    virtual void UpdateCollisions(const float& elapsedTime);
 
     void CollisionCharacterVsStage();
     DirectX::XMFLOAT3 SetTargetPosition();
@@ -23,7 +23,7 @@ public:
 
     // ----- êÅÇ¡îÚÇŒÇ∑èàóù -----
     void UpdateForce(const float& elapsedTime);
-    void AddForce(const DirectX::XMFLOAT3& direction, const float& power);
+    void AddForce(const DirectX::XMFLOAT3& direction, const float& power, const float& decelerationForce = 2.0f);
     void AddDamage(const float& damage) { health_ -= damage; }
 
     // ----- LookAt -----
@@ -81,8 +81,6 @@ public:// --- éÊìæÅEê›íË ---
     CollisionDetectionData& GetCollisionDetectionData(const int& index);
 
     // ---------- LookAt ----------
-    [[nodiscard]] const DirectX::XMFLOAT3 GetHeadLocalForward() const { return headLocalForward_; }
-    [[nodiscard]] const DirectX::XMFLOAT3 GetLookAtTargetPosition() const { return lookAtTargetPosition_; }
     void SetLookAtTargetPosition(const DirectX::XMFLOAT3& targetPosition) { lookAtTargetPosition_ = targetPosition; }
 
 #pragma endregion [Get, Set] Function
@@ -108,13 +106,15 @@ private:
     float collisionRadius_ = 0.0f;
 
     // ---------- êÅÇ¡îÚÇ— --------------------
-    DirectX::XMFLOAT3   blowDirection_  = {};
-    float               blowPower_      = 0.0f;
+    DirectX::XMFLOAT3   blowDirection_      = {};
+    float               blowPower_          = 0.0f;
+    float               decelerationForce_  = 0.0f;
 
     // ---------- LookAt --------------------
-    DirectX::XMFLOAT3   headLocalForward_       = {};
+    DirectX::XMFLOAT3   headGlobalForward_      = {};
     DirectX::XMFLOAT3   lookAtTargetPosition_   = {};
-    std::string         headNodeName_           = {};
+    int                 headJointIndex_         = 0;
+    float oldAngle_ = 100.0f;
 
 
 

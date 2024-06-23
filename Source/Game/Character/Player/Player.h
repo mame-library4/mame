@@ -87,7 +87,7 @@ public:
     void Turn(const float& elapsedTime);
     void Move(const float& elapsedTime);
 
-    bool CheckNextInput(const Player::NextInput& nextInput);
+    bool CheckNextInput(const Player::NextInput& nextInput, const float& nextAttackFrame = -1);
 
     void ResetFlags(); // フラグをリセットする
 
@@ -108,10 +108,14 @@ public:
     
     void PlayBlendAnimation(const Animation& index, const bool& loop, const float& speed = 1.0f);
 
-    void UpdateCollisions(const float& elapsedTime, const float& scaleFactor) override;
+    void UpdateCollisions(const float& elapsedTime) override;
 
 
     void SetMoveDirection(const DirectX::XMFLOAT3 direction) { moveDirection_ = direction; }
+
+    // ---------- Animation ----------
+    [[nodiscard]] const bool GetUseBlendAnimation() const { return useBlendAnimation_; }
+    void SetUseBlendAnimation(const bool& flag) { useBlendAnimation_ = flag; }
 
     // 攻撃判定有効フラグ設定
     void SetAttackFlag(const bool& activeFlag = true);
@@ -121,7 +125,7 @@ public:// --- 取得・設定 ---
 #pragma region [Get, Set] Function
     // ---------- ステートマシン --------------------
     StateMachine<State<Player>>* GetStateMachine() { return stateMachine_.get(); }
-    void ChangeState(const STATE& state) { stateMachine_.get()->ChangeState(static_cast<int>(state)); }
+    void ChangeState(const STATE& state);
 
     // ---------- 行動 -------------------------------------------------------
     [[nodiscard]] const NextInput GetNextInput() const { return nextInput_; }
@@ -152,7 +156,8 @@ private:
     bool isDamageSphere_ = true;
     bool isAttackSphere_ = true;
 
-
+    // ---------- Animation ----------
+    bool useBlendAnimation_ = false;
 
     SwordTrail swordTrail_;
 };

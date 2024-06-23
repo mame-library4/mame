@@ -1046,57 +1046,30 @@ void GltfModel::FetchAnimation(const tinygltf::Model& gltfModel)
 
 void GltfModel::CumulateTransforms(std::vector<Node>& nodes)
 {
-#if 1
-    DirectX::XMFLOAT4X4 parentGlobalTransform = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
-
-    std::function<void(int)> traverse{ [&](int nodeIndex)->void
-        {
-            Node& node = nodes.at(nodeIndex);
-            DirectX::XMMATRIX S{ DirectX::XMMatrixScaling(node.scale_.x, node.scale_.y, node.scale_.z) };
-            DirectX::XMMATRIX R{ DirectX::XMMatrixRotationQuaternion(
-            DirectX::XMVectorSet(node.rotation_.x, node.rotation_.y, node.rotation_.z, node.rotation_.w)) };
-            DirectX::XMMATRIX T{ DirectX::XMMatrixTranslation(node.translation_.x, node.translation_.y, node.translation_.z) };
-            DirectX::XMStoreFloat4x4(&node.globalTransform_, S * R * T * DirectX::XMLoadFloat4x4(&parentGlobalTransform));
-
-            // åªç›ÇÃOrcÇ∆DragonÇ™RootÇ™ÇPî‘Ç…ì¸Ç¡ÇƒÇÈÇΩÇﬂÇ±ÇÃèàóùÇ™ãñÇ≥ÇÍÇƒÇµÇ‹Ç§ÅB
-            // ÇŸÇÒÇ∆ÇÕÇ‚Ç¡ÇƒÇÕÇ¢ÇØÇ»Ç¢
-            if (nodeIndex == 1)
-            {
-                node.globalTransform_._41 = 0;
-                node.globalTransform_._42 = 0;
-                node.globalTransform_._43 = 0;
-            }
-
-            // êeï€ë∂
-            node.parentGlobalTransform_ = parentGlobalTransform;
-
-            for (int childIndex : node.children_)
-            {
-                parentGlobalTransform = node.globalTransform_;
-                traverse(childIndex);
-            }
-    } };
-    for (std::vector<int>::value_type nodeIndex : scenes_.at(0).nodes_)
-    {
-        parentGlobalTransform = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
-        traverse(nodeIndex);
-    }
-#else
     std::stack<DirectX::XMFLOAT4X4> parentGlobalTransforms;
     std::function<void(int)> traverse{ [&](int nodeIndex)->void
+    {
+        Node& node = nodes.at(nodeIndex);
+        DirectX::XMMATRIX S = DirectX::XMMatrixScaling(node.scale_.x, node.scale_.y, node.scale_.z);
+        DirectX::XMMATRIX R = DirectX::XMMatrixRotationQuaternion(DirectX::XMVectorSet(node.rotation_.x, node.rotation_.y, node.rotation_.z, node.rotation_.w));
+        DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(node.translation_.x, node.translation_.y, node.translation_.z);
+        DirectX::XMStoreFloat4x4(&node.globalTransform_, S * R * T * DirectX::XMLoadFloat4x4(&parentGlobalTransforms.top()));
+        
+        // åªç›ÇÃOrcÇ∆DragonÇ™RootÇ™ÇPî‘Ç…ì¸Ç¡ÇƒÇÈÇΩÇﬂÇ±ÇÃèàóùÇ™ãñÇ≥ÇÍÇƒÇµÇ‹Ç§ÅB
+        // ÇŸÇÒÇ∆ÇÕÇ‚Ç¡ÇƒÇÕÇ¢ÇØÇ»Ç¢
+        if (nodeIndex == 1)
         {
-            Node& node{nodes.at(nodeIndex)};
-            DirectX::XMMATRIX S{ DirectX::XMMatrixScaling(node.scale_.x, node.scale_.y, node.scale_.z) };
-            DirectX::XMMATRIX R{ DirectX::XMMatrixRotationQuaternion(
-            DirectX::XMVectorSet(node.rotation_.x, node.rotation_.y, node.rotation_.z, node.rotation_.w)) };
-            DirectX::XMMATRIX T{ DirectX::XMMatrixTranslation(node.translation_.x, node.translation_.y, node.translation_.z) };
-            DirectX::XMStoreFloat4x4(&node.globalTransform_, S * R * T * DirectX::XMLoadFloat4x4(&parentGlobalTransforms.top()));
-            for (int childIndex : node.children_)
-            {
-                parentGlobalTransforms.push(node.globalTransform_);
-                traverse(childIndex);
-                parentGlobalTransforms.pop();
-            }
+            //node.globalTransform_._41 = 0;
+            //node.globalTransform_._42 = 0;
+            //node.globalTransform_._43 = 0;
+        }
+
+        for (int childIndex : node.children_)
+        {
+            parentGlobalTransforms.push(node.globalTransform_);
+            traverse(childIndex);
+            parentGlobalTransforms.pop();
+        }
     } };
     for (std::vector<int>::value_type nodeIndex : scenes_.at(0).nodes_)
     {
@@ -1111,7 +1084,6 @@ void GltfModel::CumulateTransforms(std::vector<Node>& nodes)
         traverse(nodeIndex);
         parentGlobalTransforms.pop();
     }
-#endif
 }
 
 GltfModel::BufferView GltfModel::MakeBufferView(const tinygltf::Accessor& accessor)

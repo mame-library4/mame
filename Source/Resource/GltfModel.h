@@ -100,12 +100,10 @@ public:
             0,0,0,1
         };
 
-        DirectX::XMFLOAT4X4 parentGlobalTransform_ = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
-
         template<class T>
         void serialize(T& archive)
         {
-            archive(name_, skin_, mesh_, children_, rotation_, scale_, translation_, globalTransform_, parentGlobalTransform_);
+            archive(name_, skin_, mesh_, children_, rotation_, scale_, translation_, globalTransform_);
         }
     };
 
@@ -365,6 +363,7 @@ public:
     [[nodiscard]] const float GetAnimationSeconds() { return isBlendAnimation_ ? 0.0f : animationSeconds_; }
     [[nodiscard]] const float GetAnimationSpeed() const { return animationSpeed_; }
     [[nodiscard]] const float GetTransitionTime() const { return transitionTime_; }
+    [[nodiscard]] const bool GetIsBlendAnimation() const { return isBlendAnimation_; }
     void SetAnimationSpeed(const float& speed) { animationSpeed_ = speed; }
     void SetTransitionTime(const float& time) { transitionTime_ = time; }
 

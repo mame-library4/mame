@@ -4,11 +4,11 @@
 class Object
 {
 public:
-    Object(const std::string filename);
+    Object(const std::string filename, const float& scaleFactor);
     ~Object();
 
     void Update(const float& elapsedTime);
-    void Render(const float& scaleFactor, ID3D11PixelShader* psShader = nullptr);
+    void Render(ID3D11PixelShader* psShader = nullptr);
     void DrawDebug();
 
     void PlayAnimation(const int& index, const bool& loop, const float& speed) { gltfModel_.PlayAnimation(index, loop, speed); }
@@ -18,12 +18,16 @@ public:
     [[nodiscard]] const float GetAnimationSeconds() { return gltfModel_.GetAnimationSeconds(); }
     [[nodiscard]] const float GetAnimationSpeed() const { return gltfModel_.GetAnimationSpeed(); }
     [[nodiscard]] const float GetTransitionTime() const { return gltfModel_.GetTransitionTime(); }
+    [[nodiscard]] const bool GetIsBlendAnimation() const { return gltfModel_.GetIsBlendAnimation(); }
     void SetAnimationSpeed(const float& speed) { gltfModel_.SetAnimationSpeed(speed); }
     void SetTransitionTime(const float& time) { gltfModel_.SetTransitionTime(time); }
 
 public:
     // ---------- Transform ----------
     Transform* GetTransform() { return gltfModel_.GetTransform(); }
+
+    // ---------- ScaleFactor ----------
+    [[nodiscard]] const float GetScaleFactor() const { return scaleFactor_; }
 
     // ---------- JointPosition ----------
     [[nodiscard]] const DirectX::XMFLOAT3 GetJointPosition(const size_t& nodeIndex, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {}) { return gltfModel_.GetJointPosition(nodeIndex, scaleFactor, offsetPosition); }
@@ -41,7 +45,8 @@ public:
 
 
 private:
-    GltfModel gltfModel_;
+    GltfModel   gltfModel_;
+    const float scaleFactor_;
 
     // ---------- RootMotion ----------
     std::vector<GltfModel::Node>    animatedNodes_;

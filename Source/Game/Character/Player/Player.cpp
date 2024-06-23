@@ -3,15 +3,11 @@
 #include "Graphics.h"
 #include "Camera.h"
 
-#define USE_ROOT_MOTION 0
+#define USE_LOOK_AT 1
 
 // ----- コンストラクタ -----
 Player::Player()
-#if USE_ROOT_MOTION
-    : Character("./Resources/Model/Character/aaa.glb")
-#else
-    : Character("./Resources/Model/Character/Player/Orc.gltf")
-#endif
+    : Character("./Resources/Model/Character/Player/Orc.gltf", 1.0f)
 {
     // --- ステートマシン ---
     {
@@ -39,10 +35,10 @@ Player::Player()
         GetStateMachine()->SetState(static_cast<UINT>(STATE::Idle));
     }
 
-    // -------------------- LookAt処理 -------------------------
-    // ----- (初期姿勢時の頭ノードのローカル空間前方向を求める) -----
-    LookAtInitilaize("R:R:j_Head");
-    //LookAtInitilaize("R:R:j_Head_end");
+    // LookAt初期化
+#if USE_LOOK_AT
+    LookAtInitilaize("Head");
+#endif
 }
 
 // ----- デストラクタ -----
@@ -53,11 +49,6 @@ Player::~Player()
 // ----- 初期化 -----
 void Player::Initialize()
 {
-#if USE_ROOT_MOTION
-    // RootMotion
-    RootMotionInitialize();
-#endif
-
     // 生成位置設定
     GetTransform()->SetPositionZ(60);
 
@@ -105,20 +96,13 @@ void Player::Finalize()
 void Player::Update(const float& elapsedTime)
 {    
     // Collisionデータ更新
-    UpdateCollisions(elapsedTime, 0.01f);
+    UpdateCollisions(elapsedTime);
     GetCollisionDetectionData("collide0").SetPosition(GetTransform()->GetPosition());
     GetCollisionDetectionData("collide1").SetPosition(GetTransform()->GetPosition());
     GetCollisionDetectionData("collide2").SetPosition(GetTransform()->GetPosition());
 
     // アニメーション更新
     Character::Update(elapsedTime);
-    
-#if USE_ROOT_MOTION
-    // RootMotion
-    RootMotionUpdate(elapsedTime, "mixamorig:Hips");
-    //RootMotionUpdate(elapsedTime, "root");
-#endif
-
     
     // ステートマシン更新
     GetStateMachine()->Update(elapsedTime);
@@ -135,19 +119,16 @@ void Player::Update(const float& elapsedTime)
     //const DirectX::XMFLOAT3 endPos = swordModel_.GetJointPosition("R1:R:j_top", 0.01f);
     //swordTrail_.Update(startPos, endPos);
 
-
-
-
-    // LookAt
+    // LookAt更新
+#if USE_LOOK_AT
     LookAtUpdate();
+#endif
 }
 
 // ----- 描画 -----
 void Player::Render(ID3D11PixelShader* psShader)
 {
-    const float scaleFactor = 1.0f;
-
-    Object::Render(scaleFactor, psShader);
+    Object::Render(psShader);
 }
 
 void Player::RenderTrail()
@@ -302,7 +283,7 @@ void Player::Move(const float& elapsedTime)
 }
 
 // ----- 先行入力を受付してる -----
-bool Player::CheckNextInput(const Player::NextInput& nextInput)
+bool Player::CheckNextInput(const Player::NextInput& nextInput, const float& nextAttackFrame)
 {
     // 回避入力があった時
     if (GetAvoidanceKeyDown())
@@ -316,6 +297,7 @@ bool Player::CheckNextInput(const Player::NextInput& nextInput)
         nextInput_ = NextInput::Avoidance;
     }
 
+    // コンボ攻撃0
     if (GetComboAttack0KeyDown())
     {
         if (nextInput == NextInput::None)
@@ -324,9 +306,28 @@ bool Player::CheckNextInput(const Player::NextInput& nextInput)
             return true;
         }
 
+        // 先行入力の種類がコンボ攻撃0の場合
+        if (nextInput == NextInput::ComboAttack0)
+        {
+            // 先行入力がAttackFrameよりも前に行われた
+            if (GetAnimationSeconds() < nextAttackFrame &&
+                nextInput_ != NextInput::ComboAttack0)
+            {
+                SetUseBlendAnimation(false);
+            }
+            else
+            {
+                SetUseBlendAnimation(true);
+            }
+
+            nextInput_ = NextInput::ComboAttack0;        
+            return true;
+        }
+
         nextInput_ = NextInput::ComboAttack0;
     }
 
+    // コンボ攻撃1
     if (GetComboAttack1KeyDown())
     {
         if (nextInput == NextInput::None)
@@ -353,13 +354,13 @@ void Player::PlayBlendAnimation(const Animation& index, const bool& loop, const 
     Object::PlayBlendAnimation(static_cast<int>(index), loop, speed);
 }
 
-void Player::UpdateCollisions(const float& elapsedTime, const float& scaleFactor)
+void Player::UpdateCollisions(const float& elapsedTime)
 {
     // くらい判定更新
     for (DamageDetectionData& data : damageDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetName(), scaleFactor, data.GetOffsetPosition()));
+        data.SetJointPosition(GetJointPosition(data.GetName(), GetScaleFactor(), data.GetOffsetPosition()));
 
         data.Update(elapsedTime);
     }
@@ -367,13 +368,13 @@ void Player::UpdateCollisions(const float& elapsedTime, const float& scaleFactor
     for (AttackDetectionData& data : attackDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        //data.SetJointPosition(swordModel_.GetJointPosition(data.GetName(), scaleFactor, data.GetOffsetPosition()));
+        //data.SetJointPosition(swordModel_.GetJointPosition(data.GetName(), GetScaleFactor(), data.GetOffsetPosition()));
     }
     // 押し出し判定更新
     for (CollisionDetectionData& data : collisionDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetName(), scaleFactor, data.GetOffsetPosition()));
+        data.SetJointPosition(GetJointPosition(data.GetName(), GetScaleFactor(), data.GetOffsetPosition()));
     }
 }
 
@@ -390,4 +391,13 @@ bool Player::GetIsActiveAttackFlag()
 {
     // 代表で一番目の子の値を返す
     return GetAttackDetectionData(0).GetIsActive();
+}
+
+// ----- ステート変更 -----
+void Player::ChangeState(const STATE& state)
+{
+    // 現在ブレンドアニメーション中なのでステート変更を行わない
+    if (GetIsBlendAnimation()) return;
+
+    stateMachine_.get()->ChangeState(static_cast<int>(state));
 }

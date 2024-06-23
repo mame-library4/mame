@@ -23,8 +23,5 @@ private:
     bool isCollisionSphere_ = true;
     bool isAttackSphere_    = true;
     bool isDamageSphere_    = true;
-
-    // ----- •`‰æ—p -----
-    const float scaleFacter_;
 };
 

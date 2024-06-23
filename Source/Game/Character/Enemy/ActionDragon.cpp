@@ -6,7 +6,7 @@ const ActionBase::State DeathAction::Run(const float& elapsedTime)
 {
     switch (owner_->GetStep())
     {
-    case 0:
+    case 0:// 初期化
         // アニメーション設定
         owner_->PlayBlendAnimation(Enemy::DragonAnimation::Death, false);
 
@@ -35,16 +35,27 @@ const ActionBase::State DeathAction::Run(const float& elapsedTime)
 // ----- 怯み行動 -----
 const ActionBase::State FlinchAction::Run(const float& elapsedTime)
 {
-    return ActionBase::State::Complete;
-
     return ActionBase::State();
 }
 
+// ----- 非戦闘時待機 -----
 const ActionBase::State NonBattleIdleAction::Run(const float& elapsedTime)
 {
+    switch (owner_->GetStep())
+    {
+    case 0:// 初期化
+        // アニメーション設定
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, true);
+
+        break;
+    case 1:
+        break;
+    }
+
     return ActionBase::State();
 }
 
+// ----- 非戦闘時歩き -----
 const ActionBase::State NonBattleWalkAction::Run(const float& elapsedTime)
 {
     return ActionBase::State();

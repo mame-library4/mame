@@ -4,8 +4,7 @@
 
 // ----- コンストラクタ -----
 EnemyDragon::EnemyDragon()
-    : Enemy("./Resources/Model/Character/Enemy/Dragon.gltf"),
-    scaleFacter_(1.0f)
+    : Enemy("./Resources/Model/Character/Enemy/Dragon.gltf", 1.0f)
 {
     // BehaviorTree設定
     behaviorData_ = std::make_unique<BehaviorData>();       // BehaviorData生成
@@ -52,7 +51,7 @@ void EnemyDragon::Update(const float& elapsedTime)
     Character::Update(elapsedTime);
 
     // Collisionデータ更新
-    UpdateCollisions(elapsedTime, scaleFacter_);
+    UpdateCollisions(elapsedTime);
 
     // behaviorTree更新
     UpdateNode(elapsedTime);
@@ -64,7 +63,7 @@ void EnemyDragon::Update(const float& elapsedTime)
 // ----- 描画 -----
 void EnemyDragon::Render(ID3D11PixelShader* psShader)
 {
-    Object::Render(scaleFacter_, psShader);
+    Object::Render(psShader);
 }
 
 // ----- ImGui用 -----

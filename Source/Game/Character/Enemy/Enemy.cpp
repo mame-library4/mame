@@ -4,8 +4,8 @@
 #include "../Player/PlayerManager.h"
 
 // ----- コンストラクタ -----
-Enemy::Enemy(std::string filename)
-    : Character(filename)
+Enemy::Enemy(const std::string& filename, const float& scaleFactor)
+    : Character(filename, scaleFactor)
 {
 }
 

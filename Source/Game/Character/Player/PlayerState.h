@@ -19,18 +19,7 @@ namespace PlayerState
         void SetAnimation();
     };
 
-    // ----- 移動 -----
-    class MoveState : public State<Player>
-    {
-    public:
-        MoveState(Player* player) : State(player, "MoveState") {}
-        ~MoveState() {}
-
-        void Initialize()                       override;
-        void Update(const float& elapsedTime)   override;
-        void Finalize()                         override;
-    };
-
+    // ----- 歩き -----
     class WalkState : public State<Player>
     {
     public:
@@ -42,6 +31,7 @@ namespace PlayerState
         void Finalize()                         override;
     };
 
+    // ----- 走り -----
     class RunState : public State<Player>
     {
     public:
@@ -89,7 +79,25 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
-        void SetAnimation();
+        enum class Direction
+        {
+            Fornt,
+            Back,
+            Right,
+            Left,
+        };
+
+        void SetAnimation();        // アニメーション設定
+        void CalcMoveDirection();   // 移動方向算出
+
+    private:
+        DirectX::XMFLOAT3   moveDirection_  = {};
+        Direction           direction_      = Direction::Back;
+
+        bool isAddForce_ = false;
+        float power_[4] = { 0.4f, 0.3f, 0.4f, 0.4f };
+        float addForceFrame_[4] = { 0.09f, 0.13f, 0.08f, 0.08f };
+        float changeStateFrame_[4] = { 0.25f, 0.5f, 0.25f, 0.25f };
     };
 
     // ----- カウンター -----
@@ -104,9 +112,20 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
-        float power_ = 0.0f;
-        float addForceFrame_ = 0.0f;
-        bool isAddForce_ = false;
+        enum Direction
+        {
+            Front,
+            Back,
+            Max,
+        };
+
+        void AddForceFront(const float& elapsedTime);
+        void AddForceBack(const float& elapsedTime);
+
+    private:
+        float power_[Direction::Max]         = {};
+        float addForceFrame_[Direction::Max] = {};
+        bool  isAddForce_[Direction::Max]    = {};
 
         float animationSlowStartFrame_ = 0.0f;
         float animationSlowEndFrame_ = 0.0f;
@@ -145,6 +164,12 @@ namespace PlayerState
         float nextInputEndFrame_    = 0.0f;
         float nextAttackFrame_      = 0.0f;
 
+        // ----- 移動 -----
+        DirectX::XMFLOAT3   moveDirecion_   = {};
+        float               addForceFrame_  = 0.0f;
+        float               power_          = 0.0f;
+        bool                isAddForce_     = false;
+
         // ----- アニメーション制御用 -----
         float slowAnimationStartFrame_  = 0.0f;
         bool  isSlowAnimation_          = false;
@@ -164,9 +189,13 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
+        void SetAnimation();
+
+    private:
         // ----- 先行入力用 -----
-        float nextInputStartFrame_ = 0.0f;
-        float nextInputEndFrame_   = 0.0f;
+        float nextInputStartFrame_  = 0.0f;
+        float nextInputEndFrame_    = 0.0f;
+        float nextAttackFrame_      = 0.0f;
     };
 
     // ----- コンボ0_2 -----
@@ -181,9 +210,19 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
+        void SetAnimation();
+
+    private:
         // ----- 先行入力用 -----
-        float nextInputStartFrame_ = 0.0f;
-        float nextInputEndFrame_ = 0.0f;
+        float nextInputStartFrame_  = 0.0f;
+        float nextInputEndFrame_    = 0.0f;
+        float nextAttackFrame_      = 0.0f;
+
+        // ----- 移動 -----
+        DirectX::XMFLOAT3   moveDirecion_ = {};
+        float               addForceFrame_ = 0.0f;
+        float               power_ = 0.0f;
+        bool                isAddForce_ = false;
     };
 
     // ----- コンボ0_3 -----
@@ -196,6 +235,16 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+
+    private:
+        void SetAnimation();
+
+    private:
+        // ----- 移動 -----
+        DirectX::XMFLOAT3   moveDirecion_ = {};
+        float               addForceFrame_[2] = {};
+        float               power_[2] = {};
+        bool                isAddForce_[2];
     };
 
     // ----- コンボ1_0 -----
@@ -208,6 +257,13 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+
+    private:
+        // ----- 移動 -----
+        DirectX::XMFLOAT3   moveDirecion_ = {};
+        float               addForceFrame_ = 0.0f;
+        float               power_ = 0.0f;
+        bool                isAddForce_ = false;
     };
 
     // ----- コンボ1_1 -----
@@ -220,6 +276,13 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+
+    private:
+        // ----- 移動 -----
+        DirectX::XMFLOAT3   moveDirecion_ = {};
+        float               addForceFrame_ = 0.0f;
+        float               power_ = 0.0f;
+        bool                isAddForce_ = false;
     };
 
     // ----- コンボ1_2 -----
@@ -232,5 +295,12 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+
+    private:
+        // ----- 移動 -----
+        DirectX::XMFLOAT3   moveDirecion_ = {};
+        float               addForceFrame_ = 0.0f;
+        float               power_ = 0.0f;
+        bool                isAddForce_ = false;
     };
 }

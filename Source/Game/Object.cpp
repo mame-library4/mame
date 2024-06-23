@@ -3,8 +3,9 @@
 #include <algorithm>
 
 // ----- コンストラクタ -----
-Object::Object(const std::string filename)
-    : gltfModel_(filename)
+Object::Object(const std::string filename, const float& scaleFactor)
+    : gltfModel_(filename),
+    scaleFactor_(scaleFactor)
 {
 }
 
@@ -19,9 +20,9 @@ void Object::Update(const float& elapsedTime)
 }
 
 // ----- 描画 -----
-void Object::Render(const float& scaleFactor, ID3D11PixelShader* psShader)
+void Object::Render(ID3D11PixelShader* psShader)
 {
-    gltfModel_.Render(scaleFactor, psShader);
+    gltfModel_.Render(scaleFactor_, psShader);
 }
 
 // ----- ImGui用 -----

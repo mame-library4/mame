@@ -13,18 +13,21 @@ const bool DeathJudgment::Judgment()
 
 const bool FlinchJudgment::Judgment()
 {
+    return false;
+}
+
+// ----- ”ñí“¬”»’è -----
+const bool NonBattleJudgment::Judgment()
+{
     return true;
 
     return false;
 }
 
-const bool NonBattleJudgment::Judgment()
-{
-    return false;
-}
-
+// ----- ”ñí“¬‘Ò‹@”»’è -----
 const bool NonBattleIdleJudgment::Judgment()
 {
+    return true;
     return false;
 }
 

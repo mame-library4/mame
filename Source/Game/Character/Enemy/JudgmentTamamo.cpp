@@ -140,49 +140,5 @@ const bool TailSwipeJudgment::Judgment()
 }
 
 
-#pragma endregion ‹ß‹——£
-
-#pragma region ‰“‹——£
-// ‰“‹——£”»’è
-const bool FarAttackJudgment::Judgment()
-{
-    return true;
-}
-
-#pragma endregion ‰“‹——£
-
-#pragma region ‹©‚ÔŒn
-// ‹©‚ÔŒn”»’è
-const bool ShoutJudgment::Judgment()
-{
-    return true;
-
-    // ˜A‘±UŒ‚‰ñ”‚ªˆê’è”’´‚¦‚½‚ç‹©‚ÔB
-    if (owner_->GetAttackComboCount() > shoutThreshold_)
-    {
-        return true;
-    }
-
-    return false;
-}
-
-// ™ôšK”»’è
-const bool RoarJudgment::Judgment()
-{
-    return true;
-}
-
-// ˆĞŠd”»’è
-const bool IntimidateJudgment::Judgment()
-{
-    return false;
-}
-
-#pragma endregion ‹©‚ÔŒn
-
-#pragma endregion í“¬Œn
-
-#pragma endregion í“¬
-
 
 #endif

@@ -104,7 +104,7 @@ public:
     };
 
 public:
-    Enemy(std::string filename);
+    Enemy(const std::string& filename, const float& scaleFactor);
     ~Enemy() override {}
 
     virtual void Initialize()                       = 0;

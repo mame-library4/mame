@@ -112,7 +112,7 @@ void GameScene::DeferredRender()
     PlayerManager::Instance().Render(gBufferPixelShader);
 
     // “G•`‰æ
-    //EnemyManager::Instance().Render(gBufferPixelShader);
+    EnemyManager::Instance().Render(gBufferPixelShader);
 
 }
 
