@@ -56,6 +56,8 @@ void EnemyDragon::Update(const float& elapsedTime)
     // behaviorTree更新
     UpdateNode(elapsedTime);
 
+    //UpdateRootMotion();
+
     // ステージの外に出ないようにする
     CollisionCharacterVsStage();
 }
@@ -140,9 +142,8 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Battle", "Near",  1, BehaviorTree::SelectRule::Priority, new NearJudgment(this), nullptr);
     behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
 
-    behaviorTree_->AddNode("Shout", "Roar",         0, BehaviorTree::SelectRule::None, nullptr, new RoarAction(this));
+    behaviorTree_->AddNode("Shout", "Roar",         1, BehaviorTree::SelectRule::None, nullptr, new RoarAction(this));
     behaviorTree_->AddNode("Shout", "BackStepRoar", 0, BehaviorTree::SelectRule::None, nullptr, new BackStepRoarAction(this));
-    behaviorTree_->AddNode("Shout", "MoveRoar",     0, BehaviorTree::SelectRule::None, nullptr, new MoveRoarAction(this));
 
     behaviorTree_->AddNode("Near", "BackStep",    0, BehaviorTree::SelectRule::None, nullptr, new BackStepAction(this));
     behaviorTree_->AddNode("Near", "FlyAttack",   0, BehaviorTree::SelectRule::None, nullptr, new FlyAttackAction(this));

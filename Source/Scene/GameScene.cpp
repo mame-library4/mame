@@ -17,7 +17,8 @@ void GameScene::CreateResource()
     // ÉvÉåÉCÉÑÅ[ê∂ê¨
     PlayerManager::Instance().GetPlayer() = std::make_unique<Player>();
 
-    //stageNormal_[2] = std::make_unique<StageNormal>("./Resources/Model/Stage/tomorrow.glb");
+    //stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/tomorrow.glb");
+    //stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/today.glb");
     stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/circle.glb");
     //stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/arena.glb");
 

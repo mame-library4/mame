@@ -54,7 +54,6 @@ public:
 
         BackStepRoar,   // バックステップ後,咆哮
 
-        MoveRoar, // 移動しながら咆哮
 
         // ----- 吹き飛ばし攻撃 -----
         AttackKnockBackStart,

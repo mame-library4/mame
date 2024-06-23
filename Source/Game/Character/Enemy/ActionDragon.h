@@ -68,14 +68,6 @@ public:
     const ActionBase::State Run(const float& elapsedTime) override;
 };
 
-// 移動咆哮行動
-class MoveRoarAction : public ActionBase
-{
-public:
-    MoveRoarAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
-
 // バックステップ行動
 class BackStepAction : public ActionBase
 {

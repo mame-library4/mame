@@ -182,14 +182,33 @@ const ActionBase::State RoarAction::Run(const float& elapsedTime)
     return ActionBase::State::Run;
 }
 
+// ----- バックステップ咆哮 -----
 const ActionBase::State BackStepRoarAction::Run(const float& elapsedTime)
 {
-    return ActionBase::State();
-}
+    switch (owner_->GetStep())
+    {
+    case 0:// 初期化
+        // アニメーション設定
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::BackStepRoar, false);
+        
+        owner_->SetStep(1);
+        
+        break;
+    case 1:
 
-const ActionBase::State MoveRoarAction::Run(const float& elapsedTime)
-{
-    return ActionBase::State();
+        if (owner_->IsPlayAnimation() == false)
+        {
+            // フラグリセット
+            owner_->SetIsRoar(false);
+
+            owner_->SetStep(0);
+            return ActionBase::State::Complete;
+        }
+
+        break;
+    }
+    
+    return ActionBase::State::Run;
 }
 
 const ActionBase::State BackStepAction::Run(const float& elapsedTime)
