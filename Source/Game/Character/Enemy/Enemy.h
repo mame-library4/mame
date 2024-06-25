@@ -166,6 +166,9 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const bool GetIsRoar() const { return isRoar_; }
     void SetIsRoar(const bool& flag) { isRoar_ = flag; }
 
+    [[nodiscard]] const bool GetUseRootMotion() const { return useRootMotion_; }
+    void SetUseRootMotion(const bool& flag) { useRootMotion_ = flag; }
+
 #pragma endregion [Get, Set] Function
 
 
@@ -179,6 +182,8 @@ protected:
     bool    isFlinch_   = false;    // ひるみフラグ
 
     bool isRoar_ = false;
+
+    bool useRootMotion_ = false; // ルートモーション使用するかフラグ
 
     // ---------- 戦闘判定範囲変数 ----------
     float               battleRadius_       = 20.0f;// 戦闘開始範囲

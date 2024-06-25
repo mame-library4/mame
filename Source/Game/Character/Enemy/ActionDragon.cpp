@@ -356,35 +356,40 @@ namespace ActionDragon
             // アニメーション設定
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackFly0, false);
 
+            // ルートモーションは使わない
+            owner_->SetUseRootMotion(false);
+
             // 変数初期化
             {
                 addForceData_[MoveDirection::UpBack].Initialize(0.35f, 0.4f, 1.0f);
                 //addForceData_[MoveDirection::DownForward].Initialize(0.0f, 0.7f, 1.0f);
                 addForceData_[MoveDirection::DownForward].Initialize(0.0f, 0.65f, 1.0f);
 
+                // SlowAnimation
                 slowAnimationSpeed_ = 0.7f;
                 slowAnimationEndFrame_ = 0.12f;
 
                 // 予備動作用
                 easingTimer_ = 0.0f;
-                isDonw_ = false;
-                isUp_ = false;
+                isDown_ = false;
+                isRise_ = false;
             }
 
             owner_->SetStep(1);
             break;
         case STATE::FlyStart:// 飛び始め
             
-            // AddForce
+            // 後ろ斜め上方向に移動させる
             if (addForceData_[static_cast<int>(MoveDirection::UpBack)].IsAbleAddForce(owner_->GetAnimationSeconds()))
             {
                 DirectX::XMFLOAT3 direction = XMFloat3Normalize(owner_->GetTransform()->CalcForward() * -1 - owner_->GetTransform()->CalcUp() * -1);
                 owner_->AddForce(direction, addForceData_[static_cast<int>(MoveDirection::UpBack)].GetForce(), addForceData_[static_cast<int>(MoveDirection::UpBack)].GetDecelerationForce());
             }
-
-            //if (owner_->GetAnimationSeconds() > firstAnimationEndFrame_)
+            
+            // アニメーション再生しきったら
             if (owner_->IsPlayAnimation() == false)
             {
+                // 次のアニメーションを設定する
                 owner_->PlayAnimation(Enemy::DragonAnimation::AttackFly1, false);
                 
                 // 現在の位置Yを保存する
@@ -396,11 +401,8 @@ namespace ActionDragon
 
             break;
         case STATE::PreAction:// 予備動作
-
-        {
-            const float animatioSeconds = owner_->GetAnimationSeconds();
-
-            if (isDonw_ == false)
+            // 予備動作として下にすこし下がる
+            if (isDown_ == false)
             {
                 const float totalTime = 0.3f;
                 addPositionY_ = Easing::InSine(easingTimer_, totalTime, -2.5f, 0.0f);
@@ -411,81 +413,116 @@ namespace ActionDragon
                 if (easingTimer_ > totalTime)
                 {
                     easingTimer_ = 0.0f;
-                    isDonw_ = true;
+                    isDown_ = true;
                 }
             }
-            else if (isUp_ == false)
+            // 下に下がったら、上昇する
+            else if (isRise_ == false)
             {
                 const float totalTime = 0.4f;
                 addPositionY_ = Easing::InCubic(easingTimer_, totalTime, 4.0f, -2.5f);
                 easingTimer_ += elapsedTime;
-                
-                //owner_->SetAnimationSpeed(0.7f);
+
                 owner_->SetAnimationSpeed(1.0f);
                 if (easingTimer_ > totalTime)
                 {
                     easingTimer_ = 0.0f;
-                    isUp_ = true;
-                    //owner_->SetAnimationSpeed(1.0f);
+                    isRise_ = true;
                 }
             }
 
+            // 移動値Yの設定
             owner_->GetTransform()->SetPositionY(savePositionY_ + addPositionY_);
-        }
             
-
-            //if (owner_->IsPlayAnimation() == false)
-            //if (owner_->GetAnimationSeconds() > secondAnimationEndFrame_)
-            if(isUp_)
+            // 上昇終了していたら次にすすむ
+            if(isRise_)
             {
-                //owner_->PlayAnimation(Enemy::DragonAnimation::AttackFly2, false, slowAnimationSpeed_);
                 owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackFly2, false, slowAnimationSpeed_);
-                //owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackFly2, false, 1.0f);
-                        //owner_->SetTransitionTime(2.0f);
+             
                 owner_->SetStep(3);
                 break;
-            }
-            
+            }            
 
             break;
-        case STATE::FlyAttack:
-            // AddForce
+        case STATE::FlyAttack:// 攻撃
+            // アニメーションが指定のフレームを超えたら
+            if (owner_->GetAnimationSeconds() > slowAnimationEndFrame_)
+            {
+                // アニメーション速度設定
+                owner_->SetAnimationSpeed(1.0f);
+            }
+            
+            // 前方斜め下に移動する
             if (addForceData_[static_cast<int>(MoveDirection::DownForward)].IsAbleAddForce(owner_->GetAnimationSeconds()))
             {
                 DirectX::XMFLOAT3 direction = XMFloat3Normalize(owner_->GetTransform()->CalcForward() - owner_->GetTransform()->CalcUp());
                 owner_->AddForce(direction, addForceData_[static_cast<int>(MoveDirection::DownForward)].GetForce(), addForceData_[static_cast<int>(MoveDirection::DownForward)].GetDecelerationForce());
             }
 
+            // 移動値Yの制御 (0.0fより下に行かないようにする)
             float posY = std::max(0.0f, owner_->GetTransform()->GetPositionY());
             owner_->GetTransform()->SetPositionY(posY);
 
-
-            if (owner_->GetAnimationSeconds() > slowAnimationEndFrame_)
-            {
-                owner_->SetAnimationSpeed(1.0f);
-            }
-
+            // アニメーションが再生しきったら終了
             if (owner_->IsPlayAnimation() == false)
             {
-                //owner_->GetTransform()->SetPositionY(0.0f);
-                owner_->GetTransform()->SetPosition({});
+                owner_->GetTransform()->SetPositionY(0.0f);
                 
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+            break;
+        }
+        return ActionBase::State::Run;
+    }
+}
+
+// ----- 吹き飛ばし攻撃 -----
+namespace ActionDragon
+{
+    const ActionBase::State KnockBackAction::Run(const float& elapsedTime)
+    {
+        switch (owner_->GetStep())
+        {
+        case 0:// 初期化
+            // アニメーション設定
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackKnockBackStart, false);
+
+            // ルートモーションを使用する
+            owner_->SetUseRootMotion(true);
+
+            owner_->SetStep(1);
+
+            break;
+        case 1:
+            
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->PlayAnimation(Enemy::DragonAnimation::AttackKnockBackLoop, false);
+                owner_->SetStep(2);
+                break;
+            }
+
+            break;
+        case 2:
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->PlayAnimation(Enemy::DragonAnimation::AttackKnockBackEnd0, false);
+                owner_->SetStep(3);
+                break;
+            }
+
+            break;
+        case 3:
+            if (owner_->IsPlayAnimation() == false)
+            {
                 owner_->SetStep(0);
                 return ActionBase::State::Complete;
             }
 
             break;
-
         }
 
-        return ActionBase::State::Run;
-    }
-}
-
-namespace ActionDragon
-{
-    const ActionBase::State KnockBackAction::Run(const float& elapsedTime)
-    {
         return ActionBase::State();
     }
 }

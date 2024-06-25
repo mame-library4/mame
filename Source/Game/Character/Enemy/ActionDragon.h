@@ -159,8 +159,8 @@ namespace ActionDragon
         float savePositionY_ = 0;
         float addPositionY_ = 0;
         float easingTimer_ = 0.0f;
-        bool isDonw_ = false;
-        bool isUp_ = false;
+        bool isDown_ = false;
+        bool isRise_ = false;
 
     };
 
