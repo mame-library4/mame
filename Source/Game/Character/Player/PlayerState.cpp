@@ -102,7 +102,7 @@ namespace PlayerState
 
         const float aLx = fabsf(Input::Instance().GetGamePad().GetAxisLX());
         const float aLy = fabsf(Input::Instance().GetGamePad().GetAxisLY());
-        if (aLx == 0.0f || aLy == 0.0f)
+        if (aLx == 0.0f && aLy == 0.0f)
         {
             owner_->ChangeState(Player::STATE::Idle);
             return;
@@ -155,7 +155,7 @@ namespace PlayerState
 
         const float aLx = fabsf(Input::Instance().GetGamePad().GetAxisLX());
         const float aLy = fabsf(Input::Instance().GetGamePad().GetAxisLY());
-        if (aLx == 0.0f || aLy == 0.0f)
+        if (aLx == 0.0f && aLy == 0.0f)
         {
             owner_->ChangeState(Player::STATE::Idle);
             return;

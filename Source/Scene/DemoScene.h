@@ -37,5 +37,7 @@ public:
 private:
     std::unique_ptr<DemoChara> model_;
     DirectX::XMFLOAT3 target_ = {};
+
+    int animNum_ = 0;
 };
 

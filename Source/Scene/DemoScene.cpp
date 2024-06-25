@@ -2,16 +2,16 @@
 #include "Graphics.h"
 #include "Camera.h"
 
+#include "Input.h"
+
 DemoChara::DemoChara()
-    : Character("./Resources/Model/Character/Player/Orc.gltf", 1.0f)
+    : Character("./Resources/Model/Character/test/Dragon.gltf", 1.0f)
 {
 }
 
 void DemoChara::Update(const float& elapsedTime)
 {
     Object::Update(elapsedTime);
-
-    UpdateRootMotion();
 }
 
 void DemoChara::Render(ID3D11PixelShader* psShader)
@@ -33,7 +33,8 @@ void DemoScene::CreateResource()
 
 void DemoScene::Initialize()
 {
-    model_->PlayAnimation(20, true, 0.2f);
+    model_->PlayAnimation(1, true, 0.2f);
+    //model_->PlayAnimation(20, true, 0.2f);
 
     
 }
@@ -45,6 +46,12 @@ void DemoScene::Finalize()
 void DemoScene::Update(const float& elapsedTime)
 {
     Camera::Instance().SetTarget(target_);
+
+    if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_A)
+    {
+        model_->PlayBlendAnimation(animNum_, true, 1.0f);
+        animNum_ = animNum_ == 0 ? 1 : 0;
+    }
 
     model_->Update(elapsedTime);
 }

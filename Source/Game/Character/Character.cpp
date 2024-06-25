@@ -110,7 +110,7 @@ void Character::UpdateCollisions(const float& elapsedTime)
     for (CollisionDetectionData& data : collisionDetectionData_)
     {        
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetName(), GetScaleFactor(), data.GetOffsetPosition()));
+        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
     }
 }
 
@@ -158,7 +158,8 @@ void Character::UpdateForce(const float& elapsedTime)
 void Character::AddForce(const DirectX::XMFLOAT3& direction, const float& power, const float& decelerationForce)
 {
     // Y方向には吹っ飛ばさない
-    blowDirection_ = { direction.x, 0, direction.z };
+    //blowDirection_ = { direction.x, 0, direction.z };
+    blowDirection_ = direction;
     blowPower_ = power;
     decelerationForce_ = decelerationForce;
 }

@@ -358,7 +358,7 @@ public:
     void PlayAnimation(const int& index, const bool& loop, const float& speed);
     void PlayBlendAnimation(const int& index, const bool& loop, const float& speed);
     void UpdateAnimation(const float& elapsedTime);
-    [[nodiscard]] const bool IsPlayAnimation() { return !animationEndFlag_; }
+    [[nodiscard]] const bool IsPlayAnimation();
     [[nodiscard]] const int GetAnimationIndex() const { return animationIndex_; }
     [[nodiscard]] const float GetAnimationSeconds() { return isBlendAnimation_ ? 0.0f : animationSeconds_; }
     [[nodiscard]] const float GetAnimationSpeed() const { return animationSpeed_; }

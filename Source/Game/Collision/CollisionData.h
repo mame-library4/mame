@@ -159,14 +159,16 @@ struct AttackDetectionData
 
 private:
     CollisionSphereData collisionSphereData_;   // 球体データ
-    bool                isActive_ = false;      // 現在有効か
+    bool                isActive_ = true;      // 現在有効か
+    //bool                isActive_ = false;      // 現在有効か
 };
 
 // ----- 押し出し判定 -----
 struct CollisionDetectionData
 {
-    CollisionDetectionData(const std::string& name, const float& radius, const DirectX::XMFLOAT3& offsetPosition = {})
-        : collisionSphereData_(name, radius, offsetPosition, { 0, 1, 1, 1 })
+    CollisionDetectionData(const std::string& name, const float& radius, const DirectX::XMFLOAT3& offsetPosition = {}, const std::string& updateName = "")
+        : collisionSphereData_(name, radius, offsetPosition, { 0, 1, 1, 1 }),
+        updateName_((updateName == "") ? name : updateName)
     {}
     CollisionDetectionData() = default;
 
@@ -192,7 +194,12 @@ struct CollisionDetectionData
     [[nodiscard]] const bool GetIsActive() const { return isActive_; }
     void SetIsActive(const bool& isActive) { isActive_ = isActive; }
 
+    // ---------- 更新用名前 ----------
+    [[nodiscard]] const std::string GetUpdateName() const { return updateName_; }
+
 private:
     CollisionSphereData collisionSphereData_;
     bool                isActive_ = true;      // 現在有効か
+
+    std::string updateName_;
 };

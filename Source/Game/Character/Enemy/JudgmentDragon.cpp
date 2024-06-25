@@ -46,12 +46,12 @@ const bool RoarJudgment::Judgment()
 
 const bool ShoutJudgment::Judgment()
 {
-    return true;
-
     return false;
 }
 
 const bool NearJudgment::Judgment()
 {
+    return true;
+
     return false;
 }

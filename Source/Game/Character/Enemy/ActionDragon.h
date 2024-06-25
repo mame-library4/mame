@@ -2,164 +2,245 @@
 #include "BehaviorTree/ActionBase.h"
 #include "Enemy.h"
 
-// 死亡行動
-class DeathAction : public ActionBase
+namespace ActionDragon
 {
-public:
-    DeathAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
+    struct GamePadVibration
+    {
+    public:
+        void Initialize(const float& startFrame, const float& time, const float& power);
+        void Update(const float& animationFrame);
 
-private:
-    float timer_ = 0.0f;
-};
+    private:
+        float startFrame_   = 0.0f;
+        float time_         = 0.0f;
+        float power_        = 0.0f;
+        bool  isVibraion_   = false;
+    };
 
-// ひるみ行動
-class FlinchAction : public ActionBase
+    struct AddForceData
+    {
+    public:
+        void Initialize(const float& addForceFrame, const float& force, const float& decelerationForce = 2.0f);
+        bool IsAbleAddForce(const float& animationFrame);
+
+        [[nodiscard]] const float GetForce() const { return force_; }
+        [[nodiscard]] const float GetDecelerationForce() const { return decelerationForce_; }
+
+    private:
+        float   addForceFrame_      = 0.0f;
+        float   force_              = 0.0f;
+        float   decelerationForce_  = 0.0f;
+        bool    isAddforce_         = false;
+    };
+}
+
+namespace ActionDragon
 {
-public:
-    FlinchAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
+    // 死亡行動
+    class DeathAction : public ActionBase
+    {
+    public:
+        DeathAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
 
-// 非戦闘待機行動
-class NonBattleIdleAction : public ActionBase
-{
-public:
-    NonBattleIdleAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
+    private:
+        float timer_ = 0.0f;
+    };
 
-private:
-    float timer_ = 0.0f;
-};
+    // ひるみ行動
+    class FlinchAction : public ActionBase
+    {
+    public:
+        FlinchAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+    };
 
-// 非戦闘歩き行動
-class NonBattleWalkAction : public ActionBase
-{
-public:
-    NonBattleWalkAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
+    // 非戦闘待機行動
+    class NonBattleIdleAction : public ActionBase
+    {
+    public:
+        NonBattleIdleAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
 
-// 咆哮行動
-class RoarAction : public ActionBase
-{
-public:
-    RoarAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
+    private:
+        float timer_ = 0.0f;
+    };
 
-private:
-    float vibrationStartFrame_[3] = { 1.0f, 1.55f, 3.0f };
-    bool isVibration_[3] = {};
+    // 非戦闘歩き行動
+    class NonBattleWalkAction : public ActionBase
+    {
+    public:
+        NonBattleWalkAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+    };
 
-    // ----- Blur -----
-    float   blurStartFrame_ = 0.0f; // ブラー開始フレーム
-    float   blurEndFrame_   = 0.0f; // ブラー終了フレーム
-    float   maxBlurPower_   = 0.0f; // ブラーの強さ
-    float   blurTimer_      = 0.0f; // ブラーのEasing用タイマー
-    float   maxBlurTime_    = 0.0f; // ブラー用
+    // 咆哮行動
+    class RoarAction : public ActionBase
+    {
+    public:
+        RoarAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
 
-};
+    private:
+        void UpdateBlur(const float& elapsedTime);
 
-// バックステップ咆哮行動
-class BackStepRoarAction : public ActionBase
-{
-public:
-    BackStepRoarAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
+    private:
+        static const int vibrationNum_ = 3;
+        GamePadVibration gamePadVibration_[vibrationNum_];
 
-// バックステップ行動
-class BackStepAction : public ActionBase
-{
-public:
-    BackStepAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
+        // ----- Blur -----
+        float   blurStartFrame_ = 0.0f; // ブラー開始フレーム
+        float   blurEndFrame_   = 0.0f; // ブラー終了フレーム
+        float   maxBlurPower_   = 0.0f; // ブラーの強さ
+        float   blurTimer_      = 0.0f; // ブラーのEasing用タイマー
+        float   maxBlurTime_    = 0.0f; // ブラー用
 
-// 飛び攻撃行動
-class FlyAttackAction : public ActionBase
-{
-public:
-    FlyAttackAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
+    };
 
-// ノックバック行動
-class KnockBackAction : public ActionBase
-{
-public:
-    KnockBackAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
+    // バックステップ咆哮行動
+    class BackStepRoarAction : public ActionBase
+    {
+    public:
+        BackStepRoarAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
 
-// たたきつけ行動
-class SlamAction : public ActionBase
-{
-public:
-    SlamAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
+    private:
+        void UpdateBlur(const float& elapsedTime);
 
-// 前方向攻撃行動
-class FrontAttackAction : public ActionBase
-{
-public:
-    FrontAttackAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
+    private:
+        GamePadVibration gamePadVibration_;
 
-// コンボたたきつけ行動
-class ComboSlamAction : public ActionBase
-{
-public:
-    ComboSlamAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
+        // ----- Blur -----
+        float   blurStartFrame_ = 0.0f; // ブラー開始フレーム
+        float   blurEndFrame_   = 0.0f; // ブラー終了フレーム
+        float   maxBlurPower_   = 0.0f; // ブラーの強さ
+        float   blurTimer_      = 0.0f; // ブラーのEasing用タイマー
+        float   maxBlurTime_    = 0.0f; // ブラー用
+    };
 
-// コンボチャージ行動
-class ComboChargeAction : public ActionBase
-{
-public:
-    ComboChargeAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
+    // バックステップ行動
+    class BackStepAction : public ActionBase
+    {
+    public:
+        BackStepAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+    };
 
-// 回転攻撃行動   
-class TurnAttackAction : public ActionBase
-{
-public:
-    TurnAttackAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
+    // 飛び攻撃行動
+    class FlyAttackAction : public ActionBase
+    {
+    public:
+        FlyAttackAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
 
-// タックル行動
-class TackleAction : public ActionBase
-{
-public:
-    TackleAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
+    private:
+        enum MoveDirection
+        {
+            UpBack,
+            DownForward,
+            Max,
+        };
 
-// 上昇攻撃行動
-class RiseAttackAction : public ActionBase
-{
-public:
-    RiseAttackAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
+        enum class STATE
+        {
+            Initialize, // 初期化
+            FlyStart,   // 飛び始め
+            PreAction,  // 予備動作
+            FlyAttack,  // 攻撃
+        };
+        
+    private:
+        AddForceData addForceData_[MoveDirection::Max];
 
-// 移動回転行動
-class MoveTurnAction : public ActionBase
-{
-public:
-    MoveTurnAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
+        float slowAnimationSpeed_       = 0.0f;
+        float slowAnimationEndFrame_    = 0.0f;
 
-// 移動攻撃行動
-class MoveAttackAction : public ActionBase
-{
-public:
-    MoveAttackAction(Enemy* owner) : ActionBase(owner) {}
-    const ActionBase::State Run(const float& elapsedTime) override;
-};
+        // ----- 予備動作用 -----
+        float savePositionY_ = 0;
+        float addPositionY_ = 0;
+        float easingTimer_ = 0.0f;
+        bool isDonw_ = false;
+        bool isUp_ = false;
+
+    };
+
+    // ノックバック行動
+    class KnockBackAction : public ActionBase
+    {
+    public:
+        KnockBackAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+    };
+
+    // たたきつけ行動
+    class SlamAction : public ActionBase
+    {
+    public:
+        SlamAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+    };
+
+    // 前方向攻撃行動
+    class FrontAttackAction : public ActionBase
+    {
+    public:
+        FrontAttackAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+    };
+
+    // コンボたたきつけ行動
+    class ComboSlamAction : public ActionBase
+    {
+    public:
+        ComboSlamAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+    };
+
+    // コンボチャージ行動
+    class ComboChargeAction : public ActionBase
+    {
+    public:
+        ComboChargeAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+    };
+
+    // 回転攻撃行動   
+    class TurnAttackAction : public ActionBase
+    {
+    public:
+        TurnAttackAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+    };
+
+    // タックル行動
+    class TackleAction : public ActionBase
+    {
+    public:
+        TackleAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+    };
+
+    // 上昇攻撃行動
+    class RiseAttackAction : public ActionBase
+    {
+    public:
+        RiseAttackAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+    };
+
+    // 移動回転行動
+    class MoveTurnAction : public ActionBase
+    {
+    public:
+        MoveTurnAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+    };
+
+    // 移動攻撃行動
+    class MoveAttackAction : public ActionBase
+    {
+    public:
+        MoveAttackAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+    };
+}

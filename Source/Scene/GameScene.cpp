@@ -107,7 +107,9 @@ void GameScene::DeferredRender()
     deviceContext->PSSetShaderResources(35, 1, iblTextures_[3].GetAddressOf());
 
     // ステージ
+    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
     stage_->Render(0.01f, gBufferPixelShader);
+    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::SOLID);
 
     // プレイヤー描画
     PlayerManager::Instance().Render(gBufferPixelShader);
@@ -128,7 +130,9 @@ void GameScene::ForwardRender()
     deviceContext->PSSetShaderResources(35, 1, iblTextures_[3].GetAddressOf());
 
     // ステージ
+    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
     stage_->Render(0.01f);
+    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::SOLID);
 
     // プレイヤー描画
     PlayerManager::Instance().Render();

@@ -224,6 +224,13 @@ void GltfModel::UpdateAnimation(const float& elapsedTime)
     Animate(animationIndex_, animationSeconds_, nodes_);
 }
 
+const bool GltfModel::IsPlayAnimation()
+{
+    if (isBlendAnimation_) return true;
+
+    return !animationEndFlag_;
+}
+
 // ----- ブレンドアニメーション更新 ( 更新していたら true ) -----
 bool GltfModel::UpdateBlendAnimation(const float& elapsedTime)
 {

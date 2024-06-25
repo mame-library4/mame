@@ -115,6 +115,7 @@ void Player::Update(const float& elapsedTime)
     //const DirectX::XMFLOAT3 endPos = swordModel_.GetJointPosition("R1:R:j_top", 0.01f);
     //swordTrail_.Update(startPos, endPos);
 
+
     UpdateRootMotion();
 }
 
