@@ -7,6 +7,7 @@ SkyMap::SkyMap()
 {
     D3D11_TEXTURE2D_DESC desc = {};
     Graphics::Instance().CreatePsFromCso("./Resources/Shader/SkyMapPS.cso", psShader_.GetAddressOf());
+    //Texture::Instance().LoadTexture(L"./Resources/SkyBox/RainSky/skybox.dds", shaderResourceView_.GetAddressOf(), &desc);
     Texture::Instance().LoadTexture(L"./Resources/Image/skyMap.dds", shaderResourceView_.GetAddressOf(), &desc);
     renderer_ = std::make_unique<FullscreenQuad>();
 }

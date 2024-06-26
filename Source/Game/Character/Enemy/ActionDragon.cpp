@@ -586,10 +586,62 @@ namespace ActionDragon
     }
 }
 
+// ----- コンボたたきつけ攻撃 -----
 namespace ActionDragon
 {
     const ActionBase::State ComboSlamAction::Run(const float& elapsedTime)
     {
+        switch (owner_->GetStep())
+        {
+        case 0:// 初期化
+            // アニメーション再生
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackComboSlam0, false);
+
+            // ルートモーションを使用する
+            owner_->SetUseRootMotion (true);
+
+            owner_->SetStep(1);
+
+            break;
+        case 1:
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                if (rand() % 2)
+                {
+                    owner_->PlayAnimation(Enemy::DragonAnimation::AttackComboSlam1, false);
+
+                    owner_->SetStep(2);
+                }
+                else
+                {
+                    owner_->PlayAnimation(Enemy::DragonAnimation::AttackComboSlamEnd, false);
+
+                    owner_->SetStep(3);
+                }                
+            }
+
+            break;
+        case 2:
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->PlayAnimation(Enemy::DragonAnimation::AttackComboSlamEnd, false);
+                owner_->SetStep(3);
+            }
+
+            break;
+        case 3:
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+
+            break;
+        }
+
         return ActionBase::State();
     }
 }
@@ -613,6 +665,9 @@ namespace ActionDragon
             // アニメーション設定
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurnStart, false);
 
+            // ルートモーションを使用する
+            owner_->SetUseRootMotion(true);
+
             owner_->SetStep(1);
 
             break;
@@ -626,15 +681,6 @@ namespace ActionDragon
 
             break;
         case 2:
-
-            if (owner_->IsPlayAnimation() == false)
-            {
-                owner_->PlayAnimation(Enemy::DragonAnimation::AttackTurnEnd, false);
-                owner_->SetStep(3);
-            }
-
-            break;
-        case 3:
 
             if (owner_->IsPlayAnimation() == false)
             {

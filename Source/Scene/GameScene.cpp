@@ -27,6 +27,8 @@ void GameScene::CreateResource()
 
     // IBLテクスチャ
     D3D11_TEXTURE2D_DESC textureDesc = {};
+
+#if 1
     Texture::Instance().LoadTexture(L"./Resources/environments/sunset_jhbcentral_4k/sunset_jhbcentral_4k.dds",
         iblTextures_[0].GetAddressOf(), &textureDesc);
     Texture::Instance().LoadTexture(L"./Resources/environments/sunset_jhbcentral_4k/diffuse_iem.dds",
@@ -35,6 +37,16 @@ void GameScene::CreateResource()
         iblTextures_[2].GetAddressOf(), &textureDesc);
     Texture::Instance().LoadTexture(L"./Resources/environments/lut_ggx.DDS",
         iblTextures_[3].GetAddressOf(), &textureDesc);
+#else
+    Texture::Instance().LoadTexture(L"./Resources/SkyBox/RainSky/skybox.dds",
+        iblTextures_[0].GetAddressOf(), &textureDesc);
+    Texture::Instance().LoadTexture(L"./Resources/SkyBox/RainSky/diffuse_iem.dds",
+        iblTextures_[1].GetAddressOf(), &textureDesc); 
+    Texture::Instance().LoadTexture(L"./Resources/SkyBox/RainSky/specular_pmrem.dds",
+        iblTextures_[2].GetAddressOf(), &textureDesc); 
+    Texture::Instance().LoadTexture(L"./Resources/SkyBox/RainSky/lut_ggx.dds",
+        iblTextures_[3].GetAddressOf(), &textureDesc);
+#endif
 
     particles_ = std::make_unique<decltype(particles_)::element_type>(100);
 }

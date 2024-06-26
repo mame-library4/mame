@@ -228,6 +228,13 @@ namespace ActionDragon
     public:
         TurnAttackAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+
+    private:
+        enum class STATE
+        {
+            Initialize,
+
+        };
     };
 
     // タックル行動
