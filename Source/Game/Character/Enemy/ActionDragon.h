@@ -149,6 +149,8 @@ namespace ActionDragon
             FlyAttack,  // 攻撃
         };
         
+        void SetStep(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
+
     private:
         AddForceData addForceData_[MoveDirection::Max];
 
@@ -161,7 +163,6 @@ namespace ActionDragon
         float easingTimer_ = 0.0f;
         bool isDown_ = false;
         bool isRise_ = false;
-
     };
 
     // ノックバック行動
@@ -170,6 +171,23 @@ namespace ActionDragon
     public:
         KnockBackAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+
+    private:
+        enum class STATE
+        {
+            Initialize, // 初期化
+            Guard,      // ガード
+            Loop,       // ガードループ
+            LoopInit,   // ループ初期化
+            Attack,     // 攻撃成功
+            Failed,     // 攻撃失敗
+        };
+
+        void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
+
+    private:
+        int loopMax_ = 0;
+        int loopCounter_ = 0;
     };
 
     // たたきつけ行動

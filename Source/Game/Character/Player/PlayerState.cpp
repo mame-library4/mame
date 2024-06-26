@@ -256,7 +256,8 @@ namespace PlayerState
         }
 
 
-        if(animationSeconds > changeStateFrame_[static_cast<int>(direction_)])
+        //if(animationSeconds > changeStateFrame_[static_cast<int>(direction_)])
+        if(owner_->IsPlayAnimation() == false)
         {
             const float aLx = Input::Instance().GetGamePad().GetAxisLX();
             const float aLy = Input::Instance().GetGamePad().GetAxisLY();

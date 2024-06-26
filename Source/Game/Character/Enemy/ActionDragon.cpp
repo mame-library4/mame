@@ -375,7 +375,9 @@ namespace ActionDragon
                 isRise_ = false;
             }
 
-            owner_->SetStep(1);
+            // ステート変更
+            SetStep(STATE::FlyStart);
+
             break;
         case STATE::FlyStart:// 飛び始め
             
@@ -395,7 +397,8 @@ namespace ActionDragon
                 // 現在の位置Yを保存する
                 savePositionY_ = owner_->GetTransform()->GetPositionY();
                 
-                owner_->SetStep(2);
+                // ステート変更
+                SetStep(STATE::PreAction);
                 break;
             }
 
@@ -439,7 +442,8 @@ namespace ActionDragon
             {
                 owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackFly2, false, slowAnimationSpeed_);
              
-                owner_->SetStep(3);
+                // ステート変更
+                SetStep(STATE::FlyAttack);
                 break;
             }            
 
@@ -468,6 +472,7 @@ namespace ActionDragon
             {
                 owner_->GetTransform()->SetPositionY(0.0f);
                 
+                // ステートリセット
                 owner_->SetStep(0);
                 return ActionBase::State::Complete;
             }
@@ -482,44 +487,82 @@ namespace ActionDragon
 {
     const ActionBase::State KnockBackAction::Run(const float& elapsedTime)
     {
-        switch (owner_->GetStep())
+        switch (static_cast<STATE>(owner_->GetStep()))
         {
-        case 0:// 初期化
+        case STATE::Initialize:// 初期化
             // アニメーション設定
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackKnockBackStart, false);
 
             // ルートモーションを使用する
             owner_->SetUseRootMotion(true);
 
-            owner_->SetStep(1);
+            // 変数初期化
+            {
+                loopMax_ = rand() % 3;
+                //loopMax_ = rand() % 3;
+                loopCounter_ = 0;
+            }
+
+            // ステート変更
+            SetState(STATE::Guard);
 
             break;
-        case 1:
+        case STATE::Guard:// ガード
             
             if (owner_->IsPlayAnimation() == false)
             {
                 owner_->PlayAnimation(Enemy::DragonAnimation::AttackKnockBackLoop, false);
-                owner_->SetStep(2);
+                
+                // ステート変更
+                SetState(STATE::Loop);
                 break;
             }
 
             break;
-        case 2:
+        case STATE::Loop:// ループ
+
+            // アニメーション再生終了
             if (owner_->IsPlayAnimation() == false)
             {
-                owner_->PlayAnimation(Enemy::DragonAnimation::AttackKnockBackEnd0, false);
-                owner_->SetStep(3);
+                // まだループする回数が残っている
+                if (loopCounter_ < loopMax_)
+                {
+                    // ステート変更
+                    SetState(STATE::LoopInit);
+                    break;
+                }
+                // ループ終了
+                else
+                {
+                    owner_->PlayAnimation(Enemy::DragonAnimation::AttackKnockBackEnd0, false);
+                    
+                    // ステート変更
+                    SetState(STATE::Attack);
+                }
+                
                 break;
             }
+            break;
+        case STATE::LoopInit:// ループ初期化
+            // アニメーション設定
+            owner_->PlayAnimation(Enemy::DragonAnimation::AttackKnockBackLoop, false);
+
+            ++loopCounter_;
+
+            // ステート変更
+            SetState(STATE::Loop);
 
             break;
-        case 3:
+        case STATE::Attack:// 攻撃成功
             if (owner_->IsPlayAnimation() == false)
             {
+                // ステートリセット
                 owner_->SetStep(0);
                 return ActionBase::State::Complete;
             }
 
+            break;
+        case STATE::Failed:// 攻撃失敗
             break;
         }
 
@@ -559,10 +602,49 @@ namespace ActionDragon
     }
 }
 
+// ----- 回転攻撃 -----
 namespace ActionDragon
 {
     const ActionBase::State TurnAttackAction::Run(const float& elapsedTime)
     {
+        switch (owner_->GetStep())
+        {
+        case 0:// 初期化
+            // アニメーション設定
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurnStart, false);
+
+            owner_->SetStep(1);
+
+            break;
+        case 1:
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->PlayAnimation(Enemy::DragonAnimation::AttackTurn0, false);
+                owner_->SetStep(2);
+            }
+
+            break;
+        case 2:
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->PlayAnimation(Enemy::DragonAnimation::AttackTurnEnd, false);
+                owner_->SetStep(3);
+            }
+
+            break;
+        case 3:
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+
+            break;
+        }
+
         return ActionBase::State();
     }
 }

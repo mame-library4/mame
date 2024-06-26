@@ -503,7 +503,7 @@ void GltfModel::Animate(size_t animationIndex, float time, std::vector<Node>& an
 // ----- アニメーション再生 -----
 void GltfModel::PlayAnimation(const int& index, const bool& loop, const float& speed)
 {
-    if (animationIndex_ == index) return;
+    //if (animationIndex_ == index) return;
 
     animationIndex_ = index;
     animationSeconds_ = 0.0f;

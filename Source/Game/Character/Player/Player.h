@@ -39,10 +39,11 @@ public:// --- 定数 ---
         Down,               // ダウン
         Death,              // 死亡
         GetUp,              // 起き上がり
-        StepFront,          // 回避前
-        StepBack,           // 回避後ろ
-        StepRight,          // 回避右
-        StepLeft,           // 回避左
+
+        dummy0,
+        dummy1,
+        dummy2,
+        dummy3,
 
         Attack0,
         Attack1,
@@ -60,6 +61,12 @@ public:// --- 定数 ---
         ComboAttack1_0,
         ComboAttack1_1,
         ComboAttack1_2,
+
+        StepFront,          // 回避前
+        StepBack,           // 回避後ろ
+        StepRight,          // 回避右
+        StepLeft,           // 回避左
+
     };
 
     enum class NextInput
