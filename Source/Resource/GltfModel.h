@@ -100,10 +100,12 @@ public:
             0,0,0,1
         };
 
+        bool isRootNode_ = false; // rootNodeÇÃèÍçátrueÇ™ì¸ÇÈ
+
         template<class T>
         void serialize(T& archive)
         {
-            archive(name_, skin_, mesh_, children_, rotation_, scale_, translation_, globalTransform_);
+            archive(name_, skin_, mesh_, children_, rotation_, scale_, translation_, globalTransform_, isRootNode_);
         }
     };
 
@@ -119,9 +121,6 @@ public:
         }
         
         std::vector<UINT8> verticesBinary_;
-        //std::unique_ptr<UINT8[]> verticesBinary_;
-
-        //const void* bufferData_;
 
         template<class T>
         void serialize(T& archive)

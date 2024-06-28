@@ -95,18 +95,20 @@ void Player::Update(const float& elapsedTime)
     GetCollisionDetectionData("collide1").SetPosition(GetTransform()->GetPosition());
     GetCollisionDetectionData("collide2").SetPosition(GetTransform()->GetPosition());
 
-    // アニメーション更新
-    Character::Update(elapsedTime);
-    
     // ステートマシン更新
     GetStateMachine()->Update(elapsedTime);
     
+    // アニメーション更新 [※ステートマシン更新後]
+    Character::Update(elapsedTime);
+    
+
     // 移動処理
     Move(elapsedTime);
 
     // ステージの外に出ないようにする
     CollisionCharacterVsStage();
 
+    UpdateRootMotion();
    
     //const DirectX::XMFLOAT3 startPos = swordModel_.GetJointPosition("R1:R:j_middle", 0.01f);
     //const DirectX::XMFLOAT3 startPos = swordModel_.GetJointPosition("R1:R:j_bottom", 0.01f);
@@ -114,7 +116,6 @@ void Player::Update(const float& elapsedTime)
     //swordTrail_.Update(startPos, endPos);
 
 
-    UpdateRootMotion();
 
     //const float toRadian = 0.01745f;
     //const float toMetric = 0.01f;
@@ -370,12 +371,6 @@ void Player::ResetFlags()
     SetIsAvoidance(false);                          // 回避入力判定用フラグ
 }
 
-
-void Player::PlayBlendAnimation(const Animation& index, const bool& loop, const float& speed)
-{    
-    Object::PlayBlendAnimation(static_cast<int>(index), loop, speed);
-}
-
 void Player::UpdateCollisions(const float& elapsedTime)
 {
     // くらい判定更新
@@ -403,7 +398,17 @@ void Player::UpdateCollisions(const float& elapsedTime)
 // ----- RootMotion更新 -----
 void Player::UpdateRootMotion()
 {
-    Character::UpdateRootMotion();
+    const Animation animationIndex = static_cast<Animation>(GetAnimationIndex());
+    if (animationIndex == Animation::Idle ||
+        animationIndex == Animation::Walk ||
+        animationIndex == Animation::Run)
+    {
+
+    }
+    else
+    {
+        Character::UpdateRootMotion();
+    }
 }
 
 void Player::SetAttackFlag(const bool& activeFlag)

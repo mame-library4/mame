@@ -55,9 +55,9 @@ GltfModel::GltfModel(const std::string& filename) : filename_(filename)
                 subresourceData.pSysMem = indexBufferView.verticesBinary_.data();
                 result = device->CreateBuffer(&bufferDesc, &subresourceData,
                     meshes_.at(meshIndex).primitives_.at(primitiveIndex).indexBufferView_.buffer_.ReleaseAndGetAddressOf());
-                _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));            
-                                
-                for(auto& vertexBufferView: meshes_.at(meshIndex).primitives_.at(primitiveIndex).vertexBufferViews_)
+                _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+                for (auto& vertexBufferView : meshes_.at(meshIndex).primitives_.at(primitiveIndex).vertexBufferViews_)
                 {
                     if (static_cast<UINT>(vertexBufferView.second.sizeInBytes_) == 0)
                     {
@@ -74,7 +74,7 @@ GltfModel::GltfModel(const std::string& filename) : filename_(filename)
                         _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
 
                     }
-           
+
                 }
             }
         }
@@ -158,7 +158,7 @@ GltfModel::GltfModel(const std::string& filename) : filename_(filename)
         { "TEXCOORD", 0, vertexBufferViews.at("TEXCOORD_0").format_, 3, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "JOINTS", 0, vertexBufferViews.at("JOINTS_0").format_, 4, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "WEIGHTS", 0, vertexBufferViews.at("WEIGHTS_0").format_, 5, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "JOINTS", 1, vertexBufferViews.at("JOINTS_1").format_, 6, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },        
+        { "JOINTS", 1, vertexBufferViews.at("JOINTS_1").format_, 6, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "WEIGHTS", 1, vertexBufferViews.at("WEIGHTS_1").format_, 7, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
     };
     Graphics::Instance().CreateVsFromCso("./Resources/Shader/gltfModelVs.cso", vertexShader_.ReleaseAndGetAddressOf(),
@@ -176,7 +176,7 @@ GltfModel::GltfModel(const std::string& filename) : filename_(filename)
         bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         hr = device->CreateBuffer(&bufferDesc, nullptr, primitiveCbuffer_.ReleaseAndGetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-        
+
         // primitiveJointCbuffer(ボーン行列)
         bufferDesc.ByteWidth = sizeof(PrimitiveJointConstants);
         bufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -288,7 +288,7 @@ void GltfModel::BlendAnimations(const std::vector<Node>* nodes[2], float factor,
 
 // ----- 描画 -----
 void GltfModel::Render(const float& scaleFactor, ID3D11PixelShader* psShader)
-{ 
+{
     ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
 
     DirectX::XMMATRIX W = transform_.CalcWorldMatrix(scaleFactor);
@@ -340,7 +340,7 @@ void GltfModel::Render(const float& scaleFactor, ID3D11PixelShader* psShader)
                 primitiveData.hasTangent_ = primitive.vertexBufferViews_.at("TANGENT").buffer_ != NULL;
                 primitiveData.skin_ = node.skin_;
                 primitiveData.emissiveIntencity_ = emissiveIntencity_;
-                
+
                 DirectX::XMStoreFloat4x4(&primitiveData.world_,
                     DirectX::XMLoadFloat4x4(&node.globalTransform_) * DirectX::XMLoadFloat4x4(&world));
                 deviceContext->UpdateSubresource(primitiveCbuffer_.Get(), 0, 0, &primitiveData, 0, 0);
@@ -541,7 +541,7 @@ void GltfModel::Animate(size_t animationIndex, float time, std::vector<Node>& an
     {
         [](const std::vector<float>& timelines, float time, float& interpolationFactor)->size_t
         {
-            const size_t keyframeCount{timelines.size()}; 
+            const size_t keyframeCount{timelines.size()};
 
             if (time > timelines.at(keyframeCount - 1))
             {
@@ -583,7 +583,7 @@ void GltfModel::Animate(size_t animationIndex, float time, std::vector<Node>& an
             float interpolationFactor{};
 
             size_t keyframeIndex{ indexof(timeline, time, interpolationFactor) };
-            
+
             if (channel.targetPath_ == "scale")
             {
                 const std::vector<DirectX::XMFLOAT3>& scales{ animation.scales_.at(sampler.output_) };
@@ -622,9 +622,9 @@ void GltfModel::PlayAnimation(const int& index, const bool& loop, const float& s
     animationIndex_ = index;
     animationSeconds_ = 0.0f;
 
-    animationLoopFlag_          = loop;     // アニメーションループフラグを設定する
-    animationEndFlag_           = false;    // 再生終了フラグをリセット
-    animationSpeed_             = speed;    // アニメーション再生速度を設定
+    animationLoopFlag_ = loop;     // アニメーションループフラグを設定する
+    animationEndFlag_ = false;    // 再生終了フラグをリセット
+    animationSpeed_ = speed;    // アニメーション再生速度を設定
 }
 
 void GltfModel::PlayBlendAnimation(const int& index, const bool& loop, const float& speed)
@@ -667,7 +667,7 @@ DirectX::XMFLOAT3 GltfModel::GetJointPosition(const std::string& nodeName, const
     for (Node& node : nodes_)
     {
         // 名前が一致しなかったら continue
-        if (node.name_ != nodeName) continue;        
+        if (node.name_ != nodeName) continue;
 
         DirectX::XMMATRIX M = DirectX::XMLoadFloat4x4(&node.globalTransform_) * GetTransform()->CalcWorldMatrix(scaleFactor);
         DirectX::XMStoreFloat3(&position, DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&position), M));
@@ -684,7 +684,7 @@ DirectX::XMMATRIX GltfModel::GetJointGlobalTransform(const size_t& nodeIndex)
     if (nodeIndex < 0 || nodeIndex > nodes_.size()) return DirectX::XMMATRIX();
 
     const Node& node = nodes_.at(nodeIndex);
-    
+
     return DirectX::XMLoadFloat4x4(&node.globalTransform_);
 }
 
@@ -711,7 +711,7 @@ DirectX::XMMATRIX GltfModel::GetJointWorldTransform(const std::string& nodeName,
         if (node.name_ != nodeName) continue;
 
         DirectX::XMMATRIX M = DirectX::XMLoadFloat4x4(&node.globalTransform_) * GetTransform()->CalcWorldMatrix(scaleFactor);
-        
+
         return M;
     }
 
@@ -742,6 +742,14 @@ void GltfModel::FetchNodes(const tinygltf::Model& gltfModel)
         node.skin_ = gltfNode.skin;
         node.mesh_ = gltfNode.mesh;
         node.children_ = gltfNode.children;
+
+        // rootを見つけたらフラグを立てる
+        node.isRootNode_ = false;
+        if (gltfNode.name == "root")
+        {
+            node.isRootNode_ = true;
+        }
+
         if (!gltfNode.matrix.empty())
         {
             DirectX::XMFLOAT4X4 matrix;
@@ -812,7 +820,7 @@ void GltfModel::FetchMeshes(ID3D11Device* device, const tinygltf::Model& gltfMod
             D3D11_SUBRESOURCE_DATA subresourceData{};
             subresourceData.pSysMem = gltfModel.buffers.at(gltfBufferView.buffer).data.data()
                 + gltfBufferView.byteOffset + gltfAccessor.byteOffset;
-            
+
             primitive.indexBufferView_.verticesBinary_.resize(bufferDesc.ByteWidth);
             memcpy(primitive.indexBufferView_.verticesBinary_.data(), subresourceData.pSysMem, bufferDesc.ByteWidth);
             //primitive.indexBufferView_.bufferData_ = subresourceData.pSysMem;
@@ -896,12 +904,12 @@ void GltfModel::FetchMeshes(ID3D11Device* device, const tinygltf::Model& gltfMod
                 bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
                 D3D11_SUBRESOURCE_DATA subresourceData{};
                 subresourceData.pSysMem = buffer;
-                
+
                 //vertexBufferView.bufferData_ = buffer;
                 vertexBufferView.verticesBinary_.resize(bufferDesc.ByteWidth);
                 memcpy(vertexBufferView.verticesBinary_.data(), subresourceData.pSysMem, bufferDesc.ByteWidth);
-                
-                
+
+
                 hr = device->CreateBuffer(&bufferDesc, &subresourceData,
                     vertexBufferView.buffer_.ReleaseAndGetAddressOf());
                 _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
@@ -919,7 +927,7 @@ void GltfModel::FetchMeshes(ID3D11Device* device, const tinygltf::Model& gltfMod
                 { "JOINTS_1", { DXGI_FORMAT_R16G16B16A16_UINT } },
                 { "WEIGHTS_1", { DXGI_FORMAT_R32G32B32A32_FLOAT } },
             };
-            
+
             for (std::unordered_map<std::string, BufferView>::const_reference attribute : attributes)
             {
                 if (primitive.vertexBufferViews_.find(attribute.first) == primitive.vertexBufferViews_.end())
@@ -1175,14 +1183,13 @@ void GltfModel::CumulateTransforms(std::vector<Node>& nodes)
         DirectX::XMMATRIX R = DirectX::XMMatrixRotationQuaternion(DirectX::XMVectorSet(node.rotation_.x, node.rotation_.y, node.rotation_.z, node.rotation_.w));
         DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(node.translation_.x, node.translation_.y, node.translation_.z);
         DirectX::XMStoreFloat4x4(&node.globalTransform_, S * R * T * DirectX::XMLoadFloat4x4(&parentGlobalTransforms.top()));
-        
-        // 現在のOrcとDragonがRootが１番に入ってるためこの処理が許されてしまう。
-        // ほんとはやってはいけない
-        if (nodeIndex == 1)
+
+        // 移動値をなくす
+        if (node.isRootNode_)
         {
-            //node.globalTransform_._41 = 0;
-            //node.globalTransform_._42 = 0;
-            //node.globalTransform_._43 = 0;
+            node.globalTransform_._41 = 0;
+            node.globalTransform_._42 = 0;
+            node.globalTransform_._43 = 0;
         }
 
         for (int childIndex : node.children_)

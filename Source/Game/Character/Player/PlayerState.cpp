@@ -71,7 +71,7 @@ namespace PlayerState
             animationIndex == Player::Animation::RollRight   ||
             animationIndex == Player::Animation::RollLeft)
         {
-            owner_->PlayAnimation(Player::Animation::Idle, true);
+            owner_->PlayBlendAnimation(Player::Animation::Idle, true);
         }
         else
         {
@@ -142,8 +142,8 @@ namespace PlayerState
             animationIndex == Player::Animation::RollRight ||
             animationIndex == Player::Animation::RollLeft)
         {
-            //owner_->PlayAnimation(Player::Animation::Walk, true);
             owner_->PlayBlendAnimation(Player::Animation::Walk, true);
+            //owner_->PlayAnimation(Player::Animation::Walk, true);
         }
         else
         {
@@ -159,7 +159,7 @@ namespace PlayerState
     void RunState::Initialize()
     {
         // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::Run, true);
+        SetAnimation();
 
         owner_->ResetFlags();
 
@@ -203,6 +203,24 @@ namespace PlayerState
     {
         owner_->SetMoveDirection({});
         owner_->SetVelocity({});
+    }
+
+    // ----- アニメーション設定 -----
+    void RunState::SetAnimation()
+    {
+        const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+
+        if (animationIndex == Player::Animation::RollForward ||
+            animationIndex == Player::Animation::RollBack ||
+            animationIndex == Player::Animation::RollRight ||
+            animationIndex == Player::Animation::RollLeft)
+        {
+            owner_->PlayAnimation(Player::Animation::Run, true);
+        }
+        else
+        {
+            owner_->PlayBlendAnimation(Player::Animation::Run, true);
+        }
     }
 }
 
@@ -273,7 +291,7 @@ namespace PlayerState
 
         owner_->SetTransitionTime(0.05f);
 
-        owner_->SetRootMotionSpeed(0.4f);
+        owner_->SetRootMotionSpeed(0.5f);
     }
 
     // ----- 更新 -----
@@ -288,36 +306,30 @@ namespace PlayerState
             {
                 owner_->SetAnimationSpeed(2.0f);
             }
+            else if (animationSeconds > 0.9f)
+            {
+                owner_->SetAnimationSpeed(4.0f);
+            }
+            else if (animationSeconds > 0.8f)
+            {
+                owner_->SetAnimationSpeed(2.0f);
+            }
             else
             {
                 owner_->SetAnimationSpeed(1.0f);
-            }
-
-            if (animationSeconds > 1.0f)
-            {
-                const float aLx = Input::Instance().GetGamePad().GetAxisLX();
-                const float aLy = Input::Instance().GetGamePad().GetAxisLY();
-                if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
-                {
-                    owner_->ChangeState(Player::STATE::Run);
-                    return;
-                }
-
-                owner_->ChangeState(Player::STATE::Idle);
-                return;
             }
         }
 
 
         if(owner_->IsPlayAnimation() == false)
         {
-            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
-            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
-            if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
-            {
-                owner_->ChangeState(Player::STATE::Walk);
-                return;
-            }
+            //const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            //const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            //if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
+            //{
+            //    owner_->ChangeState(Player::STATE::Walk);
+            //    return;
+            //}
 
             owner_->ChangeState(Player::STATE::Idle);
             return;
