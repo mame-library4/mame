@@ -7,7 +7,7 @@ void CollisionCylinderData::DrawDebug()
 {
     if (ImGui::TreeNode(GetName().c_str()))
     {
-        ImGui::DragFloat3("offsetPosition", &offsetPosition_.x);
+        ImGui::DragFloat3("offsetPosition", &offsetPosition_.x, 0.01f);
         ImGui::DragFloat("radius", &radius_, 0.01f);
         ImGui::DragFloat("height", &height_, 0.01f);
         ImGui::TreePop();
@@ -19,7 +19,7 @@ void CollisionSphereData::DrawDebug()
 {
     if (ImGui::TreeNode(GetName().c_str()))
     {
-        ImGui::DragFloat3("offsetPosition", &offsetPosition_.x);
+        ImGui::DragFloat3("offsetPosition", &offsetPosition_.x, 0.01f);
         ImGui::DragFloat("radius", &radius_, 0.01f);
         ImGui::TreePop();
     }

@@ -84,8 +84,10 @@ private:
 struct DamageDetectionData
 {
 public:
-    DamageDetectionData(const std::string& name, const float& radius, const float& damage, const DirectX::XMFLOAT3& offsetPosition = {})
+    DamageDetectionData(const std::string& name, const float& radius, const float& damage,
+        const DirectX::XMFLOAT3& offsetPosition = {}, const std::string& updateName = "")
         : collisionSphereData_(name, radius, offsetPosition, { 0, 0, 1, 1 }),
+        updateName_((updateName == "") ? name : updateName),
         damage_(damage)
     {}
     DamageDetectionData() = default;
@@ -109,6 +111,9 @@ public:
     [[nodiscard]] const DirectX::XMFLOAT4 GetColor() const { return collisionSphereData_.GetColor(); }
     void SetColor(const DirectX::XMFLOAT4& color) { collisionSphereData_.SetColor(color); }
 
+    // ---------- 更新用名前 ----------
+    [[nodiscard]] const std::string GetUpdateName() const { return updateName_; }
+
     // ---------- ダメージ量 ----------
     [[nodiscard]] const float GetDamage() const { return damage_; }
 
@@ -121,7 +126,8 @@ public:
 
 private:
     CollisionSphereData collisionSphereData_;
-    float               damage_ = 0.0f; // ダメージ量
+    std::string         updateName_;            // 更新用の名前
+    float               damage_ = 0.0f;         // ダメージ量
 
     // ----- くらった時の管理用 -----
     bool                isHit_ = false; 
@@ -131,8 +137,10 @@ private:
 // ----- 攻撃判定 -----
 struct AttackDetectionData
 {
-    AttackDetectionData(const std::string& name, const float& radius, const DirectX::XMFLOAT3& offsetPosition = {})
-        : collisionSphereData_(name, radius, offsetPosition, { 1, 0, 0, 1 })
+    AttackDetectionData(const std::string& name, const float& radius,
+        const DirectX::XMFLOAT3& offsetPosition = {}, const std::string& updateName = "")
+        : collisionSphereData_(name, radius, offsetPosition, { 1, 0, 0, 1 }),
+        updateName_((updateName == "") ? name : updateName)
     {}
     AttackDetectionData() = default;
 
@@ -157,16 +165,20 @@ struct AttackDetectionData
     [[nodiscard]] const bool GetIsActive() const { return isActive_; }
     void SetIsActive(const bool& isActive) { isActive_ = isActive; }
 
+    // ---------- 更新用名前 ----------
+    [[nodiscard]] const std::string GetUpdateName() const { return updateName_; }
+
 private:
     CollisionSphereData collisionSphereData_;   // 球体データ
-    bool                isActive_ = true;      // 現在有効か
-    //bool                isActive_ = false;      // 現在有効か
+    std::string         updateName_;            // 更新用の名前
+    bool                isActive_ = true;       // 現在有効か
 };
 
 // ----- 押し出し判定 -----
 struct CollisionDetectionData
 {
-    CollisionDetectionData(const std::string& name, const float& radius, const DirectX::XMFLOAT3& offsetPosition = {}, const std::string& updateName = "")
+    CollisionDetectionData(const std::string& name, const float& radius, 
+        const DirectX::XMFLOAT3& offsetPosition = {}, const std::string& updateName = "")
         : collisionSphereData_(name, radius, offsetPosition, { 0, 1, 1, 1 }),
         updateName_((updateName == "") ? name : updateName)
     {}

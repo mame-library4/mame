@@ -23,5 +23,8 @@ private:
     bool isCollisionSphere_ = true;
     bool isAttackSphere_    = true;
     bool isDamageSphere_    = true;
+
+    bool isUpdateAnimation_ = true;
+    //bool isUpdateAnimation_ = false;
 };
 

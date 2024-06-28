@@ -5,7 +5,8 @@
 
 // ----- コンストラクタ -----
 Player::Player()
-    : Character("./Resources/Model/Character/Player/Orc.gltf", 1.0f)
+    : Character("./Resources/Model/Character/Player/SwordGirl.gltf", 0.01f),
+    weapon_("./Resources/Model/Character/Sword/Sword.gltf")
 {
     // --- ステートマシン ---
     {
@@ -25,16 +26,13 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::ComboAttack0_1(this));        // コンボ0_1
         GetStateMachine()->RegisterState(new PlayerState::ComboAttack0_2(this));        // コンボ0_2
         GetStateMachine()->RegisterState(new PlayerState::ComboAttack0_3(this));        // コンボ0_3
-        GetStateMachine()->RegisterState(new PlayerState::ComboAttack1_0(this));        // コンボ1_0
-        GetStateMachine()->RegisterState(new PlayerState::ComboAttack1_1(this));        // コンボ1_1
-        GetStateMachine()->RegisterState(new PlayerState::ComboAttack1_2(this));        // コンボ1_2
 
         // 一番初めのステートを設定する
         GetStateMachine()->SetState(static_cast<UINT>(STATE::Idle));
     }
 
     // LookAt初期化
-    LookAtInitilaize("Head");
+    //LookAtInitilaize("Head");
 }
 
 // ----- デストラクタ -----
@@ -49,7 +47,7 @@ void Player::Initialize()
     GetTransform()->SetPositionZ(60);
 
     // サイズ設定
-    GetTransform()->SetScaleFactor(0.75f);
+    GetTransform()->SetScaleFactor(0.8f);
 
     // ステージとの判定offset設定
     SetCollisionRadius(0.2f);
@@ -117,12 +115,31 @@ void Player::Update(const float& elapsedTime)
 
 
     UpdateRootMotion();
+
+    //const float toRadian = 0.01745f;
+    //const float toMetric = 0.01f;
+    //const int weaponJointIndex = GetNodeIndex("MaceJoint");
+    //const GltfModel::Node node = GetNodes()->at(weaponJointIndex);
+    //
+    //DirectX::XMMATRIX boneTransform = DirectX::XMLoadFloat4x4(&node.globalTransform_);
+    //DirectX::XMMATRIX socketTransform = DirectX::XMMatrixScaling(socketScale_.x, socketScale_.y, socketScale_.z)
+    //    * DirectX::XMMatrixRotationX(-socketRotation_.x * toRadian)
+    //    * DirectX::XMMatrixRotationX(-socketRotation_.y * toRadian)
+    //    * DirectX::XMMatrixRotationX(socketRotation_.z * toRadian)
+    //    * DirectX::XMMatrixTranslation(socketLocation_.x * toMetric, socketLocation_.y * toMetric, socketLocation_.z * toMetric);
+    //DirectX::XMMATRIX dxUE5 = DirectX::XMMatrixSet(-1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1); // LHS Y-Up Z-Forward(DX) -> LHS Z-Up Y-Forward(UE5) 
+    //DirectX::XMMATRIX UE5Gltf = DirectX::XMMatrixSet(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1); // LHS Z-Up Y-Forward(UE5) -> RHS Y-Up Z-Forward(glTF) 
+    //DirectX::XMStoreFloat4x4(&weaponWorld_, dxUE5 * socketTransform * UE5Gltf * boneTransform * GetTransform()->CalcWorldMatrix(GetScaleFactor()));
+
+
 }
 
 // ----- 描画 -----
 void Player::Render(ID3D11PixelShader* psShader)
 {
     Object::Render(psShader);
+
+    weapon_.Render(weaponWorld_, psShader);
 }
 
 void Player::RenderTrail()
@@ -135,6 +152,16 @@ void Player::DrawDebug()
 {
     if (ImGui::BeginMenu("Player"))
     {
+        if (ImGui::TreeNode("Weapon"))
+        {
+            weapon_.DrawDebug();
+
+            ImGui::DragFloat3("weaponLocation", &socketLocation_.x);
+            ImGui::DragFloat3("weaponRotation", &socketRotation_.x);
+            ImGui::DragFloat3("socketScale", &socketScale_.x);
+
+            ImGui::TreePop();
+        }
 
         GetStateMachine()->DrawDebug();
 
@@ -324,6 +351,7 @@ bool Player::CheckNextInput(const Player::NextInput& nextInput, const float& nex
     // コンボ攻撃1
     if (GetComboAttack1KeyDown())
     {
+        return false;
         if (nextInput == NextInput::None)
         {
             ChangeState(STATE::ComboAttack1_0);
@@ -375,14 +403,7 @@ void Player::UpdateCollisions(const float& elapsedTime)
 // ----- RootMotion更新 -----
 void Player::UpdateRootMotion()
 {
-    if (GetAnimationIndex() == static_cast<int>(Player::Animation::Idle))
-    {
-        if (GetIsBlendAnimation() || GetAnimationSeconds() == 0.0f) Character::UpdateRootMotion();
-    }
-    else
-    {
-        Character::UpdateRootMotion();
-    }
+    Character::UpdateRootMotion();
 }
 
 void Player::SetAttackFlag(const bool& activeFlag)

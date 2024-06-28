@@ -404,6 +404,120 @@ void GltfModel::Render(const float& scaleFactor, ID3D11PixelShader* psShader)
     }
 }
 
+void GltfModel::Render(const DirectX::XMFLOAT4X4 world, ID3D11PixelShader* psShader)
+{
+    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
+
+
+    deviceContext->PSSetShaderResources(0, 1, materialResourceView_.GetAddressOf());
+    deviceContext->VSSetShader(vertexShader_.Get(), nullptr, 0);
+    psShader ? deviceContext->PSSetShader(psShader, nullptr, 0) : deviceContext->PSSetShader(pixelShader_.Get(), nullptr, 0);
+    deviceContext->IASetInputLayout(inputLayout_.Get());
+    deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    std::function<void(int)> traverse{ [&](int nodeIndex)->void {
+        const Node& node{nodes_.at(nodeIndex)};
+        if (node.mesh_ > -1)
+        {
+            const Mesh& mesh{ meshes_.at(node.mesh_) };
+            for (std::vector<Mesh::Primitive>::const_reference primitive : mesh.primitives_)
+            {
+                ID3D11Buffer* vertexBuffers[]
+                {
+                    primitive.vertexBufferViews_.at("POSITION").buffer_.Get(),
+                    primitive.vertexBufferViews_.at("NORMAL").buffer_.Get(),
+                    primitive.vertexBufferViews_.at("TANGENT").buffer_.Get(),
+                    primitive.vertexBufferViews_.at("TEXCOORD_0").buffer_.Get(),
+                    primitive.vertexBufferViews_.at("JOINTS_0").buffer_.Get(),
+                    primitive.vertexBufferViews_.at("WEIGHTS_0").buffer_.Get(),
+                    primitive.vertexBufferViews_.at("JOINTS_1").buffer_.Get(),
+                    primitive.vertexBufferViews_.at("WEIGHTS_1").buffer_.Get(),
+                };
+                UINT strides[]
+                {
+                    static_cast<UINT>(primitive.vertexBufferViews_.at("POSITION").strideInBytes_),
+                    static_cast<UINT>(primitive.vertexBufferViews_.at("NORMAL").strideInBytes_),
+                    static_cast<UINT>(primitive.vertexBufferViews_.at("TANGENT").strideInBytes_),
+                    static_cast<UINT>(primitive.vertexBufferViews_.at("TEXCOORD_0").strideInBytes_),
+                    static_cast<UINT>(primitive.vertexBufferViews_.at("JOINTS_0").strideInBytes_),
+                    static_cast<UINT>(primitive.vertexBufferViews_.at("WEIGHTS_0").strideInBytes_),
+                    static_cast<UINT>(primitive.vertexBufferViews_.at("JOINTS_1").strideInBytes_),
+                    static_cast<UINT>(primitive.vertexBufferViews_.at("WEIGHTS_1").strideInBytes_),
+                };
+                UINT offsets[_countof(vertexBuffers)]{ 0 };
+                deviceContext->IASetVertexBuffers(0, _countof(vertexBuffers), vertexBuffers, strides, offsets);
+                deviceContext->IASetIndexBuffer(primitive.indexBufferView_.buffer_.Get(),
+                    primitive.indexBufferView_.format_, 0);
+
+                primitiveConstants primitiveData{};
+                primitiveData.material_ = primitive.material_;
+                primitiveData.hasTangent_ = primitive.vertexBufferViews_.at("TANGENT").buffer_ != NULL;
+                primitiveData.skin_ = node.skin_;
+                primitiveData.emissiveIntencity_ = emissiveIntencity_;
+
+                DirectX::XMStoreFloat4x4(&primitiveData.world_,
+                    DirectX::XMLoadFloat4x4(&node.globalTransform_) * DirectX::XMLoadFloat4x4(&world));
+                deviceContext->UpdateSubresource(primitiveCbuffer_.Get(), 0, 0, &primitiveData, 0, 0);
+                deviceContext->VSSetConstantBuffers(0, 1, primitiveCbuffer_.GetAddressOf());
+                deviceContext->PSSetConstantBuffers(0, 1, primitiveCbuffer_.GetAddressOf());
+
+                // texture
+                {
+                    const Material& material{ materials_.at(primitive.material_) };
+                    const int textureIndices[]
+                    {
+                        material.data_.pbrMetallicRoughness_.baseColorTexture_.index_,
+                        material.data_.pbrMetallicRoughness_.metallicRoughnessTexture_.index_,
+                        material.data_.normalTexture_.index_,
+                        material.data_.emissiveTexture_.index_,
+                        material.data_.occlusionTexture_.index_,
+                    };
+                    ID3D11ShaderResourceView* nullShaderResourceView{};
+                    std::vector<ID3D11ShaderResourceView*> shaderResourceViews(_countof(textureIndices));
+                    for (int textureIndex = 0; textureIndex < shaderResourceViews.size(); ++textureIndex)
+                    {
+                        shaderResourceViews.at(textureIndex) = textureIndices[textureIndex] > -1 ?
+                            textureResourceViews_.at(textures_.at(textureIndices[textureIndex]).source_).Get() :
+                            nullShaderResourceView;
+                    }
+                    deviceContext->PSSetShaderResources(1, static_cast<UINT>(shaderResourceViews.size()),
+                        shaderResourceViews.data());
+                }
+
+                // animation
+                {
+                    if (node.skin_ > -1)
+                    {
+                        const Skin& skin{ skins_.at(node.skin_) };
+                        PrimitiveJointConstants primitiveJointData{};
+                        auto size__ = skin.joints_.size();
+                        for (size_t jointIndex = 0; jointIndex < skin.joints_.size(); ++jointIndex)
+                        {
+                            DirectX::XMStoreFloat4x4(&primitiveJointData.matrices_[jointIndex],
+                                DirectX::XMLoadFloat4x4(&skin.inverseBindMatrices_.at(jointIndex)) *
+                                DirectX::XMLoadFloat4x4(&nodes_.at(skin.joints_.at(jointIndex)).globalTransform_) *
+                                DirectX::XMMatrixInverse(NULL, DirectX::XMLoadFloat4x4(&node.globalTransform_))
+                            );
+                        }
+                        deviceContext->UpdateSubresource(primitiveJointCbuffer_.Get(), 0, 0, &primitiveJointData, 0, 0);
+                        deviceContext->VSSetConstantBuffers(2, 1, primitiveJointCbuffer_.GetAddressOf());
+                    }
+                }
+
+                deviceContext->DrawIndexed(static_cast<UINT>(primitive.indexBufferView_.count()), 0, 0);
+            }
+        }
+        for (std::vector<int>::value_type childIndex : node.children_)
+        {
+            traverse(childIndex);
+        }
+    } };
+    for (std::vector<int>::value_type nodeIndex : scenes_.at(0).nodes_)
+    {
+        traverse(nodeIndex);
+    }
+}
+
 void GltfModel::DrawDebug()
 {
     GetTransform()->DrawDebug();

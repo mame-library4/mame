@@ -92,7 +92,8 @@ void GameScene::Update(const float& elapsedTime)
     stageCenter_ = stage_->GetTransform()->GetPosition();
 
     // カメラの位置更新
-    Camera::Instance().SetTarget(PlayerManager::Instance().GetTransform()->GetPosition());
+    const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
+    Camera::Instance().SetTarget(cameraTargetPosition);
 
     if (GetAsyncKeyState('T') & 0x8000)
     {

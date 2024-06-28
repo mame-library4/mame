@@ -32,6 +32,7 @@ public:
 
     // ----- RootMotion -----
     void UpdateRootMotion();
+    void SetRootMotionSpeed(const float& speed) { rootMotionSpeed_ = speed; }
 
 public:// --- éÊìæÅEê›íË ---
 #pragma region [Get, Set] Function
@@ -121,5 +122,5 @@ private:
     std::vector<GltfModel::Node> zeroAnimatedNodes_;
     DirectX::XMFLOAT3   previousPosition_   = {};
     int                 rootJointIndex_     = 0;
-
+    float               rootMotionSpeed_    = 1.0f;
 };

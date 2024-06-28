@@ -57,8 +57,19 @@ namespace PlayerState
     // ----- アニメーション設定 -----
     void IdleState::SetAnimation()
     {
-        int a = owner_->GetAnimationIndex();
-        if (a < 0)
+        // 最初の一回だけこの処理が通る
+        if (owner_->GetAnimationIndex() < 0)
+        {
+            owner_->PlayAnimation(Player::Animation::Idle, true);
+            return;
+        }
+
+        const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+
+        if (animationIndex == Player::Animation::RollForward ||
+            animationIndex == Player::Animation::RollBack    ||
+            animationIndex == Player::Animation::RollRight   ||
+            animationIndex == Player::Animation::RollLeft)
         {
             owner_->PlayAnimation(Player::Animation::Idle, true);
         }
@@ -76,7 +87,7 @@ namespace PlayerState
     void WalkState::Initialize()
     {
         // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::Walk, true);
+        SetAnimation();
 
         owner_->ResetFlags();
 
@@ -119,6 +130,25 @@ namespace PlayerState
     {
         owner_->SetMoveDirection({});
         owner_->SetVelocity({});
+    }
+
+    // ----- アニメーション設定 -----
+    void WalkState::SetAnimation()
+    {
+        const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+
+        if (animationIndex == Player::Animation::RollForward ||
+            animationIndex == Player::Animation::RollBack ||
+            animationIndex == Player::Animation::RollRight ||
+            animationIndex == Player::Animation::RollLeft)
+        {
+            //owner_->PlayAnimation(Player::Animation::Walk, true);
+            owner_->PlayBlendAnimation(Player::Animation::Walk, true);
+        }
+        else
+        {
+            owner_->PlayBlendAnimation(Player::Animation::Walk, true);
+        }
     }
 }
 
@@ -183,7 +213,7 @@ namespace PlayerState
     void DamageState::Initialize()
     {
         // アニメーション再生 
-        owner_->PlayAnimation(Player::Animation::GetHit, false);
+        owner_->PlayAnimation(Player::Animation::HitLarge, false);
 
         // フラグをリセットする
         owner_->ResetFlags();
@@ -240,8 +270,10 @@ namespace PlayerState
         // フラグをリセットする
         owner_->ResetFlags();
 
-        // 変数初期化
-        isAddForce_ = false;
+
+        owner_->SetTransitionTime(0.05f);
+
+        owner_->SetRootMotionSpeed(0.4f);
     }
 
     // ----- 更新 -----
@@ -249,14 +281,34 @@ namespace PlayerState
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
 
-        if (animationSeconds > addForceFrame_[static_cast<int>(direction_)] && isAddForce_ == false)
+
+        //if (owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::RollForward))
         {
-            isAddForce_ = true;
-            owner_->AddForce(moveDirection_, power_[static_cast<int>(direction_)]);
+            if (animationSeconds < 0.6f)
+            {
+                owner_->SetAnimationSpeed(2.0f);
+            }
+            else
+            {
+                owner_->SetAnimationSpeed(1.0f);
+            }
+
+            if (animationSeconds > 1.0f)
+            {
+                const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+                const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+                if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
+                {
+                    owner_->ChangeState(Player::STATE::Run);
+                    return;
+                }
+
+                owner_->ChangeState(Player::STATE::Idle);
+                return;
+            }
         }
 
 
-        //if(animationSeconds > changeStateFrame_[static_cast<int>(direction_)])
         if(owner_->IsPlayAnimation() == false)
         {
             const float aLx = Input::Instance().GetGamePad().GetAxisLX();
@@ -275,6 +327,7 @@ namespace PlayerState
     // ----- 終了化 -----
     void AvoidanceState::Finalize()
     {
+        owner_->SetRootMotionSpeed(1.0f);
     }
 
     // ----- アニメーション設定 -----
@@ -309,21 +362,20 @@ namespace PlayerState
             {
                 // 回転角が４５度よりも小さければ 前方向
                 if (dot < DirectX::XM_PIDIV4)
-                {
-                    owner_->PlayAnimation(Player::Animation::StepFront, false);
-                    //owner_->PlayBlendAnimation(Player::Animation::StepFront, false);
+                {                    
+                    owner_->PlayBlendAnimation(Player::Animation::RollForward, false);
                     return;
                 }
 
                 // 右方向
                 if (corss < 0)
                 {
-                    owner_->PlayBlendAnimation(Player::Animation::StepRight, false);
+                    owner_->PlayBlendAnimation(Player::Animation::RollRight, false);
                 }
                 // 左方向
                 else
                 {
-                    owner_->PlayBlendAnimation(Player::Animation::StepLeft, false);
+                    owner_->PlayBlendAnimation(Player::Animation::RollLeft, false);
                 }
 
             }
@@ -333,28 +385,26 @@ namespace PlayerState
                 // 回転角が１３５度よりも大きければ 後方向
                 if (dot > DirectX::XM_PIDIV2 + DirectX::XM_PIDIV4)
                 {
-                    //owner_->PlayBlendAnimation(Player::Animation::StepBack, false);
-                    owner_->PlayAnimation(Player::Animation::StepBack, false);
+                    owner_->PlayBlendAnimation(Player::Animation::RollBack, false);
                     return;
                 }
 
                 // 右方向
                 if (corss < 0)
                 {
-                    owner_->PlayBlendAnimation(Player::Animation::StepRight, false);
+                    owner_->PlayBlendAnimation(Player::Animation::RollRight, false);
                 }
                 // 左方向
                 else
                 {
-                    owner_->PlayBlendAnimation(Player::Animation::StepLeft, false);
+                    owner_->PlayBlendAnimation(Player::Animation::RollLeft, false);
                 }
             }
         }
         // 入力値がない場合前方向のアニメーションを設定する
         else
         {
-            owner_->PlayAnimation(Player::Animation::StepBack, false);
-            //owner_->PlayBlendAnimation(Player::Animation::StepBack, false);
+            owner_->PlayBlendAnimation(Player::Animation::RollForward, false);
             return;
         }
     }
@@ -365,25 +415,25 @@ namespace PlayerState
         // アニメーションによって移動方向を分ける
         switch (static_cast<Player::Animation>(owner_->GetAnimationIndex()))
         {
-        case Player::Animation::StepFront:
+        case Player::Animation::RollForward:
             // プレイヤーの前方向
             moveDirection_ = owner_->GetTransform()->CalcForward();
             direction_ = Direction::Fornt;
             
             break;
-        case Player::Animation::StepBack:
+        case Player::Animation::RollBack:
             // プレイヤーの後ろ方向
             moveDirection_ = owner_->GetTransform()->CalcForward() * -1;
             direction_ = Direction::Back;
             
             break;
-        case Player::Animation::StepRight:
+        case Player::Animation::RollRight:
             // プレイヤーの右方向
             moveDirection_ = owner_->GetTransform()->CalcRight();
             direction_ = Direction::Right;
             
             break;
-        case Player::Animation::StepLeft:
+        case Player::Animation::RollLeft:
             // プレイヤーの左方向
             moveDirection_ = owner_->GetTransform()->CalcRight() * -1;
             direction_ = Direction::Left;
@@ -400,7 +450,7 @@ namespace PlayerState
     void CounterState::Initialize()
     {
         // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::Counter, false);
+        owner_->PlayBlendAnimation(Player::Animation::ParryCounterAttack0, false);
 
         // 変数初期化
         power_[Direction::Front] = 0.6f;
@@ -543,7 +593,7 @@ namespace PlayerState
     void CounterComboState::Initialize()
     {
         // アニメーション再生
-        owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_2, false);
+        owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_1, false);
         
 
         // 変数初期化
@@ -588,421 +638,76 @@ namespace PlayerState
 // ----- コンボ攻撃0_0 -----
 namespace PlayerState
 {
-    // ----- 初期化 -----
     void ComboAttack0_0::Initialize()
     {
-        // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_0, false, normalAnimationSpeed_);
-        
-
-        // フラグをリセットする
-        owner_->ResetFlags();
-
-        // 変数初期化
-        nextInputStartFrame_ = 0.3f;
-        nextInputEndFrame_ = 0.85f;
-        nextAttackFrame_ = 0.55f;
-        slowAnimationStartFrame_ = 0.3f;
-        isSlowAnimation_ = false;   
-
-        moveDirecion_ = owner_->GetTransform()->CalcForward();
-        addForceFrame_ = 0.4f;
-        power_ = 0.1f;
-        isAddForce_ = false;    
+        owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_0, false);
     }
-
-    // ----- 更新 -----
     void ComboAttack0_0::Update(const float& elapsedTime)
     {
-        const float animationSeconds = owner_->GetAnimationSeconds();
-
-        if (animationSeconds > addForceFrame_ && isAddForce_ == false)
-        {
-            isAddForce_ = true;
-            owner_->AddForce(moveDirecion_, power_, 0.7f);
-        }
-
-        // アニメーションの速度を制御する
-        if (animationSeconds > slowAnimationStartFrame_ && isSlowAnimation_ == false)
-        {
-            owner_->SetAnimationSpeed(slowAnimationSpeed_);
-            isSlowAnimation_ = true;
-        }
-
-        // 先行入力が有効なフレーム
-        if (animationSeconds > nextInputStartFrame_ && animationSeconds < nextInputEndFrame_)
-        {
-            // 先行入力受付
-            owner_->CheckNextInput(Player::NextInput::ComboAttack0, nextAttackFrame_);
-            owner_->SetTransitionTime(0.1f);
-        }
-        if (animationSeconds > nextAttackFrame_ && owner_->GetNextInput() != Player::NextInput::None)
-        {
-            switch (owner_->GetNextInput())
-            {
-            case Player::NextInput::ComboAttack0:
-                owner_->ChangeState(Player::STATE::ComboAttack0_1);
-                break;
-            case Player::NextInput::ComboAttack1:
-                owner_->ChangeState(Player::STATE::ComboAttack1_0);
-                break;
-            case Player::NextInput::Avoidance:
-                owner_->ChangeState(Player::STATE::Avoidance);
-                break;
-            }
-        }
-
-
-        // アニメーション再生終了
         if (owner_->IsPlayAnimation() == false)
         {
-            owner_->ChangeState(Player::STATE::Idle);
+            owner_->ChangeState(Player::STATE::ComboAttack0_1);
             return;
         }
     }
-
-    // ----- 終了化 -----
     void ComboAttack0_0::Finalize()
     {
+
     }
+
 }
 
 // ----- コンボ攻撃0_1 -----
 namespace PlayerState
 {
-    // ----- 初期化 -----
     void ComboAttack0_1::Initialize()
     {
-        // アニメーション設定
-        SetAnimation();
-
-        // フラグをリセットする
-        owner_->ResetFlags();
-
-        // 変数初期化
-        nextInputStartFrame_ = 0.1f;
-        nextInputEndFrame_ = 0.85f;
-        nextAttackFrame_ = 0.6f;
+        owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_1, false);
     }
-
-    // ----- 更新 -----
     void ComboAttack0_1::Update(const float& elapsedTime)
     {
-        const float animationSeconds = owner_->GetAnimationSeconds();
-
-        // 先行入力が有効なフレーム
-        if (animationSeconds > nextInputStartFrame_ && animationSeconds < nextInputEndFrame_)
-        {
-            // 先行入力受付
-            owner_->CheckNextInput(Player::NextInput::ComboAttack0, nextAttackFrame_);
-            owner_->SetTransitionTime(0.1f);
-        }
-        if (animationSeconds > nextAttackFrame_ && owner_->GetNextInput() != Player::NextInput::None)
-        {
-            switch (owner_->GetNextInput())
-            {
-            case Player::NextInput::ComboAttack0:
-                owner_->ChangeState(Player::STATE::ComboAttack0_2);
-                break;
-            case Player::NextInput::ComboAttack1:
-                owner_->ChangeState(Player::STATE::ComboAttack1_0);
-                break;
-            case Player::NextInput::Avoidance:
-                owner_->ChangeState(Player::STATE::Avoidance);
-                break;
-            }
-        }
-
-        // アニメーション再生終了
         if (owner_->IsPlayAnimation() == false)
         {
             owner_->ChangeState(Player::STATE::Idle);
             return;
         }
     }
-
-    // ----- 終了化 -----
     void ComboAttack0_1::Finalize()
     {
-    }
 
-    // ----- アニメーション設定 -----
-    void ComboAttack0_1::SetAnimation()
-    {
-        if (owner_->GetUseBlendAnimation())
-        {
-            owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_1, false, 1.0f);
-        }
-        else
-        {
-            owner_->PlayAnimation(Player::Animation::ComboAttack0_1, false, 1.0f);
-        }
     }
 }
 
 // ----- コンボ攻撃0_2 -----
 namespace PlayerState
 {
-    // ----- 初期化 -----
     void ComboAttack0_2::Initialize()
     {
-        // アニメーション設定
-        SetAnimation();        
 
-        // フラグをリセットする
-        owner_->ResetFlags();
-
-        // 変数初期化
-        nextInputStartFrame_ = 0.1f;
-        nextInputEndFrame_ = 0.9f;
-        nextAttackFrame_ = 0.65f;
-                
-        moveDirecion_ = owner_->GetTransform()->CalcForward();
-        addForceFrame_ = 0.35f;
-        power_ = 0.5f;
-        isAddForce_ = false;
     }
-
-    // ----- 更新 -----
     void ComboAttack0_2::Update(const float& elapsedTime)
     {
-        const float animationSeconds = owner_->GetAnimationSeconds();
 
-        if (animationSeconds > addForceFrame_ && isAddForce_ == false)
-        {
-            isAddForce_ = true;
-            owner_->AddForce(moveDirecion_, power_);
-        }
-
-        // 先行入力が有効なフレーム
-        if (animationSeconds > nextInputStartFrame_ && animationSeconds < nextInputEndFrame_)
-        {
-            // 先行入力受付
-            owner_->CheckNextInput(Player::NextInput::ComboAttack0, nextAttackFrame_);
-            owner_->SetTransitionTime(0.1f);
-        }
-        if (animationSeconds > nextAttackFrame_ && owner_->GetNextInput() != Player::NextInput::None)
-        {
-            switch (owner_->GetNextInput())
-            {
-            case Player::NextInput::ComboAttack0:
-                owner_->ChangeState(Player::STATE::ComboAttack0_3);
-                break;
-            case Player::NextInput::ComboAttack1:
-                owner_->ChangeState(Player::STATE::ComboAttack1_0);
-                break;
-            case Player::NextInput::Avoidance:
-                owner_->ChangeState(Player::STATE::Avoidance);
-                break;
-            }
-        }
-
-        // アニメーション再生終了
-        if (owner_->IsPlayAnimation() == false)
-        {
-            owner_->ChangeState(Player::STATE::Idle);
-            return;
-        }
     }
-
-    // ----- 終了化 -----
     void ComboAttack0_2::Finalize()
     {
-    }
 
-    // ----- アニメーション設定 -----
-    void ComboAttack0_2::SetAnimation()
-    {
-        if (owner_->GetUseBlendAnimation())
-        {
-            owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_2, false);
-        }
-        else
-        {
-            owner_->PlayAnimation(Player::Animation::ComboAttack0_2, false);
-        }
     }
 }
 
 // ----- コンボ攻撃0_3 -----
 namespace PlayerState
 {
-    // ----- 初期化 -----
     void ComboAttack0_3::Initialize()
     {
-        // アニメーション設定
-        SetAnimation();        
 
-        // フラグをリセットする
-        owner_->ResetFlags();
-
-        // 変数初期化
-        moveDirecion_ = owner_->GetTransform()->CalcForward();
-        addForceFrame_[0] = 0.15f;
-        addForceFrame_[1] = 0.5f;
-        power_[0] = 0.2f;
-        power_[1] = 0.3f;
-        isAddForce_[0] = false;
-        isAddForce_[1] = false;
     }
-
-    // ----- 更新 -----
     void ComboAttack0_3::Update(const float& elapsedTime)
     {
-        const float animationSeconds = owner_->GetAnimationSeconds();
 
-        if (animationSeconds > addForceFrame_[0] && isAddForce_[0] == false)
-        {
-            isAddForce_[0] = true;
-            owner_->AddForce(moveDirecion_, power_[0], 0.6f);
-        }
-        if (animationSeconds > addForceFrame_[1] && isAddForce_[1] == false)
-        {
-            isAddForce_[1] = true;
-            owner_->AddForce(moveDirecion_, power_[1]);
-        }
-
-        if (owner_->IsPlayAnimation() == false)
-        {
-            owner_->ChangeState(Player::STATE::Idle);
-            return;
-        }
     }
-
-    // ----- 終了化 -----
     void ComboAttack0_3::Finalize()
     {
-    }
 
-    // ----- アニメーション設定 -----
-    void ComboAttack0_3::SetAnimation()
-    {
-        if (owner_->GetUseBlendAnimation())
-        {
-            owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_3, false);
-        }
-        else
-        {
-            owner_->PlayAnimation(Player::Animation::ComboAttack0_3, false);
-        }
-    }
-}
-
-// ----- コンボ攻撃1_0 -----
-namespace PlayerState
-{
-    void ComboAttack1_0::Initialize()
-    {
-        // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::ComboAttack1_0, false);
-        
-        // フラグをリセットする
-        owner_->ResetFlags();
-
-        // 変数初期化
-        moveDirecion_ = owner_->GetTransform()->CalcForward();
-        addForceFrame_ = 0.15f;
-        power_ = 0.45f;
-        isAddForce_ = true;
-        //isAddForce_ = false;
-    }
-
-    void ComboAttack1_0::Update(const float& elapsedTime)
-    {
-        const float animationSeconds = owner_->GetAnimationSeconds();
-
-        if (animationSeconds > addForceFrame_ && isAddForce_ == false)
-        {
-            isAddForce_ = true;
-            owner_->AddForce(moveDirecion_, power_);
-        }
-
-        if (owner_->IsPlayAnimation() == false)
-        {
-            //owner_->ChangeState(Player::STATE::Idle);
-            owner_->ChangeState(Player::STATE::ComboAttack1_1);
-            return;
-        }
-    }
-
-    void ComboAttack1_0::Finalize()
-    {
-    }
-}
-
-// ----- コンボ攻撃1_1 -----
-namespace PlayerState
-{
-    void ComboAttack1_1::Initialize()
-    {
-        // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::ComboAttack1_1, false);
-        
-        // 変数初期化
-        moveDirecion_ = owner_->GetTransform()->CalcForward();
-        addForceFrame_ = 0.2f;
-        power_ = 0.4f;
-        isAddForce_ = true;
-        //isAddForce_ = false;
-    }
-
-    void ComboAttack1_1::Update(const float& elapsedTime)
-    {
-        const float animationSeconds = owner_->GetAnimationSeconds();
-
-        if (animationSeconds > addForceFrame_ && isAddForce_ == false)
-        {
-            isAddForce_ = true;
-            owner_->AddForce(moveDirecion_, power_, 1.5f);
-        }
-
-        if (owner_->IsPlayAnimation() == false)
-        {
-            //owner_->ChangeState(Player::STATE::Idle);
-            owner_->ChangeState(Player::STATE::ComboAttack1_2);
-            return;
-        }
-    }
-
-    void ComboAttack1_1::Finalize()
-    {
-    }
-}
-
-// ----- コンボ攻撃1_2 -----
-namespace PlayerState
-{
-    void ComboAttack1_2::Initialize()
-    {
-        // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::ComboAttack1_2, false);
-        
-        // 変数初期化
-        moveDirecion_ = owner_->GetTransform()->CalcForward();
-        addForceFrame_ = 0.3f;
-        power_ = 0.4f;
-        //isAddForce_ = false;
-        isAddForce_ = true;
-    }
-
-    void ComboAttack1_2::Update(const float& elapsedTime)
-    {
-        const float animationSeconds = owner_->GetAnimationSeconds();
-
-        if (animationSeconds > addForceFrame_ && isAddForce_ == false)
-        {
-            isAddForce_ = true;
-            owner_->AddForce(moveDirecion_, power_);
-        }
-
-        if (owner_->IsPlayAnimation() == false)
-        {
-            owner_->ChangeState(Player::STATE::Idle);
-            return;
-        }
-    }
-
-    void ComboAttack1_2::Finalize()
-    {
     }
 }

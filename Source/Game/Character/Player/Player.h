@@ -32,41 +32,51 @@ public:// --- 定数 ---
 
     enum class Animation
     {
-        Idle,               // 待機        
-        Walk,               // 歩き
-        Run,                // 走り
-        GetHit,             // ダメージ食らい
-        Down,               // ダウン
-        Death,              // 死亡
-        GetUp,              // 起き上がり
+        // 待機
+        Idle,
 
-        dummy0,
-        dummy1,
-        dummy2,
-        dummy3,
+        // 歩き
+        WalkStart,
+        Walk,
+        WalkEnd,
 
-        Attack0,
-        Attack1,
-        Attack2,
+        // 走り
+        RunStart,
+        Run,
+        RunEnd,
 
-        Counter,
+        // 回避
+        RollForward,
+        RollBack,
+        RollRight,
+        RollLeft,
 
-        Attack3,
-
+        // 攻撃
         ComboAttack0_0,
         ComboAttack0_1,
         ComboAttack0_2,
         ComboAttack0_3,
 
-        ComboAttack1_0,
-        ComboAttack1_1,
-        ComboAttack1_2,
+        // 防御
+        BlockStart,
+        BlockLoop,
+        BlockEnd,
+        
+        // カウンター攻撃
+        ParryCounterAttack0, // Right
+        ParryCounterAttack1, // Left
 
-        StepFront,          // 回避前
-        StepBack,           // 回避後ろ
-        StepRight,          // 回避右
-        StepLeft,           // 回避左
+        HitLarge,
+        GetUp,
+        HitForward,
+        HitBack,
+        HitRight,
+        HitLeft,
 
+        KnockDownStart,
+        KnockDownLoop,
+        KnockDownEnd,
+        KnockDownDeath,
     };
 
     enum class NextInput
@@ -140,6 +150,8 @@ public:// --- 取得・設定 ---
 
     // ---------- 行動 -------------------------------------------------------
     [[nodiscard]] const NextInput GetNextInput() const { return nextInput_; }
+    void SetNextInput(const NextInput& nextInput) { nextInput_ = nextInput; }
+
     [[nodiscard]] const bool GetIsAvoidance() const { return isAvoidance_; }
     void SetIsAvoidance(const bool& isAvoidance) { isAvoidance_ = isAvoidance; }
 
@@ -152,6 +164,9 @@ public:// --- 取得・設定 ---
 #pragma endregion [Get, Set] Function
 
 private:
+    // ---------- 武器 ----------
+    GltfModel weapon_;
+
     // ---------- ステートマシン --------------------
     std::unique_ptr<StateMachine<State<Player>>> stateMachine_;
 
@@ -171,4 +186,12 @@ private:
     bool useBlendAnimation_ = false;
 
     SwordTrail swordTrail_;
+
+    DirectX::XMFLOAT3 socketLocation_;
+    DirectX::XMFLOAT3 socketRotation_ = { 0.0f, -90.0f, 0.0f };
+    const float weaponScale_ = 0.0f;
+    //const float weaponScale_ = 1.5f;
+    DirectX::XMFLOAT3 socketScale_ = { weaponScale_, weaponScale_, -weaponScale_ };
+    //DirectX::XMFLOAT3 socketScale_ = { 1.0f, 1.0f, 1.0f };
+    DirectX::XMFLOAT4X4 weaponWorld_;
 };

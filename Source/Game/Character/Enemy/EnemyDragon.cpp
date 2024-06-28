@@ -48,7 +48,7 @@ void EnemyDragon::Finalize()
 // ----- çXêV -----
 void EnemyDragon::Update(const float& elapsedTime)
 {
-    Character::Update(elapsedTime);
+    if(isUpdateAnimation_) Character::Update(elapsedTime);
 
     // CollisionÉfÅ[É^çXêV
     UpdateCollisions(elapsedTime);
@@ -74,6 +74,7 @@ void EnemyDragon::DrawDebug()
 {
     if (ImGui::BeginMenu("Dragon"))
     {
+        ImGui::Checkbox("useAnimation", &isUpdateAnimation_);
         ImGui::Checkbox("DamageSphere", &isDamageSphere_);
         ImGui::Checkbox("AttackSphere", &isAttackSphere_);
         ImGui::Checkbox("collision", &isCollisionSphere_);
@@ -198,8 +199,60 @@ void EnemyDragon::RegisterCollisionData()
     // Ç≠ÇÁÇ¢îªíËìoò^
     DamageDetectionData damageDetectionData[] =
     {
-        {},
+        // { name, radius, damage, offset, updateName }
+
+        { "Dragon15_head",      1.0f, 10.0f, {} },
+        { "Dragon15_neck_1",    1.0f, 10.0f, {} },
+
+        { "Dragon15_r_hand",    1.0f, 10.0f, {} },
+        { "Dragon15_r_forearm", 1.0f, 10.0f, {} },
+                                      
+        { "Dragon15_l_hand",    1.0f, 10.0f, {} },
+        { "Dragon15_l_forearm", 1.0f, 10.0f, {} },
+
+        // ---------- êKîˆ ----------
+#pragma region ---------- êKîˆ ----------
+        { "Dragon15_tail_00", 1.10f, 10.0f, {} },
+        { "Dragon15_tail_01", 1.00f, 10.0f, { 0.30f, 0.0f, 0.0f } },
+        { "Dragon15_tail_03", 0.90f, 10.0f, {} },
+        { "Dragon15_tail_04", 0.80f, 10.0f, { 0.07f, 0.0f, 0.0f } },
+        { "Dragon15_tail_05", 0.75f, 10.0f, { 0.30f, 0.0f, 0.0f } },
+#pragma endregion ---------- êKîˆ ----------
+
+        // ---------- óÉ ----------
+#pragma region ---------- óÉ ----------
+        { "Dragon15_l_wing_01", 1.0f, 10.0f, {} },
+        { "Dragon15_l_wing_03", 1.3f, 10.0f, { 0.2f, 0.0f, 0.0f } },
+        { "Dragon15_l_wing_04", 1.2f, 10.0f, {} },
+        { "Dragon15_l_wing_06", 1.0f, 10.0f, {} },
+        { "Dragon15_l_wing_07", 1.25f, 10.0f, {} },
+        { "Dragon15_l_wing_08", 1.25f, 10.0f, { 0.0f, -0.3f, 0.0f } },
+        { "Dragon15_l_wing_09", 1.0f, 10.0f, {} },
+        { "Dragon15_l_wing_10", 1.0f, 10.0f, {} },
+        { "Dragon15_l_wing_12", 1.0f, 10.0f, {} },
+
+        { "Dragon15_l_wing_add_0", 1.1f, 10.0f, { 1.6f, 0.0f, 0.0f } , "Dragon15_l_wing_04" },
+        { "Dragon15_l_wing_add_1", 1.0f, 10.0f, { 1.2f, 0.0f, 0.0f }  , "Dragon15_l_wing_07" },
+        { "Dragon15_l_wing_add_2", 1.0f, 10.0f, { 1.0f, 0.0f, 0.0f }  , "Dragon15_l_wing_10" },
+        { "Dragon15_l_wing_add_3", 1.0f, 10.0f, { 1.25f, 0.0f, 0.0f } , "Dragon15_l_wing_12" },
+
+        { "Dragon15_r_wing_01", 1.0f, 10.0f, {} },
+        { "Dragon15_r_wing_03", 1.0f, 10.0f, {} },
+        { "Dragon15_r_wing_04", 1.0f, 10.0f, {} },
+        { "Dragon15_r_wing_06", 1.0f, 10.0f, {} },
+        { "Dragon15_r_wing_07", 1.0f, 10.0f, {} },
+        { "Dragon15_r_wing_08", 1.0f, 10.0f, {} },
+        { "Dragon15_r_wing_09", 1.0f, 10.0f, {} },
+        { "Dragon15_r_wing_10", 1.0f, 10.0f, {} },
+        { "Dragon15_r_wing_12", 1.0f, 10.0f, {} },
+
+#pragma endregion ---------- óÉ ----------
+
     };
+    for (int i = 0; i < _countof(damageDetectionData); ++i)
+    {
+        RegisterDamageDetectionData(damageDetectionData[i]);
+    }
 
     // çUåÇîªíËìoò^
     AttackDetectionData attackDetectionData[] =

@@ -29,6 +29,9 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+
+    private:
+        void SetAnimation();
     };
 
     // ----- 走り -----
@@ -93,11 +96,6 @@ namespace PlayerState
     private:
         DirectX::XMFLOAT3   moveDirection_  = {};
         Direction           direction_      = Direction::Back;
-
-        bool isAddForce_ = false;
-        float power_[4] = { 0.4f, 0.3f, 0.4f, 0.4f };
-        float addForceFrame_[4] = { 0.09f, 0.13f, 0.08f, 0.08f };
-        float changeStateFrame_[4] = { 0.25f, 0.5f, 0.25f, 0.25f };
     };
 
     // ----- カウンター -----
@@ -245,62 +243,5 @@ namespace PlayerState
         float               addForceFrame_[2] = {};
         float               power_[2] = {};
         bool                isAddForce_[2];
-    };
-
-    // ----- コンボ1_0 -----
-    class ComboAttack1_0 : public State<Player>
-    {
-    public:
-        ComboAttack1_0(Player* player) : State(player, "ComboAttack1_0") {}
-        ~ComboAttack1_0() {}
-
-        void Initialize()                       override;
-        void Update(const float& elapsedTime)   override;
-        void Finalize()                         override;
-
-    private:
-        // ----- 移動 -----
-        DirectX::XMFLOAT3   moveDirecion_ = {};
-        float               addForceFrame_ = 0.0f;
-        float               power_ = 0.0f;
-        bool                isAddForce_ = false;
-    };
-
-    // ----- コンボ1_1 -----
-    class ComboAttack1_1 : public State<Player>
-    {
-    public:
-        ComboAttack1_1(Player* player) : State(player, "ComboAttack1_1") {}
-        ~ComboAttack1_1() {}
-
-        void Initialize()                       override;
-        void Update(const float& elapsedTime)   override;
-        void Finalize()                         override;
-
-    private:
-        // ----- 移動 -----
-        DirectX::XMFLOAT3   moveDirecion_ = {};
-        float               addForceFrame_ = 0.0f;
-        float               power_ = 0.0f;
-        bool                isAddForce_ = false;
-    };
-
-    // ----- コンボ1_2 -----
-    class ComboAttack1_2 : public State<Player>
-    {
-    public:
-        ComboAttack1_2(Player* player) : State(player, "ComboAttack1_2") {}
-        ~ComboAttack1_2() {}
-
-        void Initialize()                       override;
-        void Update(const float& elapsedTime)   override;
-        void Finalize()                         override;
-
-    private:
-        // ----- 移動 -----
-        DirectX::XMFLOAT3   moveDirecion_ = {};
-        float               addForceFrame_ = 0.0f;
-        float               power_ = 0.0f;
-        bool                isAddForce_ = false;
     };
 }

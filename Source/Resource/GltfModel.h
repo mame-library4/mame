@@ -352,6 +352,7 @@ public:
 
 public:
     void Render(const float& scaleFactor, ID3D11PixelShader* psShader = nullptr);
+    void Render(const DirectX::XMFLOAT4X4 world, ID3D11PixelShader* psShader = nullptr);
     void DrawDebug();
 
     // ---------- Animation ----------
