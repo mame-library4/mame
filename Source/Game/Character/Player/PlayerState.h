@@ -4,6 +4,25 @@
 
 namespace PlayerState
 {
+    struct AddForceData
+    {
+    public:
+        void Initialize(const float& addForceFrame, const float& force, const float& decelerationForce = 2.0f);
+        bool IsAbleAddForce(const float& animationFrame);
+
+        [[nodiscard]] const float GetForce() const { return force_; }
+        [[nodiscard]] const float GetDecelerationForce() const { return decelerationForce_; }
+
+    private:
+        float   addForceFrame_      = 0.0f;
+        float   force_              = 0.0f;
+        float   decelerationForce_  = 0.0f;
+        bool    isAddforce_         = false;
+    };
+}
+
+namespace PlayerState
+{
     // ----- 待機 -----
     class IdleState : public State<Player>
     {
@@ -165,17 +184,7 @@ namespace PlayerState
         float nextInputEndFrame_    = 0.0f;
         float nextAttackFrame_      = 0.0f;
 
-        // ----- 移動 -----
-        DirectX::XMFLOAT3   moveDirecion_   = {};
-        float               addForceFrame_  = 0.0f;
-        float               power_          = 0.0f;
-        bool                isAddForce_     = false;
-
-        // ----- アニメーション制御用 -----
-        float slowAnimationStartFrame_  = 0.0f;
-        bool  isSlowAnimation_          = false;
-        const float normalAnimationSpeed_   = 1.5f;
-        const float slowAnimationSpeed_     = 0.5f;
+        AddForceData addForceData_;
     };
 
     // ----- コンボ0_1 -----
@@ -190,13 +199,8 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
-        void SetAnimation();
+        AddForceData addForceData_;
 
-    private:
-        // ----- 先行入力用 -----
-        float nextInputStartFrame_  = 0.0f;
-        float nextInputEndFrame_    = 0.0f;
-        float nextAttackFrame_      = 0.0f;
     };
 
     // ----- コンボ0_2 -----

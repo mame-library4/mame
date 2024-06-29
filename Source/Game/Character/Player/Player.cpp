@@ -107,8 +107,6 @@ void Player::Update(const float& elapsedTime)
 
     // ステージの外に出ないようにする
     CollisionCharacterVsStage();
-
-    UpdateRootMotion();
    
     //const DirectX::XMFLOAT3 startPos = swordModel_.GetJointPosition("R1:R:j_middle", 0.01f);
     //const DirectX::XMFLOAT3 startPos = swordModel_.GetJointPosition("R1:R:j_bottom", 0.01f);
@@ -117,29 +115,28 @@ void Player::Update(const float& elapsedTime)
 
 
 
-    //const float toRadian = 0.01745f;
-    //const float toMetric = 0.01f;
-    //const int weaponJointIndex = GetNodeIndex("MaceJoint");
-    //const GltfModel::Node node = GetNodes()->at(weaponJointIndex);
-    //
-    //DirectX::XMMATRIX boneTransform = DirectX::XMLoadFloat4x4(&node.globalTransform_);
-    //DirectX::XMMATRIX socketTransform = DirectX::XMMatrixScaling(socketScale_.x, socketScale_.y, socketScale_.z)
-    //    * DirectX::XMMatrixRotationX(-socketRotation_.x * toRadian)
-    //    * DirectX::XMMatrixRotationX(-socketRotation_.y * toRadian)
-    //    * DirectX::XMMatrixRotationX(socketRotation_.z * toRadian)
-    //    * DirectX::XMMatrixTranslation(socketLocation_.x * toMetric, socketLocation_.y * toMetric, socketLocation_.z * toMetric);
-    //DirectX::XMMATRIX dxUE5 = DirectX::XMMatrixSet(-1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1); // LHS Y-Up Z-Forward(DX) -> LHS Z-Up Y-Forward(UE5) 
-    //DirectX::XMMATRIX UE5Gltf = DirectX::XMMatrixSet(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1); // LHS Z-Up Y-Forward(UE5) -> RHS Y-Up Z-Forward(glTF) 
-    //DirectX::XMStoreFloat4x4(&weaponWorld_, dxUE5 * socketTransform * UE5Gltf * boneTransform * GetTransform()->CalcWorldMatrix(GetScaleFactor()));
-
-
+    // 剣の座標更新
+    const float toRadian = 0.01745f;
+    const float toMetric = 0.01f;
+    const int weaponJointIndex = GetNodeIndex("hand_r");
+    //const int weaponJointIndex = GetNodeIndex("weapon_r");
+    const GltfModel::Node node = GetNodes()->at(weaponJointIndex);
+    
+    DirectX::XMMATRIX boneTransform = DirectX::XMLoadFloat4x4(&node.globalTransform_);
+    DirectX::XMMATRIX socketTransform = DirectX::XMMatrixScaling(socketScale_.x, socketScale_.y, socketScale_.z)
+        * DirectX::XMMatrixRotationX(-socketRotation_.x * toRadian)
+        * DirectX::XMMatrixRotationX(-socketRotation_.y * toRadian)
+        * DirectX::XMMatrixRotationX(socketRotation_.z * toRadian)
+        * DirectX::XMMatrixTranslation(socketLocation_.x * toMetric, socketLocation_.y * toMetric, socketLocation_.z * toMetric);
+    DirectX::XMMATRIX dxUE5 = DirectX::XMMatrixSet(-1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1); // LHS Y-Up Z-Forward(DX) -> LHS Z-Up Y-Forward(UE5) 
+    DirectX::XMMATRIX UE5Gltf = DirectX::XMMatrixSet(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1); // LHS Z-Up Y-Forward(UE5) -> RHS Y-Up Z-Forward(glTF) 
+    DirectX::XMStoreFloat4x4(&weaponWorld_, dxUE5 * socketTransform * UE5Gltf * boneTransform * GetTransform()->CalcWorldMatrix(GetScaleFactor()));
 }
 
 // ----- 描画 -----
 void Player::Render(ID3D11PixelShader* psShader)
 {
     Object::Render(psShader);
-
     weapon_.Render(weaponWorld_, psShader);
 }
 
@@ -392,22 +389,6 @@ void Player::UpdateCollisions(const float& elapsedTime)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
         data.SetJointPosition(GetJointPosition(data.GetName(), GetScaleFactor(), data.GetOffsetPosition()));
-    }
-}
-
-// ----- RootMotion更新 -----
-void Player::UpdateRootMotion()
-{
-    const Animation animationIndex = static_cast<Animation>(GetAnimationIndex());
-    if (animationIndex == Animation::Idle ||
-        animationIndex == Animation::Walk ||
-        animationIndex == Animation::Run)
-    {
-
-    }
-    else
-    {
-        Character::UpdateRootMotion();
     }
 }
 

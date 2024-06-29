@@ -134,10 +134,6 @@ public:
     [[nodiscard]] const bool GetUseBlendAnimation() const { return useBlendAnimation_; }
     void SetUseBlendAnimation(const bool& flag) { useBlendAnimation_ = flag; }
 
-
-    // ---------- RootMotion ----------
-    void UpdateRootMotion();
-
     // çUåÇîªíËóLå¯ÉtÉâÉOê›íË
     void SetAttackFlag(const bool& activeFlag = true);
     bool GetIsActiveAttackFlag();
@@ -187,11 +183,14 @@ private:
 
     SwordTrail swordTrail_;
 
-    DirectX::XMFLOAT3 socketLocation_;
-    DirectX::XMFLOAT3 socketRotation_ = { 0.0f, -90.0f, 0.0f };
-    const float weaponScale_ = 0.0f;
-    //const float weaponScale_ = 1.5f;
-    DirectX::XMFLOAT3 socketScale_ = { weaponScale_, weaponScale_, -weaponScale_ };
-    //DirectX::XMFLOAT3 socketScale_ = { 1.0f, 1.0f, 1.0f };
+#if 1
+    DirectX::XMFLOAT3 socketLocation_ = { 700, 10500, -7000 };
+    DirectX::XMFLOAT3 socketRotation_ = { 145.0f, -16.0f, 0.0f };
+    DirectX::XMFLOAT3 socketScale_ = { 1.0f, 1.0f, -1.0f };
+#else   
+    DirectX::XMFLOAT3 socketLocation_ = { 770, 12000, 2500 };
+    DirectX::XMFLOAT3 socketRotation_ = { -100.0f, 0.0f, 0.0f };
+    DirectX::XMFLOAT3 socketScale_ = { 1.0f, 1.0f, 1.0f };
+#endif  
     DirectX::XMFLOAT4X4 weaponWorld_;
 };

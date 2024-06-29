@@ -5,6 +5,31 @@
 #include "Easing.h"
 #include "MathHelper.h"
 
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void AddForceData::Initialize(const float& addForceFrame, const float& force, const float& decelerationForce)
+    {
+        addForceFrame_ = addForceFrame;
+        force_ = force;
+        decelerationForce_ = decelerationForce;
+        isAddforce_ = false;
+    }
+
+    // ----- 更新 -----
+    bool AddForceData::IsAbleAddForce(const float& animationFrame)
+    {
+        // 既にAddForceしている
+        if (isAddforce_) return false;
+
+        // アニメーションのフレームが指定のフレームに達していない
+        if (animationFrame < addForceFrame_) return false;
+
+        isAddforce_ = true;
+        return true;
+    }
+}
+
 // ----- 待機 -----
 namespace PlayerState
 {
@@ -135,20 +160,7 @@ namespace PlayerState
     // ----- アニメーション設定 -----
     void WalkState::SetAnimation()
     {
-        const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
-
-        if (animationIndex == Player::Animation::RollForward ||
-            animationIndex == Player::Animation::RollBack ||
-            animationIndex == Player::Animation::RollRight ||
-            animationIndex == Player::Animation::RollLeft)
-        {
-            owner_->PlayBlendAnimation(Player::Animation::Walk, true);
-            //owner_->PlayAnimation(Player::Animation::Walk, true);
-        }
-        else
-        {
-            owner_->PlayBlendAnimation(Player::Animation::Walk, true);
-        }
+        owner_->PlayBlendAnimation(Player::Animation::Walk, true, 1.4f);
     }
 }
 
@@ -290,8 +302,6 @@ namespace PlayerState
 
 
         owner_->SetTransitionTime(0.05f);
-
-        owner_->SetRootMotionSpeed(0.5f);
     }
 
     // ----- 更新 -----
@@ -300,17 +310,9 @@ namespace PlayerState
         const float animationSeconds = owner_->GetAnimationSeconds();
 
 
-        //if (owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::RollForward))
+        if (owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::RollForward))
         {
             if (animationSeconds < 0.6f)
-            {
-                owner_->SetAnimationSpeed(2.0f);
-            }
-            else if (animationSeconds > 0.9f)
-            {
-                owner_->SetAnimationSpeed(4.0f);
-            }
-            else if (animationSeconds > 0.8f)
             {
                 owner_->SetAnimationSpeed(2.0f);
             }
@@ -339,7 +341,6 @@ namespace PlayerState
     // ----- 終了化 -----
     void AvoidanceState::Finalize()
     {
-        owner_->SetRootMotionSpeed(1.0f);
     }
 
     // ----- アニメーション設定 -----
@@ -650,18 +651,52 @@ namespace PlayerState
 // ----- コンボ攻撃0_0 -----
 namespace PlayerState
 {
+    // ----- 初期化 -----
     void ComboAttack0_0::Initialize()
     {
+        // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_0, false);
+
+        // フラグリセット
+        owner_->ResetFlags();
+
+        // 変数初期化
+        addForceData_.Initialize(0.15f, 0.2f, 1.0f);
     }
+
+    // ----- 更新 -----
     void ComboAttack0_0::Update(const float& elapsedTime)
     {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+
+        if (addForceData_.IsAbleAddForce(animationSeconds))
+        {
+            owner_->AddForce(owner_->GetTransform()->CalcForward(), 
+                addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+        }
+        if (owner_->GetComboAttack0KeyDown())
+        {
+            owner_->SetNextInput(Player::NextInput::ComboAttack0);
+        }
+        if (animationSeconds >= 0.3f)
+        {
+            if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
+            {
+                owner_->ChangeState(Player::STATE::ComboAttack0_1);
+                return;
+            }
+        }
+
+
         if (owner_->IsPlayAnimation() == false)
         {
-            owner_->ChangeState(Player::STATE::ComboAttack0_1);
+            owner_->ChangeState(Player::STATE::Idle);
+            //owner_->ChangeState(Player::STATE::ComboAttack0_1);
             return;
         }
     }
+
+    // ----- 終了化 -----
     void ComboAttack0_0::Finalize()
     {
 
@@ -674,10 +709,38 @@ namespace PlayerState
 {
     void ComboAttack0_1::Initialize()
     {
+        // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_1, false);
+
+        // フラグリセット
+        owner_->ResetFlags();
+
+        // 変数初期化
+        addForceData_.Initialize(0.05f, 0.25f, 1.0f);
     }
     void ComboAttack0_1::Update(const float& elapsedTime)
     {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+
+        if (addForceData_.IsAbleAddForce(animationSeconds))
+        {
+            owner_->AddForce(owner_->GetTransform()->CalcForward(),
+                addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+        }
+
+        if (owner_->GetComboAttack0KeyDown())
+        {
+            owner_->SetNextInput(Player::NextInput::ComboAttack0);
+        }
+        if (animationSeconds >= 0.3f)
+        {
+            if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
+            {
+                owner_->ChangeState(Player::STATE::ComboAttack0_2);
+                return;
+            }
+        }
+
         if (owner_->IsPlayAnimation() == false)
         {
             owner_->ChangeState(Player::STATE::Idle);
@@ -695,11 +758,35 @@ namespace PlayerState
 {
     void ComboAttack0_2::Initialize()
     {
+        // アニメーション設定
+        owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_2, false);
+
+        // フラグリセット
+        owner_->ResetFlags();
 
     }
     void ComboAttack0_2::Update(const float& elapsedTime)
     {
+        const float animationSeconds = owner_->GetAnimationSeconds();
 
+        if (owner_->GetComboAttack0KeyDown())
+        {
+            owner_->SetNextInput(Player::NextInput::ComboAttack0);
+        }
+        if (animationSeconds >= 0.9f)
+        {
+            if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
+            {
+                owner_->ChangeState(Player::STATE::ComboAttack0_3);
+                return;
+            }
+        }
+
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
     }
     void ComboAttack0_2::Finalize()
     {
@@ -712,11 +799,19 @@ namespace PlayerState
 {
     void ComboAttack0_3::Initialize()
     {
+        // アニメーション設定
+        owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_3, false);
 
+        // フラグリセット
+        owner_->ResetFlags();
     }
     void ComboAttack0_3::Update(const float& elapsedTime)
     {
-
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
     }
     void ComboAttack0_3::Finalize()
     {
