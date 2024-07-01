@@ -109,6 +109,9 @@ public:
     void ResetFlags(); // フラグをリセットする
 
 
+    // 剣の座標更新
+    void UpdateSwordTransform();
+
     void PlayAnimation(const Animation& index, const bool& loop, const float& speed = 1.0f)
     {
         Object::PlayAnimation(static_cast<int>(index), loop, speed);

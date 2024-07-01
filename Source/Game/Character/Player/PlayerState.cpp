@@ -688,6 +688,8 @@ namespace PlayerState
         }
 
 
+
+
         if (owner_->IsPlayAnimation() == false)
         {
             owner_->ChangeState(Player::STATE::Idle);

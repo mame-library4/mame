@@ -32,7 +32,7 @@ Player::Player()
     }
 
     // LookAt初期化
-    //LookAtInitilaize("Head");
+    //LookAtInitilaize("head");
 }
 
 // ----- デストラクタ -----
@@ -114,23 +114,8 @@ void Player::Update(const float& elapsedTime)
     //swordTrail_.Update(startPos, endPos);
 
 
-
     // 剣の座標更新
-    const float toRadian = 0.01745f;
-    const float toMetric = 0.01f;
-    const int weaponJointIndex = GetNodeIndex("hand_r");
-    //const int weaponJointIndex = GetNodeIndex("weapon_r");
-    const GltfModel::Node node = GetNodes()->at(weaponJointIndex);
-    
-    DirectX::XMMATRIX boneTransform = DirectX::XMLoadFloat4x4(&node.globalTransform_);
-    DirectX::XMMATRIX socketTransform = DirectX::XMMatrixScaling(socketScale_.x, socketScale_.y, socketScale_.z)
-        * DirectX::XMMatrixRotationX(-socketRotation_.x * toRadian)
-        * DirectX::XMMatrixRotationX(-socketRotation_.y * toRadian)
-        * DirectX::XMMatrixRotationX(socketRotation_.z * toRadian)
-        * DirectX::XMMatrixTranslation(socketLocation_.x * toMetric, socketLocation_.y * toMetric, socketLocation_.z * toMetric);
-    DirectX::XMMATRIX dxUE5 = DirectX::XMMatrixSet(-1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1); // LHS Y-Up Z-Forward(DX) -> LHS Z-Up Y-Forward(UE5) 
-    DirectX::XMMATRIX UE5Gltf = DirectX::XMMatrixSet(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1); // LHS Z-Up Y-Forward(UE5) -> RHS Y-Up Z-Forward(glTF) 
-    DirectX::XMStoreFloat4x4(&weaponWorld_, dxUE5 * socketTransform * UE5Gltf * boneTransform * GetTransform()->CalcWorldMatrix(GetScaleFactor()));
+    UpdateSwordTransform();
 }
 
 // ----- 描画 -----
@@ -366,6 +351,25 @@ void Player::ResetFlags()
 {
     nextInput_ = NextInput::None; // 先行入力管理フラグ
     SetIsAvoidance(false);                          // 回避入力判定用フラグ
+}
+
+// ----- 剣の座標更新 -----
+void Player::UpdateSwordTransform()
+{
+    const float toRadian = 0.01745f;
+    const float toMetric = 0.01f;
+    const int weaponJointIndex = GetNodeIndex("hand_r");
+    const GltfModel::Node node = GetNodes()->at(weaponJointIndex);
+
+    DirectX::XMMATRIX boneTransform = DirectX::XMLoadFloat4x4(&node.globalTransform_);
+    DirectX::XMMATRIX socketTransform = DirectX::XMMatrixScaling(socketScale_.x, socketScale_.y, socketScale_.z)
+        * DirectX::XMMatrixRotationX(-socketRotation_.x * toRadian)
+        * DirectX::XMMatrixRotationX(-socketRotation_.y * toRadian)
+        * DirectX::XMMatrixRotationX(socketRotation_.z * toRadian)
+        * DirectX::XMMatrixTranslation(socketLocation_.x * toMetric, socketLocation_.y * toMetric, socketLocation_.z * toMetric);
+    DirectX::XMMATRIX dxUE5 = DirectX::XMMatrixSet(-1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1); // LHS Y-Up Z-Forward(DX) -> LHS Z-Up Y-Forward(UE5) 
+    DirectX::XMMATRIX UE5Gltf = DirectX::XMMatrixSet(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1); // LHS Z-Up Y-Forward(UE5) -> RHS Y-Up Z-Forward(glTF) 
+    DirectX::XMStoreFloat4x4(&weaponWorld_, dxUE5 * socketTransform * UE5Gltf * boneTransform * GetTransform()->CalcWorldMatrix(GetScaleFactor()));
 }
 
 void Player::UpdateCollisions(const float& elapsedTime)
