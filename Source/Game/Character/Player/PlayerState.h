@@ -68,6 +68,20 @@ namespace PlayerState
         void SetAnimation();
     };
 
+    class FlinchState : public State<Player>
+    {
+    public:
+        FlinchState(Player* player) : State(player, "FlinchState") {}
+        ~FlinchState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+
+    private:
+        int state_ = 0;
+    };
+
     // ----- ダメージ -----
     class DamageState : public State<Player>
     {
@@ -118,6 +132,8 @@ namespace PlayerState
     private:
         DirectX::XMFLOAT3   moveDirection_  = {};
         Direction           direction_      = Direction::Back;
+
+        AddForceData addForceData_;
     };
 
     // ----- カウンター -----

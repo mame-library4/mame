@@ -2,6 +2,7 @@
 #include "PostProcess/PostProcess.h"
 #include "Easing.h"
 #include "Input.h"
+#include "../Player/PlayerManager.h"
 
 // ----- GamePadVibration -----
 namespace ActionDragon
@@ -164,6 +165,9 @@ namespace ActionDragon
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::Roar, false);
 
             // ラジアルブラーのピクセルシェーダ使用
+            PostProcess::Instance().SetUseRadialBlur();
+
+            // 咆哮した。
             owner_->SetIsRoar(true);
 
             // 変数初期化
@@ -177,6 +181,8 @@ namespace ActionDragon
             maxBlurTime_ = 0.2f;
             blurTimer_ = 0.0f;
 
+            isPlayerFilnch_ = false;
+
             owner_->SetStep(1);
             break;
         case 1:
@@ -186,6 +192,13 @@ namespace ActionDragon
                 gamePadVibration_[i].Update(owner_->GetAnimationSeconds());
             }
 
+            if (owner_->GetAnimationSeconds() > 4.1f && isPlayerFilnch_ == false)
+            {
+                PlayerManager::Instance().GetPlayer()->ChangeState(Player::STATE::Flinch);
+
+                isPlayerFilnch_ = true;
+            }
+
             // ラジアルブラー更新
             UpdateBlur(elapsedTime);
 
@@ -193,7 +206,7 @@ namespace ActionDragon
             if (owner_->IsPlayAnimation() == false)
             {
                 // フラグリセット
-                owner_->SetIsRoar(false);
+                PostProcess::Instance().SetUseRadialBlur(false);
 
                 owner_->SetStep(0);
                 return ActionBase::State::Complete;
@@ -324,7 +337,8 @@ namespace ActionDragon
         {
         case 0:
             //owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackFly0, false);
-            owner_->PlayBlendAnimation(Enemy::DragonAnimation::BackStep, false);
+            //owner_->PlayBlendAnimation(Enemy::DragonAnimation::BackStep, false);
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::CriticalLoop, false);
 
             owner_->SetStep(1);
             break;
@@ -332,9 +346,9 @@ namespace ActionDragon
 
             if (owner_->IsPlayAnimation() == false)
             {
-                owner_->SetStep(0);
-
-                return ActionBase::State::Failed;
+                //owner_->SetStep(0);
+                //
+                //return ActionBase::State::Failed;
             }
 
             break;
@@ -380,30 +394,45 @@ namespace ActionDragon
 
             break;
         case STATE::FlyStart:// 飛び始め
-            
+        {
+            // 回転処理
+            const float turnStartFrame = 0.6f;
+            if (owner_->GetAnimationSeconds() > turnStartFrame)
+            {
+                owner_->Turn(elapsedTime, PlayerManager::Instance().GetTransform()->GetPosition());
+            }
+
             // 後ろ斜め上方向に移動させる
             if (addForceData_[static_cast<int>(MoveDirection::UpBack)].IsAbleAddForce(owner_->GetAnimationSeconds()))
             {
                 DirectX::XMFLOAT3 direction = XMFloat3Normalize(owner_->GetTransform()->CalcForward() * -1 - owner_->GetTransform()->CalcUp() * -1);
                 owner_->AddForce(direction, addForceData_[static_cast<int>(MoveDirection::UpBack)].GetForce(), addForceData_[static_cast<int>(MoveDirection::UpBack)].GetDecelerationForce());
             }
-            
+
             // アニメーション再生しきったら
             if (owner_->IsPlayAnimation() == false)
             {
                 // 次のアニメーションを設定する
                 owner_->PlayAnimation(Enemy::DragonAnimation::AttackFly1, false);
-                
+
                 // 現在の位置Yを保存する
                 savePositionY_ = owner_->GetTransform()->GetPositionY();
-                
+
                 // ステート変更
                 SetStep(STATE::PreAction);
                 break;
             }
-
+        }
             break;
         case STATE::PreAction:// 予備動作
+        {
+            // 回転処理
+            const float turnEndFrame = 1.3f;
+            if (owner_->GetAnimationSeconds() < turnEndFrame)
+            {
+                owner_->Turn(elapsedTime, PlayerManager::Instance().GetTransform()->GetPosition());
+            }
+
             // 予備動作として下にすこし下がる
             if (isDown_ == false)
             {
@@ -436,17 +465,17 @@ namespace ActionDragon
 
             // 移動値Yの設定
             owner_->GetTransform()->SetPositionY(savePositionY_ + addPositionY_);
-            
+
             // 上昇終了していたら次にすすむ
-            if(isRise_)
+            if (isRise_)
             {
                 owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackFly2, false, slowAnimationSpeed_);
-             
+
                 // ステート変更
                 SetStep(STATE::FlyAttack);
                 break;
-            }            
-
+            }
+        }
             break;
         case STATE::FlyAttack:// 攻撃
             // アニメーションが指定のフレームを超えたら
@@ -659,31 +688,46 @@ namespace ActionDragon
 {
     const ActionBase::State TurnAttackAction::Run(const float& elapsedTime)
     {
-        switch (owner_->GetStep())
+        switch (static_cast<STATE>(owner_->GetStep()))
         {
-        case 0:// 初期化
+        case STATE::Initialize:// 初期化
             // アニメーション設定
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurnStart, false);
 
             // ルートモーションを使用する
             owner_->SetUseRootMotion(true);
 
-            owner_->SetStep(1);
+            // ステート変更
+            SetState(STATE::PreAction);
 
             break;
-        case 1:
+        case STATE::PreAction:// 予備動作
 
             if (owner_->IsPlayAnimation() == false)
             {
-                owner_->PlayAnimation(Enemy::DragonAnimation::AttackTurn0, false);
-                owner_->SetStep(2);
+                owner_->PlayAnimation(Enemy::DragonAnimation::AttackTurn1, false);
+                SetState(STATE::Attack1);
             }
 
             break;
-        case 2:
+        case STATE::Attack0:// 攻撃
 
             if (owner_->IsPlayAnimation() == false)
             {
+
+                owner_->PlayAnimation(Enemy::DragonAnimation::AttackTurn1, false);
+                SetState(STATE::Attack1);
+            }
+
+            break;
+        case STATE::Attack1:
+
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->GetTransform()->AddRotationY(DirectX::XMConvertToRadians(180));
+                
+
                 owner_->SetStep(0);
                 return ActionBase::State::Complete;
             }
@@ -695,11 +739,98 @@ namespace ActionDragon
     }
 }
 
+// ----- タックル攻撃 -----
 namespace ActionDragon
 {
     const ActionBase::State TackleAction::Run(const float& elapsedTime)
     {
-        return ActionBase::State();
+        switch (static_cast<STATE>(owner_->GetStep()))
+        {
+        case STATE::Initialize:// 初期化
+            // アニメーション設定
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTackle0, false);
+
+            // ルートモーション使用
+            owner_->SetUseRootMotion(true);
+
+            // ステート変更
+            SetState(STATE::PreAction);
+
+            break;
+        case STATE::PreAction:// 予備動作
+        {
+            const float animationSeconds = owner_->GetAnimationSeconds();
+            const float turnStateFrame = 0.3f;
+
+            // 回転処理
+            if (animationSeconds > turnStateFrame)
+            {
+                owner_->Turn(elapsedTime, PlayerManager::Instance().GetTransform()->GetPosition());
+            }
+
+            // アニメーション再生終了
+            if (owner_->IsPlayAnimation() == false)
+            {
+                addForceData_.Initialize(0.15f, 0.6f, 0.7f);
+                easingTimer_ = 0.0f;
+
+                owner_->PlayAnimation(Enemy::DragonAnimation::AttackTackle1, false);
+                SetState(STATE::Tackle);
+                return ActionBase::State::Run;
+            }
+        }
+            break;
+        case STATE::Tackle:// タックル
+
+            // 回転処理
+            owner_->Turn(elapsedTime, PlayerManager::Instance().GetTransform()->GetPosition());            
+
+            // 移動処理
+            if (addForceData_.IsAbleAddForce(owner_->GetAnimationSeconds()))
+            {
+                owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+            }
+
+            // アニメーション再生終了
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->GetTransform()->SetPositionY(0);
+
+                addForceData_.Initialize(0.03f, 0.5f, 0.8f);
+
+                owner_->PlayAnimation(Enemy::DragonAnimation::AttackTackle3, false);
+                SetState(STATE::Recovery);
+                return ActionBase::State::Run;
+            }
+
+            break;
+        case STATE::Loop:
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->PlayAnimation(Enemy::DragonAnimation::AttackTackle2, false);
+                SetState(STATE::Tackle);
+                return ActionBase::State::Run;
+            }
+
+            break;
+        case STATE::Recovery:// 後隙
+            
+            if (addForceData_.IsAbleAddForce(owner_->GetAnimationSeconds()))
+            {
+                owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+            }
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+
+            break;
+        }
+
+        return ActionBase::State::Run;
     }
 }
 

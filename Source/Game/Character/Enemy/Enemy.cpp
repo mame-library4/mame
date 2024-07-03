@@ -24,17 +24,22 @@ void Enemy::Turn(const float& elapsedTime, const DirectX::XMFLOAT3& targetPos)
     ownerFront = XMFloat2Normalize(ownerFront);
     float dot = XMFloat2Dot(vec, ownerFront) - 1.0f;
 
+    // ‰ñ“]—Ê‚ª­‚È‚¯‚ê‚Î‚±‚±‚ÅI—¹
+    if (dot > -0.01f) return;
+
     // ‰ñ“]‘¬“xÝ’è
     float rotateSpeed = GetRotateSpeed() * elapsedTime;
+    float rotateY = dot * rotateSpeed;
+    rotateY = std::min(rotateY, -0.4f * rotateSpeed);
 
     // ‰ñ“]ˆ—
     if (cross > 0)
     {
-        GetTransform()->AddRotationY(dot * rotateSpeed);
+        GetTransform()->AddRotationY(rotateY);
     }
     else
     {
-        GetTransform()->AddRotationY(-dot * rotateSpeed);
+        GetTransform()->AddRotationY(-rotateY);
     }
 }
 

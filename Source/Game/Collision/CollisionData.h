@@ -196,6 +196,7 @@ struct CollisionDetectionData
     // ---------- ˆÊ’u ----------
     [[nodiscard]] const DirectX::XMFLOAT3 GetOffsetPosition() const { return collisionSphereData_.GetOffsetPosition(); }
     [[nodiscard]] const DirectX::XMFLOAT3 GetPosition() const { return collisionSphereData_.GetPosition(); }
+    //[[nodiscard]] const DirectX::XMFLOAT3 GetCollisionPosition() const { return collisionSphereData_.GetPosition() + collisionSphereData_.GetOffsetPosition(); }
     void SetJointPosition(const DirectX::XMFLOAT3& position) { collisionSphereData_.SetJointPosition(position); }
     void SetPosition(const DirectX::XMFLOAT3& jointPosition) { collisionSphereData_.SetJointPosition(jointPosition + collisionSphereData_.GetOffsetPosition()); }
 

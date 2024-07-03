@@ -95,6 +95,7 @@ namespace ActionDragon
         float   blurTimer_      = 0.0f; // ブラーのEasing用タイマー
         float   maxBlurTime_    = 0.0f; // ブラー用
 
+        bool isPlayerFilnch_ = false;
     };
 
     // バックステップ咆哮行動
@@ -233,8 +234,13 @@ namespace ActionDragon
         enum class STATE
         {
             Initialize,
-
+            PreAction,
+            Attack0,
+            Attack1,
         };
+
+        void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
+
     };
 
     // タックル行動
@@ -243,6 +249,23 @@ namespace ActionDragon
     public:
         TackleAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+
+    private:
+        enum class STATE
+        {
+            Initialize, // 初期化
+            PreAction,  // 予備動作
+            Tackle,     // タックル
+
+            Loop,
+            Recovery,   // 後隙
+        };
+
+        void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
+
+    private:
+        AddForceData addForceData_;
+        float easingTimer_ = 0.0f;
     };
 
     // 上昇攻撃行動

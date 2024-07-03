@@ -171,7 +171,7 @@ public:// --- 取得・設定 ---
 
 #pragma endregion [Get, Set] Function
 
-
+    [[nodiscard]] const std::string GetActiveNodeName() const { return (activeNode_ != nullptr) ? activeNode_->GetName() : ""; }
 
 protected:
     std::unique_ptr<BehaviorTree>   behaviorTree_;
@@ -181,7 +181,7 @@ protected:
     int     step_       = 0;        // 行動ステップ
     bool    isFlinch_   = false;    // ひるみフラグ
 
-    bool isRoar_ = false;
+    bool isRoar_ = false; // 咆哮したか
 
     bool useRootMotion_ = false; // ルートモーション使用するかフラグ
 

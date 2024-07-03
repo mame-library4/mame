@@ -17,6 +17,7 @@ Player::Player()
         //GetStateMachine()->RegisterState(new PlayerState::MoveState(this));             // 移動
         GetStateMachine()->RegisterState(new PlayerState::WalkState(this));
         GetStateMachine()->RegisterState(new PlayerState::RunState(this));
+        GetStateMachine()->RegisterState(new PlayerState::FlinchState(this));
         GetStateMachine()->RegisterState(new PlayerState::DamageState(this));           // ダメージ
         GetStateMachine()->RegisterState(new PlayerState::DeathState(this));            // 死亡
         GetStateMachine()->RegisterState(new PlayerState::AvoidanceState(this));        // 回避
@@ -65,9 +66,10 @@ void Player::Initialize()
     RegisterDamageDetectionData({ "R:R:j_Leg_L",    0.15f,  10, { 0, 0, 0 } });
 
     // 攻撃判定
-    RegisterAttackDetectionData({ "R1:R:j_Sword", 0.15f, { 0, 35, 0} });
-    RegisterAttackDetectionData({ "R1:R:j_Sword_end", 0.15f, { 0, -35, 0 } });
-    RegisterAttackDetectionData({ "R1:R:j_Sword_end", 0.15f, { 0, -5, 0 } });
+    RegisterAttackDetectionData({ "index_01_r_add0", 0.2f, { 0, 0, 0 }, "index_01_r" });
+    RegisterAttackDetectionData({ "index_01_r_add1", 0.2f, { 0, -7.0f, 50.0f }, "index_01_r" });
+    RegisterAttackDetectionData({ "index_01_r_add2", 0.2f, { 0, -15.0f, 100.0f }, "index_01_r" });
+    RegisterAttackDetectionData({ "index_01_r_add3", 0.2f, { 0, -23.0f, 150.0f }, "index_01_r" });
 
     // 体力設定
     SetMaxHealth(100.0f);
@@ -378,7 +380,7 @@ void Player::UpdateCollisions(const float& elapsedTime)
     for (DamageDetectionData& data : damageDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetName(), GetScaleFactor(), data.GetOffsetPosition()));
+        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
 
         data.Update(elapsedTime);
     }
@@ -386,13 +388,13 @@ void Player::UpdateCollisions(const float& elapsedTime)
     for (AttackDetectionData& data : attackDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        //data.SetJointPosition(swordModel_.GetJointPosition(data.GetName(), GetScaleFactor(), data.GetOffsetPosition()));
+        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
     }
     // 押し出し判定更新
     for (CollisionDetectionData& data : collisionDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetName(), GetScaleFactor(), data.GetOffsetPosition()));
+        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
     }
 }
 

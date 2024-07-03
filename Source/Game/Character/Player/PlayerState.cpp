@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "Easing.h"
 #include "MathHelper.h"
+#include "../Enemy/EnemyManager.h"
 
 namespace PlayerState
 {
@@ -160,6 +161,20 @@ namespace PlayerState
     // ----- アニメーション設定 -----
     void WalkState::SetAnimation()
     {
+        const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+
+        if (animationIndex == Player::Animation::RollForward ||
+            animationIndex == Player::Animation::RollBack ||
+            animationIndex == Player::Animation::RollRight ||
+            animationIndex == Player::Animation::RollLeft)
+        {
+            owner_->SetTransitionTime(0.3f);
+        }
+        else
+        {
+            owner_->SetTransitionTime(0.15f);
+        }
+
         owner_->PlayBlendAnimation(Player::Animation::Walk, true, 1.4f);
     }
 }
@@ -227,12 +242,64 @@ namespace PlayerState
             animationIndex == Player::Animation::RollRight ||
             animationIndex == Player::Animation::RollLeft)
         {
-            owner_->PlayAnimation(Player::Animation::Run, true);
+            owner_->SetTransitionTime(0.2f);
         }
         else
         {
-            owner_->PlayBlendAnimation(Player::Animation::Run, true);
+            owner_->SetTransitionTime(0.15f);
         }
+        owner_->PlayBlendAnimation(Player::Animation::Run, true);
+    }
+}
+
+// ----- 怯み -----
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void FlinchState::Initialize()
+    {
+        // アニメーション設定
+        owner_->PlayBlendAnimation(Player::Animation::KnockDownStart, false, 2.0f);
+
+        state_ = 0;
+    }
+
+    // ----- 更新 -----
+    void FlinchState::Update(const float& elapsedTime)
+    {
+        switch (state_)
+        {
+        case 0:
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->PlayAnimation(Player::Animation::KnockDownLoop, true);
+                state_ = 1;
+            }
+
+            break;
+        case 1:
+            
+            if (EnemyManager::Instance().GetEnemy(0)->GetActiveNodeName() != "Roar")
+            {
+                owner_->PlayBlendAnimation(Player::Animation::KnockDownEnd, false);
+                state_ = 2;
+            }
+
+            break;
+        case 2:
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->ChangeState(Player::STATE::Idle);
+            }
+
+            break;
+        }
+
+    }
+
+    // ----- 終了化 -----
+    void FlinchState::Finalize()
+    {
     }
 }
 
@@ -300,6 +367,8 @@ namespace PlayerState
         // フラグをリセットする
         owner_->ResetFlags();
 
+        // 変数初期化
+        addForceData_.Initialize(0.15f, 0.3f, 0.65f);
 
         owner_->SetTransitionTime(0.05f);
     }
@@ -309,12 +378,18 @@ namespace PlayerState
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
 
+        if (addForceData_.IsAbleAddForce(animationSeconds))
+        {
+            owner_->AddForce(moveDirection_, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+        }
+
 
         if (owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::RollForward))
         {
             if (animationSeconds < 0.6f)
             {
-                owner_->SetAnimationSpeed(2.0f);
+                //owner_->SetAnimationSpeed(2.0f);
+                owner_->SetAnimationSpeed(1.4f);
             }
             else
             {
@@ -322,17 +397,28 @@ namespace PlayerState
             }
         }
 
+        //if (owner_->IsPlayAnimation() == false)
+        //if(animationSeconds > 0.85f)
+        if(animationSeconds > 0.8f)
+        //if(animationSeconds > 0.75f)
+        {
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
+            {
+                if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
+                {
+                    owner_->ChangeState(Player::STATE::Run);
+                    return;
+                }
+
+                owner_->ChangeState(Player::STATE::Walk);
+                return;
+            }            
+        }
 
         if(owner_->IsPlayAnimation() == false)
         {
-            //const float aLx = Input::Instance().GetGamePad().GetAxisLX();
-            //const float aLy = Input::Instance().GetGamePad().GetAxisLY();
-            //if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
-            //{
-            //    owner_->ChangeState(Player::STATE::Walk);
-            //    return;
-            //}
-
             owner_->ChangeState(Player::STATE::Idle);
             return;
         }

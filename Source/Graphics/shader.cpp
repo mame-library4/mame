@@ -2,6 +2,7 @@
 #include <fstream>
 #include "Graphics.h"
 #include "Misc.h"
+#include "Application.h"
 
 // ----- コンストラクタ -----
 Shader::Shader()
@@ -532,8 +533,8 @@ void Shader::CreateGBuffer()
     HRESULT result = S_OK;
 
     D3D11_TEXTURE2D_DESC texture2dDesc = {};
-    texture2dDesc.Width = 1280;
-    texture2dDesc.Height = 720;
+    texture2dDesc.Width = SCREEN_WIDTH;
+    texture2dDesc.Height = SCREEN_HEIGHT;
     texture2dDesc.MipLevels = 1;
     texture2dDesc.ArraySize = 1;
     texture2dDesc.SampleDesc.Count = 1;

@@ -1,5 +1,6 @@
 #include "Bloom.h"
 #include "Graphics.h"
+#include "Application.h"
 
 // ----- コンストラクタ -----
 Bloom::Bloom()
@@ -12,8 +13,8 @@ Bloom::Bloom()
 
     // FrameBufferなど生成
     renderer_ = std::make_unique<FullscreenQuad>();
-    const uint32_t width = 1280;
-    const uint32_t height = 720;
+    const uint32_t width = SCREEN_WIDTH;
+    const uint32_t height = SCREEN_HEIGHT;
     luminanceExtraction_ = std::make_unique<FrameBuffer>(width, height);
     int shiftNum = 1;
     for (int downSamplingIndex = 0; downSamplingIndex < maxBlurBufferCount_; downSamplingIndex += 2)

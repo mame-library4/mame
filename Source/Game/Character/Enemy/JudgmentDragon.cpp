@@ -39,19 +39,21 @@ const bool NonBattleIdleJudgment::Judgment()
     return false;
 }
 
+// ----- ™ôšK”»’è -----
 const bool RoarJudgment::Judgment()
 {
-    return false;
+    return true;
 }
 
+// ----- ‹©‚Ô”»’è -----
 const bool ShoutJudgment::Judgment()
 {
-    return false;
+    return owner_->GetIsRoar() == false;
 }
 
 const bool NearJudgment::Judgment()
 {
     return true;
-
     return false;
+
 }

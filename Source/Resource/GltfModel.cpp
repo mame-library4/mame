@@ -629,7 +629,7 @@ void GltfModel::PlayAnimation(const int& index, const bool& loop, const float& s
 
 void GltfModel::PlayBlendAnimation(const int& index, const bool& loop, const float& speed)
 {
-    if (animationIndex_ == index) return;
+    //if (animationIndex_ == index) return;
 
     Animate(animationIndex_, animationSeconds_, animatedNodes_[0]);
     Animate(index, 0.0f, animatedNodes_[1]);

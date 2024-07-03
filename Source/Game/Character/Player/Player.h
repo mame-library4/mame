@@ -16,6 +16,7 @@ public:// --- ’è” ---
         //Move,           // ˆÚ“®
         Walk,
         Run,
+        Flinch,
         Damage,         // ƒ_ƒ[ƒW
         Death,          // €–S
         Avoidance,      // ‰ñ”ğ

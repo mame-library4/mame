@@ -74,6 +74,8 @@ void EnemyDragon::DrawDebug()
 {
     if (ImGui::BeginMenu("Dragon"))
     {
+        if (ImGui::Button("Roar")) SetIsRoar(false);
+
         ImGui::Checkbox("useAnimation", &isUpdateAnimation_);
         ImGui::Checkbox("DamageSphere", &isDamageSphere_);
         ImGui::Checkbox("AttackSphere", &isAttackSphere_);
@@ -147,11 +149,14 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Shout", "Roar",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
     behaviorTree_->AddNode("Shout", "BackStepRoar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::BackStepRoarAction(this));
 
-    behaviorTree_->AddNode("Near", "FlyAttack",   2, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));
+    behaviorTree_->AddNode("Near", "FlyAttack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));
     behaviorTree_->AddNode("Near", "KnockBack",   2, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::KnockBackAction(this));
-    behaviorTree_->AddNode("Near", "TurnAttack",  2, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
-    behaviorTree_->AddNode("Near", "ComboSlam",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));
-    behaviorTree_->AddNode("Near", "BackStep",    1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::BackStepAction(this));
+    behaviorTree_->AddNode("Near", "TurnAttack",  0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
+    
+    behaviorTree_->AddNode("Near", "ComboSlam",   2, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));
+
+    
+    behaviorTree_->AddNode("Near", "BackStep",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::BackStepAction(this));
     behaviorTree_->AddNode("Near", "Slam",        1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAction(this));
     behaviorTree_->AddNode("Near", "FrontAttack", 1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FrontAttackAction(this));
     behaviorTree_->AddNode("Near", "ComboCharge", 1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboChargeAction(this));
@@ -201,8 +206,11 @@ void EnemyDragon::RegisterCollisionData()
     {
         // { name, radius, damage, offset, updateName }
 
-        { "Dragon15_head",      1.0f, 10.0f, {} },
-        { "Dragon15_neck_1",    1.0f, 10.0f, {} },
+        { "Dragon15_head",      1.2f, 10.0f, {} },
+        { "Dragon15_neck_1",    1.4f, 10.0f, {} },
+        { "Dragon15_neck_2",    1.1f, 10.0f, {} },
+        { "Dragon15_spine1",    1.3f, 10.0f, {} },
+
 
         { "Dragon15_r_hand",    1.0f, 10.0f, {} },
         { "Dragon15_r_forearm", 1.0f, 10.0f, {} },
@@ -245,6 +253,11 @@ void EnemyDragon::RegisterCollisionData()
         { "Dragon15_r_wing_09", 1.0f, 10.0f, {} },
         { "Dragon15_r_wing_10", 1.0f, 10.0f, {} },
         { "Dragon15_r_wing_12", 1.0f, 10.0f, {} },
+
+        { "Dragon15_r_wing_add_0", 1.1f, 10.0f, { 1.6f, 0.0f, 0.0f }  , "Dragon15_r_wing_04" },
+        { "Dragon15_r_wing_add_1", 1.0f, 10.0f, { 1.2f, 0.0f, 0.0f }  , "Dragon15_r_wing_07" },
+        { "Dragon15_r_wing_add_2", 1.0f, 10.0f, { 1.0f, 0.0f, 0.0f }  , "Dragon15_r_wing_10" },
+        { "Dragon15_r_wing_add_3", 1.0f, 10.0f, { 1.25f, 0.0f, 0.0f } , "Dragon15_r_wing_12" },
 
 #pragma endregion ---------- —ƒ ----------
 

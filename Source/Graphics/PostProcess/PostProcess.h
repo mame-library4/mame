@@ -32,6 +32,8 @@ public:
 
     ConstantBuffer<Constants>* GetConstants() { return constant_.get(); }
 
+    void SetUseRadialBlur(const bool& flag = true) { useRadialBlur_ = flag; }
+
 private:
     std::unique_ptr<FullscreenQuad>             renderer_;
     std::unique_ptr<FrameBuffer>                postProcess_;
@@ -40,6 +42,8 @@ private:
     Microsoft::WRL::ComPtr<ID3D11PixelShader>   roarPS_;
 
     std::unique_ptr<ConstantBuffer<Constants>> constant_;
+
+    bool useRadialBlur_ = false;
 
     Bloom   bloom_;
 };
