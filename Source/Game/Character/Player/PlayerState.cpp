@@ -402,6 +402,12 @@ namespace PlayerState
         if(animationSeconds > 0.8f)
         //if(animationSeconds > 0.75f)
         {
+            if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
+            {
+                owner_->ChangeState(Player::STATE::ComboAttack0_0);
+                return;
+            }
+
             const float aLx = Input::Instance().GetGamePad().GetAxisLX();
             const float aLy = Input::Instance().GetGamePad().GetAxisLY();
             if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
@@ -416,6 +422,19 @@ namespace PlayerState
                 return;
             }            
         }
+
+        const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+        if (animationIndex == Player::Animation::RollForward)
+        {
+            if (animationSeconds > 0.6f)
+            {
+                if (owner_->GetComboAttack0KeyDown())
+                {
+                    owner_->SetNextInput(Player::NextInput::ComboAttack0);
+                }
+            }
+        }
+
 
         if(owner_->IsPlayAnimation() == false)
         {
