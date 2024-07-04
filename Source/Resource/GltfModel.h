@@ -356,7 +356,7 @@ public:
 
     // ---------- Animation ----------
     void PlayAnimation(const int& index, const bool& loop, const float& speed);
-    void PlayBlendAnimation(const int& index, const bool& loop, const float& speed);
+    void PlayBlendAnimation(const int& index, const bool& loop, const float& speed, const float& blendAnimationFrame);
     void UpdateAnimation(const float& elapsedTime);
     [[nodiscard]] const bool IsPlayAnimation();
     [[nodiscard]] const int GetAnimationIndex() const { return animationIndex_; }
@@ -416,14 +416,15 @@ private:
     float emissiveIntencity_ = 1.0f;
 
     // ---------- Animation ----------
-    int     animationIndex_     = -1;       // アニメーション番号
-    float   animationSeconds_   = 0.0f;     // アニメーション再生時間
-    float   animationSpeed_     = 1.0f;     // アニメーション再生速度
-    float   weight_             = 0.0f;     // 影響値
-    float   transitionTime_     = 0.15f;    // アニメーションブレンド速度
-    bool    animationLoopFlag_  = false;    // アニメーションループフラグ
-    bool    animationEndFlag_   = false;    // アニメーションエンドフラグ
-    bool    isBlendAnimation_   = false;    // ブレンドするかフラグ
+    int     animationIndex_         = -1;       // アニメーション番号
+    float   animationSeconds_       = 0.0f;     // アニメーション再生時間
+    float   blendAnimationSeconds_  = 0.0f;
+    float   animationSpeed_         = 1.0f;     // アニメーション再生速度
+    float   weight_                 = 0.0f;     // 影響値
+    float   transitionTime_         = 0.15f;    // アニメーションブレンド速度
+    bool    animationLoopFlag_      = false;    // アニメーションループフラグ
+    bool    animationEndFlag_       = false;    // アニメーションエンドフラグ
+    bool    isBlendAnimation_       = false;    // ブレンドするかフラグ
     std::vector<Node> animatedNodes_[2];
     std::vector<Node> blendedAnimationNodes_;    
 };

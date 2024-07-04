@@ -122,7 +122,7 @@ public:
 
     // ---------- アニメーション関連 ----------
     void PlayAnimation(const DragonAnimation& index, const bool& loop, const float& speed = 1.0f) { Object::PlayAnimation(static_cast<int>(index), loop, speed); }
-    void PlayBlendAnimation(const DragonAnimation& index, const bool& loop, const float& speed = 1.0f) { Object::PlayBlendAnimation(static_cast<int>(index), loop, speed); }
+    void PlayBlendAnimation(const DragonAnimation& index, const bool& loop, const float& speed = 1.0f, const float& blendAnimationFrame = 0.0f) { Object::PlayBlendAnimation(static_cast<int>(index), loop, speed, blendAnimationFrame); }
 
     // ---------- プレイヤーまでの距離を算出 ----------
     [[nodiscard]] const float CalcDistanceToPlayer();

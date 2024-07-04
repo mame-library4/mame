@@ -49,7 +49,7 @@ void DemoScene::Update(const float& elapsedTime)
 
     if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_A)
     {
-        model_->PlayBlendAnimation(animNum_, true, 1.0f);
+        model_->PlayBlendAnimation(animNum_, true, 1.0f, 0.0f);
         animNum_ = animNum_ == 0 ? 1 : 0;
     }
 

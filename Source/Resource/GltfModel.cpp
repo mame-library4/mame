@@ -236,18 +236,18 @@ bool GltfModel::UpdateBlendAnimation(const float& elapsedTime)
 {
     if (isBlendAnimation_ == false) return false;
 
-    weight_ = animationSeconds_ / transitionTime_;
+    weight_ = blendAnimationSeconds_ / transitionTime_;
 
     const std::vector<Node>* nodes[2] = { &animatedNodes_[0], &animatedNodes_[1] };
     BlendAnimations(nodes, weight_, blendedAnimationNodes_);
     nodes_ = blendedAnimationNodes_;
 
     // アニメーション再生時間更新
-    animationSeconds_ += elapsedTime * animationSpeed_;
+    blendAnimationSeconds_ += elapsedTime * animationSpeed_;
 
     if (weight_ > 1.0f)
     {
-        animationSeconds_ = 0.0f;
+        blendAnimationSeconds_ = 0.0f;
         isBlendAnimation_ = false;
     }
 
@@ -627,16 +627,17 @@ void GltfModel::PlayAnimation(const int& index, const bool& loop, const float& s
     animationSpeed_ = speed;    // アニメーション再生速度を設定
 }
 
-void GltfModel::PlayBlendAnimation(const int& index, const bool& loop, const float& speed)
+void GltfModel::PlayBlendAnimation(const int& index, const bool& loop, const float& speed, const float& blendAnimationFrame)
 {
     //if (animationIndex_ == index) return;
 
     Animate(animationIndex_, animationSeconds_, animatedNodes_[0]);
-    Animate(index, 0.0f, animatedNodes_[1]);
+    Animate(index, blendAnimationFrame, animatedNodes_[1]);
 
     animationIndex_ = index;
 
-    animationSeconds_ = 0.0f;
+    animationSeconds_ = blendAnimationFrame;
+    blendAnimationSeconds_ = 0.0f;
     weight_ = 0.0f;
 
     animationEndFlag_ = false;

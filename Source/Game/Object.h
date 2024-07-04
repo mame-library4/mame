@@ -12,7 +12,7 @@ public:
     void DrawDebug();
 
     void PlayAnimation(const int& index, const bool& loop, const float& speed) { gltfModel_.PlayAnimation(index, loop, speed); }
-    void PlayBlendAnimation(const int& index, const bool& loop, const float& speed) { gltfModel_.PlayBlendAnimation(index, loop, speed); }
+    void PlayBlendAnimation(const int& index, const bool& loop, const float& speed, const float& blendAnimationFrame) { gltfModel_.PlayBlendAnimation(index, loop, speed, blendAnimationFrame); }   
     [[nodiscard]] const bool IsPlayAnimation() { return gltfModel_.IsPlayAnimation(); }
     [[nodiscard]] const int GetAnimationIndex() const { return gltfModel_.GetAnimationIndex(); }
     [[nodiscard]] const float GetAnimationSeconds() { return gltfModel_.GetAnimationSeconds(); }

@@ -127,7 +127,7 @@ public:
     //float slowAnimationSpeed_ = 0.25f;
 
     
-    void PlayBlendAnimation(const Animation& index, const bool& loop, const float& speed = 1.0f) { Object::PlayBlendAnimation(static_cast<int>(index), loop, speed); }
+    void PlayBlendAnimation(const Animation& index, const bool& loop, const float& speed = 1.0f, const float& blendAnimationFrame = 0.0f) { Object::PlayBlendAnimation(static_cast<int>(index), loop, speed, blendAnimationFrame); }
 
     void UpdateCollisions(const float& elapsedTime) override;
 

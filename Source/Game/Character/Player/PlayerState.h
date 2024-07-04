@@ -126,6 +126,9 @@ namespace PlayerState
             Left,
         };
 
+        [[nodiscard]] const bool CheckNextInput();
+        void SetAnimationSpeed();
+
         void SetAnimation();        // アニメーション設定
         void CalcMoveDirection();   // 移動方向算出
 
@@ -195,6 +198,10 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
+        void SetAnimationSpeed();
+        [[nodiscard]] const bool CheckNextInput();
+
+    private:
         // ----- 先行入力用 -----
         float nextInputStartFrame_  = 0.0f;
         float nextInputEndFrame_    = 0.0f;
@@ -213,6 +220,10 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+
+    private:
+        void SetAnimationSpeed();
+        [[nodiscard]] const bool CheckNextInput();
 
     private:
         AddForceData addForceData_;
