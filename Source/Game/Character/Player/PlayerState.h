@@ -198,6 +198,8 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
+        void SetAnimation();
+
         void SetAnimationSpeed();
         [[nodiscard]] const bool CheckNextInput();
 
