@@ -165,11 +165,23 @@ namespace PlayerState
         const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
 
         if (animationIndex == Player::Animation::RollForward ||
-            animationIndex == Player::Animation::RollBack ||
-            animationIndex == Player::Animation::RollRight ||
+            animationIndex == Player::Animation::RollBack    ||
+            animationIndex == Player::Animation::RollRight   ||
             animationIndex == Player::Animation::RollLeft)
         {
             owner_->SetTransitionTime(0.3f);
+        }
+        else if (animationIndex == Player::Animation::ComboAttack0_0)
+        {
+            owner_->SetTransitionTime(0.3f);
+        }
+        else if (animationIndex == Player::Animation::ComboAttack0_1)
+        {
+            owner_->SetTransitionTime(0.4f);
+        }
+        else if (animationIndex == Player::Animation::RunAttack1)
+        {
+            owner_->SetTransitionTime(0.5f);
         }
         else
         {
@@ -206,6 +218,12 @@ namespace PlayerState
         }
 
         // 攻撃入力,回避入力受付
+        if (owner_->GetComboAttack0KeyDown())
+        {
+            owner_->ChangeState(Player::STATE::RunAttack);
+            return;
+        }
+
         if (owner_->CheckNextInput(Player::NextInput::None)) return;
 
         // 旋回
@@ -239,11 +257,17 @@ namespace PlayerState
         const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
 
         if (animationIndex == Player::Animation::RollForward ||
-            animationIndex == Player::Animation::RollBack ||
-            animationIndex == Player::Animation::RollRight ||
+            animationIndex == Player::Animation::RollBack    ||
+            animationIndex == Player::Animation::RollRight   ||
             animationIndex == Player::Animation::RollLeft)
         {
             owner_->SetTransitionTime(0.2f);
+        }
+        else if (animationIndex == Player::Animation::ComboAttack0_0 ||
+            animationIndex == Player::Animation::ComboAttack0_1 ||
+            animationIndex == Player::Animation::RunAttack1)
+        {
+            owner_->SetTransitionTime(0.3f);
         }
         else
         {
@@ -1043,6 +1067,96 @@ namespace PlayerState
     }
 }
 
+// ----- 走り攻撃 -----
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void RunAttackState::Initialize()
+    {
+        // アニメーション設定
+        owner_->PlayBlendAnimation(Player::Animation::RunAttack1, false, 1.0f, 0.2f);
+        owner_->SetTransitionTime(0.1f);
+
+        // フラグリセット
+        owner_->ResetFlags();
+
+        // 変数初期化
+        addForceData_.Initialize(0.2f, 0.4f, 1.0f);
+    }
+
+    // ----- 更新 -----
+    void RunAttackState::Update(const float& elapsedTime)
+    {
+        // 先行入力処理
+        if (CheckNextInput()) return;
+
+        // 移動処理
+        if (addForceData_.IsAbleAddForce(owner_->GetAnimationSeconds()))
+        {
+            owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+        }
+
+
+
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+    }
+
+    // ----- 終了化 -----
+    void RunAttackState::Finalize()
+    {
+    }
+
+    // ----- 先行入力処理 -----
+    const bool RunAttackState::CheckNextInput()
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+
+        const float changeComboAttack0StateFrame = 0.6f; // ステート切り替え
+        if (animationSeconds > changeComboAttack0StateFrame)
+        {
+            if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
+            {
+                owner_->ChangeState(Player::STATE::ComboAttack0_1);
+                return true;
+            }
+        }
+
+        // 移動入力値があればステート切り替え
+        const float changeMoveStateFrame = 0.8f;
+        if (animationSeconds > changeMoveStateFrame)
+        {
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
+            {
+                if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
+                {
+                    owner_->ChangeState(Player::STATE::Run);
+                    return true;
+                }
+
+                owner_->ChangeState(Player::STATE::Walk);
+                return true;
+            }
+        }
+
+        const float comboAttack0NextInputStartFrame = 0.3f; // 先行入力開始フレーム
+        if (animationSeconds > comboAttack0NextInputStartFrame)
+        {
+            if (owner_->GetComboAttack0KeyDown())
+            {
+                owner_->SetNextInput(Player::NextInput::ComboAttack0);
+            }
+        }
+
+        return false;
+    }
+}
+
 // ----- コンボ攻撃0_0 -----
 namespace PlayerState
 {
@@ -1051,7 +1165,6 @@ namespace PlayerState
     {
         // アニメーション設定
         SetAnimation();
-
 
         // フラグリセット
         owner_->ResetFlags();
@@ -1103,9 +1216,15 @@ namespace PlayerState
         {
             owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_0, false, 1.0f, 0.1f);
         }
+        else if (animationIndex == Player::Animation::Run)
+        {
+            owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_0, false, 1.0f, 0.1f);
+            owner_->SetTransitionTime(0.1f);
+        }
         else
         {
             owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_0, false);
+            owner_->SetTransitionTime(0.1f);
         }
     }
 
@@ -1138,7 +1257,7 @@ namespace PlayerState
         const float animationSeconds = owner_->GetAnimationSeconds();
 
         // 先行入力受付
-        if (animationSeconds >= 0.15)
+        if (animationSeconds > 0.1)
         {
             // コンボ攻撃
             if (owner_->GetComboAttack0KeyDown())
@@ -1152,7 +1271,7 @@ namespace PlayerState
             }
         }
 
-        if (animationSeconds >= 0.3f)
+        if (animationSeconds > 0.3f)
         {
             // コンボ攻撃
             if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
@@ -1162,12 +1281,29 @@ namespace PlayerState
             }
         }
 
-        if(animationSeconds >= 0.4f)
+        if(animationSeconds > 0.4f)
         {
             // 回避
             if (owner_->GetNextInput() == Player::NextInput::Avoidance)
             {
                 owner_->ChangeState(Player::STATE::Avoidance);
+                return true;
+            }
+        }
+
+        if (animationSeconds > 0.6f)
+        {
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
+            {
+                if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
+                {
+                    owner_->ChangeState(Player::STATE::Run);
+                    return true;
+                }
+
+                owner_->ChangeState(Player::STATE::Walk);
                 return true;
             }
         }
@@ -1183,7 +1319,17 @@ namespace PlayerState
     void ComboAttack0_1::Initialize()
     {
         // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_1, false);
+        if (owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::RunAttack1))
+        {
+            owner_->SetTransitionTime(0.2f);
+            owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_1, false, 1.0f, 0.1f);
+        }
+        else
+        {
+            owner_->SetTransitionTime(0.1f);
+            owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_1, false);
+        }
+
 
         // フラグリセット
         owner_->ResetFlags();
@@ -1210,18 +1356,7 @@ namespace PlayerState
                 addForceData_.GetForce(), addForceData_.GetDecelerationForce());
         }
 
-        if (owner_->GetComboAttack0KeyDown())
-        {
-            owner_->SetNextInput(Player::NextInput::ComboAttack0);
-        }
-        if (animationSeconds >= 0.3f)
-        {
-            if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
-            {
-                owner_->ChangeState(Player::STATE::ComboAttack0_2);
-                return;
-            }
-        }
+
 
         if (owner_->IsPlayAnimation() == false)
         {
@@ -1258,6 +1393,45 @@ namespace PlayerState
     // ----- 先行入力処理 -----
     const bool ComboAttack0_1::CheckNextInput()
     {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+        
+        if (animationSeconds > 0.15f)
+        {
+            if (owner_->GetComboAttack0KeyDown())
+            {
+                owner_->SetNextInput(Player::NextInput::ComboAttack0);
+            }
+        }
+
+        const float changeComboAttack0Frame = 0.3f;
+        if (animationSeconds > changeComboAttack0Frame)
+        {
+            if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
+            {
+                owner_->ChangeState(Player::STATE::ComboAttack0_2);
+                return true;
+            }
+        }
+
+        // 移動入力値があればステート切り替え
+        const float changeMoveStateFrame = 0.5f;
+        if (animationSeconds > changeMoveStateFrame)
+        {
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
+            {
+                if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
+                {
+                    owner_->ChangeState(Player::STATE::Run);
+                    return true;
+                }
+
+                owner_->ChangeState(Player::STATE::Walk);
+                return true;
+            }
+        }
+
         return false;
     }
 }

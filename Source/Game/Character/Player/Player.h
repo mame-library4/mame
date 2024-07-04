@@ -22,13 +22,19 @@ public:// --- 定数 ---
         Avoidance,      // 回避
         Counter,        // カウンター
         CounterCombo,   // カウンターコンボ
+
+        RunAttack,
+
         ComboAttack0_0,   // コンボ0
         ComboAttack0_1,   // コンボ0
         ComboAttack0_2,   // コンボ0
         ComboAttack0_3,   // コンボ0
+        
         ComboAttack1_0,   // コンボ1
         ComboAttack1_1,   // コンボ1
         ComboAttack1_2,   // コンボ1
+
+        
     };
 
     enum class Animation
@@ -78,6 +84,14 @@ public:// --- 定数 ---
         KnockDownLoop,
         KnockDownEnd,
         KnockDownDeath,
+
+        ComboAttack1_0,
+        ComboAttack1_1,
+        ComboAttack1_2,
+        ComboAttack1_3,
+
+        RunAttack0,
+        RunAttack1,
     };
 
     enum class NextInput

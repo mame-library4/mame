@@ -186,6 +186,23 @@ namespace PlayerState
         bool isAddForce_ = false;
     };
 
+    class RunAttackState : public State<Player>
+    {
+    public:
+        RunAttackState(Player* player) : State(player, "RunAttackState") {}
+        ~RunAttackState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+
+    private:
+        [[nodiscard]] const bool CheckNextInput();
+
+    private:
+        AddForceData addForceData_;
+    };
+
     // ----- ƒRƒ“ƒ{0_0 -----
     class ComboAttack0_0 : public State<Player>
     {

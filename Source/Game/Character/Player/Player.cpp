@@ -23,6 +23,7 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::AvoidanceState(this));        // 回避
         GetStateMachine()->RegisterState(new PlayerState::CounterState(this));          // カウンター
         GetStateMachine()->RegisterState(new PlayerState::CounterComboState(this));     // カウンターコンボ
+        GetStateMachine()->RegisterState(new PlayerState::RunAttackState(this));        // コンボ0_3
         GetStateMachine()->RegisterState(new PlayerState::ComboAttack0_0(this));        // コンボ0_0
         GetStateMachine()->RegisterState(new PlayerState::ComboAttack0_1(this));        // コンボ0_1
         GetStateMachine()->RegisterState(new PlayerState::ComboAttack0_2(this));        // コンボ0_2
