@@ -1372,17 +1372,7 @@ namespace PlayerState
     void ComboAttack0_1::Initialize()
     {
         // アニメーション設定
-        if (owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::RunAttack1))
-        {
-            owner_->SetTransitionTime(0.2f);
-            owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_1, false, 1.0f, 0.1f);
-        }
-        else
-        {
-            owner_->SetTransitionTime(0.1f);
-            owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_1, false);
-        }
-
+        SetAnimation();
 
         // フラグリセット
         owner_->ResetFlags();
@@ -1423,6 +1413,21 @@ namespace PlayerState
     void ComboAttack0_1::Finalize()
     {
 
+    }
+
+    // ----- アニメーション設定 -----
+    void ComboAttack0_1::SetAnimation()
+    {
+        if (owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::RunAttack1))
+        {
+            owner_->SetTransitionTime(0.2f);
+            owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_1, false, 1.0f, 0.1f);
+        }
+        else
+        {
+            owner_->SetTransitionTime(0.1f);
+            owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_1, false);
+        }
     }
 
     // ----- アニメーション速度設定 -----
@@ -1522,6 +1527,10 @@ namespace PlayerState
         // フラグリセット
         owner_->ResetFlags();
 
+        // 変数初期化
+        addForceData_[0].Initialize(0.2f, 0.2f, 0.7f);
+        addForceData_[1].Initialize(0.6f, 0.2f, 1.0f);
+        attackData_.Initialize(0.7f, 0.9f);
     }
 
     // ----- 更新 -----
@@ -1532,6 +1541,20 @@ namespace PlayerState
 
         // アニメーションの速度設定
         SetAnimationSpeed();
+
+        // 移動処理
+        for (int i = 0; i < 2; ++i)
+        {
+            if (addForceData_[i].Update(owner_->GetAnimationSeconds()))
+            {
+                owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_[i].GetForce(), addForceData_[i].GetDecelerationForce());
+            }
+        }
+
+        // 攻撃判定処理
+        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
+        owner_->SetIsAbleAttack(attackFlag);
+
 
         if (owner_->IsPlayAnimation() == false)
         {
@@ -1567,7 +1590,7 @@ namespace PlayerState
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
 
-        if (animationSeconds > 0.35f)
+        if (animationSeconds > 0.7f)
         {
             if (owner_->GetComboAttack0KeyDown())
             {
@@ -1580,6 +1603,22 @@ namespace PlayerState
             if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
             {
                 owner_->ChangeState(Player::STATE::ComboAttack0_3);
+                return true;
+            }
+        }
+
+        if (animationSeconds > 0.7f)
+        {
+            if (owner_->GetAvoidanceKeyDown())
+            {
+                owner_->SetNextInput(Player::NextInput::Avoidance);
+            }
+        }
+        if (animationSeconds > 1.1f)
+        {
+            if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+            {
+                owner_->ChangeState(Player::STATE::Avoidance);
                 return true;
             }
         }
