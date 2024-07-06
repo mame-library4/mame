@@ -151,8 +151,6 @@ void Player::DrawDebug()
 
         GetStateMachine()->DrawDebug();
 
-        ImGui::DragFloat("SlowSpeed", &slowAnimationSpeed_, 0.1f);
-
         Character::DrawDebug();
         Object::DrawDebug();
 
@@ -184,8 +182,9 @@ void Player::DebugRender(DebugRenderer* debugRenderer)
     {
         for (auto& data : GetAttackDetectionData())
         {
-            if (data.GetIsActive() == false) continue;
-            debugRenderer->DrawSphere(data.GetPosition(), data.GetRadius(), data.GetColor());
+            const DirectX::XMFLOAT4 color = isAbleAttack_ ? data.GetColor() : DirectX::XMFLOAT4(1, 0, 1, 1);
+
+            debugRenderer->DrawSphere(data.GetPosition(), data.GetRadius(), color);
         }
     }
     if (isDamageSphere_)
@@ -290,7 +289,7 @@ void Player::Move(const float& elapsedTime)
 }
 
 // ----- 先行入力を受付してる -----
-bool Player::CheckNextInput(const Player::NextInput& nextInput, const float& nextAttackFrame)
+bool Player::CheckNextInput(const Player::NextInput& nextInput)
 {
     // 回避入力があった時
     if (GetAvoidanceKeyDown())
@@ -312,39 +311,6 @@ bool Player::CheckNextInput(const Player::NextInput& nextInput, const float& nex
             ChangeState(STATE::ComboAttack0_0);
             return true;
         }
-
-        // 先行入力の種類がコンボ攻撃0の場合
-        if (nextInput == NextInput::ComboAttack0)
-        {
-            // 先行入力がAttackFrameよりも前に行われた
-            if (GetAnimationSeconds() < nextAttackFrame &&
-                nextInput_ != NextInput::ComboAttack0)
-            {
-                SetUseBlendAnimation(false);
-            }
-            else
-            {
-                SetUseBlendAnimation(true);
-            }
-
-            nextInput_ = NextInput::ComboAttack0;        
-            return true;
-        }
-
-        nextInput_ = NextInput::ComboAttack0;
-    }
-
-    // コンボ攻撃1
-    if (GetComboAttack1KeyDown())
-    {
-        return false;
-        if (nextInput == NextInput::None)
-        {
-            ChangeState(STATE::ComboAttack1_0);
-            return true;
-        }
-
-        nextInput_ = NextInput::ComboAttack1;
     }
 
     return false;
@@ -352,8 +318,9 @@ bool Player::CheckNextInput(const Player::NextInput& nextInput, const float& nex
 
 void Player::ResetFlags()
 {
-    nextInput_ = NextInput::None; // 先行入力管理フラグ
-    SetIsAvoidance(false);                          // 回避入力判定用フラグ
+    nextInput_      = NextInput::None;  // 先行入力管理フラグ
+    isAvoidance_    = false;            // 回避入力判定用フラグ
+    isAbleAttack_   = false;            // 攻撃できるかのフラグ
 }
 
 // ----- 剣の座標更新 -----
@@ -397,20 +364,6 @@ void Player::UpdateCollisions(const float& elapsedTime)
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
         data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
     }
-}
-
-void Player::SetAttackFlag(const bool& activeFlag)
-{
-    for (int i = 0; i < GetAttackDetectionDataCount(); ++i)
-    {
-        GetAttackDetectionData(i).SetIsActive(activeFlag);
-    }
-}
-
-bool Player::GetIsActiveAttackFlag()
-{
-    // 代表で一番目の子の値を返す
-    return GetAttackDetectionData(0).GetIsActive();
 }
 
 // ----- ステート変更 -----

@@ -21,7 +21,7 @@ namespace ActionDragon
     {
     public:
         void Initialize(const float& addForceFrame, const float& force, const float& decelerationForce = 2.0f);
-        bool IsAbleAddForce(const float& animationFrame);
+        bool Update(const float& animationFrame);
 
         [[nodiscard]] const float GetForce() const { return force_; }
         [[nodiscard]] const float GetDecelerationForce() const { return decelerationForce_; }

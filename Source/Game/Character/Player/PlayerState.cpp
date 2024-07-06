@@ -19,7 +19,7 @@ namespace PlayerState
     }
 
     // ----- 更新 -----
-    bool AddForceData::IsAbleAddForce(const float& animationFrame)
+    bool AddForceData::Update(const float& animationFrame)
     {
         // 既にAddForceしている
         if (isAddforce_) return false;
@@ -28,6 +28,44 @@ namespace PlayerState
         if (animationFrame < addForceFrame_) return false;
 
         isAddforce_ = true;
+        return true;
+    }
+}
+
+// ----- AttackData -----
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void AttackData::Initialize(const float& startFrame, const float& endFrame)
+    {
+        attackStartFrame_ = startFrame;
+        attackEndFrame_ = endFrame;
+        isAttacked_ = false;
+        isFirstTime_ = true;
+    }
+
+    // ----- 更新 -----
+    bool AttackData::Update(const float& animationFrame, const bool& flag)
+    {
+        // 既に攻撃しているのでここで終了
+        if (isAttacked_) return false;
+
+        // 攻撃スタートフレームに達していないので終了
+        if (animationFrame < attackStartFrame_) return false;
+
+        // 攻撃エンドフレームを越しているのでここで終了
+        if (animationFrame > attackEndFrame_) return false;
+
+        // 攻撃が当たったので終了
+        if (isFirstTime_ == false && flag == false)
+        {
+            isAttacked_ = true;
+            return false;
+        }        
+
+        // 一度通ったので false にする
+        isFirstTime_ = false;
+
         return true;
     }
 }
@@ -179,6 +217,10 @@ namespace PlayerState
         {
             owner_->SetTransitionTime(0.4f);
         }
+        else if (animationIndex == Player::Animation::ComboAttack0_2)
+        {
+            owner_->SetTransitionTime(0.25f);
+        }
         else if (animationIndex == Player::Animation::RunAttack1)
         {
             owner_->SetTransitionTime(0.5f);
@@ -266,6 +308,10 @@ namespace PlayerState
         else if (animationIndex == Player::Animation::ComboAttack0_0 ||
             animationIndex == Player::Animation::ComboAttack0_1 ||
             animationIndex == Player::Animation::RunAttack1)
+        {
+            owner_->SetTransitionTime(0.3f);
+        }
+        else if (animationIndex == Player::Animation::ComboAttack0_2)
         {
             owner_->SetTransitionTime(0.3f);
         }
@@ -406,7 +452,7 @@ namespace PlayerState
         SetAnimationSpeed();
 
         // 移動処理
-        if (addForceData_.IsAbleAddForce(owner_->GetAnimationSeconds()))
+        if (addForceData_.Update(owner_->GetAnimationSeconds()))
         {
             owner_->AddForce(moveDirection_, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
         }
@@ -1082,6 +1128,7 @@ namespace PlayerState
 
         // 変数初期化
         addForceData_.Initialize(0.2f, 0.4f, 1.0f);
+        attackData_.Initialize(0.25f, 0.5f);
     }
 
     // ----- 更新 -----
@@ -1091,12 +1138,14 @@ namespace PlayerState
         if (CheckNextInput()) return;
 
         // 移動処理
-        if (addForceData_.IsAbleAddForce(owner_->GetAnimationSeconds()))
+        if (addForceData_.Update(owner_->GetAnimationSeconds()))
         {
             owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
         }
 
-
+        // 攻撃判定処理
+        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
+        owner_->SetIsAbleAttack(attackFlag);
 
         if (owner_->IsPlayAnimation() == false)
         {
@@ -1171,6 +1220,7 @@ namespace PlayerState
 
         // 変数初期化
         addForceData_.Initialize(0.15f, 0.2f, 1.0f);
+        attackData_.Initialize(0.1f, 0.35f);
     }
 
     // ----- 更新 -----
@@ -1183,11 +1233,15 @@ namespace PlayerState
         SetAnimationSpeed();
 
         // 移動処理
-        if (addForceData_.IsAbleAddForce(owner_->GetAnimationSeconds()))
+        if (addForceData_.Update(owner_->GetAnimationSeconds()))
         {
             owner_->AddForce(owner_->GetTransform()->CalcForward(),
                 addForceData_.GetForce(), addForceData_.GetDecelerationForce());
         }
+
+        // 攻撃判定処理
+        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
+        owner_->SetIsAbleAttack(attackFlag);
 
         if (owner_->IsPlayAnimation() == false)
         {
@@ -1200,7 +1254,6 @@ namespace PlayerState
     // ----- 終了化 -----
     void ComboAttack0_0::Finalize()
     {
-
     }
 
     // ----- アニメーション設定 -----
@@ -1336,6 +1389,7 @@ namespace PlayerState
 
         // 変数初期化
         addForceData_.Initialize(0.05f, 0.25f, 1.0f);
+        attackData_.Initialize(0.06f, 0.3f);
     }
 
     // ----- 更新 -----
@@ -1347,18 +1401,18 @@ namespace PlayerState
         // アニメーションの速度設定
         SetAnimationSpeed();
 
-
-        const float animationSeconds = owner_->GetAnimationSeconds();
-
-        if (addForceData_.IsAbleAddForce(animationSeconds))
+        // 移動処理
+        if (addForceData_.Update(owner_->GetAnimationSeconds()))
         {
-            owner_->AddForce(owner_->GetTransform()->CalcForward(),
-                addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+            owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
         }
 
+        // 攻撃判定処理
+        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
+        owner_->SetIsAbleAttack(attackFlag);
 
-
-        if (owner_->IsPlayAnimation() == false)
+        //if (owner_->IsPlayAnimation() == false)
+        if(owner_->GetAnimationSeconds() > 1.0f)
         {
             owner_->ChangeState(Player::STATE::Idle);
             return;
@@ -1395,11 +1449,31 @@ namespace PlayerState
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
         
-        if (animationSeconds > 0.15f)
+        if (animationSeconds > 0.1f)
         {
+            // コンボ攻撃
             if (owner_->GetComboAttack0KeyDown())
             {
                 owner_->SetNextInput(Player::NextInput::ComboAttack0);
+            }
+        }
+        if (animationSeconds > 0.1f)
+        {
+            // 回避
+            if (owner_->GetAvoidanceKeyDown())
+            {
+                owner_->SetNextInput(Player::NextInput::Avoidance);
+            }
+        }
+
+        // 回避に遷移できるフレーム
+        const float changeAvoidanceFrame = 0.25f;
+        if (animationSeconds > changeAvoidanceFrame)
+        {
+            if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+            {
+                owner_->ChangeState(Player::STATE::Avoidance);
+                return true;
             }
         }
 
@@ -1439,6 +1513,7 @@ namespace PlayerState
 // ----- コンボ攻撃0_2 -----
 namespace PlayerState
 {
+    // ----- 初期化 -----
     void ComboAttack0_2::Initialize()
     {
         // アニメーション設定
@@ -1448,22 +1523,15 @@ namespace PlayerState
         owner_->ResetFlags();
 
     }
+
+    // ----- 更新 -----
     void ComboAttack0_2::Update(const float& elapsedTime)
     {
-        const float animationSeconds = owner_->GetAnimationSeconds();
+        // 先行入力処理
+        if (CheckNextInput()) return;
 
-        if (owner_->GetComboAttack0KeyDown())
-        {
-            owner_->SetNextInput(Player::NextInput::ComboAttack0);
-        }
-        if (animationSeconds >= 0.9f)
-        {
-            if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
-            {
-                owner_->ChangeState(Player::STATE::ComboAttack0_3);
-                return;
-            }
-        }
+        // アニメーションの速度設定
+        SetAnimationSpeed();
 
         if (owner_->IsPlayAnimation() == false)
         {
@@ -1471,9 +1539,70 @@ namespace PlayerState
             return;
         }
     }
+
+    // ----- 終了化 -----
     void ComboAttack0_2::Finalize()
     {
 
+    }
+
+    // ----- アニメーションの速度設定 -----
+    void ComboAttack0_2::SetAnimationSpeed()
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+
+        if (animationSeconds > 1.4f)
+        {
+            owner_->SetAnimationSpeed(2.5f);
+        }
+        else if (animationSeconds > 1.2f)
+        {
+            owner_->SetAnimationSpeed(2.0f);
+        }
+
+    }
+
+    // ----- 先行入力処理 -----
+    const bool ComboAttack0_2::CheckNextInput()
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+
+        if (animationSeconds > 0.35f)
+        {
+            if (owner_->GetComboAttack0KeyDown())
+            {
+                owner_->SetNextInput(Player::NextInput::ComboAttack0);
+            }
+        }
+
+        if (animationSeconds > 0.9f)
+        {
+            if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
+            {
+                owner_->ChangeState(Player::STATE::ComboAttack0_3);
+                return true;
+            }
+        }
+
+        // 移動値があれば 移動へ遷移
+        if (animationSeconds > 1.4f)
+        {
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
+            {
+                if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
+                {
+                    owner_->ChangeState(Player::STATE::Run);
+                    return true;
+                }
+
+                owner_->ChangeState(Player::STATE::Walk);
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 

@@ -108,53 +108,31 @@ public:
     Player();
     ~Player() override;
 
-    void Initialize();
-    void Finalize();
-    void Update(const float& elapsedTime)   override;
-    void Render(ID3D11PixelShader* psShader)override;
-    void RenderTrail();
-    void DrawDebug()                        override;  
-    void DebugRender(DebugRenderer* debugRenderer);
-
-    void Turn(const float& elapsedTime);
-    void Move(const float& elapsedTime);
-
-    bool CheckNextInput(const Player::NextInput& nextInput, const float& nextAttackFrame = -1);
-
-    void ResetFlags(); // フラグをリセットする
-
-
-    // 剣の座標更新
-    void UpdateSwordTransform();
-
-    void PlayAnimation(const Animation& index, const bool& loop, const float& speed = 1.0f)
-    {
-        Object::PlayAnimation(static_cast<int>(index), loop, speed);
-        //swordModel_.PlayAnimation(static_cast<int>(index), loop, speed);
-    }
-    void SetAnimationSpeed(const float& speed)
-    {
-        Object::SetAnimationSpeed(speed);
-        //swordModel_.SetAnimationSpeed(speed);
-    }
-    float slowAnimationSpeed_ = 0.15f;
-    //float slowAnimationSpeed_ = 0.25f;
-
+    void Initialize();                                  // 初期化
+    void Finalize();                                    // 終了化
+    void Update(const float& elapsedTime)    override;  // 更新
+    void Render(ID3D11PixelShader* psShader) override;  // 描画
+    void DrawDebug()                         override;  // ImGui用
     
-    void PlayBlendAnimation(const Animation& index, const bool& loop, const float& speed = 1.0f, const float& blendAnimationFrame = 0.0f) { Object::PlayBlendAnimation(static_cast<int>(index), loop, speed, blendAnimationFrame); }
-
-    void UpdateCollisions(const float& elapsedTime) override;
-
-
-    void SetMoveDirection(const DirectX::XMFLOAT3 direction) { moveDirection_ = direction; }
+    void RenderTrail();                                 // 剣の軌跡描画
+    void DebugRender(DebugRenderer* debugRenderer);     // 判定用図形描画
 
     // ---------- Animation ----------
-    [[nodiscard]] const bool GetUseBlendAnimation() const { return useBlendAnimation_; }
-    void SetUseBlendAnimation(const bool& flag) { useBlendAnimation_ = flag; }
+    void PlayAnimation(const Animation& index, const bool& loop, const float& speed = 1.0f) { Object::PlayAnimation(static_cast<int>(index), loop, speed); }
+    void PlayBlendAnimation(const Animation& index, const bool& loop, const float& speed = 1.0f, const float& blendAnimationFrame = 0.0f) { Object::PlayBlendAnimation(static_cast<int>(index), loop, speed, blendAnimationFrame); }
+    void SetAnimationSpeed(const float& speed) { Object::SetAnimationSpeed(speed); }
 
-    // 攻撃判定有効フラグ設定
-    void SetAttackFlag(const bool& activeFlag = true);
-    bool GetIsActiveAttackFlag();
+    // ---------- 移動＆回転 ----------
+    void Turn(const float& elapsedTime); // 旋回処理
+    void Move(const float& elapsedTime); // 移動処理
+
+    // ---------- Collision ----------
+    void UpdateCollisions(const float& elapsedTime) override;
+
+    // ---------- 剣の座標更新 ----------
+    void UpdateSwordTransform();
+
+    bool Player::CheckNextInput(const Player::NextInput& nextInput);
 
 public:// --- 取得・設定 ---
 #pragma region [Get, Set] Function
@@ -162,12 +140,21 @@ public:// --- 取得・設定 ---
     StateMachine<State<Player>>* GetStateMachine() { return stateMachine_.get(); }
     void ChangeState(const STATE& state);
 
+    // ---------- 移動 ------------------------------
+    void SetMoveDirection(const DirectX::XMFLOAT3 direction) { moveDirection_ = direction; } // 移動方向
+
     // ---------- 行動 -------------------------------------------------------
+    // ----- フラグをリセット -----
+    void ResetFlags();    
+    // ----- 先行入力 -----
     [[nodiscard]] const NextInput GetNextInput() const { return nextInput_; }
     void SetNextInput(const NextInput& nextInput) { nextInput_ = nextInput; }
-
+    // ----- 回避 -----
     [[nodiscard]] const bool GetIsAvoidance() const { return isAvoidance_; }
     void SetIsAvoidance(const bool& isAvoidance) { isAvoidance_ = isAvoidance; }
+    // ----- 攻撃判定 -----
+    [[nodiscard]] const bool GetIsAbleAttack() const { return isAbleAttack_; }
+    void SetIsAbleAttack(const bool& flag) { isAbleAttack_ = flag; }
 
     // ---------- キー入力 ----------
     [[nodiscard]] bool GetComboAttack0KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
@@ -184,7 +171,7 @@ private:
     // ---------- ステートマシン --------------------
     std::unique_ptr<StateMachine<State<Player>>> stateMachine_;
 
-    // ----- 移動 -----
+    // ---------- 移動 ----------
     DirectX::XMFLOAT3 moveDirection_ = {};
 
     // ---------- 行動 ------------------------------
@@ -196,8 +183,6 @@ private:
     bool isDamageSphere_ = true;
     bool isAttackSphere_ = true;
 
-    // ---------- Animation ----------
-    bool useBlendAnimation_ = false;
 
     SwordTrail swordTrail_;
 
@@ -211,4 +196,6 @@ private:
     DirectX::XMFLOAT3 socketScale_ = { 1.0f, 1.0f, 1.0f };
 #endif  
     DirectX::XMFLOAT4X4 weaponWorld_;
+
+    bool isAbleAttack_ = false; // 攻撃可能か
 };

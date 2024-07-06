@@ -105,26 +105,32 @@ void PlayerManager::CollisionPlayerVsEnemy()
     }
 
     // ÉvÉåÉCÉÑÅ[ÇÃçUåÇîªíË
-    for (int playerDataIndex = 0; playerDataIndex < GetPlayer()->GetAttackDetectionDataCount(); ++playerDataIndex)
     {
-        auto playerData = GetPlayer()->GetAttackDetectionData(playerDataIndex);
+        // çUåÇîªíËÇ™óLå¯Ç≈ÇÕÇ»Ç¢ÇÃÇ≈èIóπ
+        if (GetPlayer()->GetIsAbleAttack() == false) return;
 
-        if (playerData.GetIsActive() == false) continue;
-
-        for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetDamageDetectionDataCount(); ++enemyDataIndex)
+        for (int playerDataIndex = 0; playerDataIndex < GetPlayer()->GetAttackDetectionDataCount(); ++playerDataIndex)
         {
-            auto enemyData = enemy->GetDamageDetectionData(enemyDataIndex);
+            auto playerData = GetPlayer()->GetAttackDetectionData(playerDataIndex);
 
-
-            if (Collision::IntersectSphereVsSphere(
-                enemyData.GetPosition(), enemyData.GetRadius(),
-                playerData.GetPosition(), playerData.GetRadius()))
+            for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetDamageDetectionDataCount(); ++enemyDataIndex)
             {
-                if (enemyData.GetIsHit() == false)
+                auto enemyData = enemy->GetDamageDetectionData(enemyDataIndex);
+
+                if (Collision::IntersectSphereVsSphere(
+                    enemyData.GetPosition(), enemyData.GetRadius(),
+                    playerData.GetPosition(), playerData.GetRadius()))
                 {
-                    enemy->GetDamageDetectionData(enemyDataIndex).SetIsHit(true);
-                    enemy->GetDamageDetectionData(enemyDataIndex).SetHitTimer(0.5f);                   
-                    enemy->AddDamage(enemyData.GetDamage());
+                    if (enemyData.GetIsHit() == false)
+                    {
+                        enemy->GetDamageDetectionData(enemyDataIndex).SetIsHit(true);
+                        enemy->GetDamageDetectionData(enemyDataIndex).SetHitTimer(0.5f);
+                        enemy->AddDamage(enemyData.GetDamage());
+
+                        // çUåÇìñÇΩÇ¡ÇΩ
+                        GetPlayer()->SetIsAbleAttack(false);
+                        return;
+                    }
                 }
             }
         }

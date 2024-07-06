@@ -44,7 +44,7 @@ namespace ActionDragon
     }
 
     // ----- çXêV -----
-    bool AddForceData::IsAbleAddForce(const float& animationFrame)
+    bool AddForceData::Update(const float& animationFrame)
     {
         // ä˘Ç…AddForceÇµÇƒÇ¢ÇÈ
         if (isAddforce_) return false;
@@ -403,7 +403,7 @@ namespace ActionDragon
             }
 
             // å„ÇÎéŒÇﬂè„ï˚å¸Ç…à⁄ìÆÇ≥ÇπÇÈ
-            if (addForceData_[static_cast<int>(MoveDirection::UpBack)].IsAbleAddForce(owner_->GetAnimationSeconds()))
+            if (addForceData_[static_cast<int>(MoveDirection::UpBack)].Update(owner_->GetAnimationSeconds()))
             {
                 DirectX::XMFLOAT3 direction = XMFloat3Normalize(owner_->GetTransform()->CalcForward() * -1 - owner_->GetTransform()->CalcUp() * -1);
                 owner_->AddForce(direction, addForceData_[static_cast<int>(MoveDirection::UpBack)].GetForce(), addForceData_[static_cast<int>(MoveDirection::UpBack)].GetDecelerationForce());
@@ -486,7 +486,7 @@ namespace ActionDragon
             }
             
             // ëOï˚éŒÇﬂâ∫Ç…à⁄ìÆÇ∑ÇÈ
-            if (addForceData_[static_cast<int>(MoveDirection::DownForward)].IsAbleAddForce(owner_->GetAnimationSeconds()))
+            if (addForceData_[static_cast<int>(MoveDirection::DownForward)].Update(owner_->GetAnimationSeconds()))
             {
                 DirectX::XMFLOAT3 direction = XMFloat3Normalize(owner_->GetTransform()->CalcForward() - owner_->GetTransform()->CalcUp());
                 owner_->AddForce(direction, addForceData_[static_cast<int>(MoveDirection::DownForward)].GetForce(), addForceData_[static_cast<int>(MoveDirection::DownForward)].GetDecelerationForce());
@@ -786,7 +786,7 @@ namespace ActionDragon
             owner_->Turn(elapsedTime, PlayerManager::Instance().GetTransform()->GetPosition());            
 
             // à⁄ìÆèàóù
-            if (addForceData_.IsAbleAddForce(owner_->GetAnimationSeconds()))
+            if (addForceData_.Update(owner_->GetAnimationSeconds()))
             {
                 owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
             }
@@ -816,7 +816,7 @@ namespace ActionDragon
             break;
         case STATE::Recovery:// å„åÑ
             
-            if (addForceData_.IsAbleAddForce(owner_->GetAnimationSeconds()))
+            if (addForceData_.Update(owner_->GetAnimationSeconds()))
             {
                 owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
             }

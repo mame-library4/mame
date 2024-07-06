@@ -8,7 +8,7 @@ namespace PlayerState
     {
     public:
         void Initialize(const float& addForceFrame, const float& force, const float& decelerationForce = 2.0f);
-        bool IsAbleAddForce(const float& animationFrame);
+        bool Update(const float& animationFrame);
 
         [[nodiscard]] const float GetForce() const { return force_; }
         [[nodiscard]] const float GetDecelerationForce() const { return decelerationForce_; }
@@ -18,6 +18,19 @@ namespace PlayerState
         float   force_              = 0.0f;
         float   decelerationForce_  = 0.0f;
         bool    isAddforce_         = false;
+    };
+
+    struct AttackData
+    {
+    public:
+        void Initialize(const float& startFrame, const float& endFrame);
+        bool Update(const float& animationFrame, const bool& flag);
+
+    private:
+        float attackStartFrame_ = 0.0f;     // 攻撃判定有効スタートフレーム
+        float attackEndFrame_   = 0.0f;     // 攻撃判定有効エンドフレーム
+        bool  isAttacked_       = false;    // 攻撃したか
+        bool  isFirstTime_      = false;    // 攻撃判定有効フレームに入った一回目のフレームかどうか
     };
 }
 
@@ -200,7 +213,8 @@ namespace PlayerState
         [[nodiscard]] const bool CheckNextInput();
 
     private:
-        AddForceData addForceData_;
+        AddForceData    addForceData_;
+        AttackData      attackData_;
     };
 
     // ----- コンボ0_0 -----
@@ -226,7 +240,8 @@ namespace PlayerState
         float nextInputEndFrame_    = 0.0f;
         float nextAttackFrame_      = 0.0f;
 
-        AddForceData addForceData_;
+        AddForceData    addForceData_;
+        AttackData      attackData_;
     };
 
     // ----- コンボ0_1 -----
@@ -245,8 +260,8 @@ namespace PlayerState
         [[nodiscard]] const bool CheckNextInput();
 
     private:
-        AddForceData addForceData_;
-
+        AddForceData    addForceData_;
+        AttackData      attackData_;
     };
 
     // ----- コンボ0_2 -----
@@ -261,19 +276,12 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
-        void SetAnimation();
+        void SetAnimationSpeed();
+        [[nodiscard]] const bool CheckNextInput();
 
     private:
-        // ----- 先行入力用 -----
-        float nextInputStartFrame_  = 0.0f;
-        float nextInputEndFrame_    = 0.0f;
-        float nextAttackFrame_      = 0.0f;
-
-        // ----- 移動 -----
-        DirectX::XMFLOAT3   moveDirecion_ = {};
-        float               addForceFrame_ = 0.0f;
-        float               power_ = 0.0f;
-        bool                isAddForce_ = false;
+        AddForceData    addForceData_;
+        AttackData      attackData_;
     };
 
     // ----- コンボ0_3 -----
@@ -288,13 +296,7 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
-        void SetAnimation();
-
-    private:
-        // ----- 移動 -----
-        DirectX::XMFLOAT3   moveDirecion_ = {};
-        float               addForceFrame_[2] = {};
-        float               power_[2] = {};
-        bool                isAddForce_[2];
+        AddForceData    addForceData_;
+        AttackData      attackData_;
     };
 }
