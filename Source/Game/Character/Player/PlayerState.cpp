@@ -1274,6 +1274,11 @@ namespace PlayerState
             owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_0, false, 1.0f, 0.1f);
             owner_->SetTransitionTime(0.1f);
         }
+        else if (animationIndex == Player::Animation::ComboAttack0_1)
+        {
+            owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_0, false, 1.0f, 0.1f);
+            owner_->SetTransitionTime(0.1f);
+        }
         else
         {
             owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_0, false);
@@ -1482,12 +1487,21 @@ namespace PlayerState
             }
         }
 
+#define COMBO2 1
+#if COMBO2
+        const float changeComboAttack0Frame = 0.7f;
+#else
         const float changeComboAttack0Frame = 0.3f;
+#endif
         if (animationSeconds > changeComboAttack0Frame)
         {
             if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
             {
+#if COMBO2
+                owner_->ChangeState(Player::STATE::ComboAttack0_0);
+#else
                 owner_->ChangeState(Player::STATE::ComboAttack0_2);
+#endif
                 return true;
             }
         }

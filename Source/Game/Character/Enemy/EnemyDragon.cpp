@@ -218,6 +218,21 @@ void EnemyDragon::RegisterCollisionData()
         { "Dragon15_l_hand",    1.0f, 10.0f, {} },
         { "Dragon15_l_forearm", 1.0f, 10.0f, {} },
 
+        // ---------- ë´ ----------
+#pragma region ---------- ë´ ----------
+        { "Dragon15_r_thigh",     0.65f, 10.0f, { 0.15f, 0.0f, 0.0f } },
+        { "Dragon15_r_calf",      0.6f,  10.0f, { 0.0f, 0.0f, 0.2f } },
+        { "Dragon15_r_horselink", 0.5f,  10.0f, {} },
+        { "Dragon15_r_foot",      0.45f, 10.0f, {} },
+        { "Dragon15_r_toe11",     0.4f,  10.0f, { 0.06f, 0.0f, 0.0f } },
+
+        { "Dragon15_l_thigh",     0.65f, 10.0f, { 0.15f, 0.0f, 0.0f } },
+        { "Dragon15_l_calf",      0.6f,  10.0f, { 0.0f, 0.0f, 0.2f } },
+        { "Dragon15_l_horselink", 0.5f,  10.0f, {} },
+        { "Dragon15_l_foot",      0.45f, 10.0f, {} },
+        { "Dragon15_l_toe11",     0.4f,  10.0f, { 0.06f, 0.0f, 0.0f } },
+#pragma endregion ---------- ë´ ----------
+
         // ---------- êKîˆ ----------
 #pragma region ---------- êKîˆ ----------
         { "Dragon15_tail_00", 1.10f, 10.0f, {} },

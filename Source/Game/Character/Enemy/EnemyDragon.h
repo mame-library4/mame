@@ -24,7 +24,7 @@ private:
     bool isAttackSphere_    = true;
     bool isDamageSphere_    = true;
 
-    bool isUpdateAnimation_ = true;
-    //bool isUpdateAnimation_ = false;
+    //bool isUpdateAnimation_ = true;
+    bool isUpdateAnimation_ = false;
 };
 
