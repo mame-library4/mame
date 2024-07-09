@@ -25,6 +25,7 @@ UINumber::UINumber(const int& num, const DirectX::XMFLOAT3& hitPos) :
     // ‚Ç‚Ì”š‚ğg—p‚·‚é‚©İ’è
     SetNumSproteNumbers();
 
+    // •Ï”‰Šú‰»
     lifeTimer_ = 0.5f;
     easingTimer_ = 0.0f;
 }
@@ -60,10 +61,6 @@ void UINumber::Render()
     {
         numSprite_[spriteIndex]->Render();
     }
-}
-
-void UINumber::DrawDebug()
-{
 }
 
 // ----- ”š‚ğİ’è‚·‚é -----

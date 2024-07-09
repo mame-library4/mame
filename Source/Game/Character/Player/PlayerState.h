@@ -105,6 +105,15 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+
+    private:
+        void SetAnimationSpeed();
+
+    private:
+        AddForceData addForceData_;
+
+        bool isFirstAnimation_ = false; // 最初のアニメーションか
+        bool isAnimEnd_ = false;
     };
 
     // ----- 死亡 -----

@@ -9,11 +9,10 @@ public:
 
     void Update(const float& elapsedTime)   override;
     void Render()                           override;
-    void DrawDebug()                        override;
 
 private:
-    void SetNumSproteNumbers();
-    void SetNumSpritePosition();
+    void SetNumSproteNumbers();     // ”š‚ğİ’è‚·‚é
+    void SetNumSpritePosition();    // ˆÊ’u‚ğİ’è‚·‚é
 
 private:
     static const int        MaxDigit_ = 4;  // Œ…‚ÌÅ‘å

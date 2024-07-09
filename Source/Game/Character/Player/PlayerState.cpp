@@ -88,6 +88,13 @@ namespace PlayerState
     // ----- 更新 -----
     void IdleState::Update(const float& elapsedTime)
     {
+        // TODO:後で消す
+        if (GetAsyncKeyState('T') & 0x8000)
+        {
+            owner_->ChangeState(Player::STATE::Damage);
+            return;
+        }
+
         // カウンター受付
         if (owner_->GetCounterStanceKey())
         {
@@ -381,26 +388,73 @@ namespace PlayerState
     void DamageState::Initialize()
     {
         // アニメーション再生 
-        owner_->PlayAnimation(Player::Animation::HitLarge, false);
+        owner_->PlayAnimation(Player::Animation::HitLarge, false, 1.2f);
 
         // フラグをリセットする
         owner_->ResetFlags();
+
+        // 変数初期化
+        addForceData_.Initialize(0.1f, 0.3f, 0.5f);
+        isAnimEnd_ = false;
+        isFirstAnimation_ = true;
     }
 
     // ----- 更新 -----
     void DamageState::Update(const float& elapsedTime)
     {
+        // アニメーションの速度設定
+        SetAnimationSpeed();
+
+        // 移動値
+        if (addForceData_.Update(owner_->GetAnimationSeconds()))
+        {
+            DirectX::XMFLOAT3 direction = owner_->GetTransform()->CalcForward() * -1.0f;
+            owner_->AddForce(direction, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+        }
+
         // アニメーション終了
-        if (owner_->IsPlayAnimation() == false)
+        if (owner_->IsPlayAnimation() == false && isAnimEnd_ == false)
+        {
+            owner_->PlayBlendAnimation(Player::Animation::GetUp, false);
+            isAnimEnd_ = true;
+            isFirstAnimation_ = false;
+        }
+        else if(owner_->IsPlayAnimation() == false)
         {
             owner_->ChangeState(Player::STATE::Idle);
             return;
         }
+        
     }
 
     // ----- 終了化 -----
     void DamageState::Finalize()
     {
+    }
+
+    // ----- アニメーションの速度設定 -----
+    void DamageState::SetAnimationSpeed()
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+
+        // 一つ目のアニメーション ( 吹き飛ばされ )
+        if (isFirstAnimation_)
+        {
+
+            if (animationSeconds > 1.2f)
+            {
+                owner_->SetAnimationSpeed(2.0f);
+            }
+            else if (animationSeconds > 1.0f)
+            {
+                owner_->SetAnimationSpeed(1.0f);
+            }
+        }
+        // 二つ目のアニメーション ( 起き上がり )
+        else
+        {
+
+        }
     }
 }
 
