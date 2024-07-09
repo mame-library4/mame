@@ -11,6 +11,9 @@
 
 #include "AudioManager.h"
 
+#include "Effect/EffectManager.h"
+#include "UI/UIManager.h"
+
 // ----- コンストラクタ -----
 Application::Application(HWND hwnd)
     : hwnd_(hwnd),
@@ -46,6 +49,9 @@ bool Application::Initialize()
     SceneManager::Instance().ChangeScene(new GameScene);
     //SceneManager::Instance().ChangeScene(new TitleScene);
 
+    // エフェクト初期化
+    EffectManager::Instance().Initialize();
+
 //#ifndef _DEBUG
 //    ShowCursor(!FULLSCREEN);	// フルスクリーン時はカーソルを消す
 //#endif
@@ -58,6 +64,9 @@ bool Application::Finalize()
 {
     // --- シーン終了化 ---
     SceneManager::Instance().Clear();
+
+    // UserInterface
+    UIManager::Instance().Clear();
 
     return false;
 }
@@ -76,6 +85,11 @@ void Application::Update(const float& elapsedTime)
 
     // --- シーン更新処理 ---
     SceneManager::Instance().Update(elapsedTime);
+
+    // エフェクト更新
+    EffectManager::Instance().Update(elapsedTime);
+
+    UIManager::Instance().Update();
 }
 
 // ----- 描画 -----
@@ -154,6 +168,7 @@ void Application::Render()
         DirectX::XMStoreFloat4x4(&projection, Camera::Instance().GetProjectionMatrix());
         Graphics::Instance().GetDebugRenderer()->Render(deviceContext, view, projection);
 #endif
+        EffectManager::Instance().Render(view, projection);
 
         PostProcess::Instance().Deactivate();
         PostProcess::Instance().Draw();
@@ -234,6 +249,9 @@ void Application::Render()
     Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_OFF_ZW_OFF);
     SceneManager::Instance().UserInterfaceRender();
 
+    UIManager::Instance().Render();
+    
+
     DrawDebug();
 
     // --- ImGui表示 ---
@@ -256,6 +274,8 @@ void Application::DrawDebug()
     ImGui::Checkbox("isDeferred_", &isDeferred_);
 
     graphics_.GetShader()->DrawDebug();
+
+    UIManager::Instance().DrawDebug();
 #endif
 }
 

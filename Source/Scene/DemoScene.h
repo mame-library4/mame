@@ -2,6 +2,7 @@
 #include "BaseScene.h"
 #include "Character/Character.h"
 #include <memory>
+#include "Sprite.h"
 
 class DemoChara : public Character
 {
@@ -39,5 +40,7 @@ private:
     DirectX::XMFLOAT3 target_ = {};
 
     int animNum_ = 0;
+
+    std::unique_ptr<Sprite> sprite_;
 };
 

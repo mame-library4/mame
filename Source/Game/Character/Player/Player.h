@@ -6,6 +6,8 @@
 #include "Graphics.h"
 #include "Effect/SwordTrail/SwordTrail.h"
 
+#include "Effect/Effect.h"
+
 class Player : public Character
 {
 public:// --- ’è” ---
@@ -163,6 +165,10 @@ public:// --- æ“¾Eİ’è ---
     [[nodiscard]] bool GetCounterStanceKey()    const { return Input::Instance().GetGamePad().GetButton() & GamePad::BTN_B && Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_TRIGGER; }
 
 #pragma endregion [Get, Set] Function
+
+private:
+    // ---------- Collision ----------
+    void RegisterCollisionData();
 
 private:
     // ---------- •Ší ----------

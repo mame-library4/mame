@@ -281,7 +281,7 @@ namespace PlayerState
         [[nodiscard]] const bool CheckNextInput();
 
     private:
-        AddForceData    addForceData_[2];
+        AddForceData    addForceData_;
         AttackData      attackData_;
     };
 
@@ -297,7 +297,12 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
+        void SetAnimationSpeed();
+
+    private:
         AddForceData    addForceData_;
         AttackData      attackData_;
+
+        bool isVibration_ = false;
     };
 }

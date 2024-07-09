@@ -33,6 +33,9 @@ Player::Player()
         GetStateMachine()->SetState(static_cast<UINT>(STATE::Idle));
     }
 
+    // CollisionData登録
+    RegisterCollisionData();
+
     // LookAt初期化
     //LookAtInitilaize("head");
 }
@@ -54,24 +57,6 @@ void Player::Initialize()
     // ステージとの判定offset設定
     SetCollisionRadius(0.2f);
 
-    // 押し出し判定用変数設定
-    RegisterCollisionDetectionData({ "collide0", 0.25f, { 0, 1.3f, 0} });
-    RegisterCollisionDetectionData({ "collide1", 0.25f, { 0, 0.8f, 0} });
-    RegisterCollisionDetectionData({ "collide2", 0.25f, { 0, 0.3f, 0} });
-
-    // くらい判定
-    RegisterDamageDetectionData({ "R:R:j_Head_end", 0.15f,  10, { -8, 2, 0 } });
-    RegisterDamageDetectionData({ "R:R:j_Spine2",   0.2f,   10, { 0, 0, 0 } });
-    RegisterDamageDetectionData({ "R:R:j_Hips",     0.2f,   10, { 10, 0, 0 } });
-    RegisterDamageDetectionData({ "R:R:j_Reg_R",    0.15f,  10, { 0, 0, 0 } });
-    RegisterDamageDetectionData({ "R:R:j_Leg_L",    0.15f,  10, { 0, 0, 0 } });
-
-    // 攻撃判定
-    RegisterAttackDetectionData({ "index_01_r_add0", 0.2f, { 0, 0, 0 }, "index_01_r" });
-    RegisterAttackDetectionData({ "index_01_r_add1", 0.2f, { 0, -7.0f, 50.0f }, "index_01_r" });
-    RegisterAttackDetectionData({ "index_01_r_add2", 0.2f, { 0, -15.0f, 100.0f }, "index_01_r" });
-    RegisterAttackDetectionData({ "index_01_r_add3", 0.2f, { 0, -23.0f, 150.0f }, "index_01_r" });
-
     // 体力設定
     SetMaxHealth(100.0f);
     SetHealth(GetMaxHealth());
@@ -92,18 +77,11 @@ void Player::Finalize()
 // ----- 更新 -----
 void Player::Update(const float& elapsedTime)
 {    
-    // Collisionデータ更新
-    UpdateCollisions(elapsedTime);
-    GetCollisionDetectionData("collide0").SetPosition(GetTransform()->GetPosition());
-    GetCollisionDetectionData("collide1").SetPosition(GetTransform()->GetPosition());
-    GetCollisionDetectionData("collide2").SetPosition(GetTransform()->GetPosition());
-
     // ステートマシン更新
     GetStateMachine()->Update(elapsedTime);
     
     // アニメーション更新 [※ステートマシン更新後]
     Character::Update(elapsedTime);
-    
 
     // 移動処理
     Move(elapsedTime);
@@ -119,6 +97,10 @@ void Player::Update(const float& elapsedTime)
 
     // 剣の座標更新
     UpdateSwordTransform();
+
+    // Collisionデータ更新
+    UpdateCollisions(elapsedTime);
+    GetCollisionDetectionData("collide").SetPosition(GetTransform()->GetPosition());
 }
 
 // ----- 描画 -----
@@ -321,6 +303,37 @@ void Player::ResetFlags()
     nextInput_      = NextInput::None;  // 先行入力管理フラグ
     isAvoidance_    = false;            // 回避入力判定用フラグ
     isAbleAttack_   = false;            // 攻撃できるかのフラグ
+}
+
+// ----- CollisionData登録 -----
+void Player::RegisterCollisionData()
+{
+    // 押し出し判定登録
+    CollisionDetectionData collisionDetectionData[] =
+    {
+        { "head",       0.2f, {} },
+        { "spine_02",   0.2f, {} },
+        { "pelvis",     0.2f, {} },
+        { "collide",    0.2f, { 0.0f, 0.25f, 0.0f } },
+    };
+    for (int i = 0; i < _countof(collisionDetectionData); ++i)
+    {
+        RegisterCollisionDetectionData(collisionDetectionData[i]);
+    }
+
+
+    // 攻撃判定登録
+    AttackDetectionData attackDetectionData[] =
+    {
+        { "index_01_r_add0", 0.2f, { 0, 0, 0 },             "index_01_r" },
+        { "index_01_r_add1", 0.2f, { 0, -7.0f, 50.0f },     "index_01_r" },
+        { "index_01_r_add2", 0.2f, { 0, -15.0f, 100.0f },   "index_01_r" },
+        { "index_01_r_add3", 0.2f, { 0, -23.0f, 150.0f },   "index_01_r" },
+    };
+    for (int i = 0; i < _countof(attackDetectionData); ++i)
+    {
+        RegisterAttackDetectionData(attackDetectionData[i]);
+    }
 }
 
 // ----- 剣の座標更新 -----

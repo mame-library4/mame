@@ -50,14 +50,14 @@ void EnemyDragon::Update(const float& elapsedTime)
 {
     if(isUpdateAnimation_) Character::Update(elapsedTime);
 
-    // Collisionデータ更新
-    UpdateCollisions(elapsedTime);
-
     // behaviorTree更新
     UpdateNode(elapsedTime);
 
     // RootMotion
     if(GetUseRootMotion()) UpdateRootMotion();
+
+    // Collisionデータ更新
+    UpdateCollisions(elapsedTime);
 
     // ステージの外に出ないようにする
     CollisionCharacterVsStage();
@@ -183,7 +183,8 @@ void EnemyDragon::RegisterCollisionData()
         { "Dragon15_l_hand", 1.0f, {} },
         { "Dragon15_l_forearm", 1.0f, {} },
         
-        // 尻尾
+        // ---------- 尻尾 ----------
+#pragma region ---------- 尻尾 ----------
         { "Dragon15_tail_00", 0.70f, {} },
         { "Dragon15_tail_01", 0.55f, {  0.20f, 0.0f,  0.00f } },
         { "Dragon15_tail_02", 0.42f, {  0.01f, 0.0f,  0.03f } },
@@ -195,6 +196,8 @@ void EnemyDragon::RegisterCollisionData()
         { "Dragon15_tail_add_1", 0.20f, {  0.40f, 0.0f,  0.03f }, "Dragon15_tail_04" },
         { "Dragon15_tail_add_2", 0.2f,  {  0.30f, 0.0f, -0.05f }, "Dragon15_tail_05" },
         { "Dragon15_tail_add_3", 0.2f,  {  0.60f, 0.0f, -0.13f }, "Dragon15_tail_05" },
+#pragma endregion ---------- 尻尾 ----------
+
     };
     for (int i = 0; i < _countof(collisionDetectionData); ++i)
     {

@@ -87,6 +87,7 @@ private:
         [[nodiscard]] const float GetTexSizeY() const { return texSize_.y; }
         void SetTexSize(const DirectX::XMFLOAT2& texSize) { texSize_ = texSize; }
         void SetTexSize(const float& x, const float& y) { texSize_ = { x, y }; }
+        void SetTexSize(const float& texSize) { texSize_ = { texSize, texSize }; }
         void SetTexSizeX(const float& x) { texSize_.x = x; }
         void SetTexSizeY(const float& y) { texSize_.y = y; }
 

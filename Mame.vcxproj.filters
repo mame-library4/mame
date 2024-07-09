@@ -199,6 +199,15 @@
     <ClCompile Include="Source\Scene\DemoScene.cpp">
       <Filter>Mame\Scene\DemoScene</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\UI\UI.cpp">
+      <Filter>Mame\Game\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\UI\UIManager.cpp">
+      <Filter>Mame\Game\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\UI\UINumber.cpp">
+      <Filter>Mame\Game\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -427,6 +436,15 @@
     <ClInclude Include="Source\Scene\DemoScene.h">
       <Filter>Mame\Scene\DemoScene</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\UI\UI.h">
+      <Filter>Mame\Game\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\UI\UIManager.h">
+      <Filter>Mame\Game\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\UI\UINumber.h">
+      <Filter>Mame\Game\UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -551,6 +569,9 @@
     </Filter>
     <Filter Include="Mame\Scene\DemoScene">
       <UniqueIdentifier>{e766a156-cebe-4d07-858e-f1556546fa5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\UI">
+      <UniqueIdentifier>{97b50e7e-add6-46a7-b563-79e88cc68e70}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

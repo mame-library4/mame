@@ -3,6 +3,9 @@
 #include "../Game/Collision/Collision.h"
 #include "../Other/MathHelper.h"
 
+#include "UI/UINumber.h"
+#include "UI/UIManager.h"
+
 // ----- ‰ŠúÝ’è -----
 void PlayerManager::Initialize()
 {
@@ -129,6 +132,12 @@ void PlayerManager::CollisionPlayerVsEnemy()
 
                         // UŒ‚“–‚½‚Á‚½
                         GetPlayer()->SetIsAbleAttack(false);
+
+                        
+                        //UIManager::Instance().Register(new UI(L"./Resources/Image/Number/numbers.png"));
+                        //UIManager::Instance().Register(new UINumber(64, Sprite::ConvertToScreenPos(enemyData.GetPosition())));
+                        UINumber* ui = new UINumber(64, Sprite::ConvertToScreenPos(enemyData.GetPosition()));
+
                         return;
                     }
                 }

@@ -180,7 +180,6 @@ void GameScene::ForwardRender()
 void GameScene::UserInterfaceRender()
 {
     Graphics::Instance().GetShader()->SetBlendState(Shader::BLEND_STATE::ALPHA);
-
 }
 
 void GameScene::Render()
