@@ -397,6 +397,15 @@ namespace PlayerState
         addForceData_.Initialize(0.1f, 0.3f, 0.5f);
         isAnimEnd_ = false;
         isFirstAnimation_ = true;
+
+        DirectX::XMFLOAT3 ownerPos = owner_->GetTransform()->GetPosition();
+        DirectX::XMFLOAT3 dragonPos = EnemyManager::Instance().GetEnemy(0)->GetTransform()->GetPosition();
+        ownerPos.y = 0;
+        dragonPos.y = 0;
+        addForceDirection_ = XMFloat3Normalize(ownerPos - dragonPos);
+
+        // 回転
+        Turn();
     }
 
     // ----- 更新 -----
@@ -408,18 +417,19 @@ namespace PlayerState
         // 移動値
         if (addForceData_.Update(owner_->GetAnimationSeconds()))
         {
-            DirectX::XMFLOAT3 direction = owner_->GetTransform()->CalcForward() * -1.0f;
-            owner_->AddForce(direction, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+            owner_->AddForce(addForceDirection_, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
         }
 
         // アニメーション終了
-        if (owner_->IsPlayAnimation() == false && isAnimEnd_ == false)
+        if (owner_->GetAnimationSeconds() > 1.0f && isAnimEnd_ == false)
         {
             owner_->PlayBlendAnimation(Player::Animation::GetUp, false);
+            owner_->SetTransitionTime(0.2f);
             isAnimEnd_ = true;
             isFirstAnimation_ = false;
         }
-        else if(owner_->IsPlayAnimation() == false)
+        //else if(owner_->IsPlayAnimation() == false)
+        else if(owner_->GetAnimationSeconds() > 1.8f)
         {
             owner_->ChangeState(Player::STATE::Idle);
             return;
@@ -440,12 +450,7 @@ namespace PlayerState
         // 一つ目のアニメーション ( 吹き飛ばされ )
         if (isFirstAnimation_)
         {
-
-            if (animationSeconds > 1.2f)
-            {
-                owner_->SetAnimationSpeed(2.0f);
-            }
-            else if (animationSeconds > 1.0f)
+            if (animationSeconds > 1.0f)
             {
                 owner_->SetAnimationSpeed(1.0f);
             }
@@ -453,8 +458,25 @@ namespace PlayerState
         // 二つ目のアニメーション ( 起き上がり )
         else
         {
-
+            if (animationSeconds > 1.0f)
+            {
+                owner_->SetAnimationSpeed(1.5f);
+            }
         }
+    }
+
+    // ----- 回転処理 -----
+    void DamageState::Turn()
+    {
+        DirectX::XMFLOAT2 ownerFront = { owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z };
+        ownerFront = XMFloat2Normalize(ownerFront);
+        DirectX::XMFLOAT2 addForceDirection = { addForceDirection_.x, addForceDirection_.z };
+        addForceDirection = XMFloat2Normalize(addForceDirection * -1.0f);
+        
+        float cross = XMFloat2Cross(addForceDirection, ownerFront);
+        float dot = XMFloat2Dot(addForceDirection, ownerFront) - 1.0f;
+        if (cross > 0) owner_->GetTransform()->AddRotationY(dot);
+        else owner_->GetTransform()->AddRotationY(-dot);
     }
 }
 

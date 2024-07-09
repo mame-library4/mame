@@ -705,29 +705,46 @@ namespace ActionDragon
 
             if (owner_->IsPlayAnimation() == false)
             {
-                owner_->PlayAnimation(Enemy::DragonAnimation::AttackTurn1, false);
-                SetState(STATE::Attack1);
+                owner_->PlayAnimation(Enemy::DragonAnimation::AttackTurn0, false);
+                SetState(STATE::Attack);
+
+                isAttackActive_ = false;
             }
 
             break;
-        case STATE::Attack0:// UŒ‚
+        case STATE::Attack:// UŒ‚
 
-            if (owner_->IsPlayAnimation() == false)
+            if (owner_->GetAnimationSeconds() > 2.2)
             {
-
-                owner_->PlayAnimation(Enemy::DragonAnimation::AttackTurn1, false);
-                SetState(STATE::Attack1);
-            }
-
-            break;
-        case STATE::Attack1:
-
-
-            if (owner_->IsPlayAnimation() == false)
-            {
-                owner_->GetTransform()->AddRotationY(DirectX::XMConvertToRadians(180));
+                if(isAttackActive_) owner_->SetTurnAttackActiveFlag(false);
                 
+                isAttackActive_ = false;
+            }
+            else if (owner_->GetAnimationSeconds() > 1.2f)
+            {
+                if(isAttackActive_ == false) owner_->SetTurnAttackActiveFlag();
 
+                isAttackActive_ = true;
+            }
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+
+
+            //if (owner_->IsPlayAnimation() == false)
+            //{
+
+            //    owner_->PlayAnimation(Enemy::DragonAnimation::AttackTurnEnd, false);
+            //    SetState(STATE::Recovery);
+            //}
+            break;
+        case STATE::Recovery:// ŒãŒ„
+
+            if (owner_->IsPlayAnimation() == false)
+            {
                 owner_->SetStep(0);
                 return ActionBase::State::Complete;
             }
@@ -735,7 +752,7 @@ namespace ActionDragon
             break;
         }
 
-        return ActionBase::State();
+        return ActionBase::State::Run;
     }
 }
 

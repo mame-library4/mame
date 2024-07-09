@@ -18,6 +18,11 @@ private:
     void RegisterBehaviorNode();    // behavior“o˜^
     void RegisterCollisionData();   // collisionData“o˜^
 
+    // ---------- Collision ----------
+    void UpdateCollisions(const float& elapsedTime) override;
+
+    void SetTurnAttackActiveFlag(const bool& flag = true) override;
+
 private:
     // ----- DebugRenderer•\Ž¦—pƒtƒ‰ƒO -----
     bool isCollisionSphere_ = true;
@@ -26,5 +31,14 @@ private:
 
     //bool isUpdateAnimation_ = true;
     bool isUpdateAnimation_ = false;
+
+private:
+    enum AttackData
+    {
+        TrunAttackStart = 0,
+        TrunAttackEnd   = 7,
+
+
+    };
 };
 

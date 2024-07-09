@@ -109,3 +109,4 @@ const DirectX::XMFLOAT3 Enemy::CalcDirectionToPlayer()
 
     return playerPos - ownerPos;
 }
+

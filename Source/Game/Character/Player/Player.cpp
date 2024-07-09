@@ -321,6 +321,17 @@ void Player::RegisterCollisionData()
         RegisterCollisionDetectionData(collisionDetectionData[i]);
     }
 
+    // くらい判定登録
+    DamageDetectionData damageDetectionData[] =
+    {
+        { "head",       0.2f, {} },
+        { "spine_02",   0.2f, {} },
+        { "pelvis",     0.2f, {} },
+    };
+    for (int i = 0; i < _countof(damageDetectionData); ++i)
+    {
+        RegisterDamageDetectionData(damageDetectionData[i]);
+    }
 
     // 攻撃判定登録
     AttackDetectionData attackDetectionData[] =
@@ -384,6 +395,9 @@ void Player::ChangeState(const STATE& state)
 {
     // 現在ブレンドアニメーション中なのでステート変更を行わない
     if (GetIsBlendAnimation()) return;
+
+    // 現在のステートを記録
+    currentState_ = state;
 
     stateMachine_.get()->ChangeState(static_cast<int>(state));
 }

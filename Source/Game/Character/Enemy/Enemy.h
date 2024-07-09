@@ -173,6 +173,9 @@ public:// --- æ“¾Eİ’è ---
 
     [[nodiscard]] const std::string GetActiveNodeName() const { return (activeNode_ != nullptr) ? activeNode_->GetName() : ""; }
 
+    // ----- UŒ‚”»’è -----
+    virtual void SetTurnAttackActiveFlag(const bool& flag = true) {}
+
 protected:
     std::unique_ptr<BehaviorTree>   behaviorTree_;
     std::unique_ptr<BehaviorData>   behaviorData_;

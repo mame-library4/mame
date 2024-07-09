@@ -38,6 +38,10 @@ void EnemyDragon::Initialize()
     SetHealth(GetMaxHealth());
 
     PlayAnimation(Enemy::DragonAnimation::Idle0, true);
+
+
+
+    //SetTurnAttackActiveFlag(false);
 }
 
 // ----- 終了化 -----
@@ -58,6 +62,7 @@ void EnemyDragon::Update(const float& elapsedTime)
 
     // Collisionデータ更新
     UpdateCollisions(elapsedTime);
+
 
     // ステージの外に出ないようにする
     CollisionCharacterVsStage();
@@ -149,9 +154,10 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Shout", "Roar",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
     behaviorTree_->AddNode("Shout", "BackStepRoar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::BackStepRoarAction(this));
 
-    behaviorTree_->AddNode("Near", "FlyAttack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));
-    behaviorTree_->AddNode("Near", "KnockBack",   2, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::KnockBackAction(this));
-    behaviorTree_->AddNode("Near", "TurnAttack",  2, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
+    behaviorTree_->AddNode("Near", "FlyAttack",   1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));
+    
+    behaviorTree_->AddNode("Near", "TurnAttack",  0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
+    behaviorTree_->AddNode("Near", "KnockBack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::KnockBackAction(this));
     
     behaviorTree_->AddNode("Near", "ComboSlam",   2, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));
 
@@ -301,17 +307,60 @@ void EnemyDragon::RegisterCollisionData()
     // 攻撃判定登録
     AttackDetectionData attackDetectionData[] =
     {
-        {},
-        //{ "Dragon15_head", 1.0f, {} },
-        //
-        //{ "Dragon15_r_hand", 1.0f, {} },
-        //{ "Dragon15_r_forearm", 1.0f, {} },
-        //
-        //{ "Dragon15_l_hand", 1.0f, {} },
-        //{ "Dragon15_l_forearm", 1.0f, {} },
+        // ----- 回転攻撃用 -----
+        { "Dragon15_tail_00", 1.0f, {} }, // 0
+        { "Dragon15_tail_01", 1.0f, {} }, // 
+        { "Dragon15_tail_02", 1.0f, {} }, // 
+        { "Dragon15_tail_03", 1.0f, {} }, // 
+        { "Dragon15_tail_04", 1.0f, {} }, // 
+        { "Dragon15_tail_05", 1.0f, {} }, // 6
+        { "Dragon15_tail_Add0", 1.0f, { 1.0f, 0.0f, 0.0f }, "Dragon15_tail_05"}, // 7
+
+
     };
     for (int i = 0; i < _countof(attackDetectionData); ++i)
     {
-        //RegisterAttackDetectionData(attackDetectionData[i]);
+        RegisterAttackDetectionData(attackDetectionData[i]);
+    }
+}
+
+void EnemyDragon::UpdateCollisions(const float& elapsedTime)
+{
+    // くらい判定更新
+    for (DamageDetectionData& data : damageDetectionData_)
+    {
+        // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
+        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
+
+        data.Update(elapsedTime);
+    }
+    // 攻撃判定更新
+    for (AttackDetectionData& data : attackDetectionData_)
+    {
+        // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
+        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
+    }
+
+    for (int i = AttackData::TrunAttackStart; i < AttackData::TrunAttackEnd; ++i)
+    {
+        AttackDetectionData& data = GetAttackDetectionData(i);
+        DirectX::XMFLOAT3 pos = data.GetPosition();
+        pos.y = 1.0f;
+        data.SetJointPosition(pos);
+    }
+
+    // 押し出し判定更新
+    for (CollisionDetectionData& data : collisionDetectionData_)
+    {
+        // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
+        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
+    }
+}
+
+void EnemyDragon::SetTurnAttackActiveFlag(const bool& flag)
+{
+    for (int i = AttackData::TrunAttackStart; i < AttackData::TrunAttackEnd; ++i)
+    {
+        GetAttackDetectionData(i).SetIsActive(flag);
     }
 }

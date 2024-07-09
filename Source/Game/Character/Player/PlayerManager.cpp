@@ -73,12 +73,8 @@ void PlayerManager::CollisionPlayerVsEnemy()
                 enemyData.GetPosition(), enemyData.GetRadius(),
                 playerData.GetPosition(), playerData.GetRadius()))
             {
-                DirectX::XMFLOAT3 direction = {};
-                direction = playerData.GetPosition() - enemy->GetTransform()->GetPosition();
-                //direction = playerData.GetPosition() - enemyData.GetPosition();
-                GetPlayer()->AddForce(direction, 0.2f);
-
-                GetPlayer()->ChangeState(Player::STATE::Damage);
+                if(GetPlayer()->GetCurrentState() != Player::STATE::Damage)
+                    GetPlayer()->ChangeState(Player::STATE::Damage);
             }
         }
     }

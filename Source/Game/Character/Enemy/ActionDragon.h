@@ -233,14 +233,16 @@ namespace ActionDragon
     private:
         enum class STATE
         {
-            Initialize,
-            PreAction,
-            Attack0,
-            Attack1,
+            Initialize, // 初期化
+            PreAction,  // 予備動作
+            Attack,     // 攻撃
+            Recovery,   // 後隙
         };
 
         void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
 
+    private:
+        bool isAttackActive_ = false;
     };
 
     // タックル行動

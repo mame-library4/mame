@@ -108,12 +108,15 @@ namespace PlayerState
 
     private:
         void SetAnimationSpeed();
+        void Turn();
 
     private:
         AddForceData addForceData_;
 
         bool isFirstAnimation_ = false; // 最初のアニメーションか
         bool isAnimEnd_ = false;
+
+        DirectX::XMFLOAT3 addForceDirection_ = {}; // 吹っ飛び方向
     };
 
     // ----- 死亡 -----
