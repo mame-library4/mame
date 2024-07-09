@@ -127,16 +127,13 @@ void PlayerManager::CollisionPlayerVsEnemy()
                     if (enemyData.GetIsHit() == false)
                     {
                         enemy->GetDamageDetectionData(enemyDataIndex).SetIsHit(true);
-                        enemy->GetDamageDetectionData(enemyDataIndex).SetHitTimer(0.5f);
+                        enemy->GetDamageDetectionData(enemyDataIndex).SetHitTimer(0.01f);
                         enemy->AddDamage(enemyData.GetDamage());
 
                         // UŒ‚“–‚½‚Á‚½
                         GetPlayer()->SetIsAbleAttack(false);
 
-                        
-                        //UIManager::Instance().Register(new UI(L"./Resources/Image/Number/numbers.png"));
-                        //UIManager::Instance().Register(new UINumber(64, Sprite::ConvertToScreenPos(enemyData.GetPosition())));
-                        UINumber* ui = new UINumber(64, Sprite::ConvertToScreenPos(enemyData.GetPosition()));
+                        UINumber* ui = new UINumber(enemyData.GetDamage(), enemyData.GetPosition());
 
                         return;
                     }

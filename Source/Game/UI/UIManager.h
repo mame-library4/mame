@@ -16,7 +16,7 @@ public:
         return instance;
     }
 
-    void Update();
+    void Update(const float& elapsedTime);
     void Render();
     void DrawDebug();
 

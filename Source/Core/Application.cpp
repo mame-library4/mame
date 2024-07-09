@@ -89,7 +89,7 @@ void Application::Update(const float& elapsedTime)
     // エフェクト更新
     EffectManager::Instance().Update(elapsedTime);
 
-    UIManager::Instance().Update();
+    UIManager::Instance().Update(elapsedTime);
 }
 
 // ----- 描画 -----

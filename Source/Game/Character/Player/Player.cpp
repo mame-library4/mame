@@ -328,7 +328,7 @@ void Player::RegisterCollisionData()
         { "index_01_r_add0", 0.2f, { 0, 0, 0 },             "index_01_r" },
         { "index_01_r_add1", 0.2f, { 0, -7.0f, 50.0f },     "index_01_r" },
         { "index_01_r_add2", 0.2f, { 0, -15.0f, 100.0f },   "index_01_r" },
-        { "index_01_r_add3", 0.2f, { 0, -23.0f, 150.0f },   "index_01_r" },
+        //{ "index_01_r_add3", 0.2f, { 0, -23.0f, 150.0f },   "index_01_r" },
     };
     for (int i = 0; i < _countof(attackDetectionData); ++i)
     {

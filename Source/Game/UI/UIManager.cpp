@@ -1,7 +1,8 @@
 #include "UIManager.h"
 #include "Common.h"
 
-void UIManager::Update()
+// ----- XV -----
+void UIManager::Update(const float& elapsedTime)
 {
     // ¶¬
     for (UI* ui : generates_)
@@ -9,6 +10,11 @@ void UIManager::Update()
         userInterface_.emplace_back(ui);
     }
     generates_.clear();
+
+    for (UI*& ui : userInterface_)
+    {
+        ui->Update(elapsedTime);
+    }
 
     // ”jŠü
     for (UI* ui : removes_)

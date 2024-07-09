@@ -8,7 +8,7 @@ public:
     UI(const wchar_t* filename = nullptr);
     virtual ~UI() {}
 
-    virtual void Update() {}
+    virtual void Update(const float& elapsedTime) {}
     virtual void Render();
     virtual void DrawDebug();
 
