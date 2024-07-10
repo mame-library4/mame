@@ -36,7 +36,7 @@ private:
     enum AttackData
     {
         TrunAttackStart = 0,
-        TrunAttackEnd   = 7,
+        TrunAttackEnd   = 6,
 
 
     };

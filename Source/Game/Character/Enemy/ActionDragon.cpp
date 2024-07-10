@@ -708,11 +708,19 @@ namespace ActionDragon
                 owner_->PlayAnimation(Enemy::DragonAnimation::AttackTurn0, false);
                 SetState(STATE::Attack);
 
+                // •Ï”‰Šú‰»
                 isAttackActive_ = false;
+                addForceData_.Initialize(1.5f, 0.3f, 1.0f);
             }
 
             break;
         case STATE::Attack:// UŒ‚
+
+            // ˆÚ“®ˆ—
+            if (addForceData_.Update(owner_->GetAnimationSeconds()))
+            {
+                owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+            }
 
             if (owner_->GetAnimationSeconds() > 2.2)
             {

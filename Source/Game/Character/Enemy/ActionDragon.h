@@ -242,6 +242,7 @@ namespace ActionDragon
         void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
 
     private:
+        AddForceData addForceData_;
         bool isAttackActive_ = false;
     };
 

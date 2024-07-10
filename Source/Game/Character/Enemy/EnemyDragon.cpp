@@ -314,7 +314,7 @@ void EnemyDragon::RegisterCollisionData()
         { "Dragon15_tail_03", 1.0f, {} }, // 
         { "Dragon15_tail_04", 1.0f, {} }, // 
         { "Dragon15_tail_05", 1.0f, {} }, // 6
-        { "Dragon15_tail_Add0", 1.0f, { 1.0f, 0.0f, 0.0f }, "Dragon15_tail_05"}, // 7
+        //{ "Dragon15_tail_Add0", 1.0f, { 1.0f, 0.0f, 0.0f }, "Dragon15_tail_05"}, // 7
 
 
     };
