@@ -40,8 +40,9 @@ void EnemyDragon::Initialize()
     PlayAnimation(Enemy::DragonAnimation::Idle0, true);
 
 
-
-    //SetTurnAttackActiveFlag(false);
+    // çUåÇîªíË ñ≥å¯âª
+    SetTurnAttackActiveFlag(false);
+    SetTackleAttackActiveFlag(false);
 }
 
 // ----- èIóπâª -----
@@ -308,14 +309,19 @@ void EnemyDragon::RegisterCollisionData()
     AttackDetectionData attackDetectionData[] =
     {
         // ----- âÒì]çUåÇóp -----
-        { "Dragon15_tail_00", 1.0f, {} }, // 0
-        { "Dragon15_tail_01", 1.0f, {} }, // 
-        { "Dragon15_tail_02", 1.0f, {} }, // 
-        { "Dragon15_tail_03", 1.0f, {} }, // 
-        { "Dragon15_tail_04", 1.0f, {} }, // 
-        { "Dragon15_tail_05", 1.0f, {} }, // 6
-        //{ "Dragon15_tail_Add0", 1.0f, { 1.0f, 0.0f, 0.0f }, "Dragon15_tail_05"}, // 7
+        { "TurnAttack_0", 1.0f, {}, "Dragon15_tail_00" }, // 0
+        { "TurnAttack_1", 1.0f, {}, "Dragon15_tail_01" }, // 
+        { "TurnAttack_2", 1.0f, {}, "Dragon15_tail_02" }, // 
+        { "TurnAttack_3", 1.0f, {}, "Dragon15_tail_03" }, // 
+        { "TurnAttack_4", 1.0f, {}, "Dragon15_tail_04" }, // 
+        { "TurnAttack_5", 1.0f, {}, "Dragon15_tail_05" }, // 5
 
+        // ----- ìÀêiçUåÇóp -----
+        { "Tackle_0", 1.0f, {}, "Dragon15_neck_3" },    // 6
+        { "Tackle_1", 1.0f, {}, "Dragon15_neck_1" },    // 
+        { "Tackle_2", 1.0f, {}, "Dragon15_spine2" },    // 
+        { "Tackle_3", 1.0f, {}, "Dragon15_spine0" },    // 
+        { "Tackle_4", 1.0f, {}, "Dragon15_tail_00" },   // 10
 
     };
     for (int i = 0; i < _countof(attackDetectionData); ++i)
@@ -341,7 +347,8 @@ void EnemyDragon::UpdateCollisions(const float& elapsedTime)
         data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
     }
 
-    for (int i = AttackData::TrunAttackStart; i < AttackData::TrunAttackEnd; ++i)
+    for (int i = AttackData::TrunAttackStart; i <= AttackData::TackleEnd; ++i)
+    //for (int i = AttackData::TrunAttackStart; i < AttackData::TrunAttackEnd; ++i)
     {
         AttackDetectionData& data = GetAttackDetectionData(i);
         DirectX::XMFLOAT3 pos = data.GetPosition();
@@ -359,7 +366,15 @@ void EnemyDragon::UpdateCollisions(const float& elapsedTime)
 
 void EnemyDragon::SetTurnAttackActiveFlag(const bool& flag)
 {
-    for (int i = AttackData::TrunAttackStart; i < AttackData::TrunAttackEnd; ++i)
+    for (int i = AttackData::TrunAttackStart; i <= AttackData::TrunAttackEnd; ++i)
+    {
+        GetAttackDetectionData(i).SetIsActive(flag);
+    }
+}
+
+void EnemyDragon::SetTackleAttackActiveFlag(const bool& flag)
+{
+    for (int i = AttackData::TackleStart; i <= AttackData::TackleEnd; ++i)
     {
         GetAttackDetectionData(i).SetIsActive(flag);
     }

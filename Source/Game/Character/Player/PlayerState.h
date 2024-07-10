@@ -79,6 +79,9 @@ namespace PlayerState
 
     private:
         void SetAnimation();
+
+    private:
+        float stateChangeTimer_ = 0.0f;
     };
 
     class FlinchState : public State<Player>
@@ -114,7 +117,6 @@ namespace PlayerState
         AddForceData addForceData_;
 
         bool isFirstAnimation_ = false; // 最初のアニメーションか
-        bool isAnimEnd_ = false;
 
         DirectX::XMFLOAT3 addForceDirection_ = {}; // 吹っ飛び方向
     };

@@ -48,12 +48,13 @@ const bool RoarJudgment::Judgment()
 // ----- ‹©‚Ô”»’è -----
 const bool ShoutJudgment::Judgment()
 {
+    return false;
     return owner_->GetIsRoar() == false;
 }
 
 const bool NearJudgment::Judgment()
 {
-    return true;
     return false;
+    return true;
 
 }

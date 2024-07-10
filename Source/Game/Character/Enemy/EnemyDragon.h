@@ -22,6 +22,7 @@ private:
     void UpdateCollisions(const float& elapsedTime) override;
 
     void SetTurnAttackActiveFlag(const bool& flag = true) override;
+    void SetTackleAttackActiveFlag(const bool& flag = true) override;
 
 private:
     // ----- DebugRenderer表示用フラグ -----
@@ -29,15 +30,16 @@ private:
     bool isAttackSphere_    = true;
     bool isDamageSphere_    = true;
 
-    //bool isUpdateAnimation_ = true;
-    bool isUpdateAnimation_ = false;
+    bool isUpdateAnimation_ = true;
+    //bool isUpdateAnimation_ = false;
 
 private:
     enum AttackData
     {
         TrunAttackStart = 0,
-        TrunAttackEnd   = 6,
-
+        TrunAttackEnd   = 5,
+        TackleStart     = 6,
+        TackleEnd       = 10,
 
     };
 };

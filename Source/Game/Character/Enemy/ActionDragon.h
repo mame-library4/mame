@@ -63,6 +63,9 @@ namespace ActionDragon
         const ActionBase::State Run(const float& elapsedTime) override;
 
     private:
+        void SetAnimation();
+
+    private:
         float timer_ = 0.0f;
     };
 
@@ -236,7 +239,6 @@ namespace ActionDragon
             Initialize, // ‰Šú‰»
             PreAction,  // —\”õ“®ì
             Attack,     // UŒ‚
-            Recovery,   // ŒãŒ„
         };
 
         void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
@@ -259,8 +261,6 @@ namespace ActionDragon
             Initialize, // ‰Šú‰»
             PreAction,  // —\”õ“®ì
             Tackle,     // ƒ^ƒbƒNƒ‹
-
-            Loop,
             Recovery,   // ŒãŒ„
         };
 
@@ -269,6 +269,8 @@ namespace ActionDragon
     private:
         AddForceData addForceData_;
         float easingTimer_ = 0.0f;
+
+        bool isAttackActive_ = false;
     };
 
     // ã¸UŒ‚s“®

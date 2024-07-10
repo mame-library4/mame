@@ -185,7 +185,7 @@ namespace PlayerState
 
         const float aLx = fabsf(Input::Instance().GetGamePad().GetAxisLX());
         const float aLy = fabsf(Input::Instance().GetGamePad().GetAxisLY());
-        if (aLx == 0.0f && aLy == 0.0f)
+        if (aLx == 0.0f && aLy == 0.0f && owner_->GetIsBlendAnimation() == false)
         {
             owner_->ChangeState(Player::STATE::Idle);
             return;
@@ -232,6 +232,10 @@ namespace PlayerState
         {
             owner_->SetTransitionTime(0.5f);
         }
+        else if (animationIndex == Player::Animation::Run)
+        {
+            owner_->SetTransitionTime(0.2f);
+        }
         else
         {
             owner_->SetTransitionTime(0.15f);
@@ -254,6 +258,9 @@ namespace PlayerState
 
         // 最大速度を設定
         owner_->SetMaxSpeed(5.0f);
+
+        // 変数初期化
+        stateChangeTimer_ = 0.0f;
     }
 
     // ----- 更新 -----
@@ -278,6 +285,9 @@ namespace PlayerState
         // 旋回
         owner_->Turn(elapsedTime);
 
+        // 制御用
+        if (owner_->GetIsBlendAnimation() == false) stateChangeTimer_ += elapsedTime;
+
         const float aLx = fabsf(Input::Instance().GetGamePad().GetAxisLX());
         const float aLy = fabsf(Input::Instance().GetGamePad().GetAxisLY());
         if (aLx == 0.0f && aLy == 0.0f)
@@ -286,7 +296,8 @@ namespace PlayerState
             return;
         }
 
-        if ((Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER) == false)
+        if ((Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER) == false &&
+            stateChangeTimer_ > 0.1f)
         {
             owner_->ChangeState(Player::STATE::Walk);
             return;
@@ -395,7 +406,6 @@ namespace PlayerState
 
         // 変数初期化
         addForceData_.Initialize(0.1f, 0.3f, 0.5f);
-        isAnimEnd_ = false;
         isFirstAnimation_ = true;
 
         DirectX::XMFLOAT3 ownerPos = owner_->GetTransform()->GetPosition();
@@ -420,21 +430,45 @@ namespace PlayerState
             owner_->AddForce(addForceDirection_, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
         }
 
+        // 吹き飛ばされアニメーション処理
+        if (owner_->GetAnimationSeconds() > 1.2f && isFirstAnimation_ == true)
+        {// 入力があれば倒れてる状態を終了する
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (fabsf(aLx) != 0.0f || fabsf(aLy) != 0.0f)
+            {
+                owner_->PlayBlendAnimation(Player::Animation::GetUp, false);
+                owner_->SetTransitionTime(0.1f);
+                isFirstAnimation_ = false;
+            }
+        }
+
         // アニメーション終了
-        if (owner_->GetAnimationSeconds() > 1.0f && isAnimEnd_ == false)
+        if(owner_->IsPlayAnimation() == false && isFirstAnimation_ == true)
         {
             owner_->PlayBlendAnimation(Player::Animation::GetUp, false);
-            owner_->SetTransitionTime(0.2f);
-            isAnimEnd_ = true;
+            owner_->SetTransitionTime(0.1f);
             isFirstAnimation_ = false;
         }
         //else if(owner_->IsPlayAnimation() == false)
-        else if(owner_->GetAnimationSeconds() > 1.8f)
+        else if(owner_->GetAnimationSeconds() > 1.8f && isFirstAnimation_ == false)
         {
             owner_->ChangeState(Player::STATE::Idle);
             return;
         }
         
+        if (isFirstAnimation_ == false)
+        {
+            if (owner_->GetAnimationSeconds() > 1.25f)
+            {
+                if (owner_->GetAvoidanceKeyDown())
+                {
+                    owner_->ChangeState(Player::STATE::Avoidance);
+                    return;
+                }
+            }
+        }
+
     }
 
     // ----- 終了化 -----
@@ -450,7 +484,12 @@ namespace PlayerState
         // 一つ目のアニメーション ( 吹き飛ばされ )
         if (isFirstAnimation_)
         {
-            if (animationSeconds > 1.0f)
+            if (animationSeconds > 1.2f)
+            {// 起き上がるまでの時間を延ばす
+                owner_->SetAnimationSpeed(0.4f);
+                //owner_->SetAnimationSpeed(0.1f);
+            }
+            else if (animationSeconds > 1.0f)
             {
                 owner_->SetAnimationSpeed(1.0f);
             }
@@ -881,6 +920,11 @@ namespace PlayerState
         if (animationIndex == Player::Animation::ComboAttack0_0)
         {
             owner_->SetTransitionTime(0.1f);
+        }
+        else if (animationIndex == Player::Animation::GetUp)
+        {
+            //owner_->SetTransitionTime(0.1f);
+            owner_->SetTransitionTime(0.2f);
         }
         else
         {

@@ -18,6 +18,8 @@ public:
     void InitializeStones();
     void UpdateStones(const float& elapsedTime);
 
+    void SetTurnAttackActiveFlag(const bool& flag = true) override {}
+    void SetTackleAttackActiveFlag(const bool& flag = true) override {}
 
 private:
     void RegisterCollisionData();   // collisionData“o˜^

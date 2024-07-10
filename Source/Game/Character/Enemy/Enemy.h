@@ -175,6 +175,7 @@ public:// --- æ“¾Eİ’è ---
 
     // ----- UŒ‚”»’è -----
     virtual void SetTurnAttackActiveFlag(const bool& flag = true) {}
+    virtual void SetTackleAttackActiveFlag(const bool& flag = true) {}
 
 protected:
     std::unique_ptr<BehaviorTree>   behaviorTree_;

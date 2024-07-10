@@ -109,8 +109,7 @@ namespace ActionDragon
         {
         case 0:// 初期化
             // アニメーション設定
-            owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, true);
-            //owner_->SetTransitionTime(0.1f);
+            SetAnimation();
 
             timer_ = 0.0f;
 
@@ -129,6 +128,25 @@ namespace ActionDragon
         }
 
         return ActionBase::State();
+    }
+
+    // ----- アニメーション設定 -----
+    void NonBattleIdleAction::SetAnimation()
+    {
+        const Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(owner_->GetAnimationIndex());
+
+        if (animationIndex == Enemy::DragonAnimation::AttackTurn0)
+        {
+            //owner_->SetTransitionTime(0.3f);
+            owner_->SetTransitionTime(0.15f);
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, true);
+            //owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, true, 1.0f, 0.45f);
+            //owner_->PlayAnimation(Enemy::DragonAnimation::Idle0, true);
+        }
+        else
+        {
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, true);
+        }
     }
 }
 
@@ -710,7 +728,8 @@ namespace ActionDragon
 
                 // 変数初期化
                 isAttackActive_ = false;
-                addForceData_.Initialize(1.5f, 0.3f, 1.0f);
+                addForceData_.Initialize(1.5f, 0.3f, 0.5f);
+                //addForceData_.Initialize(1.5f, 0.3f, 1.0f);
             }
 
             break;
@@ -735,28 +754,12 @@ namespace ActionDragon
                 isAttackActive_ = true;
             }
 
-            if (owner_->IsPlayAnimation() == false)
-            {
-                owner_->SetStep(0);
-                return ActionBase::State::Complete;
-            }
-
-
+            if (owner_->GetAnimationSeconds() > 3.3f)
             //if (owner_->IsPlayAnimation() == false)
-            //{
-
-            //    owner_->PlayAnimation(Enemy::DragonAnimation::AttackTurnEnd, false);
-            //    SetState(STATE::Recovery);
-            //}
-            break;
-        case STATE::Recovery:// 後隙
-
-            if (owner_->IsPlayAnimation() == false)
             {
                 owner_->SetStep(0);
                 return ActionBase::State::Complete;
             }
-
             break;
         }
 
@@ -780,6 +783,9 @@ namespace ActionDragon
 
             // ステート変更
             SetState(STATE::PreAction);
+
+            // 変数初期化
+            isAttackActive_ = false;
 
             break;
         case STATE::PreAction:// 予備動作
@@ -816,6 +822,36 @@ namespace ActionDragon
                 owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
             }
 
+            // 攻撃判定有効化
+            if (owner_->GetAnimationSeconds() > 0.2f)
+            {
+                if (isAttackActive_ == false)
+                {
+                    owner_->SetTackleAttackActiveFlag();
+                    isAttackActive_ = true;
+                }
+            }
+
+            {
+                const float maxAngle = -10.0f;
+                if (owner_->GetAnimationSeconds() > 0.65f)
+                {
+                    const float totalFrame = 0.1f;
+                    const float angle = Easing::InSine(easingTimer_, totalFrame, maxAngle, 0.0f);
+                    easingTimer_ -= elapsedTime;
+                    easingTimer_ = std::max(easingTimer_, 0.0f);
+                    owner_->GetTransform()->SetRotationX(DirectX::XMConvertToRadians(angle));
+                }
+                else if (owner_->GetAnimationSeconds() > 0.45f)
+                {
+                    const float totalFrame = 0.1f;
+                    const float angle = Easing::InSine(easingTimer_, totalFrame, maxAngle, 0.0f);
+                    easingTimer_ += elapsedTime;
+                    easingTimer_ = std::min(easingTimer_, totalFrame);
+                    owner_->GetTransform()->SetRotationX(DirectX::XMConvertToRadians(angle));
+                }
+            }
+
             // アニメーション再生終了
             if (owner_->IsPlayAnimation() == false)
             {
@@ -829,18 +865,17 @@ namespace ActionDragon
             }
 
             break;
-        case STATE::Loop:
-
-            if (owner_->IsPlayAnimation() == false)
+        case STATE::Recovery:// 後隙 ( 途中まで攻撃判定ある )
+            
+            if (owner_->GetAnimationSeconds() > 0.6f)
             {
-                owner_->PlayAnimation(Enemy::DragonAnimation::AttackTackle2, false);
-                SetState(STATE::Tackle);
-                return ActionBase::State::Run;
+                if (isAttackActive_)
+                {
+                    owner_->SetTackleAttackActiveFlag(false);
+                    isAttackActive_ = false;
+                }
             }
 
-            break;
-        case STATE::Recovery:// 後隙
-            
             if (addForceData_.Update(owner_->GetAnimationSeconds()))
             {
                 owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
