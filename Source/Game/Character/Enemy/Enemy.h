@@ -177,6 +177,9 @@ public:// --- 取得・設定 ---
     virtual void SetTurnAttackActiveFlag(const bool& flag = true) {}
     virtual void SetTackleAttackActiveFlag(const bool& flag = true) {}
 
+    [[nodiscard]] const bool GetIsStageCollisionJudgement() const { return isStageCollisionJudgement_; }
+    void SetIsStageCollisionJudgement(const bool& flag) { isStageCollisionJudgement_ = flag; }
+
 protected:
     std::unique_ptr<BehaviorTree>   behaviorTree_;
     std::unique_ptr<BehaviorData>   behaviorData_;
@@ -185,7 +188,6 @@ protected:
     int     step_       = 0;        // 行動ステップ
     bool    isFlinch_   = false;    // ひるみフラグ
 
-    bool isRoar_ = false; // 咆哮したか
 
     bool useRootMotion_ = false; // ルートモーション使用するかフラグ
 
@@ -200,5 +202,10 @@ protected:
     int     attackComboCount_ = 0; // 連続攻撃回数
 
     float walkSpeed_ = 0.0f; // 歩行速度
+
+    // ---------- 状況管理フラグ ----------
+    bool isRoar_        = false; // 咆哮したか
+
+    bool isStageCollisionJudgement_ = false; // ステージとの判定をするか
 };
 

@@ -2,6 +2,7 @@
 #include "PostProcess/PostProcess.h"
 #include "Easing.h"
 #include "Input.h"
+#include "Camera.h"
 #include "../Player/PlayerManager.h"
 
 // ----- GamePadVibration -----
@@ -38,8 +39,8 @@ namespace ActionDragon
     void AddForceData::Initialize(const float& addForceFrame, const float& force, const float& decelerationForce)
     {
         addForceFrame_ = addForceFrame;
-        force_ = force;
-        decelerationForce_ = decelerationForce;
+        force_ = force * 60.0f;
+        decelerationForce_ = decelerationForce * 60.0f;
         isAddforce_ = false;
     }
 
@@ -142,6 +143,11 @@ namespace ActionDragon
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, true);
             //owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, true, 1.0f, 0.45f);
             //owner_->PlayAnimation(Enemy::DragonAnimation::Idle0, true);
+        }
+        else if (animationIndex == Enemy::DragonAnimation::AttackTackle3)
+        {
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, true);
+            owner_->SetTransitionTime(0.15f);
         }
         else
         {
@@ -866,7 +872,7 @@ namespace ActionDragon
 
             break;
         case STATE::Recovery:// 後隙 ( 途中まで攻撃判定ある )
-            
+        {
             if (owner_->GetAnimationSeconds() > 0.6f)
             {
                 if (isAttackActive_)
@@ -881,12 +887,14 @@ namespace ActionDragon
                 owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
             }
 
-            if (owner_->IsPlayAnimation() == false)
+            // アニメーション終了
+            const float animationEndFrame = 1.9f;
+            if (owner_->GetAnimationSeconds() > animationEndFrame)
             {
                 owner_->SetStep(0);
                 return ActionBase::State::Complete;
             }
-
+        }
             break;
         }
 
@@ -894,11 +902,114 @@ namespace ActionDragon
     }
 }
 
+// ----- 上昇攻撃 -----
 namespace ActionDragon
 {
     const ActionBase::State RiseAttackAction::Run(const float& elapsedTime)
     {
-        return ActionBase::State();
+        switch (owner_->GetStep())
+        {
+        case 0:// 初期化
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackRise, false);
+
+
+
+            // 変数初期化
+            addForceData_.Initialize(1.9f, 1.5f, 2.0f);
+            riseTimer_ = 0.0f;
+            isCameraSet_ = false;
+            isCameraReset_ = false;
+
+            owner_->GetTransform()->SetPositionY(0);
+
+            owner_->SetStep(1);
+
+            break;
+        case 1:// 予備動作
+
+            if(owner_->GetAnimationSeconds() > 1.85f && isCameraSet_ == false)
+            {
+                // カメラ設定
+                Camera::Instance().SetRiseAttackState(0);
+                isCameraSet_ = true;
+            }
+
+            if (addForceData_.Update(owner_->GetAnimationSeconds()))
+            {
+                owner_->AddForce({ 0,1,0 }, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+
+
+            }
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackRiseLoop, true);
+                owner_->SetStep(2);
+            }
+
+            break;
+        case 2:// 上昇
+        {
+            if (riseTimer_ < 1.0f)
+            {
+                owner_->SetIsStageCollisionJudgement(true);
+                DirectX::XMFLOAT3 playerPos = PlayerManager::Instance().GetTransform()->GetPosition();
+                owner_->GetTransform()->SetPositionX(playerPos.x);
+                owner_->GetTransform()->SetPositionZ(playerPos.z);
+            }
+
+            riseTimer_ += elapsedTime;
+            if (riseTimer_ > 2.0f)
+            {
+                owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackRiseEnd, false);
+                owner_->SetStep(3);
+                owner_->SetIsStageCollisionJudgement(false);
+            }
+        }
+            break;
+        case 3:
+        {
+
+            // アニメーション速度設定
+            /*if (owner_->GetAnimationSeconds() < 1.0f)
+            {
+                owner_->SetAnimationSpeed(0.6f);
+
+            }
+            else if (owner_->GetAnimationSeconds() < 1.6f)            
+            {
+                owner_->SetAnimationSpeed(0.8f);
+            }            
+            else
+            {
+                owner_->SetAnimationSpeed(1.0f);
+            }*/
+
+            float ownerPosY = owner_->GetTransform()->GetPositionY();
+            const float moveSpeed = 100.0f * elapsedTime;
+            ownerPosY -= moveSpeed;
+            ownerPosY = std::max(ownerPosY, 0.0f);
+            owner_->GetTransform()->SetPositionY(ownerPosY);
+
+            if (owner_->GetAnimationSeconds() > 0.6f && isCameraReset_ == false)
+            {
+                // カメラ設定
+                Camera::Instance().SetRiseAttackState(-1);
+                isCameraReset_ = true;
+            }
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+
+
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+        }
+            break;
+        }
+
+        return ActionBase::State::Run;
     }
 }
 

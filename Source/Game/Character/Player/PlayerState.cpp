@@ -13,8 +13,8 @@ namespace PlayerState
     void AddForceData::Initialize(const float& addForceFrame, const float& force, const float& decelerationForce)
     {
         addForceFrame_ = addForceFrame;
-        force_ = force;
-        decelerationForce_ = decelerationForce;
+        force_ = force * 60.0f;
+        decelerationForce_ = decelerationForce * 60.0f;
         isAddforce_ = false;
     }
 

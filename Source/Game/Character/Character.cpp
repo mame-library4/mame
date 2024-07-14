@@ -144,12 +144,12 @@ void Character::UpdateForce(const float& elapsedTime)
     // パワーが無いときは処理しない
     if (blowPower_ <= 0) return;
 
-    blowPower_ -= elapsedTime * decelerationForce_;
+    blowPower_ -= decelerationForce_ * elapsedTime;
     blowPower_ = std::max(blowPower_, 0.0f); // 0.0f以下にならないように修正
 
     // 吹っ飛び方向にどれだけ、吹っ飛ばすかを計算する
     DirectX::XMFLOAT3 direction = {};
-    direction = XMFloat3Normalize(blowDirection_) * blowPower_;
+    direction = XMFloat3Normalize(blowDirection_) * blowPower_ * elapsedTime;
 
     // 吹っ飛ばす。
     GetTransform()->AddPosition(direction);

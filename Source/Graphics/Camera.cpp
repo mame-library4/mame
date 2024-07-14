@@ -6,6 +6,9 @@
 #include "../Other/MathHelper.h"
 #include "../Other/Easing.h"
 
+#include "SceneManager.h"
+#include "Character/Enemy/EnemyManager.h"
+
 // ----- ‰Šú‰» -----
 void Camera::Initialize()
 {
@@ -24,14 +27,17 @@ void Camera::Initialize()
 // ----- XV -----
 void Camera::Update(const float& elapsedTime)
 {
-    if (GetAsyncKeyState('H') & 1) 
-        ScreenVibrate(0.1f, 2.0f);
+    if (SceneManager::Instance().GetCurrentSceneName() == SceneManager::SceneName::Title) return;
+
+    // ƒhƒ‰ƒSƒ“‚Ìã¸UŒ‚‚ÌƒJƒƒ‰XV
+    if (UpdateRiseAttackCamera(elapsedTime)) return;
 
     // --- ‰æ–ÊU“® ---
     ScreenVibrationUpdate(elapsedTime);
 
     // --- ƒJƒƒ‰‰ñ“]ˆ— ---
     Rotate(elapsedTime);
+
 }
 
 void Camera::SetPerspectiveFov()
@@ -179,4 +185,99 @@ const DirectX::XMFLOAT3 Camera::CalcRight()
     DirectX::XMFLOAT3 forward = CalcForward();
     DirectX::XMFLOAT3 up = { 0, 1, 0 };
     return XMFloat3Cross(up, forward);
+}
+
+// ----- ƒhƒ‰ƒSƒ“ã¸UŒ‚Žž‚ÌƒJƒƒ‰ -----
+const bool Camera::UpdateRiseAttackCamera(const float& elapsedTime)
+{
+    const float maxLength = 10.0f;
+    const float totalFrame = 0.4f;
+    const float totalFrame1= 0.7f;
+    constexpr float maxRotate = DirectX::XMConvertToRadians(-10.0f);
+    //constexpr float maxRotate = DirectX::XMConvertToRadians(-3.0f);
+    //constexpr float maxRotate = DirectX::XMConvertToRadians(10.0f);
+    float rotateX = 0.0f;
+    bool returnFlag = false;
+
+    const float maxOffsetX = 4.0f;
+    const float minOffsetX = 2.5f;
+
+    switch (riseAttackState_)
+    {
+    case 0:// ‰Šú‰»
+        riseAttackEasingTimer_ = 0.0f;
+        oldCameraLength_ = length_;
+        oldRotateX_ = GetTransform()->GetRotationX();
+        riseAttackState_ = 1;
+        returnFlag = true;
+        break;
+    case 1:
+    {
+        length_ = Easing::OutSine(riseAttackEasingTimer_, totalFrame, maxLength, oldCameraLength_);
+        rotateX = Easing::OutSine(riseAttackEasingTimer_, totalFrame, maxRotate, oldRotateX_);
+        //cameraOffset_.y = Easing::InSine(riseAttackEasingTimer_, totalFrame, maxOffsetX, minOffsetX);
+
+        riseAttackEasingTimer_ += elapsedTime;
+        if (riseAttackEasingTimer_ > totalFrame)
+        {
+            length_ = maxLength;
+            rotateX = maxRotate;
+            //cameraOffset_.y = maxOffsetX;
+
+            riseAttackState_ = 2;
+            riseAttackEasingTimer_ = 0.0f;
+        }
+
+        returnFlag = true;
+        break;
+    }
+    // ‘Ò‹@... ‰½‚à‚µ‚È‚¢ 
+    case 2:   
+        returnFlag = true;
+        break;
+    // –¢Žg—p
+    case 5:   
+        returnFlag = false;
+        break;
+    // RiseAttackI—¹ˆ—
+    default:
+    {
+        length_ = Easing::InSine(riseAttackEasingTimer_, totalFrame1, oldCameraLength_, maxLength);
+        rotateX = Easing::InSine(riseAttackEasingTimer_, totalFrame1, DirectX::XMConvertToRadians(7.0f), maxRotate);
+        //cameraOffset_.y = Easing::InSine(riseAttackEasingTimer_, totalFrame, minOffsetX, maxOffsetX);
+
+        riseAttackEasingTimer_ += elapsedTime;
+        if (riseAttackEasingTimer_ > totalFrame1)
+        {
+            length_ = oldCameraLength_;
+            rotateX = DirectX::XMConvertToRadians(7.0f);
+            //cameraOffset_.y = minOffsetX;
+
+            riseAttackEasingTimer_ = 0.0f;
+            riseAttackState_ = 5;// –¢Žg—p‚É‚·‚é
+        }
+        returnFlag = true;
+    }
+        break;
+    }
+
+    // ‰ñ“]ˆ—
+    if (returnFlag == true)
+    {
+        GamePad& gamePad = Input::Instance().GetGamePad();
+        float aRx = gamePad.GetAxisRX();
+        DirectX::XMFLOAT3 rotate = GetTransform()->GetRotation();
+                
+        rotate.y += aRx * horizontalRotationSpeed_ * elapsedTime;
+
+        // YŽ²‰ñ“]’l‚ð-3.14~3.14‚ÉŽû‚Ü‚é‚æ‚¤‚É‚·‚é
+        if (rotate.y < -DirectX::XM_PI) rotate.y += DirectX::XM_2PI;
+        if (rotate.y > DirectX::XM_PI) rotate.y -= DirectX::XM_2PI;
+
+        if (rotateX != 0.0f) rotate.x = rotateX;
+
+        GetTransform()->SetRotation(rotate);
+    }
+
+    return returnFlag;
 }

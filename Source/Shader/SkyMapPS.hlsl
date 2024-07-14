@@ -42,5 +42,11 @@ float4 main(PSIn psIn) : SV_TARGET
     float4 R = mul(ndc, inverseViewProjection_);
     R /= R.w;
     const float roughness = 0;
-    return sampleSkyBox(R.xyz, roughness);
+    
+    float4 color = sampleSkyBox(R.xyz, roughness);
+    //color.rg -= 0.1f;
+    //color.rg = max(color.rg, 0.1f);
+    //color.rgb = pow(1 / 1.5f, color.rgb);
+    
+    return color;
 }

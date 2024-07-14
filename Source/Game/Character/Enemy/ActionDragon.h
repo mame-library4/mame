@@ -279,6 +279,13 @@ namespace ActionDragon
     public:
         RiseAttackAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+
+    private:
+        float riseTimer_ = 0.0f;
+        bool isCameraSet_ = false; // カメラリセット用
+        bool isCameraReset_ = false; // カメラリセット用
+
+        AddForceData addForceData_;
     };
 
     // 移動回転行動

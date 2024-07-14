@@ -54,7 +54,7 @@ const bool ShoutJudgment::Judgment()
 
 const bool NearJudgment::Judgment()
 {
-    return false;
     return true;
+    return false;
 
 }

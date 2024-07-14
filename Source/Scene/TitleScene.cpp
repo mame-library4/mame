@@ -17,6 +17,7 @@ void TitleScene::CreateResource()
 // ----- ‰Šú‰» -----
 void TitleScene::Initialize()
 {
+    // Œ»İ‚ÌScene‚ğİ’è
     SceneManager::Instance().SetCurrentSceneName(SceneManager::SceneName::Title);
 }
 

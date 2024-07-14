@@ -4,7 +4,8 @@
 
 // ----- コンストラクタ -----
 EnemyDragon::EnemyDragon()
-    : Enemy("./Resources/Model/Character/Enemy/Dragon.gltf", 1.0f)
+    : Enemy("./Resources/Model/Character/Enemy/Dragon.gltf", 1.0f),
+    circle_("./Resources/Model/Circle/circle.gltf", 5.0f)
 {
     // BehaviorTree設定
     behaviorData_ = std::make_unique<BehaviorData>();       // BehaviorData生成
@@ -19,7 +20,8 @@ EnemyDragon::EnemyDragon()
 void EnemyDragon::Initialize()
 {
     // 位置設定
-    GetTransform()->SetPositionZ(10);
+    GetTransform()->SetPositionZ(-20);
+    //GetTransform()->SetPositionZ(10);
 
     // サイズを設定
     GetTransform()->SetScaleFactor(1.5f);
@@ -66,13 +68,19 @@ void EnemyDragon::Update(const float& elapsedTime)
 
 
     // ステージの外に出ないようにする
-    CollisionCharacterVsStage();
+    if(GetIsStageCollisionJudgement() == false) CollisionCharacterVsStage();
+
+    DirectX::XMFLOAT3 pos = GetTransform()->GetPosition();
+    pos.y = 0.01f;
+    circle_.GetTransform()->SetPosition(pos);
 }
 
 // ----- 描画 -----
 void EnemyDragon::Render(ID3D11PixelShader* psShader)
 {
     Object::Render(psShader);
+
+    if(GetIsStageCollisionJudgement()) circle_.Render(psShader);
 }
 
 // ----- ImGui用 -----
@@ -155,7 +163,7 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Shout", "Roar",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
     behaviorTree_->AddNode("Shout", "BackStepRoar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::BackStepRoarAction(this));
 
-    behaviorTree_->AddNode("Near", "FlyAttack",   1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));
+    behaviorTree_->AddNode("Near", "FlyAttack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));
     
     behaviorTree_->AddNode("Near", "TurnAttack",  0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
     behaviorTree_->AddNode("Near", "KnockBack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::KnockBackAction(this));
@@ -168,11 +176,10 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Near", "FrontAttack", 1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FrontAttackAction(this));
     behaviorTree_->AddNode("Near", "ComboCharge", 1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboChargeAction(this));
 
-    behaviorTree_->AddNode("Far", "Tackle",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
+    behaviorTree_->AddNode("Far", "Tackle",     1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
     behaviorTree_->AddNode("Far", "RiseAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RiseAttackAction(this));
     behaviorTree_->AddNode("Far", "MoveTurn",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveTurnAction(this));
     behaviorTree_->AddNode("Far", "MoveAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveAttackAction(this));
-    
 
 }
 

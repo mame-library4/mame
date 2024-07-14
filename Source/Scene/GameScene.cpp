@@ -17,10 +17,9 @@ void GameScene::CreateResource()
     // プレイヤー生成
     PlayerManager::Instance().GetPlayer() = std::make_unique<Player>();
 
-    //stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/tomorrow.glb");
-    //stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/today.glb");
-    stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/circle.glb");
-    //stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/arena.glb");
+       
+    stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/OnlyStage/stageOneMesh.gltf");
+    //stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/stageAndFlag/stage.gltf");
 
 
     EnemyManager::Instance().Register(new EnemyDragon);
@@ -54,9 +53,12 @@ void GameScene::CreateResource()
 // ----- 初期化 -----
 void GameScene::Initialize()
 {
+    // 現在のSceneを設定
     SceneManager::Instance().SetCurrentSceneName(SceneManager::SceneName::Game);
 
-    stage_->GetTransform()->SetScaleFactor(1.5f);
+    stage_->GetTransform()->SetScaleFactor(100.0f);
+    //stage_->GetTransform()->SetScaleFactor(1.5f);
+    //stage_->GetTransform()->SetScaleFactor(6000.0f);
 
     stageCenter_ = stage_->GetTransform()->GetPosition();
 
@@ -120,9 +122,9 @@ void GameScene::DeferredRender()
     deviceContext->PSSetShaderResources(35, 1, iblTextures_[3].GetAddressOf());
 
     // ステージ
-    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
+    //Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
     stage_->Render(0.01f, gBufferPixelShader);
-    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::SOLID);
+    //Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::SOLID);
 
     // プレイヤー描画
     PlayerManager::Instance().Render(gBufferPixelShader);

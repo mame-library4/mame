@@ -1,5 +1,6 @@
 #pragma once
 #include "GltfModelStaticMesh.h"
+#include "GltfModel.h"
 
 class Stage
 {
@@ -14,6 +15,7 @@ public:
     Transform* GetTransform() { return model_.GetTransform(); }
 
 protected:
-    GltfModelStaticMesh model_;
+    GltfModel model_;
+    //GltfModelStaticMesh model_;
 };
 

@@ -62,6 +62,13 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const DirectX::XMFLOAT3 GetCameraOffset() const { return cameraOffset_; }
     void SetCameraOffset(const DirectX::XMFLOAT3& offset) { cameraOffset_ = offset; }
 
+    // ---------- 特殊な動き制御用 ----------
+    void SetRiseAttackState(const int& state) { riseAttackState_ = state; }
+
+private:
+    // ---------- ドラゴン上昇攻撃時のカメラ ----------
+    [[nodiscard]] const bool UpdateRiseAttackCamera(const float& elapsedTime);
+
 private:
     Transform           transform_          = {};
     DirectX::XMMATRIX   viewMatrix_         = {};
@@ -96,5 +103,11 @@ private:
     float               vibrationVolume_        = 0.0f; // 振動量
     float               vibrationTime_          = 0.0f; // 振動時間
     float               vibrationTimer_         = 0.0f; // 振動時間を測るタイマー
+
+    // ---------- 特殊な動き制御用 ----------
+    float               riseAttackEasingTimer_  = 0.0f;
+    int                 riseAttackState_ = 5;
+    float               oldCameraLength_ = 0.0f;
+    float               oldRotateX_ = 0.0f;
 
 };
