@@ -324,11 +324,15 @@ void EnemyDragon::RegisterCollisionData()
         { "TurnAttack_5", 1.0f, {}, "Dragon15_tail_05" }, // 5
 
         // ----- “ËiUŒ‚—p -----
-        { "Tackle_0", 1.0f, {}, "Dragon15_neck_3" },    // 6
-        { "Tackle_1", 1.0f, {}, "Dragon15_neck_1" },    // 
-        { "Tackle_2", 1.0f, {}, "Dragon15_spine2" },    // 
-        { "Tackle_3", 1.0f, {}, "Dragon15_spine0" },    // 
-        { "Tackle_4", 1.0f, {}, "Dragon15_tail_00" },   // 10
+        { "TackleAttack_0", 1.0f, {}, "Dragon15_neck_3" },  // 6
+        { "TackleAttack_1", 1.0f, {}, "Dragon15_neck_1" },  // 
+        { "TackleAttack_2", 1.0f, {}, "Dragon15_spine2" },  // 
+        { "TackleAttack_3", 1.0f, {}, "Dragon15_spine0" },  // 
+        { "TackleAttack_4", 1.0f, {}, "Dragon15_tail_00" }, // 10
+
+        // ----- ‹ó’†‚©‚ç‚½‚½‚«‚Â‚¯UŒ‚ -----
+        { "FlyAttack_0", 1.0f, {}, "Dragon15_r_hand" },    // 11
+        { "FlyAttack_1", 1.0f, {}, "Dragon15_l_hand" },    // 12
 
     };
     for (int i = 0; i < _countof(attackDetectionData); ++i)
@@ -354,7 +358,7 @@ void EnemyDragon::UpdateCollisions(const float& elapsedTime)
         data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
     }
 
-    for (int i = AttackData::TrunAttackStart; i <= AttackData::TackleEnd; ++i)
+    for (int i = AttackData::TrunAttackStart; i <= AttackData::TackleAttackEnd; ++i)
     //for (int i = AttackData::TrunAttackStart; i < AttackData::TrunAttackEnd; ++i)
     {
         AttackDetectionData& data = GetAttackDetectionData(i);
@@ -381,7 +385,15 @@ void EnemyDragon::SetTurnAttackActiveFlag(const bool& flag)
 
 void EnemyDragon::SetTackleAttackActiveFlag(const bool& flag)
 {
-    for (int i = AttackData::TackleStart; i <= AttackData::TackleEnd; ++i)
+    for (int i = AttackData::TackleAttackStart; i <= AttackData::TackleAttackEnd; ++i)
+    {
+        GetAttackDetectionData(i).SetIsActive(flag);
+    }
+}
+
+void EnemyDragon::SetFlyAttackActiveFlag(const bool& flag)
+{
+    for (int i = AttackData::FlyAttackStart; i <= AttackData::FlyAttackEnd; ++i)
     {
         GetAttackDetectionData(i).SetIsActive(flag);
     }

@@ -393,9 +393,6 @@ void Player::UpdateCollisions(const float& elapsedTime)
 // ----- ステート変更 -----
 void Player::ChangeState(const STATE& state)
 {
-    // 現在ブレンドアニメーション中なのでステート変更を行わない
-    if (GetIsBlendAnimation()) return;
-
     // 現在のステートを記録
     currentState_ = state;
 

@@ -411,6 +411,8 @@ namespace ActionDragon
                 easingTimer_ = 0.0f;
                 isDown_ = false;
                 isRise_ = false;
+
+                isAttackActive_ = false;
             }
 
             // ステート変更
@@ -502,6 +504,21 @@ namespace ActionDragon
         }
             break;
         case STATE::FlyAttack:// 攻撃
+
+            // 攻撃判定処理
+            if (owner_->GetAnimationSeconds() > 0.4f)
+            {
+                if (isAttackActive_) owner_->SetFlyAttackActiveFlag(false);
+
+                isAttackActive_ = false;
+            }
+            else if (owner_->GetAnimationSeconds() > 0.1f)
+            {
+                if (isAttackActive_ == false) owner_->SetFlyAttackActiveFlag();
+
+                isAttackActive_ = true;
+            }
+
             // アニメーションが指定のフレームを超えたら
             if (owner_->GetAnimationSeconds() > slowAnimationEndFrame_)
             {
@@ -724,6 +741,10 @@ namespace ActionDragon
             // ステート変更
             SetState(STATE::PreAction);
 
+            // 変数初期化
+            isAttackActive_ = false;
+            addForceData_.Initialize(1.5f, 0.3f, 0.5f);
+
             break;
         case STATE::PreAction:// 予備動作
 
@@ -731,11 +752,6 @@ namespace ActionDragon
             {
                 owner_->PlayAnimation(Enemy::DragonAnimation::AttackTurn0, false);
                 SetState(STATE::Attack);
-
-                // 変数初期化
-                isAttackActive_ = false;
-                addForceData_.Initialize(1.5f, 0.3f, 0.5f);
-                //addForceData_.Initialize(1.5f, 0.3f, 1.0f);
             }
 
             break;

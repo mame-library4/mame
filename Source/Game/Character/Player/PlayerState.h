@@ -151,6 +151,7 @@ namespace PlayerState
             Back,
             Right,
             Left,
+            Max,
         };
 
         [[nodiscard]] const bool CheckNextInput();

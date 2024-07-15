@@ -88,12 +88,8 @@ namespace PlayerState
     // ----- 更新 -----
     void IdleState::Update(const float& elapsedTime)
     {
-        // TODO:後で消す
-        if (GetAsyncKeyState('T') & 0x8000)
-        {
-            owner_->ChangeState(Player::STATE::Damage);
-            return;
-        }
+        // 回避、攻撃入力受付
+        if (owner_->CheckNextInput(Player::NextInput::None)) return;
 
         // カウンター受付
         if (owner_->GetCounterStanceKey())
@@ -101,9 +97,6 @@ namespace PlayerState
             owner_->ChangeState(Player::STATE::Counter);
             return;
         }
-
-        // 攻撃入力,回避入力受付
-        if (owner_->CheckNextInput(Player::NextInput::None)) return;
 
         // 移動値があれば MoveState へ遷移する
         const float aLx = fabsf(Input::Instance().GetGamePad().GetAxisLX());
@@ -170,15 +163,15 @@ namespace PlayerState
     // ----- 更新 -----
     void WalkState::Update(const float& elapsedTime)
     {
+        // 回避、攻撃受付
+        if (owner_->CheckNextInput(Player::NextInput::None)) return;
+
         // カウンター受付
         if (owner_->GetCounterStanceKey())
         {
             owner_->ChangeState(Player::STATE::Counter);
             return;
         }
-
-        // 攻撃入力,回避入力受付
-        if (owner_->CheckNextInput(Player::NextInput::None)) return;
 
         // 旋回
         owner_->Turn(elapsedTime);
@@ -266,21 +259,35 @@ namespace PlayerState
     // ----- 更新 -----
     void RunState::Update(const float& elapsedTime)
     {
+        // 回避入力受付
+        if (owner_->GetAvoidanceKeyDown())
+        {
+            owner_->ChangeState(Player::STATE::Avoidance);
+            return;
+        }
+
+        // 攻撃入力受付
+        if (owner_->GetComboAttack0KeyDown())
+        {
+            //if (owner_->GetAnimationSeconds() > 0.2f || owner_->GetIsAnimationLooped())
+            if(owner_->GetIsBlendAnimation() == false)
+            {
+                owner_->ChangeState(Player::STATE::RunAttack);
+                return;
+            }
+            else
+            {
+                owner_->ChangeState(Player::STATE::ComboAttack0_0);
+                return;
+            }
+        }
+
         // カウンター受付
         if (owner_->GetCounterStanceKey())
         {
             owner_->ChangeState(Player::STATE::Counter);
             return;
         }
-
-        // 攻撃入力,回避入力受付
-        if (owner_->GetComboAttack0KeyDown())
-        {
-            owner_->ChangeState(Player::STATE::RunAttack);
-            return;
-        }
-
-        if (owner_->CheckNextInput(Player::NextInput::None)) return;
 
         // 旋回
         owner_->Turn(elapsedTime);
@@ -915,9 +922,13 @@ namespace PlayerState
     // ----- アニメーション設定 -----
     void AvoidanceState::SetAnimation()
     {
+        // 元のアニメーションに応じてブレンドの時間を設定する
         const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
-
         if (animationIndex == Player::Animation::ComboAttack0_0)
+        {
+            owner_->SetTransitionTime(0.1f);
+        }
+        else if (animationIndex == Player::Animation::RunAttack1)
         {
             owner_->SetTransitionTime(0.1f);
         }
@@ -931,9 +942,13 @@ namespace PlayerState
             owner_->SetTransitionTime(0.05f);
         }
 
+        // ------------------------------------------------------------
         // プレイヤーの姿勢に合わせてアニメーションの方向を設定する
+        // ------------------------------------------------------------
+        const float animationSpeed = 1.0f;
+        const float animationStartFrame = 0.15f;
         const float aLx = Input::Instance().GetGamePad().GetAxisLX();
-        const float aLy = Input::Instance().GetGamePad().GetAxisLY();        
+        const float aLy = Input::Instance().GetGamePad().GetAxisLY();
         // 入力値がある場合
         if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
         {
@@ -961,21 +976,20 @@ namespace PlayerState
                 // 回転角が４５度よりも小さければ 前方向
                 if (dot < DirectX::XM_PIDIV4)
                 {                    
-                    owner_->PlayBlendAnimation(Player::Animation::RollForward, false, 1.0f, 0.15f);
+                    owner_->PlayBlendAnimation(Player::Animation::RollForward, false, animationSpeed, animationStartFrame);
                     return;
                 }
 
                 // 右方向
                 if (corss < 0)
                 {
-                    owner_->PlayBlendAnimation(Player::Animation::RollRight, false, 1.0f, 0.15f);
+                    owner_->PlayBlendAnimation(Player::Animation::RollRight, false, animationSpeed, animationStartFrame);
                 }
                 // 左方向
                 else
                 {
-                    owner_->PlayBlendAnimation(Player::Animation::RollLeft, false, 1.0f, 0.15f);
+                    owner_->PlayBlendAnimation(Player::Animation::RollLeft, false, animationSpeed, animationStartFrame);
                 }
-
             }
             // 回転角が９０度よりも大きければ 後,右,左 の三択
             else
@@ -983,61 +997,58 @@ namespace PlayerState
                 // 回転角が１３５度よりも大きければ 後方向
                 if (dot > DirectX::XM_PIDIV2 + DirectX::XM_PIDIV4)
                 {
-                    owner_->PlayBlendAnimation(Player::Animation::RollBack, false, 1.0f, 0.15f);
+                    owner_->PlayBlendAnimation(Player::Animation::RollBack, false, animationSpeed, animationStartFrame);
                     return;
                 }
 
                 // 右方向
                 if (corss < 0)
                 {
-                    owner_->PlayBlendAnimation(Player::Animation::RollRight, false, 1.0f, 0.15f);
+                    owner_->PlayBlendAnimation(Player::Animation::RollRight, false, animationSpeed, animationStartFrame);
                 }
                 // 左方向
                 else
                 {
-                    owner_->PlayBlendAnimation(Player::Animation::RollLeft, false, 1.0f, 0.15f);
+                    owner_->PlayBlendAnimation(Player::Animation::RollLeft, false, animationSpeed, animationStartFrame);
                 }
             }
         }
         // 入力値がない場合前方向のアニメーションを設定する
         else
         {
-            owner_->PlayBlendAnimation(Player::Animation::RollForward, false, 1.0f, 0.15f);
+            owner_->PlayBlendAnimation(Player::Animation::RollForward, false, animationSpeed, animationStartFrame);
             return;
         }
     }
 
     // ----- 移動方向算出 -----
     void AvoidanceState::CalcMoveDirection()
-    {        
-        // アニメーションによって移動方向を分ける
-        switch (static_cast<Player::Animation>(owner_->GetAnimationIndex()))
+    {
+        // ----------------------------------------
+        // 自分自身から見た前後左右のベクトルを用意する
+        // ----------------------------------------        
+        const DirectX::XMFLOAT3 ownerFront = owner_->GetTransform()->CalcForward();
+        const DirectX::XMFLOAT3 ownerRight = owner_->GetTransform()->CalcRight();
+        const DirectX::XMFLOAT3 moveDirection[static_cast<int>(Direction::Max)] =
         {
-        case Player::Animation::RollForward:
-            // プレイヤーの前方向
-            moveDirection_ = owner_->GetTransform()->CalcForward();
-            direction_ = Direction::Fornt;
-            
-            break;
-        case Player::Animation::RollBack:
-            // プレイヤーの後ろ方向
-            moveDirection_ = owner_->GetTransform()->CalcForward() * -1;
-            direction_ = Direction::Back;
-            
-            break;
-        case Player::Animation::RollRight:
-            // プレイヤーの右方向
-            moveDirection_ = owner_->GetTransform()->CalcRight();
-            direction_ = Direction::Right;
-            
-            break;
-        case Player::Animation::RollLeft:
-            // プレイヤーの左方向
-            moveDirection_ = owner_->GetTransform()->CalcRight() * -1;
-            direction_ = Direction::Left;
-            
-            break;
-        }
+            ownerFront,
+            ownerFront * -1,
+            ownerRight,
+            ownerRight * -1,
+        };
+        const Direction direction[static_cast<int>(Direction::Max)] =
+        {
+            Direction::Fornt, Direction::Back, Direction::Right, Direction::Left
+        };
+        
+        // ----------------------------------------
+        // アニメーションに応じて移動方向を設定する
+        // ----------------------------------------
+        const int animationIndex = owner_->GetAnimationIndex();
+        const int differenceNum = static_cast<int>(Player::Animation::RollForward);
+
+        moveDirection_  = moveDirection[animationIndex - differenceNum];
+        direction_      = direction[animationIndex - differenceNum];
     }
 }
 
@@ -1283,6 +1294,21 @@ namespace PlayerState
     const bool RunAttackState::CheckNextInput()
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
+
+        if (owner_->GetAvoidanceKeyDown())
+        {
+            owner_->SetNextInput(Player::NextInput::Avoidance);
+        }
+        if (animationSeconds > 0.6f)
+        {
+            if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+            {
+                owner_->ChangeState(Player::STATE::Avoidance);
+                return true;
+            }
+        }
+
+        
 
         const float changeComboAttack0StateFrame = 0.6f; // ステート切り替え
         if (animationSeconds > changeComboAttack0StateFrame)
@@ -1785,6 +1811,7 @@ namespace PlayerState
 
         // 変数初期化
         addForceData_.Initialize(0.45f, 0.25f, 0.5f);
+        attackData_.Initialize(0.65f, 0.8f);
         isVibration_ = false;
     }
 
@@ -1798,6 +1825,10 @@ namespace PlayerState
         {
             owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
         }
+
+        // 攻撃判定処理
+        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
+        owner_->SetIsAbleAttack(attackFlag);
 
         // コントローラー＆カメラ 振動
         if (owner_->GetAnimationSeconds() > 0.8f && isVibration_ == false)

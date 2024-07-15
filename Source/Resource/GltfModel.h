@@ -364,6 +364,7 @@ public:
     [[nodiscard]] const float GetAnimationSpeed() const { return animationSpeed_; }
     [[nodiscard]] const float GetTransitionTime() const { return transitionTime_; }
     [[nodiscard]] const bool GetIsBlendAnimation() const { return isBlendAnimation_; }
+    [[nodiscard]] const bool GetIsAnimationLooped() const { return isAnimationLooped_; }
     void SetAnimationSpeed(const float& speed) { animationSpeed_ = speed; }
     void SetTransitionTime(const float& time) { transitionTime_ = time; }
 
@@ -423,6 +424,7 @@ private:
     float   weight_                 = 0.0f;     // 影響値
     float   transitionTime_         = 0.15f;    // アニメーションブレンド速度
     bool    animationLoopFlag_      = false;    // アニメーションループフラグ
+    bool    isAnimationLooped_      = false;    // アニメーションが一回以上ループしたか
     bool    animationEndFlag_       = false;    // アニメーションエンドフラグ
     bool    isBlendAnimation_       = false;    // ブレンドするかフラグ
     std::vector<Node> animatedNodes_[2];

@@ -176,6 +176,7 @@ public:// --- æ“¾Eİ’è ---
     // ----- UŒ‚”»’è -----
     virtual void SetTurnAttackActiveFlag(const bool& flag = true) {}
     virtual void SetTackleAttackActiveFlag(const bool& flag = true) {}
+    virtual void SetFlyAttackActiveFlag(const bool& flag = true) {}
 
     [[nodiscard]] const bool GetIsStageCollisionJudgement() const { return isStageCollisionJudgement_; }
     void SetIsStageCollisionJudgement(const bool& flag) { isStageCollisionJudgement_ = flag; }

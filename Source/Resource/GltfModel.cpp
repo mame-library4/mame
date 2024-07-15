@@ -211,6 +211,7 @@ void GltfModel::UpdateAnimation(const float& elapsedTime)
         if (animationLoopFlag_)
         {
             animationSeconds_ = 0.0f;
+            isAnimationLooped_ = true;
             return;
         }
         else
@@ -625,13 +626,20 @@ void GltfModel::PlayAnimation(const int& index, const bool& loop, const float& s
     animationLoopFlag_ = loop;     // アニメーションループフラグを設定する
     animationEndFlag_ = false;    // 再生終了フラグをリセット
     animationSpeed_ = speed;    // アニメーション再生速度を設定
+    isAnimationLooped_ = false;
 }
 
 void GltfModel::PlayBlendAnimation(const int& index, const bool& loop, const float& speed, const float& blendAnimationFrame)
 {
-    //if (animationIndex_ == index) return;
-
-    Animate(animationIndex_, animationSeconds_, animatedNodes_[0]);
+    // 現在ブレンドアニメーション中の場合
+    if (isBlendAnimation_)
+    {
+        animatedNodes_[0] = nodes_;
+    }
+    else
+    {
+        Animate(animationIndex_, animationSeconds_, animatedNodes_[0]);
+    }
     Animate(index, blendAnimationFrame, animatedNodes_[1]);
 
     animationIndex_ = index;
@@ -645,6 +653,7 @@ void GltfModel::PlayBlendAnimation(const int& index, const bool& loop, const flo
     animationSpeed_ = speed;
 
     isBlendAnimation_ = true;
+    isAnimationLooped_ = false;
 }
 
 // ----- 指定したジョイントの位置を取得 -----

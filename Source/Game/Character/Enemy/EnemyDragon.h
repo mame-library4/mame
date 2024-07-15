@@ -23,6 +23,7 @@ private:
 
     void SetTurnAttackActiveFlag(const bool& flag = true) override;
     void SetTackleAttackActiveFlag(const bool& flag = true) override;
+    void SetFlyAttackActiveFlag(const bool& flag = true) override;
 
 private:
     Object circle_;
@@ -38,11 +39,12 @@ private:
 private:
     enum AttackData
     {
-        TrunAttackStart = 0,
-        TrunAttackEnd   = 5,
-        TackleStart     = 6,
-        TackleEnd       = 10,
-
+        TrunAttackStart     = 0,
+        TrunAttackEnd       = 5,
+        TackleAttackStart   = 6,
+        TackleAttackEnd     = 10,
+        FlyAttackStart      = 11,
+        FlyAttackEnd        = 12,
     };
 };
 

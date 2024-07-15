@@ -167,6 +167,8 @@ namespace ActionDragon
         float easingTimer_ = 0.0f;
         bool isDown_ = false;
         bool isRise_ = false;
+
+        bool isAttackActive_ = false;
     };
 
     // ノックバック行動

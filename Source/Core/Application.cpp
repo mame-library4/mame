@@ -46,8 +46,8 @@ bool Application::Initialize()
 
     // --- シーン初期化 ---
     //SceneManager::Instance().ChangeScene(new DemoScene);
-    SceneManager::Instance().ChangeScene(new TitleScene);
-    //SceneManager::Instance().ChangeScene(new GameScene);
+    //SceneManager::Instance().ChangeScene(new TitleScene);
+    SceneManager::Instance().ChangeScene(new GameScene);
 
     // エフェクト初期化
     EffectManager::Instance().Initialize();

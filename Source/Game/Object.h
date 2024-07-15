@@ -19,6 +19,7 @@ public:
     [[nodiscard]] const float GetAnimationSpeed() const { return gltfModel_.GetAnimationSpeed(); }
     [[nodiscard]] const float GetTransitionTime() const { return gltfModel_.GetTransitionTime(); }
     [[nodiscard]] const bool GetIsBlendAnimation() const { return gltfModel_.GetIsBlendAnimation(); }
+    [[nodiscard]] const bool GetIsAnimationLooped() const { return gltfModel_.GetIsAnimationLooped(); }
     void SetAnimationSpeed(const float& speed) { gltfModel_.SetAnimationSpeed(speed); }
     void SetTransitionTime(const float& time) { gltfModel_.SetTransitionTime(time); }
 
