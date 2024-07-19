@@ -56,6 +56,14 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const DirectX::XMFLOAT3 GetTarget() const { return target_; }
     void SetTarget(const DirectX::XMFLOAT3& target) { target_ = target; }
 
+    // ---------- Lenght -------------------------
+    [[nodiscard]] const float GetLength() const { return length_; }
+    void SetLength(const float length) { length_ = length; }
+
+    // ---------- Fov ------------------------------
+    [[nodiscard]] const float GetFov() const { return fov_; }
+    void SetFov(const float& fov) { fov_ = fov; }
+
     // ---------- Offset -------------------------
     [[nodiscard]] const DirectX::XMFLOAT3 GetTargetOffset() const { return targetOffset_; }
     void SetTargetOffset(const DirectX::XMFLOAT3& offset) { targetOffset_ = offset; }
@@ -64,6 +72,10 @@ public:// --- 取得・設定 ---
 
     // ---------- 特殊な動き制御用 ----------
     void SetRiseAttackState(const int& state) { riseAttackState_ = state; }
+
+    // ---------- 死亡カメラ ----------
+    [[nodiscard]] const bool GetUseDeathCamera() const { return useDeathCamera_; }
+    void SetUseDeathCamera(const bool& flag) { useDeathCamera_ = flag; }
 
 private:
     // ---------- ドラゴン上昇攻撃時のカメラ ----------
@@ -110,4 +122,5 @@ private:
     float               oldCameraLength_ = 0.0f;
     float               oldRotateX_ = 0.0f;
 
+    bool useDeathCamera_ = false; // 死亡カメラ
 };

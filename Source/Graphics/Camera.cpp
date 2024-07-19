@@ -8,6 +8,7 @@
 
 #include "SceneManager.h"
 #include "Character/Enemy/EnemyManager.h"
+#include "Character/Player/PlayerManager.h"
 
 // ----- 初期化 -----
 void Camera::Initialize()
@@ -28,6 +29,12 @@ void Camera::Initialize()
 void Camera::Update(const float& elapsedTime)
 {
     if (SceneManager::Instance().GetCurrentSceneName() == SceneManager::SceneName::Title) return;
+
+    // 死亡カメラ使用時はここで終了
+    if (useDeathCamera_) return;
+
+    const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
+    Camera::Instance().SetTarget(cameraTargetPosition);
 
     // ドラゴンの上昇攻撃のカメラ更新
     if (UpdateRiseAttackCamera(elapsedTime)) return;

@@ -149,9 +149,10 @@ void Application::Render()
         SceneManager::Instance().DeferredRender();
 
         deviceContext->ClearRenderTargetView(renderTargetView, color);
-        deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+        //deviceContext->ClearDepthStencilView(Graphics::Instance().GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
         deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
      
+
         PostProcess::Instance().Activate();
 
         // SkyMap

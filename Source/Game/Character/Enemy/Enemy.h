@@ -119,6 +119,7 @@ public:
 
     // ---------- BehaviorTree ----------
     void UpdateNode(const float& elapsedTime);
+    virtual bool CheckStatusChange() = 0;
 
     // ---------- ƒAƒjƒ[ƒVƒ‡ƒ“ŠÖ˜A ----------
     void PlayAnimation(const DragonAnimation& index, const bool& loop, const float& speed = 1.0f) { Object::PlayAnimation(static_cast<int>(index), loop, speed); }
@@ -173,10 +174,10 @@ public:// --- æ“¾Eİ’è ---
 
     [[nodiscard]] const std::string GetActiveNodeName() const { return (activeNode_ != nullptr) ? activeNode_->GetName() : ""; }
 
-    // ----- UŒ‚”»’è -----
-    virtual void SetTurnAttackActiveFlag(const bool& flag = true) {}
-    virtual void SetTackleAttackActiveFlag(const bool& flag = true) {}
-    virtual void SetFlyAttackActiveFlag(const bool& flag = true) {}
+    // ---------- UŒ‚”»’è ----------
+    virtual void SetTurnAttackActiveFlag(const bool& flag = true)   = 0; // ‰ñ“]UŒ‚
+    virtual void SetTackleAttackActiveFlag(const bool& flag = true) = 0; // “ËiUŒ‚
+    virtual void SetFlyAttackActiveFlag(const bool& flag = true)    = 0; // ã¸UŒ‚
 
     [[nodiscard]] const bool GetIsStageCollisionJudgement() const { return isStageCollisionJudgement_; }
     void SetIsStageCollisionJudgement(const bool& flag) { isStageCollisionJudgement_ = flag; }

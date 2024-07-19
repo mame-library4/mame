@@ -94,8 +94,8 @@ void GameScene::Update(const float& elapsedTime)
     stageCenter_ = stage_->GetTransform()->GetPosition();
 
     // カメラの位置更新
-    const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
-    Camera::Instance().SetTarget(cameraTargetPosition);
+    //const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
+    //Camera::Instance().SetTarget(cameraTargetPosition);
 
     if (GetAsyncKeyState('T') & 0x8000)
     {
@@ -188,7 +188,7 @@ void GameScene::Render()
 {
     Graphics::Instance().SetBlendState(Shader::BLEND_STATE::ALPHA);
     Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
-    Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_OFF_ZW_OFF);
+    Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_ON_ZW_ON);
 
     PlayerManager::Instance().RenderTrail();
     //particles_->Render();

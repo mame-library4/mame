@@ -27,6 +27,15 @@ void Character::Update(const float& elapsedTime)
 // ----- ImGui—p -----
 void Character::DrawDebug()
 {
+    if (ImGui::TreeNode("HP"))
+    {
+        ImGui::DragFloat("Health", &health_);
+        if (ImGui::Button("Add")) health_ += 10.0f;
+        if (ImGui::Button("Reduce")) health_ -= 10.0f;
+
+        ImGui::TreePop();
+    }
+
     if (ImGui::TreeNode("LookAt"))
     {
         ImGui::Checkbox("USE", &isLookAt_);

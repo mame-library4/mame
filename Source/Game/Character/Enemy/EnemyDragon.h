@@ -15,15 +15,18 @@ public:
     void DebugRender(DebugRenderer* debugRenderer);
 
 private:
+    // ---------- BehaviorTree ----------
     void RegisterBehaviorNode();    // behaviorìoò^
-    void RegisterCollisionData();   // collisionDataìoò^
+    bool CheckStatusChange() override;
 
     // ---------- Collision ----------
+    void RegisterCollisionData();   // collisionDataìoò^
     void UpdateCollisions(const float& elapsedTime) override;
 
-    void SetTurnAttackActiveFlag(const bool& flag = true) override;
+    // ---------- çUåÇîªíË ----------
+    void SetTurnAttackActiveFlag(const bool& flag = true)   override;
     void SetTackleAttackActiveFlag(const bool& flag = true) override;
-    void SetFlyAttackActiveFlag(const bool& flag = true) override;
+    void SetFlyAttackActiveFlag(const bool& flag = true)    override;
 
 private:
     Object circle_;
@@ -35,6 +38,8 @@ private:
 
     bool isUpdateAnimation_ = true;
     //bool isUpdateAnimation_ = false;
+
+    float oldHealth_ = 0.0f;
 
 private:
     enum AttackData

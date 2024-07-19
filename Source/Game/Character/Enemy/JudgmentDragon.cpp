@@ -11,9 +11,10 @@ const bool DeathJudgment::Judgment()
     return false;
 }
 
+// ----- ‚Ğ‚é‚İ”»’è -----
 const bool FlinchJudgment::Judgment()
 {
-    return false;
+    return owner_->GetIsFlinch();
 }
 
 // ----- ”ñí“¬”»’è -----
@@ -54,7 +55,7 @@ const bool ShoutJudgment::Judgment()
 
 const bool NearJudgment::Judgment()
 {
-    return true;
     return false;
+    return true;
 
 }

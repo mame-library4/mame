@@ -63,28 +63,181 @@ namespace ActionDragon
 {
     const ActionBase::State DeathAction::Run(const float& elapsedTime)
     {
-        switch (owner_->GetStep())
+#ifdef _DEBUG // TODO: 消す
+        if (owner_->GetHealth() > 0)
         {
-        case 0:// 初期化
+            Camera::Instance().SetTargetOffset({ 0,-1,0 });
+            Camera::Instance().SetCameraOffset({ 0.0f,2.5f,0.0f });
+            PlayerManager::Instance().SetUseCollisionDetection(true);
+
+            owner_->SetStep(0);
+            return ActionBase::State::Failed;
+        }
+#endif
+
+        // Stateによってターゲット位置を設定する
+        if (Camera::Instance().GetUseDeathCamera())
+        {
+            std::string nodeName = "";
+
+            if (owner_->GetStep() >= 3)
+                nodeName = "Dragon15_pelvis";
+            else
+                nodeName = "Dragon15_spine2";
+
+            const DirectX::XMFLOAT3 neckPos = owner_->GetJointPosition(nodeName, owner_->GetScaleFactor());
+            Camera::Instance().SetTarget(neckPos);
+        }
+
+        switch (static_cast<STATE>(owner_->GetStep()))
+        {
+        case STATE::Initialize:// 初期化
+        {
             // アニメーション設定
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::Death, false);
 
-            owner_->SetStep(1);
+            // 押し出し判定を無効化する
+            PlayerManager::Instance().SetUseCollisionDetection(false);
+
+            // カメラの各種項目を設定する
+            Camera::Instance().SetUseDeathCamera(true);
+            Camera::Instance().SetTargetOffset({ 0.0f, -7.0f, 0.0f });
+            Camera::Instance().SetCameraOffset({ 0.0f, 7.0f, 0.0f });
+            Camera::Instance().SetLength(10.0f);
+            DirectX::XMFLOAT3 cameraRotate = {};
+            cameraRotate.y = DirectX::XMConvertToRadians(rand() % 360);
+            Camera::Instance().GetTransform()->SetRotation(cameraRotate);
+            oldCameraRotate_ = cameraRotate;
+
+            // 変数初期化
+            easingTimer_ = 0.0f;
+            timer_ = 0.0f;
+            isAddTimer_ = false;
+
+            // ステート変更
+            SetState(STATE::FirstCamera);
+        }
             break;
-        case 1:
-            // アニメーションが最後まで再生されたら
-            if (owner_->IsPlayAnimation() == false)
+        case STATE::FirstCamera:// １つ目のカメラ
+        {
+            const float totalFrame = 2.0f;
+            easingTimer_ += elapsedTime;
+            easingTimer_ = std::min(easingTimer_, totalFrame);
+
+            DirectX::XMFLOAT3 cameraRotate = {};
+            cameraRotate.x = DirectX::XMConvertToRadians(cameraRotate.x);
+            cameraRotate.y = Easing::InSine(easingTimer_, totalFrame, -40.0f, 0.0f);
+            cameraRotate.y = oldCameraRotate_.y + DirectX::XMConvertToRadians(cameraRotate.y);
+
+            Camera::Instance().GetTransform()->SetRotation(cameraRotate);
+
+            // 指定のフレームを超えたら次に進む
+            const float changeStateFrame = 2.0f;
+            if (owner_->GetAnimationSeconds() > changeStateFrame)
+            {
+                DirectX::XMFLOAT3 cameraRotate = {};
+                cameraRotate.x = DirectX::XMConvertToRadians(20.0f);
+                cameraRotate.y = DirectX::XMConvertToRadians(rand() % 360);
+                Camera::Instance().GetTransform()->SetRotation(cameraRotate);
+                oldCameraRotate_ = cameraRotate;
+
+                easingTimer_ = 0.0f;
+
+                // ステート変更
+                SetState(STATE::SecondCamera);
+            }
+        }
+            break;
+        case STATE::SecondCamera:// ２つ目のカメラ
+        {
+            const float totalFrame = 2.2f;
+            easingTimer_ += elapsedTime;
+            easingTimer_ = std::min(easingTimer_, totalFrame);
+
+            DirectX::XMFLOAT3 cameraRotate = {};
+            cameraRotate.x = Easing::InSine(easingTimer_, totalFrame, 30.0f, 20.0f);
+            cameraRotate.y = Easing::InSine(easingTimer_, totalFrame, 30.0f, 0.0f);
+            cameraRotate.x = DirectX::XMConvertToRadians(cameraRotate.x);
+            cameraRotate.y = oldCameraRotate_.y + DirectX::XMConvertToRadians(cameraRotate.y);
+
+            Camera::Instance().GetTransform()->SetRotation(cameraRotate);
+
+            // 指定のフレームを超えたら次に進む
+            const float changeStateFrame = 4.4f;
+            if (owner_->GetAnimationSeconds() > changeStateFrame)
+            {
+                easingTimer_ = 0.0f;
+
+                // ステート変更
+                SetState(STATE::ThirdCamera);
+            }
+        }
+            break;
+        case STATE::ThirdCamera:// ３つ目のカメラ
+        {
+            const float totalFrame = 2.5f;
+            easingTimer_ += elapsedTime;
+            easingTimer_ = std::min(easingTimer_, totalFrame);
+
+
+            //const float length = Easing::InSine(easingTimer_, totalFrame, 12.0f, 5.0f);
+            const float length = 6.5f;
+            Camera::Instance().SetLength(length);
+
+            // rotate
+            DirectX::XMFLOAT3 cameraRotate = {};
+            cameraRotate.x = DirectX::XMConvertToRadians(-30.0f);
+            cameraRotate.y = Easing::OutSine(easingTimer_, totalFrame, 220.0f, 250.0f);
+            cameraRotate.y = DirectX::XMConvertToRadians(cameraRotate.y);
+            Camera::Instance().GetTransform()->SetRotation(cameraRotate);
+
+            // fov
+            const float fov = Easing::InSine(easingTimer_, totalFrame, 50.0f, 45.0f);
+            Camera::Instance().SetFov(fov);
+
+            // focusOffset
+            DirectX::XMFLOAT3 offset = {};
+            offset.x = Easing::InSine(easingTimer_, totalFrame, 1.0f, 0.0f);
+            offset.y = Easing::InSine(easingTimer_, totalFrame, -5.0f, -7.0f);
+            offset.z = Easing::InSine(easingTimer_, totalFrame, 1.0f, 0.0f);
+            Camera::Instance().SetTargetOffset(offset);
+
+            if (owner_->GetAnimationIndex() == static_cast<int>(Enemy::DragonAnimation::Death) &&
+                owner_->IsPlayAnimation() == false)
             {
                 // 死亡ループモーションを流す
                 owner_->PlayBlendAnimation(Enemy::DragonAnimation::DeathLoop, false);
 
-                owner_->SetStep(2);
-                break;
+                // タイマー加算
+                isAddTimer_ = true;
             }
+            // タイマー加算
+            if (isAddTimer_)
+            {
+                timer_ += elapsedTime;
+                const float maxTime = 1.0f;
+                if (timer_ > maxTime)
+                {
+                    if (Camera::Instance().GetUseDeathCamera() == false)
+                    {
+                        Camera::Instance().GetTransform()->SetRotation({ 0, 0, 0 });
+                        Camera::Instance().SetLength(6.0f);
+                        Camera::Instance().SetTargetOffset({ 0,-1,0 });
+                        Camera::Instance().SetCameraOffset({ 0.0f,2.5f,0.0f });
+                        Camera::Instance().SetFov(45.0f);
 
+                        // ステート変更
+                        SetState(STATE::Death);
+                    }
+
+                    // カメラを元に戻す
+                    Camera::Instance().SetUseDeathCamera(false);
+                }
+            }
+        }
             break;
-        case 2:
-            // 死亡しているのでここで放置
+        case STATE::Death:// 死亡ループ
+            // 死亡しているので何もしない
             break;
         }
 
@@ -97,7 +250,69 @@ namespace ActionDragon
 {
     const ActionBase::State FlinchAction::Run(const float& elapsedTime)
     {
-        return ActionBase::State();
+        const float animationSpeed = 1.5f;
+
+        switch (owner_->GetStep())
+        {
+        case 0:// 初期化
+            // アニメーション設定
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::CriticalStart, false);
+
+            // 変数初期化
+            addForceData_.Initialize(0.01, 0.2f, 1.5f);
+            num_ = 0;
+
+            owner_->SetStep(1);
+
+            break;
+        case 1:
+
+            if (addForceData_.Update(owner_->GetAnimationSeconds()))
+            {
+                DirectX::XMFLOAT3 ownerRight = owner_->GetTransform()->CalcRight() * -1;
+
+                owner_->AddForce(ownerRight, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+            }
+
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->PlayAnimation(Enemy::DragonAnimation::CriticalLoop, false, animationSpeed);
+                owner_->SetStep(2);
+            }
+
+            break;
+        case 2:
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                if (num_ > 3)
+                {
+                    owner_->PlayAnimation(Enemy::DragonAnimation::CriticalEnd, false, 1.5f);
+                    owner_->SetStep(3);
+                }
+                else
+                {
+                    owner_->PlayAnimation(Enemy::DragonAnimation::CriticalLoop, false, animationSpeed);
+                    owner_->SetStep(1);
+                }
+
+                ++num_;                
+            }
+
+            break;
+        case 3:
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetIsFlinch(false);
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+
+            break;
+        }
+
+        return ActionBase::State::Run;
     }
 }
 
@@ -106,6 +321,9 @@ namespace ActionDragon
 {
     const ActionBase::State NonBattleIdleAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         switch (owner_->GetStep())
         {
         case 0:// 初期化
@@ -161,6 +379,9 @@ namespace ActionDragon
 {
     const ActionBase::State NonBattleWalkAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         switch (owner_->GetStep())
         {
         case 0:// 初期化
@@ -182,6 +403,9 @@ namespace ActionDragon
 {
     const ActionBase::State RoarAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         switch (owner_->GetStep())
         {
         case 0:// 初期化
@@ -279,6 +503,9 @@ namespace ActionDragon
 {
     const ActionBase::State BackStepRoarAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         switch (owner_->GetStep())
         {
         case 0:// 初期化
@@ -357,6 +584,9 @@ namespace ActionDragon
 {
     const ActionBase::State BackStepAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         switch (owner_->GetStep())
         {
         case 0:
@@ -387,6 +617,9 @@ namespace ActionDragon
 {
     const ActionBase::State FlyAttackAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         switch (static_cast<STATE>(owner_->GetStep()))
         {
         case STATE::Initialize:// 初期化
@@ -557,6 +790,9 @@ namespace ActionDragon
 {
     const ActionBase::State KnockBackAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         switch (static_cast<STATE>(owner_->GetStep()))
         {
         case STATE::Initialize:// 初期化
@@ -644,6 +880,9 @@ namespace ActionDragon
 {
     const ActionBase::State SlamAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         return ActionBase::State();
     }
 }
@@ -652,6 +891,9 @@ namespace ActionDragon
 {
     const ActionBase::State FrontAttackAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         return ActionBase::State();
     }
 }
@@ -661,6 +903,9 @@ namespace ActionDragon
 {
     const ActionBase::State ComboSlamAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         switch (owner_->GetStep())
         {
         case 0:// 初期化
@@ -720,6 +965,9 @@ namespace ActionDragon
 {
     const ActionBase::State ComboChargeAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         return ActionBase::State();
     }
 }
@@ -729,6 +977,9 @@ namespace ActionDragon
 {
     const ActionBase::State TurnAttackAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         switch (static_cast<STATE>(owner_->GetStep()))
         {
         case STATE::Initialize:// 初期化
@@ -794,6 +1045,9 @@ namespace ActionDragon
 {
     const ActionBase::State TackleAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         switch (static_cast<STATE>(owner_->GetStep()))
         {
         case STATE::Initialize:// 初期化
@@ -807,15 +1061,17 @@ namespace ActionDragon
             SetState(STATE::PreAction);
 
             // 変数初期化
+            addForceData_.Initialize(0.15f, 0.6f, 0.7f);
+            easingTimer_ = 0.0f;
             isAttackActive_ = false;
 
             break;
         case STATE::PreAction:// 予備動作
         {
             const float animationSeconds = owner_->GetAnimationSeconds();
-            const float turnStateFrame = 0.3f;
 
-            // 回転処理
+            // 回転処理 ( プレイヤーの方向に向く )
+            const float turnStateFrame = 0.3f;
             if (animationSeconds > turnStateFrame)
             {
                 owner_->Turn(elapsedTime, PlayerManager::Instance().GetTransform()->GetPosition());
@@ -824,20 +1080,13 @@ namespace ActionDragon
             // アニメーション再生終了
             if (owner_->IsPlayAnimation() == false)
             {
-                addForceData_.Initialize(0.15f, 0.6f, 0.7f);
-                easingTimer_ = 0.0f;
-
                 owner_->PlayAnimation(Enemy::DragonAnimation::AttackTackle1, false);
                 SetState(STATE::Tackle);
-                return ActionBase::State::Run;
             }
         }
             break;
         case STATE::Tackle:// タックル
-
-            // 回転処理
-            owner_->Turn(elapsedTime, PlayerManager::Instance().GetTransform()->GetPosition());            
-
+        {
             // 移動処理
             if (addForceData_.Update(owner_->GetAnimationSeconds()))
             {
@@ -845,15 +1094,14 @@ namespace ActionDragon
             }
 
             // 攻撃判定有効化
-            if (owner_->GetAnimationSeconds() > 0.2f)
+            const float attackActiveStartFrame = 0.2f;
+            if (owner_->GetAnimationSeconds() > attackActiveStartFrame && isAttackActive_ == false)
             {
-                if (isAttackActive_ == false)
-                {
-                    owner_->SetTackleAttackActiveFlag();
-                    isAttackActive_ = true;
-                }
+                owner_->SetTackleAttackActiveFlag();
+                isAttackActive_ = true;
             }
 
+            // 前足が埋まってしまうので回転で無理やりしてる
             {
                 const float maxAngle = -10.0f;
                 if (owner_->GetAnimationSeconds() > 0.65f)
@@ -883,9 +1131,8 @@ namespace ActionDragon
 
                 owner_->PlayAnimation(Enemy::DragonAnimation::AttackTackle3, false);
                 SetState(STATE::Recovery);
-                return ActionBase::State::Run;
             }
-
+        }
             break;
         case STATE::Recovery:// 後隙 ( 途中まで攻撃判定ある )
         {
@@ -923,6 +1170,9 @@ namespace ActionDragon
 {
     const ActionBase::State RiseAttackAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         switch (owner_->GetStep())
         {
         case 0:// 初期化
@@ -1033,6 +1283,9 @@ namespace ActionDragon
 {
     const ActionBase::State MoveTurnAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         return ActionBase::State();
     }
 }
@@ -1041,6 +1294,9 @@ namespace ActionDragon
 {
     const ActionBase::State MoveAttackAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         return ActionBase::State();
     }
 }

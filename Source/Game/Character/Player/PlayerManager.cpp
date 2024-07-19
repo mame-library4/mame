@@ -21,7 +21,19 @@ void PlayerManager::Finalize()
 // ----- 更新 -----
 void PlayerManager::Update(const float& elapsedTime)
 {
-    player_->Update(elapsedTime);
+    if (isSkip_)
+    {
+        if (skipNum_ > 1)
+        {
+            isSkip_ = false;
+        }
+        ++skipNum_;
+    }
+    else
+    {
+        player_->Update(elapsedTime);
+        skipNum_ = 0;
+    }
 
     // プレイヤーと敵の押し出し判定
     CollisionPlayerVsEnemy();
@@ -80,25 +92,28 @@ void PlayerManager::CollisionPlayerVsEnemy()
     }
 
     // 押し出し判定処理
-    for (int playerDataIndex = 0; playerDataIndex < GetPlayer()->GetCollisionDetectionDataCount(); ++playerDataIndex)
+    if (useCollisionDetection_)
     {
-        auto playerData = GetPlayer()->GetCollisionDetectionData(playerDataIndex);
-
-        for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetCollisionDetectionDataCount(); ++enemyDataIndex)
+        for (int playerDataIndex = 0; playerDataIndex < GetPlayer()->GetCollisionDetectionDataCount(); ++playerDataIndex)
         {
-            auto enemyData = enemy->GetCollisionDetectionData(enemyDataIndex);
+            auto playerData = GetPlayer()->GetCollisionDetectionData(playerDataIndex);
 
-            // 現在アクティブではないので処理をしない
-            if (enemyData.GetIsActive() == false) continue;
-
-            DirectX::XMFLOAT3 resultPos = {};
-            if (Collision::IntersectSphereVsSphereNotConsiderY(
-                enemyData.GetPosition(), enemyData.GetRadius(),
-                playerData.GetPosition(), playerData.GetRadius(),
-                resultPos))
+            for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetCollisionDetectionDataCount(); ++enemyDataIndex)
             {
-                GetTransform()->SetPosition(GetTransform()->GetPosition() - resultPos);// -playerData.GetOffsetPosition());
-                //GetTransform()->SetPosition(resultPos - playerData.GetOffsetPosition());
+                auto enemyData = enemy->GetCollisionDetectionData(enemyDataIndex);
+
+                // 現在アクティブではないので処理をしない
+                if (enemyData.GetIsActive() == false) continue;
+
+                DirectX::XMFLOAT3 resultPos = {};
+                if (Collision::IntersectSphereVsSphereNotConsiderY(
+                    enemyData.GetPosition(), enemyData.GetRadius(),
+                    playerData.GetPosition(), playerData.GetRadius(),
+                    resultPos))
+                {
+                    GetTransform()->SetPosition(GetTransform()->GetPosition() - resultPos);// -playerData.GetOffsetPosition());
+                    //GetTransform()->SetPosition(resultPos - playerData.GetOffsetPosition());
+                }
             }
         }
     }
@@ -129,7 +144,13 @@ void PlayerManager::CollisionPlayerVsEnemy()
                         // 攻撃当たった
                         GetPlayer()->SetIsAbleAttack(false);
 
-                        UINumber* ui = new UINumber(enemyData.GetDamage(), enemyData.GetPosition());
+                        // 敵が生きていたらUI生成
+                        if (useCollisionDetection_)
+                        {
+                            UINumber* ui = new UINumber(enemyData.GetDamage(), enemyData.GetPosition());
+                        }
+
+                        isSkip_ = true;
 
                         return;
                     }

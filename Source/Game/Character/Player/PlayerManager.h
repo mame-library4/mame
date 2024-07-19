@@ -28,9 +28,17 @@ public:// --- 取得・設定 ---
     std::unique_ptr<Player>& GetPlayer() { return player_; }
     Transform* GetTransform() { return player_->GetTransform(); }
 
+    // ---------- 判定制御用フラグ ----------
+    [[nodiscard]] const bool GetUseCollisionDetection() const { return useCollisionDetection_; }
+    void SetUseCollisionDetection(const bool& flag) { useCollisionDetection_ = flag; }
 
 private:
     std::unique_ptr<Player> player_;
 
+    // ---------- 判定制御用フラグ ----------
+    bool useCollisionDetection_ = true; // 押し出し判定用
+
+    bool isSkip_ = false;
+    int skipNum_ = 0;
 };
 

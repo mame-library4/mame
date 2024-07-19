@@ -36,7 +36,10 @@ void EnemyDragon::Initialize()
     SetWalkSpeed(3.0f);
 
     // ‘Ì—Íİ’è
-    SetMaxHealth(3000.0f);
+    //SetMaxHealth(30.0f);
+    //SetMaxHealth(100.0f);
+    SetMaxHealth(600.0f);
+    //SetMaxHealth(3000.0f);
     SetHealth(GetMaxHealth());
 
     PlayAnimation(Enemy::DragonAnimation::Idle0, true);
@@ -45,6 +48,7 @@ void EnemyDragon::Initialize()
     // UŒ‚”»’è –³Œø‰»
     SetTurnAttackActiveFlag(false);
     SetTackleAttackActiveFlag(false);
+    SetFlyAttackActiveFlag(false);
 }
 
 // ----- I—¹‰» -----
@@ -176,11 +180,46 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Near", "FrontAttack", 1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FrontAttackAction(this));
     behaviorTree_->AddNode("Near", "ComboCharge", 1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboChargeAction(this));
 
-    behaviorTree_->AddNode("Far", "Tackle",     1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
+    behaviorTree_->AddNode("Far", "Tackle",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
     behaviorTree_->AddNode("Far", "RiseAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RiseAttackAction(this));
     behaviorTree_->AddNode("Far", "MoveTurn",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveTurnAction(this));
     behaviorTree_->AddNode("Far", "MoveAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveAttackAction(this));
 
+}
+
+bool EnemyDragon::CheckStatusChange()
+{
+    // --------------------
+    //      €–S”»’è
+    // --------------------
+    // HP‚ª‚È‚­‚È‚Á‚½
+    if (GetHealth() <= 0.0f)
+    {
+        SetStep(0); // ƒŠƒZƒbƒg
+        return true;
+    }
+
+    // --------------------
+    //      ‹¯‚İ”»’è
+    // --------------------
+    // ‰‰ñ‚È‚Ç‚É’Ê‚é
+    if (oldHealth_ <= 0.0f)
+    {
+        oldHealth_ = GetHealth();
+        return false;
+    }
+    const float damage = oldHealth_ - GetHealth();
+    oldHealth_ = GetHealth();
+
+    // damage‚ª 30 ‚æ‚è‘å‚«‚¯‚ê‚Î‹¯‚İ
+    if (damage > 30.0f)
+    {
+        SetIsFlinch(true);
+        SetStep(0); // ƒŠƒZƒbƒg
+        return true;
+    }
+
+    return false;
 }
 
 // ----- CollisionData“o˜^ -----
@@ -375,6 +414,8 @@ void EnemyDragon::UpdateCollisions(const float& elapsedTime)
     }
 }
 
+
+#pragma region ----- UŒ‚”»’è -----
 void EnemyDragon::SetTurnAttackActiveFlag(const bool& flag)
 {
     for (int i = AttackData::TrunAttackStart; i <= AttackData::TrunAttackEnd; ++i)
@@ -398,3 +439,4 @@ void EnemyDragon::SetFlyAttackActiveFlag(const bool& flag)
         GetAttackDetectionData(i).SetIsActive(flag);
     }
 }
+#pragma endregion ----- UŒ‚”»’è -----
