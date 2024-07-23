@@ -18,6 +18,14 @@ public:
     const bool Judgment() override;
 };
 
+// ’Êí‚Ì‹¯‚İ”»’è
+class NormalFlinchJudgment : public JudgmentBase
+{
+public:
+    NormalFlinchJudgment(Enemy* owner) : JudgmentBase(owner) {}
+    const bool Judgment() override;
+};
+
 // ”ñí“¬”»’è
 class NonBattleJudgment : public JudgmentBase
 {

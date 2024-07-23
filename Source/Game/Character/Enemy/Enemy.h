@@ -101,9 +101,6 @@ public:
         AttackMove3,
         AttackMove4,
 
-        // ----- ‹ó’†‚©‚ç‹¯‚Ý -----
-        FlyFlinchStart,
-        FlyFlinchLoop,
     };
 
 public:

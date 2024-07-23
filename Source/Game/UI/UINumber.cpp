@@ -5,9 +5,13 @@
 // ----- コンストラクタ -----
 UINumber::UINumber(const int& num, const DirectX::XMFLOAT3& hitPos) :
     UI(),
-    num_(num), hitPos_(hitPos),
-    addPos_(DirectX::XMFLOAT3((rand() % 10 - 5) / 10.0f, (rand() % 10 - 5) / 10.0f, (rand() % 10 - 5) / 10.0f))
+    num_(num), hitPos_(hitPos)
 {
+    // ランダムでaddPosを決める
+    addPos_.x = (rand() % 10 - 5) / 10.0f;
+    addPos_.y = (rand() % 10 - 5) / 10.0f;
+    addPos_.z = (rand() % 10 - 5) / 10.0f;
+
     // 桁数を求める
     if(num >= 1000)      digit_ = 4;
     else if (num >= 100) digit_ = 3;
@@ -94,8 +98,17 @@ void UINumber::SetNumSproteNumbers()
 // ----- 位置を設定する -----
 void UINumber::SetNumSpritePosition()
 {
-    const DirectX::XMFLOAT2 hitPos = Sprite::ConvertToScreenPos(hitPos_ + addPos_);
+    // ------------------------------------------------------------
+    //  hitPosにaddPosを足すことで、同じところに出ずにいい感じになる。
+    //  足した結果Y値がマイナスの場合、0.0fに戻す。
+    // ------------------------------------------------------------
+    DirectX::XMFLOAT3 pos = hitPos_ + addPos_;
+    pos.y = max(0.0f, pos.y);
+    const DirectX::XMFLOAT2 hitPos = Sprite::ConvertToScreenPos(pos);
 
+    // -----------------------------------
+    //  桁数によって出す位置を変える
+    // -----------------------------------
     if (digit_ == 1)
     {
         numSprite_[0]->GetTransform()->SetPosition(hitPos);

@@ -14,15 +14,22 @@ const bool DeathJudgment::Judgment()
 // ----- ‚Ğ‚é‚İ”»’è -----
 const bool FlinchJudgment::Judgment()
 {
-    //return true;
     return owner_->GetIsFlinch();
+}
+
+// ----- ’Êí‚Ğ‚é‚İ”»’è -----
+const bool NormalFlinchJudgment::Judgment()
+{
+    // ƒhƒ‰ƒSƒ“‚ÌY’l‚ª‚O‚Å‚È‚¢ê‡‹ó’†‚É‚¢‚é‚Ì‚Å false
+    if (owner_->GetTransform()->GetPositionY() != 0.0f) return false;
+
+    // ’n–Ê‚É‚¢‚é true
+    return true;
 }
 
 // ----- ”ñí“¬”»’è -----
 const bool NonBattleJudgment::Judgment()
 {
-    return true;
-
     if (num_ == 0)
     {
         ++num_;
@@ -73,3 +80,5 @@ const bool NearJudgment::Judgment()
     return false;
 
 }
+
+

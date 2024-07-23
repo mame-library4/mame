@@ -81,7 +81,7 @@ namespace ActionDragon
             std::string nodeName = "";
 
             if (owner_->GetStep() >= 3)
-                nodeName = "Dragon15_pelvis";
+                nodeName = "root";
             else
                 nodeName = "Dragon15_spine2";
 
@@ -259,14 +259,13 @@ namespace ActionDragon
         {
         case STATE::Initialize:// 初期化
             // アニメーション設定
-            owner_->PlayBlendAnimation(Enemy::DragonAnimation::FlyFlinchStart, false);
-            owner_->SetUseRootMotionMovement(false);
-            //owner_->PlayBlendAnimation(Enemy::DragonAnimation::CriticalStart, false);
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::CriticalStart, false);
             owner_->SetTransitionTime(0.1f);
 
             // 変数初期化
             addForceData_.Initialize(0.01, 0.2f, 1.5f);
-            num_ = 0;
+            loopCounter_ = 0;
+            maxLoopNum_ = 4;
 
             // ステート変更
             SetState(STATE::FlinchStart);
@@ -286,8 +285,6 @@ namespace ActionDragon
             const float animationEndFrame = 1.0f;
             if (owner_->GetAnimationSeconds() > animationEndFrame)
             {
-                owner_->SetUseRootMotionMovement(true);
-
                 owner_->PlayBlendAnimation(Enemy::DragonAnimation::CriticalLoop, false, animationSpeed);
                 owner_->SetTransitionTime(0.1f);
                 // ステート変更
@@ -300,7 +297,7 @@ namespace ActionDragon
 
             if (owner_->IsPlayAnimation() == false)
             {
-                if (num_ > 3)
+                if (loopCounter_ > maxLoopNum_)
                 {
                     owner_->PlayAnimation(Enemy::DragonAnimation::CriticalEnd, false, animationSpeed);
                     // ステート変更
@@ -311,13 +308,11 @@ namespace ActionDragon
                     owner_->PlayAnimation(Enemy::DragonAnimation::CriticalLoop, false, animationSpeed);
                 }
 
-                ++num_;                
+                ++loopCounter_;                
             }
 
             break;
-        case STATE::FlinchEnd:// 怯み終わり
-
-            
+        case STATE::FlinchEnd:// 怯み終わり            
 
             // アニメーション速度設定
             SetAnimationSpeed();
@@ -337,6 +332,106 @@ namespace ActionDragon
 
     // ----- アニメーション速度設定 -----
     void FlinchAction::SetAnimationSpeed()
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+
+        if (animationSeconds > 1.5f)
+        {
+            owner_->SetAnimationSpeed(1.0f);
+        }
+    }
+}
+
+// ----- 飛行時怯み行動 -----
+namespace ActionDragon
+{
+    const ActionBase::State FlyFlinchAction::Run(const float& elapsedTime)
+    {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
+        const float animationSpeed = 1.5f;
+
+        switch (static_cast<STATE>(owner_->GetStep()))
+        {
+        case STATE::Initialize:// 初期化
+            // アニメーション設定
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::CriticalStart, false);
+            owner_->SetTransitionTime(0.35f);
+
+            // ルートモーションの移動値をなくす
+            owner_->SetUseRootMotionMovement(false);
+
+            // 変数初期化
+            easingTimer_ = 0.0f;
+            oldPositionY_ = owner_->GetTransform()->GetPositionY() + 0.5f;
+            loopCounter_ = 0;
+            maxLoopNum_ = 4;
+
+            // ステート変更
+            SetState(STATE::FlinchStart);
+
+            break;
+        case STATE::FlinchStart:// 怯み開始
+        {
+            const float totalFrame = 0.6f;
+            easingTimer_ += elapsedTime;
+            easingTimer_ = std::min(easingTimer_, totalFrame);
+            const float posY = Easing::InSine(easingTimer_, totalFrame, 0.7f, oldPositionY_);
+            owner_->GetTransform()->SetPositionY(posY);
+        }
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetUseRootMotionMovement(true);
+
+                owner_->PlayAnimation(Enemy::DragonAnimation::CriticalLoop, false, animationSpeed);
+                               
+                // ステート変更
+                SetState(STATE::FlinchLoop);
+            }
+
+            break;
+        case STATE::FlinchLoop:// 怯みループ
+            // Y値を0.0fで固定する
+            owner_->GetTransform()->SetPositionY(0.0f);
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                if (loopCounter_ > maxLoopNum_)
+                {
+                    owner_->PlayAnimation(Enemy::DragonAnimation::CriticalEnd, false, animationSpeed);
+
+                    // ステート変更
+                    SetState(STATE::FlinchEnd);
+                }
+                else
+                {
+                    owner_->PlayAnimation(Enemy::DragonAnimation::CriticalLoop, false, animationSpeed);
+                }
+
+                ++loopCounter_;
+            }
+
+            break;
+        case STATE::FlinchEnd:// 怯み終わり
+            // アニメーション速度設定
+            SetAnimationSpeed();
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetIsFlinch(false);
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+            break;
+        }
+
+        return ActionBase::State::Run;
+    }
+
+    // ----- アニメーションの速度設定 -----
+    void FlyFlinchAction::SetAnimationSpeed()
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
 

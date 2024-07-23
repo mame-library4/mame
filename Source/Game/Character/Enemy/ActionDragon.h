@@ -84,7 +84,35 @@ namespace ActionDragon
     private:
         AddForceData addForceData_;
 
-        int num_ = 0;
+        int loopCounter_ = 0; // ループした回数を数える
+        int maxLoopNum_  = 0; // 最大ループ数
+    };
+
+    // 飛行中怯み行動
+    class FlyFlinchAction : public ActionBase
+    {
+    public:
+        FlyFlinchAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+
+    private:
+        enum class STATE
+        {
+            Initialize,
+            FlinchStart,
+            FlinchLoop,
+            FlinchEnd,
+        };
+
+        void SetAnimationSpeed();
+        void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
+
+    private:
+        float oldPositionY_ = 0.0f;
+        float easingTimer_  = 0.0f; // Easing用
+
+        int loopCounter_    = 0; // ループした回数を数える
+        int maxLoopNum_     = 0; // 最大ループ数
     };
 
     // 非戦闘待機行動

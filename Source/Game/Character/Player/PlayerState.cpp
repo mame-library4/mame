@@ -1818,6 +1818,22 @@ namespace PlayerState
     // ----- 更新 -----
     void ComboAttack0_3::Update(const float& elapsedTime)
     {
+        if (owner_->GetAnimationSeconds() > 0.7f)
+        {
+            if (owner_->GetAvoidanceKeyDown())
+            {
+                owner_->SetNextInput(Player::NextInput::Avoidance);
+            }
+        }
+        if (owner_->GetAnimationSeconds() > 1.3f)
+        {
+            if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+            {
+                owner_->ChangeState(Player::STATE::Avoidance);
+                return;
+            }
+        }
+
         // アニメーションの速度設定
         SetAnimationSpeed();
 

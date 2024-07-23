@@ -152,7 +152,9 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Root", "Death", 0, BehaviorTree::SelectRule::None, new DeathJudgment(this), new ActionDragon::DeathAction(this));
 
     // --------------- ‹¯‚Ý ---------------
-    behaviorTree_->AddNode("Root", "Flinch", 1, BehaviorTree::SelectRule::None, new FlinchJudgment(this), new ActionDragon::FlinchAction(this));
+    behaviorTree_->AddNode("Root",   "Flinch",       1, BehaviorTree::SelectRule::Priority, new FlinchJudgment(this), nullptr);
+    behaviorTree_->AddNode("Flinch", "NormalFlinch", 0, BehaviorTree::SelectRule::None, new NormalFlinchJudgment(this), new ActionDragon::FlinchAction(this));
+    behaviorTree_->AddNode("Flinch", "FlyFlinch",    1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyFlinchAction(this));
 
     // --------------- ”ñí“¬ ---------------
     behaviorTree_->AddNode("Root", "NonBattle", 2, BehaviorTree::SelectRule::Priority, new NonBattleJudgment(this), nullptr);
@@ -162,8 +164,8 @@ void EnemyDragon::RegisterBehaviorNode()
     // --------------- í“¬ ---------------
     behaviorTree_->AddNode("Root", "Battle", 3, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
     behaviorTree_->AddNode("Battle", "Shout", 0, BehaviorTree::SelectRule::Priority, new ShoutJudgment(this), nullptr);
-    behaviorTree_->AddNode("Battle", "Near",  1, BehaviorTree::SelectRule::Random, new NearJudgment(this), nullptr);
-    behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Random, nullptr, nullptr);
+    behaviorTree_->AddNode("Battle", "Near",  1, BehaviorTree::SelectRule::Priority, new NearJudgment(this), nullptr);
+    behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
 
     behaviorTree_->AddNode("Shout", "Roar",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
     behaviorTree_->AddNode("Shout", "BackStepRoar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::BackStepRoarAction(this));
@@ -217,8 +219,8 @@ bool EnemyDragon::CheckStatusChange()
     oldHealth_ = GetHealth();
 
     // damage‚ª 30 ‚æ‚è‘å‚«‚¯‚ê‚Î‹¯‚Ý
-    //if (damage > 30.0f)
-    if (damage > 45.0f)
+    if (damage > 30.0f)
+    //if (damage > 45.0f)
     {
         SetIsFlinch(true);
         // ƒŠƒZƒbƒg
@@ -276,7 +278,7 @@ void EnemyDragon::RegisterCollisionData()
         { "Dragon15_neck_1",    1.0f,  false, { -0.4f, 0.0f, 0.0f } },
         { "Dragon15_spine2",    1.05f, false, {} },
         { "Dragon15_spine0",    0.85f, false, {} },
-        { "Dragon15_pelvis",    0.85f, false, {} },
+        { "root",    0.85f, false, {} },
 
         { "Dragon15_r_hand",    0.3f, false, {} },
         { "Dragon15_r_forearm", 0.32, false, {} },
