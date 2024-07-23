@@ -130,6 +130,7 @@ public:
 
     // ---------- Collision ----------
     void UpdateCollisions(const float& elapsedTime) override;
+    void UpdateCollisionDetectionData();    // 押し出し判定位置更新
 
     // ---------- 剣の座標更新 ----------
     void UpdateSwordTransform();

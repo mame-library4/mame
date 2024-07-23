@@ -48,6 +48,9 @@ Player::~Player()
 // ----- 初期化 -----
 void Player::Initialize()
 {
+    // ルートモーションの移動値を消す
+    SetUseRootMotionMovement(false);
+
     // 生成位置設定
     GetTransform()->SetPositionZ(60);
 
@@ -100,7 +103,6 @@ void Player::Update(const float& elapsedTime)
 
     // Collisionデータ更新
     UpdateCollisions(elapsedTime);
-    GetCollisionDetectionData("collide").SetPosition(GetTransform()->GetPosition());
 }
 
 // ----- 描画 -----
@@ -311,10 +313,10 @@ void Player::RegisterCollisionData()
     // 押し出し判定登録
     CollisionDetectionData collisionDetectionData[] =
     {
-        { "head",       0.2f, {} },
-        { "spine_02",   0.2f, {} },
-        { "pelvis",     0.2f, {} },
-        { "collide",    0.2f, { 0.0f, 0.25f, 0.0f } },
+        { "head",       0.2f },
+        { "spine_02",   0.2f },
+        { "pelvis",     0.2f },
+        { "collide",    0.2f, true, { 0.0f, 0.25f, 0.0f } },
     };
     for (int i = 0; i < _countof(collisionDetectionData); ++i)
     {
@@ -382,12 +384,24 @@ void Player::UpdateCollisions(const float& elapsedTime)
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
         data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
     }
+
     // 押し出し判定更新
+    UpdateCollisionDetectionData();
+}
+
+// ----- 押し出し判定位置更新 -----
+void Player::UpdateCollisionDetectionData()
+{
     for (CollisionDetectionData& data : collisionDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
+        DirectX::XMFLOAT3 pos = GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition());
+
+        if (data.GetFixedY()) pos.y = 0.0f;
+
+        data.SetJointPosition(pos);
     }
+    GetCollisionDetectionData("collide").SetPosition(GetTransform()->GetPosition());
 }
 
 // ----- ステート変更 -----

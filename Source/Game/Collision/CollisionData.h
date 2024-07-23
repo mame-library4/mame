@@ -177,10 +177,11 @@ private:
 // ----- 押し出し判定 -----
 struct CollisionDetectionData
 {
-    CollisionDetectionData(const std::string& name, const float& radius, 
+    CollisionDetectionData(const std::string& name, const float& radius, const bool& fixedY = false,
         const DirectX::XMFLOAT3& offsetPosition = {}, const std::string& updateName = "")
         : collisionSphereData_(name, radius, offsetPosition, { 0, 1, 1, 1 }),
-        updateName_((updateName == "") ? name : updateName)
+        updateName_((updateName == "") ? name : updateName),
+        fixedY_(fixedY)
     {}
     CollisionDetectionData() = default;
 
@@ -210,9 +211,14 @@ struct CollisionDetectionData
     // ---------- 更新用名前 ----------
     [[nodiscard]] const std::string GetUpdateName() const { return updateName_; }
 
+    // ---------- Yの値が固定 ----------
+    [[nodiscard]] const bool GetFixedY() const { return fixedY_; }
+
 private:
     CollisionSphereData collisionSphereData_;
     bool                isActive_ = true;      // 現在有効か
+
+    bool fixedY_ = false;   // Yの値が固定
 
     std::string updateName_;
 };

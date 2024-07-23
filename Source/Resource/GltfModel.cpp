@@ -16,7 +16,8 @@
 #define USE_SERIALIZE 1
 
 // ----- コンストラクタ -----
-GltfModel::GltfModel(const std::string& filename) : filename_(filename)
+GltfModel::GltfModel(const std::string& filename)
+    : filename_(filename), useRootMotionMovement_(true)
 {
     ID3D11Device* device = Graphics::Instance().GetDevice();
 
@@ -1195,7 +1196,7 @@ void GltfModel::CumulateTransforms(std::vector<Node>& nodes)
         DirectX::XMStoreFloat4x4(&node.globalTransform_, S * R * T * DirectX::XMLoadFloat4x4(&parentGlobalTransforms.top()));
 
         // 移動値をなくす
-        if (node.isRootNode_)
+        if (node.isRootNode_ && useRootMotionMovement_ == false)
         {
             node.globalTransform_._41 = 0;
             node.globalTransform_._42 = 0;

@@ -20,7 +20,8 @@ EnemyDragon::EnemyDragon()
 void EnemyDragon::Initialize()
 {
     // 位置設定
-    GetTransform()->SetPositionZ(-20);
+    //GetTransform()->SetPositionZ(-20);
+    GetTransform()->SetPositionZ(-10);
     //GetTransform()->SetPositionZ(10);
 
     // サイズを設定
@@ -161,8 +162,8 @@ void EnemyDragon::RegisterBehaviorNode()
     // --------------- 戦闘 ---------------
     behaviorTree_->AddNode("Root", "Battle", 3, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
     behaviorTree_->AddNode("Battle", "Shout", 0, BehaviorTree::SelectRule::Priority, new ShoutJudgment(this), nullptr);
-    behaviorTree_->AddNode("Battle", "Near",  1, BehaviorTree::SelectRule::Priority, new NearJudgment(this), nullptr);
-    behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    behaviorTree_->AddNode("Battle", "Near",  1, BehaviorTree::SelectRule::Random, new NearJudgment(this), nullptr);
+    behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Random, nullptr, nullptr);
 
     behaviorTree_->AddNode("Shout", "Roar",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
     behaviorTree_->AddNode("Shout", "BackStepRoar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::BackStepRoarAction(this));
@@ -172,18 +173,18 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Near", "TurnAttack",  0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
     behaviorTree_->AddNode("Near", "KnockBack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::KnockBackAction(this));
     
-    behaviorTree_->AddNode("Near", "ComboSlam",   2, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));
+    //behaviorTree_->AddNode("Near", "ComboSlam",   2, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));
 
     
-    behaviorTree_->AddNode("Near", "BackStep",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::BackStepAction(this));
-    behaviorTree_->AddNode("Near", "Slam",        1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAction(this));
-    behaviorTree_->AddNode("Near", "FrontAttack", 1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FrontAttackAction(this));
-    behaviorTree_->AddNode("Near", "ComboCharge", 1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboChargeAction(this));
+    //behaviorTree_->AddNode("Near", "BackStep",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::BackStepAction(this));
+    //behaviorTree_->AddNode("Near", "Slam",        1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAction(this));
+    //behaviorTree_->AddNode("Near", "FrontAttack", 1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FrontAttackAction(this));
+    //behaviorTree_->AddNode("Near", "ComboCharge", 1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboChargeAction(this));
 
     behaviorTree_->AddNode("Far", "Tackle",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
     behaviorTree_->AddNode("Far", "RiseAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RiseAttackAction(this));
-    behaviorTree_->AddNode("Far", "MoveTurn",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveTurnAction(this));
-    behaviorTree_->AddNode("Far", "MoveAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveAttackAction(this));
+    //behaviorTree_->AddNode("Far", "MoveTurn",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveTurnAction(this));
+    //behaviorTree_->AddNode("Far", "MoveAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveAttackAction(this));
 
 }
 
@@ -195,13 +196,17 @@ bool EnemyDragon::CheckStatusChange()
     // HPがなくなった
     if (GetHealth() <= 0.0f)
     {
-        SetStep(0); // リセット
+        // リセット
+        SetStep(0); 
+        ResetAllAttackActiveFlag();
         return true;
     }
 
     // --------------------
     //      怯み判定
     // --------------------
+    // 既に怯み中
+    if (GetIsFlinch()) return false;
     // 初回時などに通る
     if (oldHealth_ <= 0.0f)
     {
@@ -212,10 +217,13 @@ bool EnemyDragon::CheckStatusChange()
     oldHealth_ = GetHealth();
 
     // damageが 30 より大きければ怯み
-    if (damage > 30.0f)
+    //if (damage > 30.0f)
+    if (damage > 45.0f)
     {
         SetIsFlinch(true);
-        SetStep(0); // リセット
+        // リセット
+        SetStep(0); 
+        ResetAllAttackActiveFlag();
         return true;
     }
 
@@ -228,42 +236,77 @@ void EnemyDragon::RegisterCollisionData()
     // 押し出し判定登録
     CollisionDetectionData collisionDetectionData[] =
     {
-        { "Dragon15_head", 0.4f, {} }, // 頭
+#if 1
+        // ----- ダウン時 -----
+        { "Down_Dragon15_head",      0.6f,  true, {},                    "Dragon15_head"   },                          // 0
+        { "Down_Dragon15_neck_2",    1.0f,  true, { -0.4f, 0.0f, 0.0f }, "Dragon15_neck_2" },
+        { "Down_Dragon15_neck_1",    1.0f,  true, { -0.4f, 0.0f, 0.0f }, "Dragon15_neck_1" },
+        { "Down_Dragon15_spine2",    1.05f, true, {},                    "Dragon15_spine2" },
+        { "Down_Dragon15_spine0",    0.85f, true, {},                    "Dragon15_spine0" },
+        
+        { "Down_Dragon15_l_upperarm1",   0.7f,  false, { 0.2f, -0.15f, 0.0f }, "Dragon15_l_upperarm1" },
+        { "Down_Dragon15_r_upperarm1",   0.7f,  false, { 0.2f, 0.15f, 0.0f }, "Dragon15_r_upperarm1"},
+        { "Down_Dragon15_l_forearm",     0.55f, false, {}, "Dragon15_l_forearm"},
+        { "Down_Dragon15_r_forearm",     0.55f, false, {}, "Dragon15_r_forearm" },
 
-        { "Dragon15_neck_1",    1.0f,  { -0.4f, 0.0f, 0.0f } },
-        { "Dragon15_spine2",    1.05f, {} },
-        { "Dragon15_spine0",    0.85f, {} },
-        { "Dragon15_pelvis",    0.85f, {} },
+        { "Down_Dragon15_l_calf",        0.55f, true, { -0.1f, 0.5f, 0.0f },    "Dragon15_l_calf" },
+        { "Down_Dragon15_r_calf",        0.55f, true, { -0.1f, -0.5f, 0.0f },   "Dragon15_r_calf" },
+        { "Down_Dragon15_l_horselink",   0.55f,  true, {},                       "Dragon15_l_horselink" },
+        { "Down_Dragon15_r_horselink",   0.55f,  true, {},                       "Dragon15_r_horselink" },
+        { "Down_Dragon15_l_foot",        0.35f, true, { 0.05f, -1.0f, 0.1f },   "Dragon15_l_foot" },
+        { "Down_Dragon15_r_foot",        0.35f, true, { 0.1f, 0.0f, -0.1f },    "Dragon15_r_foot" },
 
-        { "Dragon15_r_hand",    0.3f, {} },
-        { "Dragon15_r_forearm", 0.32, {} },
+        #pragma region ---------- 尻尾 ----------
+        { "Dragon15_tail_00", 0.70f, true, {} },
+        { "Dragon15_tail_01", 0.55f, true, {  0.20f, 0.0f,  0.00f } },
+        { "Dragon15_tail_02", 0.42f, true, {  0.01f, 0.0f,  0.03f } },
+        { "Dragon15_tail_03", 0.35f, true, { -0.10f, 0.0f, -0.05f } },
+        { "Dragon15_tail_04", 0.25f, true,  {} },
+        { "Dragon15_tail_05", 0.20f, true,  {} },
 
-        { "Dragon15_l_hand",    0.3f, {} },
-        { "Dragon15_l_forearm", 0.32f, {} },
+        { "Dragon15_tail_add_0", 0.30f, true, {  0.40f, 0.0f,  0.00f }, "Dragon15_tail_03" },
+        { "Dragon15_tail_add_1", 0.20f, true, {  0.40f, 0.0f,  0.03f }, "Dragon15_tail_04" },
+        { "Dragon15_tail_add_2", 0.2f,  true, {  0.30f, 0.0f, -0.05f }, "Dragon15_tail_05" },
+        { "Dragon15_tail_add_3", 0.2f,  true, {  0.60f, 0.0f, -0.13f }, "Dragon15_tail_05" },
+#pragma endregion ---------- 尻尾 ----------
 
-        { "Dragon15_r_foot",        0.32f, {} },
-        { "Dragon15_r_horselink",   0.3f,  { 0.06f, 0.01f, -0.09f } },
-        { "Dragon15_r_calf",        0.35f, { 0.03f, 0.0f, 0.15f } },
+#else
+        { "Dragon15_head", 0.4f, false, {} }, // 頭
 
-        { "Dragon15_l_foot",        0.32f, {} },
-        { "Dragon15_l_horselink",   0.3f,  { 0.06f, 0.01f, -0.09f } },
-        { "Dragon15_l_calf",        0.35f, { 0.03f, 0.0f, 0.15f } },
+        { "Dragon15_neck_1",    1.0f,  false, { -0.4f, 0.0f, 0.0f } },
+        { "Dragon15_spine2",    1.05f, false, {} },
+        { "Dragon15_spine0",    0.85f, false, {} },
+        { "Dragon15_pelvis",    0.85f, false, {} },
+
+        { "Dragon15_r_hand",    0.3f, false, {} },
+        { "Dragon15_r_forearm", 0.32, false, {} },
+
+        { "Dragon15_l_hand",    0.3f, false, {} },
+        { "Dragon15_l_forearm", 0.32f, false,  {} },
+
+        { "Dragon15_r_foot",        0.32f, false, {} },
+        { "Dragon15_r_horselink",   0.3f,  false, { 0.06f, 0.01f, -0.09f } },
+        { "Dragon15_r_calf",        0.35f, false, { 0.03f, 0.0f, 0.15f } },
+
+        { "Dragon15_l_foot",        0.32f, false, {} },
+        { "Dragon15_l_horselink",   0.3f,  false, { 0.06f, 0.01f, -0.09f } },
+        { "Dragon15_l_calf",        0.35f, false, { 0.03f, 0.0f, 0.15f } },
 
         // ---------- 尻尾 ----------
 #pragma region ---------- 尻尾 ----------
-        { "Dragon15_tail_00", 0.70f, {} },
-        { "Dragon15_tail_01", 0.55f, {  0.20f, 0.0f,  0.00f } },
-        { "Dragon15_tail_02", 0.42f, {  0.01f, 0.0f,  0.03f } },
-        { "Dragon15_tail_03", 0.35f, { -0.10f, 0.0f, -0.05f } },
-        { "Dragon15_tail_04", 0.25f,  {} },
-        { "Dragon15_tail_05", 0.20f,  {} },
+        { "Dragon15_tail_00", 0.70f, false, {} },
+        { "Dragon15_tail_01", 0.55f, false, {  0.20f, 0.0f,  0.00f } },
+        { "Dragon15_tail_02", 0.42f, false, {  0.01f, 0.0f,  0.03f } },
+        { "Dragon15_tail_03", 0.35f, false, { -0.10f, 0.0f, -0.05f } },
+        { "Dragon15_tail_04", 0.25f, false,  {} },
+        { "Dragon15_tail_05", 0.20f, false,  {} },
         
-        { "Dragon15_tail_add_0", 0.30f, {  0.40f, 0.0f,  0.00f }, "Dragon15_tail_03" },
-        { "Dragon15_tail_add_1", 0.20f, {  0.40f, 0.0f,  0.03f }, "Dragon15_tail_04" },
-        { "Dragon15_tail_add_2", 0.2f,  {  0.30f, 0.0f, -0.05f }, "Dragon15_tail_05" },
-        { "Dragon15_tail_add_3", 0.2f,  {  0.60f, 0.0f, -0.13f }, "Dragon15_tail_05" },
+        { "Dragon15_tail_add_0", 0.30f, false, {  0.40f, 0.0f,  0.00f }, "Dragon15_tail_03" },
+        { "Dragon15_tail_add_1", 0.20f, false, {  0.40f, 0.0f,  0.03f }, "Dragon15_tail_04" },
+        { "Dragon15_tail_add_2", 0.2f,  false, {  0.30f, 0.0f, -0.05f }, "Dragon15_tail_05" },
+        { "Dragon15_tail_add_3", 0.2f,  false, {  0.60f, 0.0f, -0.13f }, "Dragon15_tail_05" },
 #pragma endregion ---------- 尻尾 ----------
-
+#endif
     };
     for (int i = 0; i < _countof(collisionDetectionData); ++i)
     {
@@ -410,12 +453,27 @@ void EnemyDragon::UpdateCollisions(const float& elapsedTime)
     for (CollisionDetectionData& data : collisionDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
+        DirectX::XMFLOAT3 pos = GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition());
+        
+        if(data.GetFixedY()) 
+            pos.y = 0.0f;
+
+        data.SetJointPosition(pos);
     }
 }
 
 
 #pragma region ----- 攻撃判定 -----
+// ----- 全攻撃判定無効化 -----
+void EnemyDragon::ResetAllAttackActiveFlag()
+{
+    for (AttackDetectionData& data : attackDetectionData_)
+    {
+        data.SetIsActive(false);
+    }
+}
+
+// ----- 回転攻撃判定設定 -----
 void EnemyDragon::SetTurnAttackActiveFlag(const bool& flag)
 {
     for (int i = AttackData::TrunAttackStart; i <= AttackData::TrunAttackEnd; ++i)
@@ -424,6 +482,7 @@ void EnemyDragon::SetTurnAttackActiveFlag(const bool& flag)
     }
 }
 
+// ----- 突進攻撃判定設定 -----
 void EnemyDragon::SetTackleAttackActiveFlag(const bool& flag)
 {
     for (int i = AttackData::TackleAttackStart; i <= AttackData::TackleAttackEnd; ++i)
@@ -432,6 +491,7 @@ void EnemyDragon::SetTackleAttackActiveFlag(const bool& flag)
     }
 }
 
+// ----- 上昇攻撃判定設定 -----
 void EnemyDragon::SetFlyAttackActiveFlag(const bool& flag)
 {
     for (int i = AttackData::FlyAttackStart; i <= AttackData::FlyAttackEnd; ++i)

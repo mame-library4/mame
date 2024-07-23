@@ -365,8 +365,10 @@ public:
     [[nodiscard]] const float GetTransitionTime() const { return transitionTime_; }
     [[nodiscard]] const bool GetIsBlendAnimation() const { return isBlendAnimation_; }
     [[nodiscard]] const bool GetIsAnimationLooped() const { return isAnimationLooped_; }
+    [[nodiscard]] const bool GetUseRootMotionMovement() const { return useRootMotionMovement_; }
     void SetAnimationSpeed(const float& speed) { animationSpeed_ = speed; }
     void SetTransitionTime(const float& time) { transitionTime_ = time; }
+    void SetUseRootMotionMovement(const bool& flag) { useRootMotionMovement_ = flag; }
 
     // ---------- Transform ----------
     Transform* GetTransform() { return &transform_; }
@@ -427,6 +429,7 @@ private:
     bool    isAnimationLooped_      = false;    // アニメーションが一回以上ループしたか
     bool    animationEndFlag_       = false;    // アニメーションエンドフラグ
     bool    isBlendAnimation_       = false;    // ブレンドするかフラグ
+    bool    useRootMotionMovement_  = false;    // ルートモーションの移動値を使用するか
     std::vector<Node> animatedNodes_[2];
     std::vector<Node> blendedAnimationNodes_;    
 };

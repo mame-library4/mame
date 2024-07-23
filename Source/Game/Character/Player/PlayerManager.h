@@ -22,7 +22,7 @@ public:
     void DrawDebug();
     void DebugRender(DebugRenderer* debugRenderer);
 
-    void CollisionPlayerVsEnemy();
+
 
 public:// --- æ“¾Eİ’è ---
     std::unique_ptr<Player>& GetPlayer() { return player_; }

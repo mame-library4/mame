@@ -14,12 +14,15 @@ const bool DeathJudgment::Judgment()
 // ----- ‚Ğ‚é‚İ”»’è -----
 const bool FlinchJudgment::Judgment()
 {
+    //return true;
     return owner_->GetIsFlinch();
 }
 
 // ----- ”ñí“¬”»’è -----
 const bool NonBattleJudgment::Judgment()
 {
+    return true;
+
     if (num_ == 0)
     {
         ++num_;
@@ -55,7 +58,18 @@ const bool ShoutJudgment::Judgment()
 
 const bool NearJudgment::Judgment()
 {
-    return false;
+    //if (num_ == 0)
+    //{
+    //    num_ = 1;
+    //    return true;
+    //}
+    //else
+    //{
+    //    num_ = 0;
+    //    return false;
+    //}
+
     return true;
+    return false;
 
 }

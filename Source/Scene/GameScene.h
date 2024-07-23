@@ -25,6 +25,8 @@ public:
 
     void DrawDebug()                        override; // ImGui用
 
+    void UpdateCollisions(const float& elapsedTime);
+
 public:
     // ----- ステージ判定用 -----
     static DirectX::XMFLOAT3 stageCenter_;

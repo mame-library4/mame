@@ -250,23 +250,31 @@ namespace ActionDragon
 {
     const ActionBase::State FlinchAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         const float animationSpeed = 1.5f;
 
-        switch (owner_->GetStep())
+        switch (static_cast<STATE>(owner_->GetStep()))
         {
-        case 0:// 初期化
+        case STATE::Initialize:// 初期化
             // アニメーション設定
-            owner_->PlayBlendAnimation(Enemy::DragonAnimation::CriticalStart, false);
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::FlyFlinchStart, false);
+            owner_->SetUseRootMotionMovement(false);
+            //owner_->PlayBlendAnimation(Enemy::DragonAnimation::CriticalStart, false);
+            owner_->SetTransitionTime(0.1f);
 
             // 変数初期化
             addForceData_.Initialize(0.01, 0.2f, 1.5f);
             num_ = 0;
 
-            owner_->SetStep(1);
+            // ステート変更
+            SetState(STATE::FlinchStart);
 
             break;
-        case 1:
-
+        case STATE::FlinchStart:// 怯みスタート( 倒れこみ )
+        {
+            // 移動処理
             if (addForceData_.Update(owner_->GetAnimationSeconds()))
             {
                 DirectX::XMFLOAT3 ownerRight = owner_->GetTransform()->CalcRight() * -1;
@@ -274,34 +282,46 @@ namespace ActionDragon
                 owner_->AddForce(ownerRight, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
             }
 
-
-            if (owner_->IsPlayAnimation() == false)
+            // 指定のフレームを超えたら次に進む
+            const float animationEndFrame = 1.0f;
+            if (owner_->GetAnimationSeconds() > animationEndFrame)
             {
-                owner_->PlayAnimation(Enemy::DragonAnimation::CriticalLoop, false, animationSpeed);
-                owner_->SetStep(2);
+                owner_->SetUseRootMotionMovement(true);
+
+                owner_->PlayBlendAnimation(Enemy::DragonAnimation::CriticalLoop, false, animationSpeed);
+                owner_->SetTransitionTime(0.1f);
+                // ステート変更
+                SetState(STATE::FlinchLoop);
             }
+        }
 
             break;
-        case 2:
+        case STATE::FlinchLoop:// 怯みループ
 
             if (owner_->IsPlayAnimation() == false)
             {
                 if (num_ > 3)
                 {
-                    owner_->PlayAnimation(Enemy::DragonAnimation::CriticalEnd, false, 1.5f);
-                    owner_->SetStep(3);
+                    owner_->PlayAnimation(Enemy::DragonAnimation::CriticalEnd, false, animationSpeed);
+                    // ステート変更
+                    SetState(STATE::FlinchEnd);
                 }
                 else
                 {
                     owner_->PlayAnimation(Enemy::DragonAnimation::CriticalLoop, false, animationSpeed);
-                    owner_->SetStep(1);
                 }
 
                 ++num_;                
             }
 
             break;
-        case 3:
+        case STATE::FlinchEnd:// 怯み終わり
+
+            
+
+            // アニメーション速度設定
+            SetAnimationSpeed();
+
             if (owner_->IsPlayAnimation() == false)
             {
                 owner_->SetIsFlinch(false);
@@ -313,6 +333,17 @@ namespace ActionDragon
         }
 
         return ActionBase::State::Run;
+    }
+
+    // ----- アニメーション速度設定 -----
+    void FlinchAction::SetAnimationSpeed()
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+
+        if (animationSeconds > 1.5f)
+        {
+            owner_->SetAnimationSpeed(1.0f);
+        }
     }
 }
 
@@ -337,7 +368,7 @@ namespace ActionDragon
         case 1:
 
             timer_ += elapsedTime;
-            if (timer_ > 2.0f)
+            if (timer_ > 3.0f)
             {
                 owner_->SetStep(0);
                 return ActionBase::State::Failed;

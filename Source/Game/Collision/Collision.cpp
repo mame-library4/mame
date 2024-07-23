@@ -2,6 +2,30 @@
 #include "../Other/MathHelper.h"
 
 // ‹…‚Æ‹…‚ÌŒð·”»’è
+#if 1
+const bool Collision::IntersectSphereVsSphere(
+    const DirectX::XMFLOAT3& positionA, const float radiusA,
+    const DirectX::XMFLOAT3& positionB, const float radiusB,
+    DirectX::XMFLOAT3& outPosition)
+{
+    float vx = positionB.x - positionA.x;
+    float vz = positionB.z - positionA.z;
+    float range = radiusA + radiusB;
+    float distXZ = sqrtf(vx * vx + vz * vz);
+    if (distXZ > range)
+    {
+        return false;
+    }
+    vx /= distXZ;
+    vz /= distXZ;
+    outPosition.x = positionA.x + (vx * range);
+    outPosition.y = 0.0f;
+    //outPosition.y = positionB.y;
+    outPosition.z = positionA.z + (vz * range);
+
+    return true;
+}
+#else
 const bool Collision::IntersectSphereVsSphere(
     const DirectX::XMFLOAT3& positionA, const float radiusA,
     const DirectX::XMFLOAT3& positionB, const float radiusB,
@@ -18,6 +42,7 @@ const bool Collision::IntersectSphereVsSphere(
 
     return true;
 }
+#endif
 
 const bool Collision::IntersectSphereVsSphere(
     const DirectX::XMFLOAT3& positionA, const float radiusA,

@@ -100,6 +100,10 @@ public:
         AttackMove2,
         AttackMove3,
         AttackMove4,
+
+        // ----- ‹ó’†‚©‚ç‹¯‚İ -----
+        FlyFlinchStart,
+        FlyFlinchLoop,
     };
 
 public:
@@ -175,6 +179,7 @@ public:// --- æ“¾Eİ’è ---
     [[nodiscard]] const std::string GetActiveNodeName() const { return (activeNode_ != nullptr) ? activeNode_->GetName() : ""; }
 
     // ---------- UŒ‚”»’è ----------
+    virtual void ResetAllAttackActiveFlag()                         = 0; // ‘SUŒ‚”»’è–³Œø‰»
     virtual void SetTurnAttackActiveFlag(const bool& flag = true)   = 0; // ‰ñ“]UŒ‚
     virtual void SetTackleAttackActiveFlag(const bool& flag = true) = 0; // “ËiUŒ‚
     virtual void SetFlyAttackActiveFlag(const bool& flag = true)    = 0; // ã¸UŒ‚

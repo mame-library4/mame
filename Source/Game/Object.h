@@ -11,6 +11,7 @@ public:
     void Render(ID3D11PixelShader* psShader = nullptr);
     void DrawDebug();
 
+    // ---------- Animation ----------
     void PlayAnimation(const int& index, const bool& loop, const float& speed) { gltfModel_.PlayAnimation(index, loop, speed); }
     void PlayBlendAnimation(const int& index, const bool& loop, const float& speed, const float& blendAnimationFrame) { gltfModel_.PlayBlendAnimation(index, loop, speed, blendAnimationFrame); }   
     [[nodiscard]] const bool IsPlayAnimation() { return gltfModel_.IsPlayAnimation(); }
@@ -20,8 +21,10 @@ public:
     [[nodiscard]] const float GetTransitionTime() const { return gltfModel_.GetTransitionTime(); }
     [[nodiscard]] const bool GetIsBlendAnimation() const { return gltfModel_.GetIsBlendAnimation(); }
     [[nodiscard]] const bool GetIsAnimationLooped() const { return gltfModel_.GetIsAnimationLooped(); }
+    [[nodiscard]] const bool GetUseRootMotionMovement() const { return gltfModel_.GetUseRootMotionMovement(); }
     void SetAnimationSpeed(const float& speed) { gltfModel_.SetAnimationSpeed(speed); }
     void SetTransitionTime(const float& time) { gltfModel_.SetTransitionTime(time); }
+    void SetUseRootMotionMovement(const bool& flag) { gltfModel_.SetUseRootMotionMovement(flag); }
 
 public:
     // ---------- Transform ----------

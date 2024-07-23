@@ -24,6 +24,7 @@ private:
     void UpdateCollisions(const float& elapsedTime) override;
 
     // ---------- 攻撃判定 ----------
+    void ResetAllAttackActiveFlag()                         override;
     void SetTurnAttackActiveFlag(const bool& flag = true)   override;
     void SetTackleAttackActiveFlag(const bool& flag = true) override;
     void SetFlyAttackActiveFlag(const bool& flag = true)    override;
@@ -33,8 +34,10 @@ private:
 
     // ----- DebugRenderer表示用フラグ -----
     bool isCollisionSphere_ = true;
-    bool isAttackSphere_    = true;
-    bool isDamageSphere_    = true;
+    //bool isAttackSphere_    = true;
+    //bool isDamageSphere_    = true;
+    bool isAttackSphere_    = false;
+    bool isDamageSphere_    = false;
 
     bool isUpdateAnimation_ = true;
     //bool isUpdateAnimation_ = false;
@@ -42,6 +45,11 @@ private:
     float oldHealth_ = 0.0f;
 
 private:
+    enum CollisionData
+    {
+        DownStart   = 0,
+        DownEnd     = 10,
+    };
     enum AttackData
     {
         TrunAttackStart     = 0,

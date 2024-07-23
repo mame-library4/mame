@@ -59,4 +59,7 @@ class NearJudgment : public JudgmentBase
 public:
     NearJudgment(Enemy* owner) : JudgmentBase(owner) {}
     const bool Judgment() override;
+
+private:
+    int num_ = 0;
 };
