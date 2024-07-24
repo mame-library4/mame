@@ -50,6 +50,9 @@ void EnemyDragon::Initialize()
     SetTurnAttackActiveFlag(false);
     SetTackleAttackActiveFlag(false);
     SetFlyAttackActiveFlag(false);
+
+    // 押し出し判定
+    SetDownCollisionActiveFlag(false);
 }
 
 // ----- 終了化 -----
@@ -100,6 +103,13 @@ void EnemyDragon::DrawDebug()
         ImGui::Checkbox("AttackSphere", &isAttackSphere_);
         ImGui::Checkbox("collision", &isCollisionSphere_);
 
+        if (ImGui::TreeNode("Judgment"))
+        {
+            ImGui::DragFloat("NearAttackRadius", &nearAttackRadius_);
+
+            ImGui::TreePop();
+        }
+
         Character::DrawDebug();
         Object::DrawDebug();
 
@@ -113,6 +123,8 @@ void EnemyDragon::DrawDebug()
 // ----- DebugRebderer -----
 void EnemyDragon::DebugRender(DebugRenderer* debugRenderer)
 {
+    debugRenderer->DrawCylinder(GetTransform()->GetPosition(), nearAttackRadius_, 1.0f, { 0,1,0,1 });
+
     if (isCollisionSphere_)
     {
         for (auto& data : GetCollisionDetectionData())
@@ -167,15 +179,15 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Battle", "Near",  1, BehaviorTree::SelectRule::Priority, new NearJudgment(this), nullptr);
     behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
 
-    behaviorTree_->AddNode("Shout", "Roar",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
-    behaviorTree_->AddNode("Shout", "BackStepRoar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::BackStepRoarAction(this));
+    behaviorTree_->AddNode("Shout", "Roar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
+    //behaviorTree_->AddNode("Shout", "RoarLong",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarLongAction(this));
 
-    behaviorTree_->AddNode("Near", "FlyAttack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));
+    behaviorTree_->AddNode("Near", "ComboSlam",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));
     
+    behaviorTree_->AddNode("Near", "FlyAttack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));
     behaviorTree_->AddNode("Near", "TurnAttack",  0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
     behaviorTree_->AddNode("Near", "KnockBack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::KnockBackAction(this));
     
-    //behaviorTree_->AddNode("Near", "ComboSlam",   2, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));
 
     
     //behaviorTree_->AddNode("Near", "BackStep",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::BackStepAction(this));
@@ -238,7 +250,7 @@ void EnemyDragon::RegisterCollisionData()
     // 押し出し判定登録
     CollisionDetectionData collisionDetectionData[] =
     {
-#if 1
+#pragma region ダウン時の押し出し判定
         // ----- ダウン時 -----
         { "Down_Dragon15_head",      0.6f,  true, {},                    "Dragon15_head"   },                          // 0
         { "Down_Dragon15_neck_2",    1.0f,  true, { -0.4f, 0.0f, 0.0f }, "Dragon15_neck_2" },
@@ -271,8 +283,8 @@ void EnemyDragon::RegisterCollisionData()
         { "Dragon15_tail_add_2", 0.2f,  true, {  0.30f, 0.0f, -0.05f }, "Dragon15_tail_05" },
         { "Dragon15_tail_add_3", 0.2f,  true, {  0.60f, 0.0f, -0.13f }, "Dragon15_tail_05" },
 #pragma endregion ---------- 尻尾 ----------
+#pragma endregion ダウン時の押し出し判定
 
-#else
         { "Dragon15_head", 0.4f, false, {} }, // 頭
 
         { "Dragon15_neck_1",    1.0f,  false, { -0.4f, 0.0f, 0.0f } },
@@ -308,7 +320,6 @@ void EnemyDragon::RegisterCollisionData()
         { "Dragon15_tail_add_2", 0.2f,  false, {  0.30f, 0.0f, -0.05f }, "Dragon15_tail_05" },
         { "Dragon15_tail_add_3", 0.2f,  false, {  0.60f, 0.0f, -0.13f }, "Dragon15_tail_05" },
 #pragma endregion ---------- 尻尾 ----------
-#endif
     };
     for (int i = 0; i < _countof(collisionDetectionData); ++i)
     {
@@ -502,3 +513,20 @@ void EnemyDragon::SetFlyAttackActiveFlag(const bool& flag)
     }
 }
 #pragma endregion ----- 攻撃判定 -----
+
+// ----- 押し出し判定 -----
+void EnemyDragon::SetDownCollisionActiveFlag(const bool& flag)
+{
+    // 全てのフラグをリセットする
+    const bool resetFlag = !flag;
+    //for (auto& data : GetCollisionDetectionData())
+    for (int i = 0; i < collisionDetectionData_.size(); ++i)
+    {
+        GetCollisionDetectionData(i).SetIsActive(resetFlag);
+    }
+    // ダウン時の押し出し判定設定
+    for (int i = CollisionData::DownStart; i < CollisionData::DownEnd; ++i)
+    {
+        GetCollisionDetectionData(i).SetIsActive(flag);
+    }
+}

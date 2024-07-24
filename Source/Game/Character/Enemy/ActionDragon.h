@@ -25,6 +25,7 @@ namespace ActionDragon
 
         [[nodiscard]] const float GetForce() const { return force_; }
         [[nodiscard]] const float GetDecelerationForce() const { return decelerationForce_; }
+        [[nodiscard]] const bool  GetIsAddForce() const { return isAddforce_; }
 
     private:
         float   addForceFrame_      = 0.0f;
@@ -148,6 +149,21 @@ namespace ActionDragon
         void UpdateBlur(const float& elapsedTime);
 
     private:
+        GamePadVibration gamePadVibration_;
+        float blurTimer_ = 0.0f;
+    };
+
+    // 咆哮行動(長いやつ)
+    class RoarLongAction : public ActionBase
+    {
+    public:
+        RoarLongAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+
+    private:
+        void UpdateBlur(const float& elapsedTime);
+
+    private:
         static const int vibrationNum_ = 3;
         GamePadVibration gamePadVibration_[vibrationNum_];
 
@@ -159,27 +175,6 @@ namespace ActionDragon
         float   maxBlurTime_    = 0.0f; // ブラー用
 
         bool isPlayerFilnch_ = false;
-    };
-
-    // バックステップ咆哮行動
-    class BackStepRoarAction : public ActionBase
-    {
-    public:
-        BackStepRoarAction(Enemy* owner) : ActionBase(owner) {}
-        const ActionBase::State Run(const float& elapsedTime) override;
-
-    private:
-        void UpdateBlur(const float& elapsedTime);
-
-    private:
-        GamePadVibration gamePadVibration_;
-
-        // ----- Blur -----
-        float   blurStartFrame_ = 0.0f; // ブラー開始フレーム
-        float   blurEndFrame_   = 0.0f; // ブラー終了フレーム
-        float   maxBlurPower_   = 0.0f; // ブラーの強さ
-        float   blurTimer_      = 0.0f; // ブラーのEasing用タイマー
-        float   maxBlurTime_    = 0.0f; // ブラー用
     };
 
     // バックステップ行動

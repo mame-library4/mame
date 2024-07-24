@@ -149,8 +149,6 @@ public:// --- 取得・設定 ---
     // ----- 攻撃開始範囲 -----
     [[nodiscard]] const float GetNearAttackRadius() const { return nearAttackRadius_; }
     void SetNearAttackRadius(const float& radius) { nearAttackRadius_ = radius; }
-    [[nodiscard]] const float GetFarAttackRadius() const { return farAttackRadius_; }
-    void SetFarAttackRadius(const float& radius) { farAttackRadius_ = radius; }
 
     // ----- 移動先位置 -----
     [[nodiscard]] const DirectX::XMFLOAT3 GetMovePosition() const { return movePosition_; }
@@ -181,6 +179,9 @@ public:// --- 取得・設定 ---
     virtual void SetTackleAttackActiveFlag(const bool& flag = true) = 0; // 突進攻撃
     virtual void SetFlyAttackActiveFlag(const bool& flag = true)    = 0; // 上昇攻撃
 
+    // ---------- 押し出し判定 ----------
+    virtual void SetDownCollisionActiveFlag(const bool& flag = true) = 0;
+
     [[nodiscard]] const bool GetIsStageCollisionJudgement() const { return isStageCollisionJudgement_; }
     void SetIsStageCollisionJudgement(const bool& flag) { isStageCollisionJudgement_ = flag; }
 
@@ -197,8 +198,7 @@ protected:
 
     // ---------- 戦闘判定範囲変数 ----------
     float               battleRadius_       = 20.0f;// 戦闘開始範囲
-    float               nearAttackRadius_   = 6.0f; // 近距離攻撃開始範囲
-    float               farAttackRadius_    = 14.0f;// 遠距離攻撃開始範囲
+    float               nearAttackRadius_   = 10.0f;// 近距離攻撃開始範囲
 
 
     DirectX::XMFLOAT3 movePosition_ = {}; // 移動先位置

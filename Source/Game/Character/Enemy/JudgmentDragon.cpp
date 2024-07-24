@@ -59,26 +59,25 @@ const bool RoarJudgment::Judgment()
 // ----- ‹©‚Ô”»’è -----
 const bool ShoutJudgment::Judgment()
 {
+    //return true;
     return false;
     return owner_->GetIsRoar() == false;
 }
 
 const bool NearJudgment::Judgment()
 {
-    //if (num_ == 0)
-    //{
-    //    num_ = 1;
-    //    return true;
-    //}
-    //else
-    //{
-    //    num_ = 0;
-    //    return false;
-    //}
+    const DirectX::XMFLOAT3 ownerPos = owner_->GetTransform()->GetPosition();
+    const DirectX::XMFLOAT3 playerPos = PlayerManager::Instance().GetTransform()->GetPosition();
+    const float length = XMFloat3Length(ownerPos - playerPos);
 
-    return true;
-    return false;
-
+    if (length < owner_->GetNearAttackRadius())
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 

@@ -186,9 +186,7 @@ void Player::Turn(const float& elapsedTime)
     GamePad& gamePad = Input::Instance().GetGamePad();
     float aLX = gamePad.GetAxisLX();
     float aLY = gamePad.GetAxisLY();
-
-    const float speed = GetRotateSpeed() * elapsedTime;
-
+        
     DirectX::XMFLOAT2 input = { fabsf(gamePad.GetAxisLX()), fabsf(gamePad.GetAxisLY()) };
     DirectX::XMFLOAT3 cameraFront = Camera::Instance().CalcForward();
     DirectX::XMFLOAT3 cameraRight = Camera::Instance().CalcRight();
@@ -218,6 +216,7 @@ void Player::Turn(const float& elapsedTime)
         if (forwardDot > -0.01f) return;
 
         // -2.0 ~ 0.0;
+        const float speed = GetRotateSpeed() * elapsedTime;
         float rotateY = forwardDot * speed;      
         rotateY = std::min(rotateY, -0.7f * speed);
 

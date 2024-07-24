@@ -29,6 +29,9 @@ private:
     void SetTackleAttackActiveFlag(const bool& flag = true) override;
     void SetFlyAttackActiveFlag(const bool& flag = true)    override;
 
+    // ---------- âüÇµèoÇµîªíË ----------
+    void SetDownCollisionActiveFlag(const bool& flag = true) override;
+
 private:
     Object circle_;
 
@@ -48,7 +51,7 @@ private:
     enum CollisionData
     {
         DownStart   = 0,
-        DownEnd     = 10,
+        DownEnd     = 25,
     };
     enum AttackData
     {

@@ -17,11 +17,12 @@ void Enemy::Turn(const float& elapsedTime, const DirectX::XMFLOAT3& targetPos)
     DirectX::XMFLOAT2 target = { targetPos.x , targetPos.z };
     DirectX::XMFLOAT2 vec = XMFloat2Normalize(target - ownerPos);
 
+    ownerFront = XMFloat2Normalize(ownerFront);
+
     // ŠOÏ‚Å‚Ç‚Á‚¿‚É‰ñ“]‚·‚é‚©”»’f
     float cross = XMFloat2Cross(vec, ownerFront);
 
     // “àÏ‚Å‰ñ“]•‚ğZo
-    ownerFront = XMFloat2Normalize(ownerFront);
     float dot = XMFloat2Dot(vec, ownerFront) - 1.0f;
 
     // ‰ñ“]—Ê‚ª­‚È‚¯‚ê‚Î‚±‚±‚ÅI—¹
@@ -30,7 +31,7 @@ void Enemy::Turn(const float& elapsedTime, const DirectX::XMFLOAT3& targetPos)
     // ‰ñ“]‘¬“xİ’è
     float rotateSpeed = GetRotateSpeed() * elapsedTime;
     float rotateY = dot * rotateSpeed;
-    rotateY = std::min(rotateY, -0.4f * rotateSpeed);
+    rotateY = std::min(rotateY, -0.7f * rotateSpeed);
 
     // ‰ñ“]ˆ—
     if (cross > 0)
@@ -54,7 +55,6 @@ const bool Enemy::SearchPlayer()
 
     // ‹ß‹——£UŒ‚”ÍˆÍˆÈ“à‚É‚¢‚é‚Ì‚Å‹­§“I‚Éí“¬ó‘Ô‚É‚·‚é
     if (dist < nearAttackRadius_) return true;
-    if (dist < farAttackRadius_) return true;
 
     // í“¬”ÍˆÍ‚É‚¢‚é
     if (dist < battleRadius_)

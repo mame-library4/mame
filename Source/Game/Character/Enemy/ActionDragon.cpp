@@ -262,6 +262,9 @@ namespace ActionDragon
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::CriticalStart, false);
             owner_->SetTransitionTime(0.1f);
 
+            // 怯み時押し出し判定設定
+            owner_->SetDownCollisionActiveFlag();
+
             // 変数初期化
             addForceData_.Initialize(0.01, 0.2f, 1.5f);
             loopCounter_ = 0;
@@ -319,7 +322,10 @@ namespace ActionDragon
 
             if (owner_->IsPlayAnimation() == false)
             {
+                // フラグをリセット
                 owner_->SetIsFlinch(false);
+                owner_->SetDownCollisionActiveFlag(false);
+
                 owner_->SetStep(0);
                 return ActionBase::State::Complete;
             }
@@ -361,6 +367,9 @@ namespace ActionDragon
 
             // ルートモーションの移動値をなくす
             owner_->SetUseRootMotionMovement(false);
+
+            // 怯み時の押し出し判定
+            owner_->SetDownCollisionActiveFlag();
 
             // 変数初期化
             easingTimer_ = 0.0f;
@@ -420,7 +429,10 @@ namespace ActionDragon
 
             if (owner_->IsPlayAnimation() == false)
             {
+                // フラグをリセット
                 owner_->SetIsFlinch(false);
+                owner_->SetDownCollisionActiveFlag(false);
+
                 owner_->SetStep(0);
                 return ActionBase::State::Complete;
             }
@@ -536,6 +548,85 @@ namespace ActionDragon
         {
         case 0:// 初期化
             // アニメーション設定
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::BackStepRoar, false);
+
+            // ラジアルブラーのピクセルシェーダ使用
+            PostProcess::Instance().SetUseRadialBlur();
+
+            // 咆哮した。
+            owner_->SetIsRoar(true);
+
+            // 変数初期化
+            gamePadVibration_.Initialize(1.3f, 1.0f, 1.0f);
+            blurTimer_ = 0.0f;
+
+            owner_->SetStep(1);
+
+            break;
+        case 1:
+            // コントローラー振動
+            gamePadVibration_.Update(owner_->GetAnimationSeconds());
+
+            // ブラー更新
+            UpdateBlur(elapsedTime);
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                // フラグリセット
+                PostProcess::Instance().SetUseRadialBlur(false);
+
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+
+            break;
+        }
+
+        return ActionBase::State::Run;
+    }
+
+    // ----- ラジアルブラー更新 -----
+    void RoarAction::UpdateBlur(const float& elapsedTime)
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+        const float blurStartFrame = 1.3f;
+        const float blurEndFrame = 2.3f;
+        const float maxBlurTime = 0.2f;
+        const float maxBlurPower = 0.03f;
+
+        // ブラー終了フレームを過ぎたら、ブラーを緩める
+        if (animationSeconds > blurEndFrame)
+        {
+            PostProcess::Instance().GetConstants()->GetData()->blurPower_ =
+                Easing::InSine(blurTimer_, maxBlurTime, maxBlurPower, 0.0f);
+
+            blurTimer_ -= elapsedTime;
+            blurTimer_ = std::max(blurTimer_, 0.0f);
+        }
+        // ブラー開始フレームを過ぎたら、ブラーをかける
+        else if (animationSeconds > blurStartFrame)
+        {
+            PostProcess::Instance().GetConstants()->GetData()->blurPower_ =
+                Easing::InQuint(blurTimer_, maxBlurTime, maxBlurPower, 0.0f);
+
+            blurTimer_ += elapsedTime;
+            blurTimer_ = std::min(blurTimer_, maxBlurTime);
+        }
+    }
+}
+
+// ----- 咆哮(長いやつ) -----
+namespace ActionDragon
+{
+    const ActionBase::State RoarLongAction::Run(const float& elapsedTime)
+    {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
+        switch (owner_->GetStep())
+        {
+        case 0:// 初期化
+            // アニメーション設定
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::Roar, false);
 
             // ラジアルブラーのピクセルシェーダ使用
@@ -593,7 +684,7 @@ namespace ActionDragon
     }
 
     // ----- ラジアルブラー更新 -----
-    void RoarAction::UpdateBlur(const float& elapsedTime)
+    void RoarLongAction::UpdateBlur(const float& elapsedTime)
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
 
@@ -620,87 +711,6 @@ namespace ActionDragon
         if (animationSeconds > 4.1f)
         {
             maxBlurPower_ = 0.03f;
-        }
-    }
-}
-
-// ----- バックステップ咆哮 -----
-namespace ActionDragon
-{
-    const ActionBase::State BackStepRoarAction::Run(const float& elapsedTime)
-    {
-        // 実行中ノードを中断するか
-        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
-
-        switch (owner_->GetStep())
-        {
-        case 0:// 初期化
-            // アニメーション設定
-            owner_->PlayBlendAnimation(Enemy::DragonAnimation::BackStepRoar, false);
-
-            // ラジアルブラーのピクセルシェーダ使用
-            owner_->SetIsRoar(true);
-
-            // 変数初期化
-            {
-                gamePadVibration_.Initialize(1.35f, 1.0f, 1.0f);
-
-                blurStartFrame_ = 1.35f;
-                blurEndFrame_ = 2.35f;
-                maxBlurPower_ = 0.03f;
-                maxBlurTime_ = 0.2f;
-                blurTimer_ = 0.0f;
-            }
-
-            owner_->SetStep(1);
-
-            break;
-        case 1:
-        {
-            // コントローラー振動更新
-            gamePadVibration_.Update(owner_->GetAnimationSeconds());
-
-            // ラジアルブラー更新
-            UpdateBlur(elapsedTime);
-
-            // アニメーションが再生しきったら終了
-            if (owner_->IsPlayAnimation() == false)
-            {
-                // フラグリセット
-                owner_->SetIsRoar(false);
-
-                owner_->SetStep(0);
-                return ActionBase::State::Complete;
-            }
-        }
-        break;
-        }
-
-        return ActionBase::State::Run;
-    }
-
-    // ----- ラジアルブラー更新 -----
-    void BackStepRoarAction::UpdateBlur(const float& elapsedTime)
-    {
-        const float animationSeconds = owner_->GetAnimationSeconds();
-
-        // ブラー終了フレームを過ぎたら、ブラーを緩める
-        if (animationSeconds > blurEndFrame_)
-        {
-            PostProcess::Instance().GetConstants()->GetData()->blurPower_ =
-                Easing::InSine(blurTimer_, maxBlurTime_, maxBlurPower_, 0.0f);
-
-            blurTimer_ -= elapsedTime;
-            blurTimer_ = std::max(blurTimer_, 0.0f);
-        }
-        // ブラー開始フレームを過ぎたら、ブラーをかける
-        else if (animationSeconds > blurStartFrame_)
-        {
-            PostProcess::Instance().GetConstants()->GetData()->blurPower_ =
-                Easing::InQuint(blurTimer_, maxBlurTime_, maxBlurPower_, 0.0f);
-
-            blurTimer_ += elapsedTime;
-            blurTimer_ = std::min(blurTimer_, maxBlurTime_);
         }
     }
 }
@@ -1187,7 +1197,7 @@ namespace ActionDragon
             SetState(STATE::PreAction);
 
             // 変数初期化
-            addForceData_.Initialize(0.15f, 0.6f, 0.7f);
+            addForceData_.Initialize(0.15f, 0.8f, 0.6f);
             easingTimer_ = 0.0f;
             isAttackActive_ = false;
 
@@ -1216,7 +1226,16 @@ namespace ActionDragon
             // 移動処理
             if (addForceData_.Update(owner_->GetAnimationSeconds()))
             {
-                owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+                const DirectX::XMFLOAT3 playerPos = PlayerManager::Instance().GetTransform()->GetPosition();
+                const DirectX::XMFLOAT3 ownerPos = owner_->GetTransform()->GetPosition();
+                const DirectX::XMFLOAT3 vec = XMFloat3Normalize(playerPos - ownerPos);
+
+                owner_->AddForce(vec, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+            }
+            // 回転処理
+            if (addForceData_.GetIsAddForce() == false)
+            {
+                owner_->Turn(elapsedTime, PlayerManager::Instance().GetTransform()->GetPosition());
             }
 
             // 攻撃判定有効化
@@ -1253,7 +1272,7 @@ namespace ActionDragon
             {
                 owner_->GetTransform()->SetPositionY(0);
 
-                addForceData_.Initialize(0.03f, 0.5f, 0.8f);
+                addForceData_.Initialize(0.03f, 0.6f, 0.8f);
 
                 owner_->PlayAnimation(Enemy::DragonAnimation::AttackTackle3, false);
                 SetState(STATE::Recovery);
