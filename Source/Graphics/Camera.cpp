@@ -117,10 +117,10 @@ void Camera::Rotate(const float& elapsedTime)
     // コントローラーの傾きが一定以上じゃないと判定を取らない
     // ( 操作ストレス軽減のため制限を設ける )
     // 横移動したいのに上下移動してしまわないように...
-    if (fabs(aRy) >= inputThreshold_)
-    {
-        rotate.x -= aRy * invertVertical * verticalRotationSpeed_ * elapsedTime;
-    }
+    //if (fabs(aRy) >= inputThreshold_)
+    //{
+    //    rotate.x -= aRy * invertVertical * verticalRotationSpeed_ * elapsedTime;
+    //}
     // 横移動は制限なし
     rotate.y += aRx * horizontalRotationSpeed_ * elapsedTime;
 
@@ -128,13 +128,39 @@ void Camera::Rotate(const float& elapsedTime)
     float deltaLength = maxLength_ - minLength_;
     float deltaRotate = fabs(maxXRotation_) + fabs(minXRotation_);
     float addLength = deltaLength / deltaRotate;
-    length_ += addLength * aRy * elapsedTime;
-    if (length_ < minLength_) length_ = minLength_;
+    //length_ += addLength * aRy * elapsedTime;
+    //if (length_ < minLength_) length_ = minLength_;
     if (length_ > maxLength_) length_ = maxLength_;
 
     // X軸(上下)の回転制御
     if (rotate.x < minXRotation_) rotate.x = minXRotation_;
-    if (rotate.x > maxXRotation_) rotate.x = maxXRotation_;
+    //if (rotate.x > maxXRotation_) rotate.x = maxXRotation_;
+
+    
+    if (fabs(aRy) >= inputThreshold_)
+    {
+        if (rotate.x > maxXRotation_)
+        {
+            constexpr float maxRotate = DirectX::XMConvertToRadians(40);
+            const float addAmountSpeed = 2.0f;
+            const float rotateAmount = (maxRotate - maxXRotation_) * addAmountSpeed;
+            const float lengthAmount = (minLength_ - 2.5f) * addAmountSpeed;
+
+            rotate.x -= aRy * invertVertical * rotateAmount * elapsedTime;
+
+            if (rotate.x > maxRotate) rotate.x = maxRotate;
+
+            length_ += aRy * lengthAmount * elapsedTime;
+            if (length_ < 2.5f) length_ = 2.5f;
+        }
+        else
+        {
+            rotate.x -= aRy * invertVertical * verticalRotationSpeed_ * elapsedTime;
+
+            length_ += addLength * aRy * elapsedTime;
+        }
+    }
+
 
     // Y軸回転値を-3.14~3.14に収まるようにする
     if (rotate.y < -DirectX::XM_PI) rotate.y += DirectX::XM_2PI;
@@ -249,14 +275,16 @@ const bool Camera::UpdateRiseAttackCamera(const float& elapsedTime)
     // RiseAttack終了処理
     default:
     {
-        length_ = Easing::InSine(riseAttackEasingTimer_, totalFrame1, oldCameraLength_, maxLength);
+        const float resetLength = 6.15f;
+        length_ = Easing::InSine(riseAttackEasingTimer_, totalFrame1, resetLength, maxLength);
         rotateX = Easing::InSine(riseAttackEasingTimer_, totalFrame1, DirectX::XMConvertToRadians(7.0f), maxRotate);
         //cameraOffset_.y = Easing::InSine(riseAttackEasingTimer_, totalFrame, minOffsetX, maxOffsetX);
 
         riseAttackEasingTimer_ += elapsedTime;
         if (riseAttackEasingTimer_ > totalFrame1)
         {
-            length_ = oldCameraLength_;
+            //length_ = oldCameraLength_;
+            length_ = resetLength;
             rotateX = DirectX::XMConvertToRadians(7.0f);
             //cameraOffset_.y = minOffsetX;
 

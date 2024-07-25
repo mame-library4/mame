@@ -273,6 +273,9 @@ namespace ActionDragon
     public:
         ComboSlamAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+
+    private:
+        AddForceData addForceData_;
     };
 
     // コンボチャージ行動

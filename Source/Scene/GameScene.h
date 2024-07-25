@@ -5,6 +5,8 @@
 
 #include "../Graphics/Particle.h"
 
+#include "Stone/Stone.h"
+
 class GameScene : public BaseScene
 {
 public:
@@ -42,5 +44,7 @@ private:
     bool isDebugRenderer_ = true;
 
     std::unique_ptr<Particles> particles_;
+
+    std::unique_ptr<Stone> stone_;
 };
 

@@ -36,11 +36,5 @@ public:
     void DrawDebug()                        override; // ImGui—p
 
 private:
-    std::unique_ptr<DemoChara> model_;
-    DirectX::XMFLOAT3 target_ = {};
-
-    int animNum_ = 0;
-
-    std::unique_ptr<Sprite> sprite_;
 };
 

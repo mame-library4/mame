@@ -228,6 +228,8 @@
     <ClCompile Include="Source\Game\Object.cpp" />
     <ClCompile Include="Source\Game\Stage\Stage.cpp" />
     <ClCompile Include="Source\Game\Stage\StageNormal.cpp" />
+    <ClCompile Include="Source\Game\Stone\Stone.cpp" />
+    <ClCompile Include="Source\Game\Stone\StoneManager.cpp" />
     <ClCompile Include="Source\Game\UI\UI.cpp" />
     <ClCompile Include="Source\Game\UI\UIManager.cpp" />
     <ClCompile Include="Source\Game\UI\UINumber.cpp" />
@@ -304,6 +306,8 @@
     <ClInclude Include="Source\Game\Object.h" />
     <ClInclude Include="Source\Game\Stage\Stage.h" />
     <ClInclude Include="Source\Game\Stage\StageNormal.h" />
+    <ClInclude Include="Source\Game\Stone\Stone.h" />
+    <ClInclude Include="Source\Game\Stone\StoneManager.h" />
     <ClInclude Include="Source\Game\UI\UI.h" />
     <ClInclude Include="Source\Game\UI\UIManager.h" />
     <ClInclude Include="Source\Game\UI\UINumber.h" />

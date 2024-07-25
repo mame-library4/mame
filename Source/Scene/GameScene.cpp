@@ -50,6 +50,8 @@ void GameScene::CreateResource()
 #endif
 
     particles_ = std::make_unique<decltype(particles_)::element_type>(100);
+
+    stone_ = std::make_unique<Stone>();
 }
 
 // ----- ‰Šú‰» -----
@@ -138,6 +140,7 @@ void GameScene::DeferredRender()
     // “G•`‰æ
     EnemyManager::Instance().Render(gBufferPixelShader);
 
+    stone_->Render(gBufferPixelShader);
 }
 
 void GameScene::ForwardRender()
@@ -207,6 +210,8 @@ void GameScene::DrawDebug()
     ImGui::DragFloat("stageRadius", &stageRadius1_);
 
     particles_->DrawDebug();
+
+    stone_->DrawDebug();
 
     // ƒvƒŒƒCƒ„[ImGui
     PlayerManager::Instance().DrawDebug();

@@ -1051,25 +1051,31 @@ namespace ActionDragon
             // ルートモーションを使用する
             owner_->SetUseRootMotion (true);
 
+            // 変数初期化
+            addForceData_.Initialize(1.0f, 0.4f, 1.0f);
+
             owner_->SetStep(1);
 
             break;
         case 1:
 
+            if (addForceData_.Update(owner_->GetAnimationSeconds()))
+            {
+                const DirectX::XMFLOAT3 vec = XMFloat3Normalize(owner_->CalcDirectionToPlayer());
+                owner_->AddForce(vec, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+            }
+
+            if (owner_->GetAnimationSeconds() > 0.7f &&
+                owner_->GetAnimationSeconds() < 1.3f)
+            {
+                owner_->Turn(elapsedTime, PlayerManager::Instance().GetTransform()->GetPosition());
+            }
+
             if (owner_->IsPlayAnimation() == false)
             {
-                if (rand() % 2)
-                {
-                    owner_->PlayAnimation(Enemy::DragonAnimation::AttackComboSlam1, false);
+                owner_->PlayAnimation(Enemy::DragonAnimation::AttackComboSlam1, false);
 
-                    owner_->SetStep(2);
-                }
-                else
-                {
-                    owner_->PlayAnimation(Enemy::DragonAnimation::AttackComboSlamEnd, false);
-
-                    owner_->SetStep(3);
-                }                
+                owner_->SetStep(2);
             }
 
             break;
@@ -1226,9 +1232,7 @@ namespace ActionDragon
             // 移動処理
             if (addForceData_.Update(owner_->GetAnimationSeconds()))
             {
-                const DirectX::XMFLOAT3 playerPos = PlayerManager::Instance().GetTransform()->GetPosition();
-                const DirectX::XMFLOAT3 ownerPos = owner_->GetTransform()->GetPosition();
-                const DirectX::XMFLOAT3 vec = XMFloat3Normalize(playerPos - ownerPos);
+                const DirectX::XMFLOAT3 vec = XMFloat3Normalize(owner_->CalcDirectionToPlayer());
 
                 owner_->AddForce(vec, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
             }

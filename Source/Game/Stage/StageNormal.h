@@ -10,5 +10,8 @@ public:
     void Update(const float& elapsedTime)               override;
     void Render(const float& scaleFacter, ID3D11PixelShader* psShader = nullptr)  override;
     void DrawDebug()                                    override;
+
+private:
+
 };
 
