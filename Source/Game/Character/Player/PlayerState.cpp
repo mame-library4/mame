@@ -1059,7 +1059,7 @@ namespace PlayerState
     void CounterState::Initialize()
     {
         // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::ParryCounterAttack0, false);
+        owner_->PlayBlendAnimation(Player::Animation::Counter, false);
 
         // 変数初期化
         power_[Direction::Front] = 0.6f;
@@ -1202,7 +1202,7 @@ namespace PlayerState
     void CounterComboState::Initialize()
     {
         // アニメーション再生
-        owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_1, false);
+        owner_->PlayBlendAnimation(Player::Animation::ParryCounterAttack0, false, 1.0f, 0.5f);
         
 
         // 変数初期化

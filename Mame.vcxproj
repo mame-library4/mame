@@ -213,13 +213,10 @@
     <ClCompile Include="Source\Core\Main.cpp" />
     <ClCompile Include="Source\Game\Character\Character.cpp" />
     <ClCompile Include="Source\Game\Character\Enemy\ActionDragon.cpp" />
-    <ClCompile Include="Source\Game\Character\Enemy\ActionTamamo.cpp" />
     <ClCompile Include="Source\Game\Character\Enemy\Enemy.cpp" />
     <ClCompile Include="Source\Game\Character\Enemy\EnemyDragon.cpp" />
     <ClCompile Include="Source\Game\Character\Enemy\EnemyManager.cpp" />
-    <ClCompile Include="Source\Game\Character\Enemy\EnemyTamamo.cpp" />
     <ClCompile Include="Source\Game\Character\Enemy\JudgmentDragon.cpp" />
-    <ClCompile Include="Source\Game\Character\Enemy\JudgmentTamamo.cpp" />
     <ClCompile Include="Source\Game\Character\Player\Player.cpp" />
     <ClCompile Include="Source\Game\Character\Player\PlayerManager.cpp" />
     <ClCompile Include="Source\Game\Character\Player\PlayerState.cpp" />
@@ -291,13 +288,10 @@
     <ClInclude Include="Source\Core\HighResolutionTimer.h" />
     <ClInclude Include="Source\Game\Character\Character.h" />
     <ClInclude Include="Source\Game\Character\Enemy\ActionDragon.h" />
-    <ClInclude Include="Source\Game\Character\Enemy\ActionTamamo.h" />
     <ClInclude Include="Source\Game\Character\Enemy\Enemy.h" />
     <ClInclude Include="Source\Game\Character\Enemy\EnemyDragon.h" />
     <ClInclude Include="Source\Game\Character\Enemy\EnemyManager.h" />
-    <ClInclude Include="Source\Game\Character\Enemy\EnemyTamamo.h" />
     <ClInclude Include="Source\Game\Character\Enemy\JudgmentDragon.h" />
-    <ClInclude Include="Source\Game\Character\Enemy\JudgmentTamamo.h" />
     <ClInclude Include="Source\Game\Character\Player\Player.h" />
     <ClInclude Include="Source\Game\Character\Player\PlayerManager.h" />
     <ClInclude Include="Source\Game\Character\Player\PlayerState.h" />

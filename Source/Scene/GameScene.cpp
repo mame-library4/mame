@@ -251,8 +251,13 @@ void GameScene::UpdateCollisions(const float& elapsedTime)
                 enemyData.GetPosition(), enemyData.GetRadius(),
                 playerData.GetPosition(), playerData.GetRadius()))
             {
+                if (player->GetIsCounter())
+                {
+                    player->ChangeState(Player::STATE::CounterCombo);
+                }
                 // ƒvƒŒƒCƒ„[‚ªŒ»ÝDamageState‚Å‚Í‚È‚¢ê‡DamageState‚Ö
-                if (player->GetCurrentState() != Player::STATE::Damage)
+                else if (player->GetCurrentState() != Player::STATE::CounterCombo &&
+                    player->GetCurrentState() != Player::STATE::Damage)
                 {
                     player->ChangeState(Player::STATE::Damage);
                 }

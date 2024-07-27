@@ -286,6 +286,13 @@ bool Player::CheckNextInput(const Player::NextInput& nextInput)
         nextInput_ = NextInput::Avoidance;
     }
 
+    // カウンター受付
+    if (GetCounterStanceKey())
+    {
+        ChangeState(STATE::Counter);
+        return true;
+    }
+
     // コンボ攻撃0
     if (GetComboAttack0KeyDown())
     {
@@ -303,6 +310,7 @@ void Player::ResetFlags()
 {
     nextInput_      = NextInput::None;  // 先行入力管理フラグ
     isAvoidance_    = false;            // 回避入力判定用フラグ
+    isCounter_      = false;            // カウンター状態かフラグ
     isAbleAttack_   = false;            // 攻撃できるかのフラグ
 }
 

@@ -148,9 +148,6 @@
     <ClCompile Include="Source\Game\Character\Enemy\Enemy.cpp">
       <Filter>Mame\Game\Object\Character\Enemy</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Game\Character\Enemy\EnemyTamamo.cpp">
-      <Filter>Mame\Game\Object\Character\Enemy</Filter>
-    </ClCompile>
     <ClCompile Include="Source\AI\BehaviorTree\BehaviorData.cpp">
       <Filter>Mame\AI\BehaviorTree</Filter>
     </ClCompile>
@@ -159,12 +156,6 @@
     </ClCompile>
     <ClCompile Include="Source\AI\BehaviorTree\NodeBase.cpp">
       <Filter>Mame\AI\BehaviorTree</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Game\Character\Enemy\JudgmentTamamo.cpp">
-      <Filter>Mame\Game\Object\Character\Enemy</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Game\Character\Enemy\ActionTamamo.cpp">
-      <Filter>Mame\Game\Object\Character\Enemy</Filter>
     </ClCompile>
     <ClCompile Include="Source\Game\Character\Player\PlayerManager.cpp">
       <Filter>Mame\Game\Object\Character\Player</Filter>
@@ -385,9 +376,6 @@
     <ClInclude Include="Source\Game\Character\Enemy\Enemy.h">
       <Filter>Mame\Game\Object\Character\Enemy</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\Character\Enemy\EnemyTamamo.h">
-      <Filter>Mame\Game\Object\Character\Enemy</Filter>
-    </ClInclude>
     <ClInclude Include="Source\AI\BehaviorTree\ActionBase.h">
       <Filter>Mame\AI\BehaviorTree</Filter>
     </ClInclude>
@@ -402,12 +390,6 @@
     </ClInclude>
     <ClInclude Include="Source\AI\BehaviorTree\JudgmentBase.h">
       <Filter>Mame\AI\BehaviorTree</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Game\Character\Enemy\JudgmentTamamo.h">
-      <Filter>Mame\Game\Object\Character\Enemy</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Game\Character\Enemy\ActionTamamo.h">
-      <Filter>Mame\Game\Object\Character\Enemy</Filter>
     </ClInclude>
     <ClInclude Include="Source\Game\Character\Player\PlayerManager.h">
       <Filter>Mame\Game\Object\Character\Player</Filter>

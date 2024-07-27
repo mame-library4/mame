@@ -36,5 +36,6 @@ public:
     void DrawDebug()                        override; // ImGui—p
 
 private:
+    std::unique_ptr<DemoChara> demoChara_;
 };
 

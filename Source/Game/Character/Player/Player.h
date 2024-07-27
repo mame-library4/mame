@@ -94,6 +94,8 @@ public:// --- 定数 ---
 
         RunAttack0,
         RunAttack1,
+
+        Counter,
     };
 
     enum class NextInput
@@ -156,6 +158,9 @@ public:// --- 取得・設定 ---
     // ----- 回避 -----
     [[nodiscard]] const bool GetIsAvoidance() const { return isAvoidance_; }
     void SetIsAvoidance(const bool& isAvoidance) { isAvoidance_ = isAvoidance; }
+    // ----- カウンター状態か -----
+    [[nodiscard]] const bool GetIsCounter() const { return isCounter_; }
+    void SetIsCounter(const bool& flag) { isCounter_ = flag; }
     // ----- 攻撃判定 -----
     [[nodiscard]] const bool GetIsAbleAttack() const { return isAbleAttack_; }
     void SetIsAbleAttack(const bool& flag) { isAbleAttack_ = flag; }
@@ -184,8 +189,10 @@ private:
     DirectX::XMFLOAT3 moveDirection_ = {};
 
     // ---------- 行動 ------------------------------
-    NextInput nextInput_ = NextInput::None; // 先行入力
-    bool isAvoidance_ = false; // 回避
+    NextInput nextInput_    = NextInput::None;  // 先行入力
+    bool isAvoidance_       = false;            // 回避
+    bool isCounter_         = false;            // カウンター状態か
+    bool isAbleAttack_      = false;            // 攻撃可能か
 
     // ---------- Debug用 --------------------
     bool isCollisionSphere_ = true;
@@ -206,5 +213,4 @@ private:
 #endif  
     DirectX::XMFLOAT4X4 weaponWorld_;
 
-    bool isAbleAttack_ = false; // 攻撃可能か
 };
