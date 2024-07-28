@@ -1,5 +1,4 @@
 #include "Enemy.h"
-#include "EnemyTamamo.h"
 #include "../Other/MathHelper.h"
 #include "../Player/PlayerManager.h"
 

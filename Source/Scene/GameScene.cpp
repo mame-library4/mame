@@ -251,13 +251,14 @@ void GameScene::UpdateCollisions(const float& elapsedTime)
                 enemyData.GetPosition(), enemyData.GetRadius(),
                 playerData.GetPosition(), playerData.GetRadius()))
             {
-                if (player->GetIsCounter())
+                if (player->GetIsCounter() && player->GetCurrentState() == Player::STATE::Counter)
                 {
-                    player->ChangeState(Player::STATE::CounterCombo);
+                    player->SetIsAbleCounterAttack(true);
                 }
                 // プレイヤーが現在DamageStateではない場合DamageStateへ
                 else if (player->GetCurrentState() != Player::STATE::CounterCombo &&
-                    player->GetCurrentState() != Player::STATE::Damage)
+                    player->GetCurrentState() != Player::STATE::Damage &&
+                    player->GetIsAbleCounterAttack() == false)
                 {
                     player->ChangeState(Player::STATE::Damage);
                 }
@@ -342,6 +343,11 @@ void GameScene::UpdateCollisions(const float& elapsedTime)
 
                     // 攻撃当たった ( 攻撃判定を無くす )
                     player->SetIsAbleAttack(false);
+
+                    if (player->GetCurrentState() == Player::STATE::CounterCombo)
+                    {
+                        Input::Instance().GetGamePad().Vibration(0.3f, 1.0f);
+                    }
 
                     // TODO: ヒットストップ処理
 

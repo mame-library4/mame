@@ -308,10 +308,11 @@ bool Player::CheckNextInput(const Player::NextInput& nextInput)
 
 void Player::ResetFlags()
 {
-    nextInput_      = NextInput::None;  // 先行入力管理フラグ
-    isAvoidance_    = false;            // 回避入力判定用フラグ
-    isCounter_      = false;            // カウンター状態かフラグ
-    isAbleAttack_   = false;            // 攻撃できるかのフラグ
+    nextInput_              = NextInput::None;  // 先行入力管理フラグ
+    isAvoidance_            = false;            // 回避入力判定用フラグ
+    isCounter_              = false;            // カウンター状態かフラグ
+    isAbleCounterAttack_    = false;            // カウンター攻撃可能か
+    isAbleAttack_           = false;            // 攻撃できるかのフラグ
 }
 
 // ----- CollisionData登録 -----

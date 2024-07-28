@@ -161,6 +161,9 @@ public:// --- 取得・設定 ---
     // ----- カウンター状態か -----
     [[nodiscard]] const bool GetIsCounter() const { return isCounter_; }
     void SetIsCounter(const bool& flag) { isCounter_ = flag; }
+    // ----- カウンター(追加の)攻撃が可能か -----
+    [[nodiscard]] const bool GetIsAbleCounterAttack() const { return isAbleCounterAttack_; }
+    void SetIsAbleCounterAttack(const bool& flag) { isAbleCounterAttack_ = flag; }
     // ----- 攻撃判定 -----
     [[nodiscard]] const bool GetIsAbleAttack() const { return isAbleAttack_; }
     void SetIsAbleAttack(const bool& flag) { isAbleAttack_ = flag; }
@@ -189,10 +192,11 @@ private:
     DirectX::XMFLOAT3 moveDirection_ = {};
 
     // ---------- 行動 ------------------------------
-    NextInput nextInput_    = NextInput::None;  // 先行入力
-    bool isAvoidance_       = false;            // 回避
-    bool isCounter_         = false;            // カウンター状態か
-    bool isAbleAttack_      = false;            // 攻撃可能か
+    NextInput nextInput_        = NextInput::None;  // 先行入力
+    bool isAvoidance_           = false;            // 回避
+    bool isCounter_             = false;            // カウンター状態か
+    bool isAbleCounterAttack_   = false;            // カウンター攻撃が可能か( 追加の )
+    bool isAbleAttack_          = false;            // 攻撃可能か
 
     // ---------- Debug用 --------------------
     bool isCollisionSphere_ = true;

@@ -32,6 +32,19 @@ namespace PlayerState
         bool  isAttacked_       = false;    // 攻撃したか
         bool  isFirstTime_      = false;    // 攻撃判定有効フレームに入った一回目のフレームかどうか
     };
+
+    struct GamePadVibration
+    {
+    public:
+        void Initialize(const float& startFrame, const float& time, const float& power);
+        void Update(const float& animationFrame);
+
+    private:
+        float startFrame_ = 0.0f;
+        float time_ = 0.0f;
+        float power_ = 0.0f;
+        bool  isVibraion_ = false;
+    };
 }
 
 namespace PlayerState
@@ -179,23 +192,15 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
-        enum Direction
-        {
-            Front,
-            Back,
-            Max,
-        };
-
-        void AddForceFront(const float& elapsedTime);
-        void AddForceBack(const float& elapsedTime);
+        void SetAnimationSpeed();
 
     private:
-        float power_[Direction::Max]         = {};
-        float addForceFrame_[Direction::Max] = {};
-        bool  isAddForce_[Direction::Max]    = {};
+        AddForceData addForceFront_;
+        AddForceData addForceBack_;
 
-        float animationSlowStartFrame_ = 0.0f;
-        float animationSlowEndFrame_ = 0.0f;
+        GamePadVibration gamePadVibration_;
+
+        bool isNextInput_ = false; // カウンター攻撃の先行入力用
     };
 
     // ----- カウンター攻撃 -----
@@ -210,8 +215,8 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
-        float addForceFrame_ = 0.0f;
-        bool isAddForce_ = false;
+        AddForceData        addForceData_;
+        AttackData          attackData_;
     };
 
     class RunAttackState : public State<Player>

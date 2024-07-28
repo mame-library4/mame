@@ -30,6 +30,8 @@ const bool NormalFlinchJudgment::Judgment()
 // ----- ”ñí“¬”»’è -----
 const bool NonBattleJudgment::Judgment()
 {
+    //return true;
+
     if (num_ == 0)
     {
         ++num_;
