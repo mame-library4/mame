@@ -168,6 +168,10 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const bool GetIsAbleAttack() const { return isAbleAttack_; }
     void SetIsAbleAttack(const bool& flag) { isAbleAttack_ = flag; }
 
+    // ----- カウンター有効範囲 -----
+    [[nodiscard]] const float GetCounterActiveRadius() const { return counterActiveRadius_; }
+    void SetCounterActiveRadius(const float& range) { counterActiveRadius_ = range; }
+
     // ---------- キー入力 ----------
     [[nodiscard]] bool GetComboAttack0KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
     [[nodiscard]] bool GetComboAttack1KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y; }
@@ -197,6 +201,9 @@ private:
     bool isCounter_             = false;            // カウンター状態か
     bool isAbleCounterAttack_   = false;            // カウンター攻撃が可能か( 追加の )
     bool isAbleAttack_          = false;            // 攻撃可能か
+
+    // ---------- カウンター有効範囲 ----------
+    float counterActiveRadius_   = 0.0f; // カウンター有効範囲
 
     // ---------- Debug用 --------------------
     bool isCollisionSphere_ = true;

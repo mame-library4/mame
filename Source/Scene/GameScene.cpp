@@ -201,6 +201,32 @@ void GameScene::Render()
 
     PlayerManager::Instance().RenderTrail();
     //particles_->Render();
+
+    DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
+//#ifdef _DEBUG
+#if 1
+    if (isDebugRenderer_)
+    {
+        // player
+        PlayerManager::Instance().DebugRender(debugRenderer);
+
+        // enemy
+        EnemyManager::Instance().DebugRender(debugRenderer);
+
+        DirectX::XMFLOAT3 position{};
+        position = stage_->GetTransform()->GetPosition();
+
+        debugRenderer->DrawCylinder(position, stageRadius_, 1.5f, { 1, 0, 0, 1 });
+        //debugRenderer->DrawCylinder(position, stageRadius1_, 1.5f, { 1, 0, 0, 1 });
+
+        if (EnemyManager::Instance().GetEnemyCount() > 0)
+        {
+            DirectX::XMFLOAT3 dragonPos = EnemyManager::Instance().GetEnemy(0)->GetTransform()->GetPosition();
+            const float radius = PlayerManager::Instance().GetPlayer()->GetCounterActiveRadius();
+            debugRenderer->DrawCylinder(dragonPos, radius, 1.5f, { 1, 0, 0, 1 });
+        }
+    }
+#endif
 }
 
 // ----- ImGui用 -----
@@ -234,38 +260,15 @@ void GameScene::UpdateCollisions(const float& elapsedTime)
     Player* player = PlayerManager::Instance().GetPlayer().get();
     Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
 
-#pragma region プレイヤーのくらい判定
-    for (int playerDataIndex = 0; playerDataIndex < player->GetDamageDetectionDataCount(); ++playerDataIndex)
-    {
-        const DamageDetectionData playerData = player->GetDamageDetectionData(playerDataIndex);
+    // プレイヤーの攻撃判定
+    UpdatePlayerAttackCollisions(elapsedTime);
 
-        for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetAttackDetectionDataCount(); ++enemyDataIndex)
-        {
-            const AttackDetectionData enemyData = enemy->GetAttackDetectionData(enemyDataIndex);
+    // カウンター判定
+    UpdateCounterCollisions();
+    
+    // プレイヤーのくらい判定
+    UpdatePlayerDamageCollisions(elapsedTime);
 
-            // 敵の攻撃判定が現在有効ではないので処理をしない
-            if (enemyData.GetIsActive() == false) continue;
-
-            // 当たったかチェック
-            if (Collision::IntersectSphereVsSphere(
-                enemyData.GetPosition(), enemyData.GetRadius(),
-                playerData.GetPosition(), playerData.GetRadius()))
-            {
-                if (player->GetIsCounter() && player->GetCurrentState() == Player::STATE::Counter)
-                {
-                    player->SetIsAbleCounterAttack(true);
-                }
-                // プレイヤーが現在DamageStateではない場合DamageStateへ
-                else if (player->GetCurrentState() != Player::STATE::CounterCombo &&
-                    player->GetCurrentState() != Player::STATE::Damage &&
-                    player->GetIsAbleCounterAttack() == false)
-                {
-                    player->ChangeState(Player::STATE::Damage);
-                }
-            }
-        }
-    }
-#pragma endregion プレイヤーのくらい判定
 
 #pragma region 押し出し判定
     // 押し出し判定が有効なら、押し出し判定を行う
@@ -316,9 +319,16 @@ void GameScene::UpdateCollisions(const float& elapsedTime)
 
 #pragma endregion 押し出し判定
 
-#pragma region プレイヤーの攻撃判定
+}
+
+// ----- プレイヤーの攻撃判定 -----
+void GameScene::UpdatePlayerAttackCollisions(const float& elapsedTime)
+{
     // 攻撃判定が有効ではないのでここで終了
-    if (player->GetIsAbleAttack() == false) return;
+    if (PlayerManager::Instance().GetPlayer()->GetIsAbleAttack() == false) return;
+
+    Player* player = PlayerManager::Instance().GetPlayer().get();
+    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
 
     for (int playerDataIndex = 0; playerDataIndex < player->GetAttackDetectionDataCount(); ++playerDataIndex)
     {
@@ -362,6 +372,78 @@ void GameScene::UpdateCollisions(const float& elapsedTime)
             }
         }
     }
+}
 
-#pragma endregion プレイヤーの攻撃判定
+// ----- プレイヤーのくらい判定 -----
+void GameScene::UpdatePlayerDamageCollisions(const float& elapsedTime)
+{
+    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
+    // 敵の攻撃判定が有効ではないのでここで終了
+    if (enemy->GetIsAttackActive() == false) return;
+
+    Player* player = PlayerManager::Instance().GetPlayer().get();
+    // 既にダメージ処理に入ってる。カウンターの無敵状態。
+    // の場合ここで終了
+    const Player::STATE playerCurrentState = player->GetCurrentState();
+    if (playerCurrentState == Player::STATE::Damage ||
+        playerCurrentState == Player::STATE::CounterCombo ||
+        player->GetIsAbleCounterAttack())
+    {
+        return;
+    }    
+
+
+    for (int playerDataIndex = 0; playerDataIndex < player->GetDamageDetectionDataCount(); ++playerDataIndex)
+    {
+        const DamageDetectionData playerData = player->GetDamageDetectionData(playerDataIndex);
+
+        for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetAttackDetectionDataCount(); ++enemyDataIndex)
+        {
+            const AttackDetectionData enemyData = enemy->GetAttackDetectionData(enemyDataIndex);
+
+            // 敵の攻撃判定が現在有効ではないので処理をしない
+            if (enemyData.GetIsActive() == false) continue;
+
+            // 当たったかチェック
+            if (Collision::IntersectSphereVsSphere(
+                enemyData.GetPosition(), enemyData.GetRadius(),
+                playerData.GetPosition(), playerData.GetRadius()))
+            {
+                if (player->GetIsCounter() && player->GetCurrentState() == Player::STATE::Counter)
+                {
+                    player->SetIsAbleCounterAttack(true);
+                }
+                // プレイヤーが現在DamageStateではない場合DamageStateへ
+                else
+                {
+                    player->ChangeState(Player::STATE::Damage);
+                }
+            }
+        }
+    }
+}
+
+// ----- プレイヤーのカウンター判定 -----
+void GameScene::UpdateCounterCollisions()
+{
+    Player* player = PlayerManager::Instance().GetPlayer().get();
+
+    // 現在プレイヤーがカウンターStateではないのでここで終了
+    if (player->GetCurrentState() != Player::STATE::Counter) return;
+    // 現在カウンター受付中ではないのでここで終了
+    if (player->GetIsCounter() == false) return;
+
+    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
+    // 現在敵の攻撃判定が有効ではないのでここで終了
+    if (enemy->GetIsAttackActive() == false) return;
+
+
+    const float distance = enemy->CalcDistanceToPlayer();
+    const float counterActiveRadius = player->GetCounterActiveRadius();
+
+    // カウンターが成功した
+    if (distance < counterActiveRadius)
+    {
+        player->SetIsAbleCounterAttack(true);
+    }
 }

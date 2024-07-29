@@ -1131,12 +1131,15 @@ namespace ActionDragon
             // ルートモーションを使用する
             owner_->SetUseRootMotion(true);
 
-            // ステート変更
-            SetState(STATE::PreAction);
+            // カウンター有効範囲を設定する
+            PlayerManager::Instance().GetPlayer()->SetCounterActiveRadius(6.0f);
 
             // 変数初期化
             isAttackActive_ = false;
             addForceData_.Initialize(1.5f, 0.3f, 0.5f);
+ 
+            // ステート変更
+            SetState(STATE::PreAction);
 
             break;
         case STATE::PreAction:// 予備動作
@@ -1199,13 +1202,16 @@ namespace ActionDragon
             // ルートモーション使用
             owner_->SetUseRootMotion(true);
 
-            // ステート変更
-            SetState(STATE::PreAction);
+            // カウンター有効範囲を設定する
+            PlayerManager::Instance().GetPlayer()->SetCounterActiveRadius(6.0f);
 
             // 変数初期化
             addForceData_.Initialize(0.15f, 0.8f, 0.6f);
             easingTimer_ = 0.0f;
             isAttackActive_ = false;
+
+            // ステート変更
+            SetState(STATE::PreAction);
 
             break;
         case STATE::PreAction:// 予備動作

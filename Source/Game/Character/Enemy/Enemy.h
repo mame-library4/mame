@@ -163,6 +163,10 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const float GetWalkSpeed() const { return walkSpeed_; }
     void SetWalkSpeed(const float& speed) { walkSpeed_ = speed; }
 
+    // ----- 攻撃判定が有効か -----
+    [[nodiscard]] const bool GetIsAttackActive() const { return isAttackActive_; }
+    void SetIsAttackActive(const bool& flag) { isAttackActive_ = flag; }
+
     [[nodiscard]] const bool GetIsRoar() const { return isRoar_; }
     void SetIsRoar(const bool& flag) { isRoar_ = flag; }
 
@@ -200,6 +204,7 @@ protected:
     float               battleRadius_       = 20.0f;// 戦闘開始範囲
     float               nearAttackRadius_   = 10.0f;// 近距離攻撃開始範囲
 
+    
 
     DirectX::XMFLOAT3 movePosition_ = {}; // 移動先位置
 
@@ -208,7 +213,8 @@ protected:
     float walkSpeed_ = 0.0f; // 歩行速度
 
     // ---------- 状況管理フラグ ----------
-    bool isRoar_        = false; // 咆哮したか
+    bool isAttackActive_    = false; // 攻撃判定が有効か
+    bool isRoar_            = false; // 咆哮したか
 
     bool isStageCollisionJudgement_ = false; // ステージとの判定をするか
 };

@@ -29,6 +29,11 @@ public:
 
     void UpdateCollisions(const float& elapsedTime);
 
+private:
+    void UpdatePlayerAttackCollisions(const float& elapsedTime);
+    void UpdatePlayerDamageCollisions(const float& elapsedTime);
+    void UpdateCounterCollisions();
+
 public:
     // ----- ステージ判定用 -----
     static DirectX::XMFLOAT3 stageCenter_;

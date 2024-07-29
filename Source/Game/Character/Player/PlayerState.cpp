@@ -1196,9 +1196,7 @@ namespace PlayerState
 
         // カウンター成功
         // TODO:ここつくる。カウンター
-        //if (GetAsyncKeyState('B') & 1)
-        //if(owner_->GetStrongAttackKeyDown())
-        //if (owner_->GetIsAbleCounterAttack())
+        if (owner_->GetIsAbleCounterAttack())
         {
             if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER)
             {

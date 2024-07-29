@@ -142,6 +142,7 @@ void Player::DrawDebug()
         ImGui::Checkbox("Damage", &isDamageSphere_);
         ImGui::Checkbox("Attack", &isAttackSphere_);
 
+        ImGui::DragFloat("CounterActiveRadius", &counterActiveRadius_);
 
         swordTrail_.DrawDebug();
         ImGui::EndMenu();

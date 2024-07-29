@@ -176,10 +176,13 @@ void EnemyDragon::RegisterBehaviorNode()
     // --------------- 戦闘 ---------------
     behaviorTree_->AddNode("Root", "Battle", 3, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
     behaviorTree_->AddNode("Battle", "Shout", 0, BehaviorTree::SelectRule::Priority, new ShoutJudgment(this), nullptr);
-    //behaviorTree_->AddNode("Battle", "Near", 1, BehaviorTree::SelectRule::Random, new NearJudgment(this), nullptr);
-    //behaviorTree_->AddNode("Battle", "Far", 2, BehaviorTree::SelectRule::Random, nullptr, nullptr);
+#if 0
+    behaviorTree_->AddNode("Battle", "Near", 1, BehaviorTree::SelectRule::Random, new NearJudgment(this), nullptr);
+    behaviorTree_->AddNode("Battle", "Far", 2, BehaviorTree::SelectRule::Random, nullptr, nullptr);
+#else
     behaviorTree_->AddNode("Battle", "Near",  1, BehaviorTree::SelectRule::Priority, new NearJudgment(this), nullptr);
     behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+#endif
 
     //behaviorTree_->AddNode("Shout", "Roar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
     behaviorTree_->AddNode("Shout", "RoarLong",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarLongAction(this));
@@ -233,8 +236,8 @@ bool EnemyDragon::CheckStatusChange()
     oldHealth_ = GetHealth();
 
     // damageが 30 より大きければ怯み
-    if (damage > 30.0f)
-    //if (damage > 45.0f)
+    //if (damage > 30.0f)
+    if (damage > 100.0f)
     {
         SetIsFlinch(true);
         // リセット
@@ -482,6 +485,9 @@ void EnemyDragon::UpdateCollisions(const float& elapsedTime)
 // ----- 全攻撃判定無効化 -----
 void EnemyDragon::ResetAllAttackActiveFlag()
 {
+    // 攻撃判定フラグをセットする
+    SetIsAttackActive(false);
+
     for (AttackDetectionData& data : attackDetectionData_)
     {
         data.SetIsActive(false);
@@ -491,6 +497,9 @@ void EnemyDragon::ResetAllAttackActiveFlag()
 // ----- 回転攻撃判定設定 -----
 void EnemyDragon::SetTurnAttackActiveFlag(const bool& flag)
 {
+    // 攻撃判定フラグをセットする
+    SetIsAttackActive(flag);
+
     for (int i = AttackData::TrunAttackStart; i <= AttackData::TrunAttackEnd; ++i)
     {
         GetAttackDetectionData(i).SetIsActive(flag);
@@ -500,6 +509,9 @@ void EnemyDragon::SetTurnAttackActiveFlag(const bool& flag)
 // ----- 突進攻撃判定設定 -----
 void EnemyDragon::SetTackleAttackActiveFlag(const bool& flag)
 {
+    // 攻撃判定フラグをセットする
+    SetIsAttackActive(flag);
+
     for (int i = AttackData::TackleAttackStart; i <= AttackData::TackleAttackEnd; ++i)
     {
         GetAttackDetectionData(i).SetIsActive(flag);
@@ -509,6 +521,9 @@ void EnemyDragon::SetTackleAttackActiveFlag(const bool& flag)
 // ----- 上昇攻撃判定設定 -----
 void EnemyDragon::SetFlyAttackActiveFlag(const bool& flag)
 {
+    // 攻撃判定フラグをセットする
+    SetIsAttackActive(flag);
+
     for (int i = AttackData::FlyAttackStart; i <= AttackData::FlyAttackEnd; ++i)
     {
         GetAttackDetectionData(i).SetIsActive(flag);
