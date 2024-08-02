@@ -204,7 +204,7 @@ void GameScene::Render()
 
     DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
 //#ifdef _DEBUG
-#if 1
+#if 0
     if (isDebugRenderer_)
     {
         // player

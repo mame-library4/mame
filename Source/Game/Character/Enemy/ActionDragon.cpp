@@ -63,182 +63,12 @@ namespace ActionDragon
 {
     const ActionBase::State DeathAction::Run(const float& elapsedTime)
     {
-#ifdef _DEBUG // TODO: 消す
-        if (owner_->GetHealth() > 0)
+        if (owner_->GetStep() == 0)
         {
-            Camera::Instance().SetTargetOffset({ 0,-1,0 });
-            Camera::Instance().SetCameraOffset({ 0.0f,2.5f,0.0f });
-            PlayerManager::Instance().SetUseCollisionDetection(true);
+            // 死亡時カメラを使用する
+            Camera::Instance().SetUseEnemyDeathCamera();
 
-            owner_->SetStep(0);
-            return ActionBase::State::Failed;
-        }
-#endif
-
-        // Stateによってターゲット位置を設定する
-        if (Camera::Instance().GetUseDeathCamera())
-        {
-            std::string nodeName = "";
-
-            if (owner_->GetStep() >= 3)
-                nodeName = "root";
-            else
-                nodeName = "Dragon15_spine2";
-
-            const DirectX::XMFLOAT3 neckPos = owner_->GetJointPosition(nodeName, owner_->GetScaleFactor());
-            Camera::Instance().SetTarget(neckPos);
-        }
-
-        switch (static_cast<STATE>(owner_->GetStep()))
-        {
-        case STATE::Initialize:// 初期化
-        {
-            // アニメーション設定
-            owner_->PlayBlendAnimation(Enemy::DragonAnimation::Death, false);
-
-            // 押し出し判定を無効化する
-            PlayerManager::Instance().SetUseCollisionDetection(false);
-
-            // カメラの各種項目を設定する
-            Camera::Instance().SetUseDeathCamera(true);
-            Camera::Instance().SetTargetOffset({ 0.0f, -7.0f, 0.0f });
-            Camera::Instance().SetCameraOffset({ 0.0f, 7.0f, 0.0f });
-            Camera::Instance().SetLength(10.0f);
-            DirectX::XMFLOAT3 cameraRotate = {};
-            cameraRotate.y = DirectX::XMConvertToRadians(rand() % 360);
-            Camera::Instance().GetTransform()->SetRotation(cameraRotate);
-            oldCameraRotate_ = cameraRotate;
-
-            // 変数初期化
-            easingTimer_ = 0.0f;
-            timer_ = 0.0f;
-            isAddTimer_ = false;
-
-            // ステート変更
-            SetState(STATE::FirstCamera);
-        }
-            break;
-        case STATE::FirstCamera:// １つ目のカメラ
-        {
-            const float totalFrame = 2.0f;
-            easingTimer_ += elapsedTime;
-            easingTimer_ = std::min(easingTimer_, totalFrame);
-
-            DirectX::XMFLOAT3 cameraRotate = {};
-            cameraRotate.x = DirectX::XMConvertToRadians(cameraRotate.x);
-            cameraRotate.y = Easing::InSine(easingTimer_, totalFrame, -40.0f, 0.0f);
-            cameraRotate.y = oldCameraRotate_.y + DirectX::XMConvertToRadians(cameraRotate.y);
-
-            Camera::Instance().GetTransform()->SetRotation(cameraRotate);
-
-            // 指定のフレームを超えたら次に進む
-            const float changeStateFrame = 2.0f;
-            if (owner_->GetAnimationSeconds() > changeStateFrame)
-            {
-                DirectX::XMFLOAT3 cameraRotate = {};
-                cameraRotate.x = DirectX::XMConvertToRadians(20.0f);
-                cameraRotate.y = DirectX::XMConvertToRadians(rand() % 360);
-                Camera::Instance().GetTransform()->SetRotation(cameraRotate);
-                oldCameraRotate_ = cameraRotate;
-
-                easingTimer_ = 0.0f;
-
-                // ステート変更
-                SetState(STATE::SecondCamera);
-            }
-        }
-            break;
-        case STATE::SecondCamera:// ２つ目のカメラ
-        {
-            const float totalFrame = 2.2f;
-            easingTimer_ += elapsedTime;
-            easingTimer_ = std::min(easingTimer_, totalFrame);
-
-            DirectX::XMFLOAT3 cameraRotate = {};
-            cameraRotate.x = Easing::InSine(easingTimer_, totalFrame, 30.0f, 20.0f);
-            cameraRotate.y = Easing::InSine(easingTimer_, totalFrame, 30.0f, 0.0f);
-            cameraRotate.x = DirectX::XMConvertToRadians(cameraRotate.x);
-            cameraRotate.y = oldCameraRotate_.y + DirectX::XMConvertToRadians(cameraRotate.y);
-
-            Camera::Instance().GetTransform()->SetRotation(cameraRotate);
-
-            // 指定のフレームを超えたら次に進む
-            const float changeStateFrame = 4.4f;
-            if (owner_->GetAnimationSeconds() > changeStateFrame)
-            {
-                easingTimer_ = 0.0f;
-
-                // ステート変更
-                SetState(STATE::ThirdCamera);
-            }
-        }
-            break;
-        case STATE::ThirdCamera:// ３つ目のカメラ
-        {
-            const float totalFrame = 2.5f;
-            easingTimer_ += elapsedTime;
-            easingTimer_ = std::min(easingTimer_, totalFrame);
-
-
-            //const float length = Easing::InSine(easingTimer_, totalFrame, 12.0f, 5.0f);
-            const float length = 6.5f;
-            Camera::Instance().SetLength(length);
-
-            // rotate
-            DirectX::XMFLOAT3 cameraRotate = {};
-            cameraRotate.x = DirectX::XMConvertToRadians(-30.0f);
-            cameraRotate.y = Easing::OutSine(easingTimer_, totalFrame, 220.0f, 250.0f);
-            cameraRotate.y = DirectX::XMConvertToRadians(cameraRotate.y);
-            Camera::Instance().GetTransform()->SetRotation(cameraRotate);
-
-            // fov
-            const float fov = Easing::InSine(easingTimer_, totalFrame, 50.0f, 45.0f);
-            Camera::Instance().SetFov(fov);
-
-            // focusOffset
-            DirectX::XMFLOAT3 offset = {};
-            offset.x = Easing::InSine(easingTimer_, totalFrame, 1.0f, 0.0f);
-            offset.y = Easing::InSine(easingTimer_, totalFrame, -5.0f, -7.0f);
-            offset.z = Easing::InSine(easingTimer_, totalFrame, 1.0f, 0.0f);
-            Camera::Instance().SetTargetOffset(offset);
-
-            if (owner_->GetAnimationIndex() == static_cast<int>(Enemy::DragonAnimation::Death) &&
-                owner_->IsPlayAnimation() == false)
-            {
-                // 死亡ループモーションを流す
-                owner_->PlayBlendAnimation(Enemy::DragonAnimation::DeathLoop, false);
-
-                // タイマー加算
-                isAddTimer_ = true;
-            }
-            // タイマー加算
-            if (isAddTimer_)
-            {
-                timer_ += elapsedTime;
-                const float maxTime = 1.0f;
-                if (timer_ > maxTime)
-                {
-                    if (Camera::Instance().GetUseDeathCamera() == false)
-                    {
-                        Camera::Instance().GetTransform()->SetRotation({ 0, 0, 0 });
-                        Camera::Instance().SetLength(6.0f);
-                        Camera::Instance().SetTargetOffset({ 0,-1,0 });
-                        Camera::Instance().SetCameraOffset({ 0.0f,2.5f,0.0f });
-                        Camera::Instance().SetFov(45.0f);
-
-                        // ステート変更
-                        SetState(STATE::Death);
-                    }
-
-                    // カメラを元に戻す
-                    Camera::Instance().SetUseDeathCamera(false);
-                }
-            }
-        }
-            break;
-        case STATE::Death:// 死亡ループ
-            // 死亡しているので何もしない
-            break;
+            owner_->SetStep(1);
         }
 
         return ActionBase::State::Run;
@@ -1351,7 +1181,7 @@ namespace ActionDragon
             if(owner_->GetAnimationSeconds() > 1.85f && isCameraSet_ == false)
             {
                 // カメラ設定
-                Camera::Instance().SetRiseAttackState(0);
+                //Camera::Instance().SetRiseAttackState(0);
                 isCameraSet_ = true;
             }
 
@@ -1415,7 +1245,7 @@ namespace ActionDragon
             if (owner_->GetAnimationSeconds() > 0.6f && isCameraReset_ == false)
             {
                 // カメラ設定
-                Camera::Instance().SetRiseAttackState(-1);
+                //Camera::Instance().SetRiseAttackState(-1);
                 isCameraReset_ = true;
             }
 

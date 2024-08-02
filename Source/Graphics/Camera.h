@@ -71,15 +71,30 @@ public:// --- 取得・設定 ---
     void SetCameraOffset(const DirectX::XMFLOAT3& offset) { cameraOffset_ = offset; }
 
     // ---------- 特殊な動き制御用 ----------
-    void SetRiseAttackState(const int& state) { riseAttackState_ = state; }
-
-    // ---------- 死亡カメラ ----------
-    [[nodiscard]] const bool GetUseDeathCamera() const { return useDeathCamera_; }
-    void SetUseDeathCamera(const bool& flag) { useDeathCamera_ = flag; }
+    void SetUseEnemyDeathCamera();
 
 private:
+#pragma region---------- 各種カメラの定数 ----------
+    enum class EnemyDeathCamera
+    {
+        Initialize,     // 初期化
+        FirstCamera,    // １つ目のカメラ
+        SecondCamera,   // ２つ目のカメラ
+        ThirdCamera,    // ３つ目のカメラ
+        Death,          // 死亡ループ
+    };
+#pragma endregion ---------- 各種カメラの定数 ----------
+
+
+private:
+    // ---------- 敵死亡カメラ ----------
+    [[nodiscard]] const bool UpdateEnemyDeathCamera(const float& elapsedTime);
     // ---------- ドラゴン上昇攻撃時のカメラ ----------
     [[nodiscard]] const bool UpdateRiseAttackCamera(const float& elapsedTime);
+    // ---------- カウンター攻撃時のカメラ更新 ----------
+    [[nodiscard]] const bool UpdateCounterAttackCamera(const float& elapsedTime);
+
+    void SetState(const EnemyDeathCamera& state) { state_ = static_cast<int>(state); }
 
 private:
     Transform           transform_          = {};
@@ -116,11 +131,22 @@ private:
     float               vibrationTime_          = 0.0f; // 振動時間
     float               vibrationTimer_         = 0.0f; // 振動時間を測るタイマー
 
-    // ---------- 特殊な動き制御用 ----------
-    float               riseAttackEasingTimer_  = 0.0f;
-    int                 riseAttackState_ = 5;
+    // ---------- 特殊な動き制御用 ----------    
+    int     state_                  = 0;
+    float   easingTimer_            = 0.0f;
+    bool    useEnemyDeathCamera_    = false; // 敵死亡カメラ
+    bool    usePlayerDeathCamera_   = false; // 自機死亡カメラ
+    bool    useRiseAttackCamera_    = false; // 上昇攻撃カメラ
+    bool    useCounterCamera_       = false; // カウンターカメラ
+
+    float   deathTimer_             = 0.0f;  // 死亡時タイマー
+    bool    useDeathTimer_          = false; // 死亡時タイマーを使うか
+
+
     float               oldCameraLength_ = 0.0f;
     float               oldRotateX_ = 0.0f;
 
-    bool useDeathCamera_ = false; // 死亡カメラ
+    float oldCameraOffsetY_ = 0.0f;
+
+    DirectX::XMFLOAT3 oldRotate_ = {};
 };

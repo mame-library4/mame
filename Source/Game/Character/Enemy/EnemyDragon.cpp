@@ -39,6 +39,7 @@ void EnemyDragon::Initialize()
     // ‘Ì—Íİ’è
     //SetMaxHealth(30.0f);
     //SetMaxHealth(100.0f);
+    //SetMaxHealth(0.0f);
     SetMaxHealth(600.0f);
     //SetMaxHealth(3000.0f);
     SetHealth(GetMaxHealth());

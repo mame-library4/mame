@@ -1097,7 +1097,8 @@ namespace PlayerState
         // 変数初期化
         addForceBack_.Initialize(0.16f, 0.2f, 0.5f);
         addForceFront_.Initialize(0.66f, 0.30f, 1.0f);
-        gamePadVibration_.Initialize(0.3f, 0.3f, 1.0f);
+        //gamePadVibration_.Initialize(0.3f, 0.3f, 1.0f);
+        gamePadVibration_.Initialize(0.3f, 0.2f, 0.5f);
 
         isNextInput_ = false;
 
@@ -1108,12 +1109,14 @@ namespace PlayerState
     // ----- 更新 -----
     void CounterState::Update(const float& elapsedTime)
     {
+        const float counterStartFrame = 0.1f;
+        const float counterEndFrame = 0.6f;
         // カウンター判定
-        if (owner_->GetAnimationSeconds() > 0.6f)
+        if (owner_->GetAnimationSeconds() > counterEndFrame)
         {
             if (owner_->GetIsCounter()) owner_->SetIsCounter(false);
         }
-        else if (owner_->GetAnimationSeconds() > 0.2f)
+        else if (owner_->GetAnimationSeconds() > counterStartFrame)
         {
             if (owner_->GetIsCounter() == false) owner_->SetIsCounter(true);
         }
@@ -1196,7 +1199,7 @@ namespace PlayerState
 
         // カウンター成功
         // TODO:ここつくる。カウンター
-        if (owner_->GetIsAbleCounterAttack())
+        //if (owner_->GetIsAbleCounterAttack())
         {
             if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER)
             {

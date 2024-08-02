@@ -43,24 +43,6 @@ namespace ActionDragon
     public:
         DeathAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
-
-    private:
-        enum class STATE
-        {
-            Initialize,     // 初期化
-            FirstCamera,    // 1つ目のカメラ
-            SecondCamera,   // 2つ目のカメラ
-            ThirdCamera,    // 3つ目のカメラ
-            Death,          // 死亡ループ
-        };
-
-        void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
-
-    private:
-        float               easingTimer_        = 0.0f; // Easing用
-        DirectX::XMFLOAT3   oldCameraRotate_    = {};   // 過去のカメラ回転角度を保持
-        float               timer_              = 0.0f; // 調整用タイマー
-        bool                isAddTimer_         = false;// 調整用
     };
 
     // ひるみ行動
