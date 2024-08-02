@@ -72,6 +72,7 @@ public:// --- 取得・設定 ---
 
     // ---------- 特殊な動き制御用 ----------
     void SetUseEnemyDeathCamera();
+    void SetUseCounterCamera();
 
 private:
 #pragma region---------- 各種カメラの定数 ----------
@@ -82,6 +83,17 @@ private:
         SecondCamera,   // ２つ目のカメラ
         ThirdCamera,    // ３つ目のカメラ
         Death,          // 死亡ループ
+    };
+    enum class CounterAttackCamera
+    {
+        CounterInitialize,          // カウンター初期化
+        CounterZoomOut,             // カメラを引く
+        CounterIdle,                // 次の行動待ち
+        CounterFinalize,            // カウンター終了化
+
+        CounterComboInitialize,     // カウンターコンボ初期化
+        CounterComboZoomIn,         // カウンター攻撃カメラ近づける
+        CounterComboZoomOut,        // カウンター攻撃カメラひく
     };
 #pragma endregion ---------- 各種カメラの定数 ----------
 
@@ -94,7 +106,8 @@ private:
     // ---------- カウンター攻撃時のカメラ更新 ----------
     [[nodiscard]] const bool UpdateCounterAttackCamera(const float& elapsedTime);
 
-    void SetState(const EnemyDeathCamera& state) { state_ = static_cast<int>(state); }
+    void SetState(const EnemyDeathCamera& state)    { state_ = static_cast<int>(state); }
+    void SetState(const CounterAttackCamera& state) { state_ = static_cast<int>(state); }
 
 private:
     Transform           transform_          = {};
@@ -143,10 +156,9 @@ private:
     bool    useDeathTimer_          = false; // 死亡時タイマーを使うか
 
 
-    float               oldCameraLength_ = 0.0f;
-    float               oldRotateX_ = 0.0f;
+    DirectX::XMFLOAT3   oldRotate_ = {};
+    float               oldLength_ = 0.0f;
+    float               oldCameraOffsetY_ = 0.0f;
 
-    float oldCameraOffsetY_ = 0.0f;
 
-    DirectX::XMFLOAT3 oldRotate_ = {};
 };

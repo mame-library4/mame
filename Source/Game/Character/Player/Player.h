@@ -145,6 +145,7 @@ public:// --- 取得・設定 ---
     StateMachine<State<Player>>* GetStateMachine() { return stateMachine_.get(); }
     void ChangeState(const STATE& state);
     [[nodiscard]] const STATE GetCurrentState() const { return currentState_; }
+    [[nodiscard]] const STATE GetOldState() const { return oldState_; }
 
     // ---------- 移動 ------------------------------
     void SetMoveDirection(const DirectX::XMFLOAT3 direction) { moveDirection_ = direction; } // 移動方向
@@ -191,6 +192,7 @@ private:
     // ---------- ステートマシン --------------------
     std::unique_ptr<StateMachine<State<Player>>> stateMachine_;
     STATE currentState_ = STATE::Idle;
+    STATE oldState_     = STATE::Idle;
 
     // ---------- 移動 ----------
     DirectX::XMFLOAT3 moveDirection_ = {};

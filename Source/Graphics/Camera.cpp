@@ -37,8 +37,7 @@ void Camera::Update(const float& elapsedTime)
     if (SceneManager::Instance().GetCurrentSceneName() == SceneManager::SceneName::Title) return;
 
     // 死亡カメラ使用時はここで終了
-    if (UpdateEnemyDeathCamera(elapsedTime)) return;
-    
+    if (UpdateEnemyDeathCamera(elapsedTime)) return;    
 
     const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
     Camera::Instance().SetTarget(cameraTargetPosition);
@@ -50,11 +49,12 @@ void Camera::Update(const float& elapsedTime)
     // カウンター攻撃のカメラ更新
     if (UpdateCounterAttackCamera(elapsedTime)) return;
 
-    // --- 画面振動 ---
-    ScreenVibrationUpdate(elapsedTime);
-
     // --- カメラ回転処理 ---
     Rotate(elapsedTime);
+
+
+    // --- 画面振動 ---
+    ScreenVibrationUpdate(elapsedTime);
 
 }
 
@@ -240,6 +240,13 @@ void Camera::SetUseEnemyDeathCamera()
     state_ = 0;
 }
 
+// ----- カウンター時カメラを使用する -----
+void Camera::SetUseCounterCamera()
+{
+    useCounterCamera_ = true;
+    state_ = 0;
+}
+
 // ----- 敵死亡時カメラ -----
 const bool Camera::UpdateEnemyDeathCamera(const float& elapsedTime)
 {
@@ -414,6 +421,7 @@ const bool Camera::UpdateEnemyDeathCamera(const float& elapsedTime)
 // ----- ドラゴン上昇攻撃時のカメラ -----
 const bool Camera::UpdateRiseAttackCamera(const float& elapsedTime)
 {
+#if 0
     const float maxLength = 10.0f;
     const float totalFrame = 0.4f;
     const float totalFrame1= 0.7f;
@@ -506,34 +514,135 @@ const bool Camera::UpdateRiseAttackCamera(const float& elapsedTime)
     }
 
     return returnFlag;
+#endif
+    return false;
 }
 
 // ----- カウンター攻撃時のカメラ更新 -----
 const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
 {
-    // プレイヤーのステートがカウンター攻撃でなければ false
-    if (PlayerManager::Instance().GetPlayer()->GetCurrentState() != Player::STATE::CounterCombo)
-    {
-        state_ = 0;
-        return false;
-    }
+    // カウンター時カメラ使用フラグが立っていないのでここで終了
+    if (useCounterCamera_ == false) return false;
 
-    switch (state_)
-    {
-    case 0:
-        oldCameraLength_ = length_;
-        oldRotateX_ = GetTransform()->GetRotationX();
+    Player* player = PlayerManager::Instance().GetPlayer().get();
 
+    switch (static_cast<CounterAttackCamera>(state_))
+    {
+    case CounterAttackCamera::CounterInitialize:// カウンター初期化
+        // 現在のカメラ項目を保存する
+        oldLength_ = length_;
+        oldRotate_ = GetTransform()->GetRotation();
+
+        // 変数初期化
         easingTimer_ = 0.0f;
 
-        state_ = 1;
+        // ステート変更
+        SetState(CounterAttackCamera::CounterZoomOut);
 
         break;
+    case CounterAttackCamera::CounterZoomOut:// カメラを引く
+    {        
+        if (player->GetAnimationSeconds() < 0.25f) break;
+
+        const float totalFrame = 0.2f;
+        easingTimer_ += elapsedTime;
+        easingTimer_ = min(easingTimer_, totalFrame);
+
+        length_ = Easing::InSine(easingTimer_, totalFrame, 7.0f, oldLength_);
+
+        const float maxRotateX = oldRotate_.x + DirectX::XMConvertToRadians(-1.5f);
+        const float rotateX = Easing::InSine(easingTimer_, totalFrame, maxRotateX, oldRotate_.x);
+        GetTransform()->SetRotationX(rotateX);
+
+        if (easingTimer_ == totalFrame)
+        {
+            // 変数初期化
+            easingTimer_ = 0.0f;
+
+            // ステート変更
+            SetState(CounterAttackCamera::CounterIdle);
+        }
+    }
+        break;
+    case CounterAttackCamera::CounterIdle:// 次の行動待機
+    {
+        if (player->GetCurrentState() == Player::STATE::Idle)
+        {
+            // ステート変更
+            SetState(CounterAttackCamera::CounterFinalize);
+        }
+        if (player->GetCurrentState() == Player::STATE::CounterCombo)
+        {
+            // ステート変更
+            SetState(CounterAttackCamera::CounterComboInitialize);
+        }
+    }
+        break;
+    case CounterAttackCamera::CounterFinalize:// カウンター終了化
+    {
+        const float totalFrame = 0.5f;
+        easingTimer_ += elapsedTime;
+        easingTimer_ = min(easingTimer_, totalFrame);
+
+        length_ = Easing::InSine(easingTimer_, totalFrame, oldLength_, 7.0f);
+
+        const float minRotateX = oldRotate_.x + DirectX::XMConvertToRadians(-1.5f);
+        const float rotateX = Easing::InSine(easingTimer_, totalFrame, oldRotate_.x, minRotateX);
+        GetTransform()->SetRotationX(rotateX);
+
+        if (easingTimer_ == totalFrame)
+        {
+            // 変数初期化
+            easingTimer_ = 0.0f;
+
+            // カウンターカメラ使用終了
+            useCounterCamera_ = false;
+        }
+    }
+        break;
+    case CounterAttackCamera::CounterComboInitialize:// カウンターコンボ初期化
+
+        // 現在のカメラの項目を保存する
+        oldLength_ = length_;
+        oldRotate_ = GetTransform()->GetRotation();
+
+        // 変数初期化
+        easingTimer_ = 0.0f;
+
+        // ステート変更
+        SetState(CounterAttackCamera::CounterComboZoomIn);
+
+        break;  
+    case CounterAttackCamera::CounterComboZoomIn:
+    {
+        const float totalFrame = 0.17f;
+        length_ = Easing::InSine(easingTimer_, totalFrame, 4.5f, oldCameraLength_);
+
+        const float maxRotateX = oldRotateX_ + DirectX::XMConvertToRadians(3.0f);
+        const float rotateX = Easing::InSine(easingTimer_, totalFrame, maxRotateX, oldRotateX_);
+        GetTransform()->SetRotationX(rotateX);
+
+
+        easingTimer_ += elapsedTime;
+        easingTimer_ = min(easingTimer_, totalFrame);
+
+        if (easingTimer_ == totalFrame)
+        {
+            state_ = 2;
+            easingTimer_ = 0.0f;
+        }
+    }
+        break;
+    }
+
+#if 0
+    switch (state_)
+    {
     case 1:
     {
         const float totalFrame = 0.17f;
-        length_ = Easing::InSine(easingTimer_, totalFrame, 4.5f, oldCameraLength_);        
-        
+        length_ = Easing::InSine(easingTimer_, totalFrame, 4.5f, oldCameraLength_);
+
         const float maxRotateX = oldRotateX_ + DirectX::XMConvertToRadians(3.0f);
         const float rotateX = Easing::InSine(easingTimer_, totalFrame, maxRotateX, oldRotateX_);
         GetTransform()->SetRotationX(rotateX);
@@ -574,6 +683,7 @@ const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
     case 3:
         break;
     }
+#endif
 
     return true;
 }

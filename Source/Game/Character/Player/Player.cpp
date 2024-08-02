@@ -31,6 +31,7 @@ Player::Player()
 
         // 一番初めのステートを設定する
         GetStateMachine()->SetState(static_cast<UINT>(STATE::Idle));
+        currentState_ = STATE::Idle;
     }
 
     // CollisionData登録
@@ -416,6 +417,9 @@ void Player::UpdateCollisionDetectionData()
 // ----- ステート変更 -----
 void Player::ChangeState(const STATE& state)
 {
+    // 前回のステートを記録
+    oldState_ = currentState_;
+
     // 現在のステートを記録
     currentState_ = state;
 

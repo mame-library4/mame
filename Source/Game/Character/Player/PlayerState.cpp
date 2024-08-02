@@ -108,8 +108,6 @@ namespace PlayerState
 
         // フラグをリセットする
         owner_->ResetFlags();
-
-        owner_->SetTransitionTime(0.15f);
     }
 
     // ----- 更新 -----
@@ -124,6 +122,8 @@ namespace PlayerState
             owner_->ChangeState(Player::STATE::Counter);
             return;
         }
+
+        if (owner_->GetOldState() == Player::STATE::Counter && owner_->GetIsBlendAnimation()) return;
 
         // 移動値があれば MoveState へ遷移する
         const float aLx = fabsf(Input::Instance().GetGamePad().GetAxisLX());
@@ -160,7 +160,7 @@ namespace PlayerState
 
         if (animationIndex == Player::Animation::Counter)
         {
-            owner_->SetTransitionTime(0.4f);
+            owner_->SetTransitionTime(0.3f);
         }
         else if (animationIndex == Player::Animation::RollForward ||
             animationIndex == Player::Animation::RollBack    ||
@@ -1094,6 +1094,9 @@ namespace PlayerState
         owner_->PlayBlendAnimation(Player::Animation::Counter, false);
         owner_->SetTransitionTime(0.1f);
 
+        // カウンター時カメラを使用する
+        Camera::Instance().SetUseCounterCamera();
+
         // 変数初期化
         addForceBack_.Initialize(0.16f, 0.2f, 0.5f);
         addForceFront_.Initialize(0.66f, 0.30f, 1.0f);
@@ -1192,6 +1195,7 @@ namespace PlayerState
         // アニメーション再生終了
         //if(owner_->GetAnimationSeconds() > 1.0f)
         if(owner_->GetAnimationSeconds() > 1.2f)
+        //if(owner_->IsPlayAnimation() == false)
         {
             owner_->ChangeState(Player::STATE::Idle);
             return;
@@ -1227,7 +1231,7 @@ namespace PlayerState
         {
             owner_->SetAnimationSpeed(1.0f);
         }
-        if (animationSeconds > 0.4f)
+        else if (animationSeconds > 0.4f)
         {
             owner_->SetAnimationSpeed(0.7f);
         }
