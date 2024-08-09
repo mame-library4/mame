@@ -154,6 +154,8 @@ void Camera::Rotate(const float& elapsedTime)
     {
         if (rotate.x > maxXRotation_)
         {
+            isAdjustCameraLength_ = true;
+
             constexpr float maxRotate = DirectX::XMConvertToRadians(40);
             const float addAmountSpeed = 2.0f;
             const float rotateAmount = (maxRotate - maxXRotation_) * addAmountSpeed;
@@ -168,6 +170,8 @@ void Camera::Rotate(const float& elapsedTime)
         }
         else
         {
+            isAdjustCameraLength_ = false;
+
             rotate.x -= aRy * invertVertical * verticalRotationSpeed_ * elapsedTime;
 
             length_ += addLength * aRy * elapsedTime;
@@ -548,11 +552,14 @@ const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
         easingTimer_ += elapsedTime;
         easingTimer_ = min(easingTimer_, totalFrame);
 
-        length_ = Easing::InSine(easingTimer_, totalFrame, 7.0f, oldLength_);
+        if (isAdjustCameraLength_ == false)
+        {
+            length_ = Easing::InSine(easingTimer_, totalFrame, 7.0f, oldLength_);
 
-        const float maxRotateX = oldRotate_.x + DirectX::XMConvertToRadians(-1.5f);
-        const float rotateX = Easing::InSine(easingTimer_, totalFrame, maxRotateX, oldRotate_.x);
-        GetTransform()->SetRotationX(rotateX);
+            const float maxRotateX = oldRotate_.x + DirectX::XMConvertToRadians(-1.5f);
+            const float rotateX = Easing::InSine(easingTimer_, totalFrame, maxRotateX, oldRotate_.x);
+            GetTransform()->SetRotationX(rotateX);
+        }
 
         if (easingTimer_ == totalFrame)
         {
@@ -584,11 +591,14 @@ const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
         easingTimer_ += elapsedTime;
         easingTimer_ = min(easingTimer_, totalFrame);
 
-        length_ = Easing::InSine(easingTimer_, totalFrame, oldLength_, 7.0f);
+        if (isAdjustCameraLength_ == false)
+        {
+            length_ = Easing::InSine(easingTimer_, totalFrame, oldLength_, 7.0f);
 
-        const float minRotateX = oldRotate_.x + DirectX::XMConvertToRadians(-1.5f);
-        const float rotateX = Easing::InSine(easingTimer_, totalFrame, oldRotate_.x, minRotateX);
-        GetTransform()->SetRotationX(rotateX);
+            const float minRotateX = oldRotate_.x + DirectX::XMConvertToRadians(-1.5f);
+            const float rotateX = Easing::InSine(easingTimer_, totalFrame, oldRotate_.x, minRotateX);
+            GetTransform()->SetRotationX(rotateX);
+        }
 
         if (easingTimer_ == totalFrame)
         {
@@ -616,21 +626,77 @@ const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
     case CounterAttackCamera::CounterComboZoomIn:
     {
         const float totalFrame = 0.17f;
-        length_ = Easing::InSine(easingTimer_, totalFrame, 4.5f, oldCameraLength_);
-
-        const float maxRotateX = oldRotateX_ + DirectX::XMConvertToRadians(3.0f);
-        const float rotateX = Easing::InSine(easingTimer_, totalFrame, maxRotateX, oldRotateX_);
-        GetTransform()->SetRotationX(rotateX);
-
-
         easingTimer_ += elapsedTime;
         easingTimer_ = min(easingTimer_, totalFrame);
 
+#if 0
+        length_ = Easing::InSine(easingTimer_, totalFrame, 4.5f, oldLength_);
+
+        const float maxRotateX = oldRotate_.x + DirectX::XMConvertToRadians(3.0f);
+        const float rotateX = Easing::InSine(easingTimer_, totalFrame, maxRotateX, oldRotate_.x);
+        GetTransform()->SetRotationX(rotateX);
+#else
+        length_ = Easing::InSine(easingTimer_, totalFrame, 5.5f, oldLength_);
+
+        const float maxRotateX = oldRotate_.x + DirectX::XMConvertToRadians(3.0f);
+        const float rotateX = Easing::InSine(easingTimer_, totalFrame, maxRotateX, oldRotate_.x);
+        GetTransform()->SetRotationX(rotateX);
+#endif
+
         if (easingTimer_ == totalFrame)
         {
-            state_ = 2;
             easingTimer_ = 0.0f;
+
+            // ステート変更
+            SetState(CounterAttackCamera::CounterComboZoomOut);
         }
+    }
+        break;
+    case CounterAttackCamera::CounterComboZoomOut:
+    {
+        const float totalFrame = 0.4f;
+        easingTimer_ += elapsedTime;
+        easingTimer_ = min(easingTimer_, totalFrame);
+
+#if 0
+        length_ = Easing::InSine(easingTimer_, totalFrame, 9.0f, 4.5f);
+#else
+        length_ = Easing::InSine(easingTimer_, totalFrame, 9.0f, 5.5f);
+#endif
+
+        const float maxRotate = oldRotate_.x + DirectX::XMConvertToRadians(-3.5f);
+        const float minRotate = oldRotate_.x + DirectX::XMConvertToRadians(3.0f);
+        const float rotateX = Easing::InSine(easingTimer_, totalFrame, maxRotate, minRotate);
+        GetTransform()->SetRotationX(rotateX);
+
+        if (easingTimer_ == totalFrame)
+        {
+            easingTimer_ = 0.0f;
+
+            // ステート変更
+            SetState(CounterAttackCamera::Finalize);
+        }
+    }
+        break;
+    case CounterAttackCamera::Finalize:
+    {
+        const float totalFrame = 0.6f;
+
+        easingTimer_ += elapsedTime;
+        easingTimer_ = min(easingTimer_, totalFrame);
+        
+        length_ = Easing::InSine(easingTimer_, totalFrame, 6.0f, 9.0f);
+
+        const float minRotate = oldRotate_.x + DirectX::XMConvertToRadians(-3.5f);
+        const float rotateX = Easing::InSine(easingTimer_, totalFrame, 0.0f, minRotate);
+        GetTransform()->SetRotationX(rotateX);
+
+        if(easingTimer_ == totalFrame)
+        {
+            useCounterCamera_ = false;
+        }
+
+
     }
         break;
     }

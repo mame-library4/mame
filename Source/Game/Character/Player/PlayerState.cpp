@@ -589,11 +589,17 @@ namespace PlayerState
         // 移動方向を算出
         CalcMoveDirection();
 
+        // 無敵状態にする
+        owner_->SetIsInvincible(true);
+
         // フラグをリセットする
         owner_->ResetFlags();
 
         // 変数初期化
         addForceData_.Initialize(0.15f, 0.27f, 0.4f);
+        isRotating_ = false;
+
+        isFirstTime_ = false;
     }
 
     // ----- 更新 -----
@@ -601,6 +607,8 @@ namespace PlayerState
     {
         // 先行入力処理
         if (CheckNextInput()) return;
+
+        Turn(elapsedTime);
 
         // アニメーションの速度設定
         SetAnimationSpeed();
@@ -621,12 +629,119 @@ namespace PlayerState
     // ----- 終了化 -----
     void AvoidanceState::Finalize()
     {
+        // 変数をリセットしておく
+        isFirstTime_ = true;
+
+        owner_->SetIsInvincible(false);
+    }
+
+    // ----- 回転処理 -----
+    void AvoidanceState::Turn(const float& elapsedTime)
+    {
+        // 回転量がないためここで終了
+        if (isRotating_ == false) return;
+        // 入力値がないので回転する必要がない。ここで終了
+        if (isInputStick_ == false) return;
+
+        DirectX::XMFLOAT2 playerForward = { owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z };
+        playerForward = XMFloat2Normalize(playerForward);
+
+        float forwardCross = XMFloat2Cross(inputDirection_, playerForward);
+
+        float forwardDot = XMFloat2Dot(inputDirection_, playerForward) - 1.0f;
+
+        if (forwardDot > -0.01f)
+        {
+            isRotating_ = false;
+            return;
+        }
+
+        const float speed = owner_->GetRotateSpeed() * elapsedTime;
+        float rotateY = forwardDot * speed;
+        rotateY = std::min(rotateY, -0.7f * speed);
+
+        if (forwardCross > 0)
+        {
+            owner_->GetTransform()->AddRotationY(rotateY);
+        }
+        else
+        {
+            owner_->GetTransform()->AddRotationY(-rotateY);
+        }
+    }
+
+    // ----- このステートをリセット(初期化)する -----
+    void AvoidanceState::ResetState()
+    {
+        // ------------------------------
+        //  回避を連続して出している場合
+        // ------------------------------
+        if (isFirstTime_ == false)
+        {
+            // 回転処理を行う
+            isRotating_ = true;
+        }
+
+        // アニメーション設定
+        SetAnimation();
+
+        // 移動方向を算出
+        CalcMoveDirection();
+
+        // フラグをリセットする
+        owner_->ResetFlags();
+
+        // 変数初期化
+        addForceData_.Initialize(0.15f, 0.27f, 0.4f);
     }
 
     // ----- 先行入力処理 -----
     const bool AvoidanceState::CheckNextInput()
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
+
+
+#if 1
+        const float nextInputStartFrame = 0.5f; // 先行入力開始フレーム
+
+        if (animationSeconds > nextInputStartFrame)
+        {
+            if (owner_->GetComboAttack0KeyDown())
+            {
+                owner_->SetNextInput(Player::NextInput::ComboAttack0);
+            }
+
+            // 回避
+            if (owner_->GetAvoidanceKeyDown() &&
+                owner_->GetAnimationIndex() != static_cast<int>(Player::Animation::RollBack))
+            {
+                owner_->SetNextInput(Player::NextInput::Avoidance);
+
+                GamePad& gamePad = Input::Instance().GetGamePad();
+                const float aLx = gamePad.GetAxisLX();
+                const float aLy = gamePad.GetAxisLY();
+                if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
+                {
+                    const DirectX::XMFLOAT3 cameraFront = Camera::Instance().CalcForward();
+                    const DirectX::XMFLOAT3 cameraRight = Camera::Instance().CalcRight();
+                    inputDirection_ =
+                    {
+                        aLy * cameraFront.x + aLx * cameraRight.x,
+                        aLy * cameraFront.z + aLx * cameraRight.z,
+                    };
+                    inputDirection_ = XMFloat2Normalize(inputDirection_);
+
+                    isInputStick_ = true;
+                }
+                else
+                {
+                    isInputStick_ = false;
+                }
+            }
+        }
+
+#else 
+
 
         // 先行入力受付
 #pragma region 先行入力受付
@@ -701,6 +816,7 @@ namespace PlayerState
             break;
         }
 #pragma endregion 先行入力受付
+#endif
 
         // 先行入力によるステート変更処理
 #pragma region 先行入力によるステート変更処理
@@ -715,7 +831,7 @@ namespace PlayerState
                 if (animationSeconds > avoidanceFrame)
                 {
                     //回避は現在と同じステートなので、初期化を呼ぶ
-                    Initialize();
+                    ResetState();
                     return true;
                 }
             }
@@ -802,7 +918,7 @@ namespace PlayerState
                 if (animationSeconds > avoidanceFrame)
                 {
                     //回避は現在と同じステートなので、初期化を呼ぶ
-                    Initialize();
+                    ResetState();
                     return true;
                 }
             }
@@ -851,7 +967,7 @@ namespace PlayerState
                 if (animationSeconds > avoidanceFrame)
                 {
                     //回避は現在と同じステートなので、初期化を呼ぶ
-                    Initialize();
+                    ResetState();
                     return true;
                 }
             }
@@ -954,6 +1070,17 @@ namespace PlayerState
     // ----- アニメーション設定 -----
     void AvoidanceState::SetAnimation()
     {
+        // --------------------------------------------------
+        //  回避を連続して出している場合
+        // --------------------------------------------------
+        if (isFirstTime_ == false)
+        {
+            // 前方向のアニメーションを設定する
+            owner_->PlayBlendAnimation(Player::Animation::RollForward, false, 1.0f, 0.15f);
+            owner_->SetTransitionTime(0.05f);
+            return;            
+        }
+
         // 元のアニメーションに応じてブレンドの時間を設定する
         const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
         if (animationIndex == Player::Animation::ComboAttack0_0)
@@ -1056,21 +1183,30 @@ namespace PlayerState
     // ----- 移動方向算出 -----
     void AvoidanceState::CalcMoveDirection()
     {
+        if (isFirstTime_ == false)
+        {
+            if (isInputStick_)
+            {
+                moveDirection_ = { inputDirection_.x, 0.0f, inputDirection_.y };
+            }
+            else
+            {
+                moveDirection_ = owner_->GetTransform()->CalcForward();
+            }
+            return;
+        }
+
         // ----------------------------------------
         // 自分自身から見た前後左右のベクトルを用意する
         // ----------------------------------------        
         const DirectX::XMFLOAT3 ownerFront = owner_->GetTransform()->CalcForward();
         const DirectX::XMFLOAT3 ownerRight = owner_->GetTransform()->CalcRight();
-        const DirectX::XMFLOAT3 moveDirection[static_cast<int>(Direction::Max)] =
+        const DirectX::XMFLOAT3 moveDirection[4] =
         {
             ownerFront,
             ownerFront * -1,
             ownerRight,
             ownerRight * -1,
-        };
-        const Direction direction[static_cast<int>(Direction::Max)] =
-        {
-            Direction::Fornt, Direction::Back, Direction::Right, Direction::Left
         };
         
         // ----------------------------------------
@@ -1080,7 +1216,6 @@ namespace PlayerState
         const int differenceNum = static_cast<int>(Player::Animation::RollForward);
 
         moveDirection_  = moveDirection[animationIndex - differenceNum];
-        direction_      = direction[animationIndex - differenceNum];
     }
 }
 

@@ -169,6 +169,10 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const bool GetIsAbleAttack() const { return isAbleAttack_; }
     void SetIsAbleAttack(const bool& flag) { isAbleAttack_ = flag; }
 
+    // ----- 無敵判定 -----
+    [[nodiscard]] const bool GetIsInvincible() const { return isInvincible_; }
+    void SetIsInvincible(const bool& flag) { isInvincible_ = flag; }
+
     // ----- カウンター有効範囲 -----
     [[nodiscard]] const float GetCounterActiveRadius() const { return counterActiveRadius_; }
     void SetCounterActiveRadius(const float& range) { counterActiveRadius_ = range; }
@@ -206,6 +210,9 @@ private:
 
     // ---------- カウンター有効範囲 ----------
     float counterActiveRadius_   = 0.0f; // カウンター有効範囲
+
+    // ---------- 無敵 ----------
+    bool isInvincible_ = false;
 
     // ---------- Debug用 --------------------
     bool isCollisionSphere_ = true;

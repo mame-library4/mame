@@ -158,14 +158,9 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
-        enum class Direction
-        {
-            Fornt,
-            Back,
-            Right,
-            Left,
-            Max,
-        };
+        void Turn(const float& elapsedTime);
+
+        void ResetState(); // このステートをリセット(初期化)する
 
         [[nodiscard]] const bool CheckNextInput();
         void SetAnimationSpeed();
@@ -175,9 +170,13 @@ namespace PlayerState
 
     private:
         DirectX::XMFLOAT3   moveDirection_  = {};
-        Direction           direction_      = Direction::Back;
 
         AddForceData addForceData_;
+
+        DirectX::XMFLOAT2 inputDirection_ = {};
+        bool isFirstTime_   = true;     // このステートに入るのが初めてかどうか
+        bool isRotating_    = false;    // 回転処理をするか
+        bool isInputStick_  = false;    // スティック入力があるか
     };
 
     // ----- カウンター -----

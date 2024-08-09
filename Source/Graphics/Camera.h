@@ -94,6 +94,8 @@ private:
         CounterComboInitialize,     // カウンターコンボ初期化
         CounterComboZoomIn,         // カウンター攻撃カメラ近づける
         CounterComboZoomOut,        // カウンター攻撃カメラひく
+
+        Finalize,
     };
 #pragma endregion ---------- 各種カメラの定数 ----------
 
@@ -160,5 +162,5 @@ private:
     float               oldLength_ = 0.0f;
     float               oldCameraOffsetY_ = 0.0f;
 
-
+    bool isAdjustCameraLength_ = false; // 地面に埋まらないように
 };

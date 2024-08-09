@@ -390,7 +390,10 @@ void GameScene::UpdatePlayerDamageCollisions(const float& elapsedTime)
         player->GetIsAbleCounterAttack())
     {
         return;
-    }    
+    }
+
+    // Œ»Ý–³“Gó‘Ô‚È‚Ì‚Å‚±‚±‚ÅI—¹
+    if (player->GetIsInvincible()) return;
 
 
     for (int playerDataIndex = 0; playerDataIndex < player->GetDamageDetectionDataCount(); ++playerDataIndex)
