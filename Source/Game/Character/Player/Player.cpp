@@ -17,6 +17,7 @@ Player::Player()
         //GetStateMachine()->RegisterState(new PlayerState::MoveState(this));             // ˆÚ“®
         GetStateMachine()->RegisterState(new PlayerState::WalkState(this));
         GetStateMachine()->RegisterState(new PlayerState::RunState(this));
+        GetStateMachine()->RegisterState(new PlayerState::LightFlinchState(this));
         GetStateMachine()->RegisterState(new PlayerState::FlinchState(this));
         GetStateMachine()->RegisterState(new PlayerState::DamageState(this));           // ƒ_ƒ[ƒW
         GetStateMachine()->RegisterState(new PlayerState::DeathState(this));            // Ž€–S

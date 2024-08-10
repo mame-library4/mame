@@ -380,6 +380,31 @@ namespace PlayerState
     }
 }
 
+// ----- é„ãØÇ› -----
+namespace PlayerState
+{
+    // ----- èâä˙âª -----
+    void LightFlinchState::Initialize()
+    {
+        owner_->PlayBlendAnimation(Player::Animation::KnockDownStart, false);
+    }
+
+    // ----- çXêV -----
+    void LightFlinchState::Update(const float& elapsedTime)
+    {
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+    }
+
+    // ----- èIóπâª -----
+    void LightFlinchState::Finalize()
+    {
+    }
+}
+
 // ----- ãØÇ› -----
 namespace PlayerState
 {

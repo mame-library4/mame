@@ -24,10 +24,11 @@ private:
     void UpdateCollisions(const float& elapsedTime) override;
 
     // ---------- 攻撃判定 ----------
-    void ResetAllAttackActiveFlag()                         override;
-    void SetTurnAttackActiveFlag(const bool& flag = true)   override;
-    void SetTackleAttackActiveFlag(const bool& flag = true) override;
-    void SetFlyAttackActiveFlag(const bool& flag = true)    override;
+    void ResetAllAttackActiveFlag()                             override;
+    void SetTurnAttackActiveFlag(const bool& flag = true)       override;
+    void SetTackleAttackActiveFlag(const bool& flag = true)     override;
+    void SetFlyAttackActiveFlag(const bool& flag = true)        override;
+    void SetComboSlamAttackActiveFlag(const bool& flag = true)  override;
 
     // ---------- 押し出し判定 ----------
     void SetDownCollisionActiveFlag(const bool& flag = true) override;
@@ -37,9 +38,9 @@ private:
 
     // ----- DebugRenderer表示用フラグ -----
     bool isCollisionSphere_ = true;
-    //bool isAttackSphere_    = true;
+    bool isAttackSphere_    = true;
+    //bool isAttackSphere_    = false;
     //bool isDamageSphere_    = true;
-    bool isAttackSphere_    = false;
     bool isDamageSphere_    = false;
 
     bool isUpdateAnimation_ = true;
@@ -55,12 +56,14 @@ private:
     };
     enum AttackData
     {
-        TrunAttackStart     = 0,
-        TrunAttackEnd       = 5,
-        TackleAttackStart   = 6,
-        TackleAttackEnd     = 10,
-        FlyAttackStart      = 11,
-        FlyAttackEnd        = 12,
+        TrunAttackStart         = 0,
+        TrunAttackEnd           = 5,
+        TackleAttackStart       = 6,
+        TackleAttackEnd         = 10,
+        FlyAttackStart          = 11,
+        FlyAttackEnd            = 12,
+        ComboSlamAttackStart    = 13,
+        ComboSlamAttackEnd      = 15,
     };
 };
 

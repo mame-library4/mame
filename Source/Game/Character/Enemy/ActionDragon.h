@@ -204,8 +204,6 @@ namespace ActionDragon
         float easingTimer_ = 0.0f;
         bool isDown_ = false;
         bool isRise_ = false;
-
-        bool isAttackActive_ = false;
     };
 
     // ノックバック行動
@@ -287,7 +285,6 @@ namespace ActionDragon
 
     private:
         AddForceData addForceData_;
-        bool isAttackActive_ = false;
     };
 
     // タックル行動
@@ -311,8 +308,6 @@ namespace ActionDragon
     private:
         AddForceData addForceData_;
         float easingTimer_ = 0.0f;
-
-        bool isAttackActive_ = false;
     };
 
     // 上昇攻撃行動

@@ -97,6 +97,17 @@ namespace PlayerState
         float stateChangeTimer_ = 0.0f;
     };
 
+    class LightFlinchState : public State<Player>
+    {
+    public:
+        LightFlinchState(Player* player) : State(player, "LightFlinchState") {}
+        ~LightFlinchState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+    };
+
     class FlinchState : public State<Player>
     {
     public:

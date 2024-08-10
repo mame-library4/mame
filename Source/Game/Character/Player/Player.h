@@ -18,6 +18,7 @@ public:// --- ’è” ---
         //Move,           // ˆÚ“®
         Walk,
         Run,
+        LightFlinch,
         Flinch,
         Damage,         // ƒ_ƒ[ƒW
         Death,          // €–S

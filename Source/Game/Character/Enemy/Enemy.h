@@ -178,10 +178,11 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const std::string GetActiveNodeName() const { return (activeNode_ != nullptr) ? activeNode_->GetName() : ""; }
 
     // ---------- 攻撃判定 ----------
-    virtual void ResetAllAttackActiveFlag()                         = 0; // 全攻撃判定無効化
-    virtual void SetTurnAttackActiveFlag(const bool& flag = true)   = 0; // 回転攻撃
-    virtual void SetTackleAttackActiveFlag(const bool& flag = true) = 0; // 突進攻撃
-    virtual void SetFlyAttackActiveFlag(const bool& flag = true)    = 0; // 上昇攻撃
+    virtual void ResetAllAttackActiveFlag()                             = 0; // 全攻撃判定無効化
+    virtual void SetTurnAttackActiveFlag(const bool& flag = true)       = 0; // 回転攻撃
+    virtual void SetTackleAttackActiveFlag(const bool& flag = true)     = 0; // 突進攻撃
+    virtual void SetFlyAttackActiveFlag(const bool& flag = true)        = 0; // 上昇攻撃
+    virtual void SetComboSlamAttackActiveFlag(const bool& flag = true)  = 0; // たたきつけ攻撃
 
     // ---------- 押し出し判定 ----------
     virtual void SetDownCollisionActiveFlag(const bool& flag = true) = 0;
@@ -189,10 +190,17 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const bool GetIsStageCollisionJudgement() const { return isStageCollisionJudgement_; }
     void SetIsStageCollisionJudgement(const bool& flag) { isStageCollisionJudgement_ = flag; }
 
+    // ---------- 怯み判定用データ ----------
+    [[nodiscard]] const int GetFlinchDetectionDataCount() const { return flinchDetectionData_.size(); }
+    std::vector<AttackDetectionData> GetFlinchDetectionData() { return flinchDetectionData_; }
+    AttackDetectionData& GetFlinchDetectionData(const int& index) { return flinchDetectionData_.at(index); }
+
 protected:
     std::unique_ptr<BehaviorTree>   behaviorTree_;
     std::unique_ptr<BehaviorData>   behaviorData_;
     NodeBase*                       activeNode_ = nullptr;
+
+    std::vector<AttackDetectionData> flinchDetectionData_; // 怯み判定用データ
 
     int     step_       = 0;        // 行動ステップ
     bool    isFlinch_   = false;    // ひるみフラグ

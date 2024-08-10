@@ -204,7 +204,7 @@ void GameScene::Render()
 
     DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
 //#ifdef _DEBUG
-#if 0
+#if 1
     if (isDebugRenderer_)
     {
         // player
@@ -395,7 +395,7 @@ void GameScene::UpdatePlayerDamageCollisions(const float& elapsedTime)
     // 現在無敵状態なのでここで終了
     if (player->GetIsInvincible()) return;
 
-
+    // くらい判定 (吹っ飛ばされる怯み)
     for (int playerDataIndex = 0; playerDataIndex < player->GetDamageDetectionDataCount(); ++playerDataIndex)
     {
         const DamageDetectionData playerData = player->GetDamageDetectionData(playerDataIndex);
@@ -424,6 +424,32 @@ void GameScene::UpdatePlayerDamageCollisions(const float& elapsedTime)
             }
         }
     }
+
+    if (player->GetCurrentState() == Player::STATE::Damage) return;
+
+    // 弱怯み
+    for (int playerDataIndex = 0; playerDataIndex < player->GetDamageDetectionDataCount(); ++playerDataIndex)
+    {
+        const DamageDetectionData playerData = player->GetDamageDetectionData(playerDataIndex);
+
+        for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetFlinchDetectionDataCount(); ++enemyDataIndex)
+        {
+            const AttackDetectionData enemyData = enemy->GetFlinchDetectionData(enemyDataIndex);
+
+            // 敵の攻撃判定が現在有効ではないので処理をしない
+            if (enemyData.GetIsActive() == false) continue;
+
+            // 当たったかチェック
+            if (Collision::IntersectSphereVsSphere(
+                enemyData.GetPosition(), enemyData.GetRadius(),
+                playerData.GetPosition(), playerData.GetRadius()))
+            {
+                player->ChangeState(Player::STATE::LightFlinch);
+            }
+        }
+    }
+
+
 }
 
 // ----- プレイヤーのカウンター判定 -----
