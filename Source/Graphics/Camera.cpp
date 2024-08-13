@@ -260,7 +260,7 @@ const bool Camera::UpdateEnemyDeathCamera(const float& elapsedTime)
     Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
 
     std::string nodeName = (state_ >= 3) ? "root" : "Dragon15_spine2";
-    target_ = enemy->GetJointPosition(nodeName, enemy->GetScaleFactor());
+    target_ = enemy->GetJointPosition(nodeName);
 
     switch (static_cast<EnemyDeathCamera>(state_))
     {

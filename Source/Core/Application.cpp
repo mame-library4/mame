@@ -72,6 +72,8 @@ bool Application::Finalize()
     // UserInterface
     UIManager::Instance().Clear();
 
+    EffectManager::Instance().Finalize();
+
     return false;
 }
 
@@ -173,7 +175,7 @@ void Application::Render()
 #if _DEBUG
         Graphics::Instance().GetDebugRenderer()->Render(deviceContext, view, projection);
 #endif
-        EffectManager::Instance().Render(view, projection);
+        EffectManager::Instance().Render();
 
         PostProcess::Instance().Deactivate();
         PostProcess::Instance().Draw();
@@ -281,6 +283,9 @@ void Application::DrawDebug()
     graphics_.GetShader()->DrawDebug();
 
     UIManager::Instance().DrawDebug();
+
+    EffectManager::Instance().DrawDebug();
+    
 #endif
 }
 

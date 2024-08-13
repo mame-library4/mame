@@ -1,6 +1,7 @@
 #pragma once
 #include "StateMachine/State.h"
 #include "Player.h"
+#include <Effekseer.h>
 
 namespace PlayerState
 {
@@ -37,7 +38,7 @@ namespace PlayerState
     {
     public:
         void Initialize(const float& startFrame, const float& time, const float& power);
-        void Update(const float& animationFrame);
+        const bool Update(const float& animationFrame);
 
     private:
         float startFrame_ = 0.0f;
@@ -211,6 +212,10 @@ namespace PlayerState
         GamePadVibration gamePadVibration_;
 
         bool isNextInput_ = false; // カウンター攻撃の先行入力用
+
+        bool isCounterReaction = false; // カウンターが成功したときの演出
+
+        Effekseer::Handle counterEffectHandle_;
     };
 
     // ----- カウンター攻撃 -----

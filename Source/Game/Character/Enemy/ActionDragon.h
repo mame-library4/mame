@@ -255,7 +255,42 @@ namespace ActionDragon
         const ActionBase::State Run(const float& elapsedTime) override;
 
     private:
+        enum class STATE
+        {
+            Initialize, // 初期化
+            Attack0,    // 攻撃一発目
+            Attack1,    // 攻撃二発目
+            Recovery,   // 後隙
+        };
+
+        void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
+
+    private:
         AddForceData addForceData_;
+    };
+
+    // コンボたたきつけ攻撃(軸合わせしてくる)
+    class ComboFlySlamAction : public ActionBase
+    {
+    public:
+        ComboFlySlamAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+
+    private:
+        enum class STATE
+        {
+            Initialize, // 初期化
+            Attack,     // たたきつけ攻撃
+            ComboJudge, // コンボ攻撃するか判定
+            Recovery,   // 後隙
+        };
+
+        void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
+
+    private:
+        AddForceData    addForceData_;
+        int             comboNum_       = 0;
+        const int       maxComboNum_    = 2; // 最大コンボ数
     };
 
     // コンボチャージ行動

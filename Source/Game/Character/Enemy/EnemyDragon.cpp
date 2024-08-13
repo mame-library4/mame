@@ -198,9 +198,10 @@ void EnemyDragon::RegisterBehaviorNode()
     //behaviorTree_->AddNode("Shout", "Roar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
     behaviorTree_->AddNode("Shout", "RoarLong",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarLongAction(this));
 
-    behaviorTree_->AddNode("Near", "TurnAttack",  1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
-    behaviorTree_->AddNode("Near", "FlyAttack",   1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));
-    behaviorTree_->AddNode("Near", "ComboSlam",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));
+    behaviorTree_->AddNode("Near", "TurnAttack",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
+    behaviorTree_->AddNode("Near", "ComboFlySlam",  0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboFlySlamAction(this));
+    behaviorTree_->AddNode("Near", "FlyAttack",     1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));
+    behaviorTree_->AddNode("Near", "ComboSlam",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));
     
     behaviorTree_->AddNode("Near", "KnockBack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::KnockBackAction(this));
     
@@ -495,7 +496,7 @@ void EnemyDragon::UpdateCollisions(const float& elapsedTime)
     for (DamageDetectionData& data : damageDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
+        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), data.GetOffsetPosition()));
 
         data.Update(elapsedTime);
     }
@@ -503,7 +504,7 @@ void EnemyDragon::UpdateCollisions(const float& elapsedTime)
     for (AttackDetectionData& data : attackDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
+        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), data.GetOffsetPosition()));
     }
 
     for (int i = AttackData::TrunAttackStart; i <= AttackData::TackleAttackEnd; ++i)
@@ -519,7 +520,7 @@ void EnemyDragon::UpdateCollisions(const float& elapsedTime)
     for (CollisionDetectionData& data : collisionDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        DirectX::XMFLOAT3 pos = GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition());
+        DirectX::XMFLOAT3 pos = GetJointPosition(data.GetUpdateName(), data.GetOffsetPosition());
         
         if(data.GetFixedY()) 
             pos.y = 0.0f;
@@ -531,7 +532,7 @@ void EnemyDragon::UpdateCollisions(const float& elapsedTime)
     for (AttackDetectionData& data : flinchDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
+        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), data.GetOffsetPosition()));
     }
 }
 

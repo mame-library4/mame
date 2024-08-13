@@ -1,61 +1,143 @@
-#include "../../Graphics/Graphics.h"
 #include "EffectManager.h"
+#include "Graphics.h"
+#include "Camera.h"
+#include "Common.h"
 
-// 初期化
+// ----- 初期化 -----
 void EffectManager::Initialize()
 {
     Graphics& graphics = Graphics::Instance();
 
     // Effekseerレンダラ生成
-    effekseerRenderer = EffekseerRendererDX11::Renderer::Create(graphics.GetDevice(),
+    effekseerRenderer_ = EffekseerRendererDX11::Renderer::Create(graphics.GetDevice(),
         graphics.GetDeviceContext(), 2048);
 
     // Effekseerマネージャー生成
-    effekseerManager = Effekseer::Manager::Create(2048);
+    effekseerManager_ = Effekseer::Manager::Create(2048);
 
     // Effekseerレンダラの各種設定(特別なカスタマイズをしない場合は定型的に以下の設定でOK)
-    effekseerManager->SetSpriteRenderer(effekseerRenderer->CreateSpriteRenderer());
-    effekseerManager->SetRibbonRenderer(effekseerRenderer->CreateRibbonRenderer());
-    effekseerManager->SetRingRenderer(effekseerRenderer->CreateRingRenderer());
-    effekseerManager->SetTrackRenderer(effekseerRenderer->CreateTrackRenderer());
-    effekseerManager->SetModelRenderer(effekseerRenderer->CreateModelRenderer());
+    effekseerManager_->SetSpriteRenderer(effekseerRenderer_->CreateSpriteRenderer());
+    effekseerManager_->SetRibbonRenderer(effekseerRenderer_->CreateRibbonRenderer());
+    effekseerManager_->SetRingRenderer(effekseerRenderer_->CreateRingRenderer());
+    effekseerManager_->SetTrackRenderer(effekseerRenderer_->CreateTrackRenderer());
+    effekseerManager_->SetModelRenderer(effekseerRenderer_->CreateModelRenderer());
     // Effekseer内でのローダーの設定(特別なカスタマイズをしない場合は以下の設定でOK)
-    effekseerManager->SetTextureLoader(effekseerRenderer->CreateTextureLoader());
-    effekseerManager->SetModelLoader(effekseerRenderer->CreateModelLoader());
-    effekseerManager->SetMaterialLoader(effekseerRenderer->CreateMaterialLoader());
+    effekseerManager_->SetTextureLoader(effekseerRenderer_->CreateTextureLoader());
+    effekseerManager_->SetModelLoader(effekseerRenderer_->CreateModelLoader());
+    effekseerManager_->SetMaterialLoader(effekseerRenderer_->CreateMaterialLoader());
 
     // Effekseerを左手亜座標系で計算する
-    effekseerManager->SetCoordinateSystem(Effekseer::CoordinateSystem::LH);
+    effekseerManager_->SetCoordinateSystem(Effekseer::CoordinateSystem::LH);
 }
 
-// 終了化
+// ----- 終了化 -----
 void EffectManager::Finalize()
 {
-    // EffekseerManagerなどはスマートポインタによって破棄されるので何もしない
+    Clear();
 }
 
-// 更新処理
+// ----- 更新 -----
 void EffectManager::Update(float elapsedTime)
 {
+    // -------------------------
+    //  生成
+    // -------------------------
+    for (Effect* effect : generates_)
+    {
+        effects_.emplace_back(effect);
+    }
+    generates_.clear();
+
     // エフェクト更新処理(引数にはフレームの通過時間を渡す)
-    effekseerManager->Update(elapsedTime * 60.0f);
+    effekseerManager_->Update(elapsedTime * 60.0f);
+
+    // -------------------------
+    //  破棄
+    // -------------------------
+    for (Effect* effect : removes_)
+    {
+        auto it = std::find(effects_.begin(), effects_.end(), effect);
+
+        if (it != effects_.end())
+        {
+            effects_.erase(it);
+        }
+
+        SafeDeletePtr(effect);
+    }
+    removes_.clear();
 }
 
-// 描画処理
-void EffectManager::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& projection)
+// ----- 描画 -----
+void EffectManager::Render()
 {
-    // ビュー&プロジェクション行列をEffekseerレンダラに設定
-    effekseerRenderer->SetCameraMatrix(*reinterpret_cast<const Effekseer::Matrix44*>(&view));
-    effekseerRenderer->SetProjectionMatrix(*reinterpret_cast<const Effekseer::Matrix44*>(&projection));
+    DirectX::XMFLOAT4X4 view, projection;
+    DirectX::XMStoreFloat4x4(&view, Camera::Instance().GetViewMatrix());
+    DirectX::XMStoreFloat4x4(&projection, Camera::Instance().GetProjectionMatrix());
+
+    // view,projection Matrixを EffekseerRendererに設定
+    effekseerRenderer_->SetCameraMatrix(*reinterpret_cast<const Effekseer::Matrix44*>(&view));
+    effekseerRenderer_->SetProjectionMatrix(*reinterpret_cast<const Effekseer::Matrix44*>(&projection));
 
     // Effekseer描画開始
-    effekseerRenderer->BeginRendering();
+    effekseerRenderer_->BeginRendering();
 
     // Effekseer描画実行
     // マネージャー単位で描画するので描画順を制御する場合はマネージャーを複数個制作し、
     // Draw()関数を実行する順序で制御できそう
-    effekseerManager->Draw();
+    effekseerManager_->Draw();
 
     // Effekseer描画終了
-    effekseerRenderer->EndRendering();
+    effekseerRenderer_->EndRendering();
+}
+
+// ----- ImGui用 -----
+void EffectManager::DrawDebug()
+{
+    if (ImGui::BeginMenu("EffectManager"))
+    {
+        for (Effect*& effect : effects_)
+        {
+            effect->DrawDebug();
+        }
+
+        ImGui::EndMenu();
+    }
+}
+
+// ----- 登録 -----
+void EffectManager::Register(Effect* effect)
+{
+    generates_.insert(effect);
+}
+
+// ----- 削除 -----
+void EffectManager::Remove(Effect* effect)
+{
+    removes_.insert(effect);
+}
+
+// ----- 全削除 -----
+void EffectManager::Clear()
+{
+    for (Effect*& effect : effects_)
+    {
+        SafeDeletePtr(effect);
+    }
+    effects_.clear();
+    effects_.shrink_to_fit();
+}
+
+// ----- エフェクト取得 -----
+Effect* EffectManager::GetEffect(const std::string& name)
+{
+    for (Effect*& effect : effects_)
+    {
+        if (effect->GetName() == name)
+        {
+            return effect;
+        }
+    }
+
+    return nullptr;
 }

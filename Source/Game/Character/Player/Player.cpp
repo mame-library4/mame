@@ -88,6 +88,20 @@ void Player::Update(const float& elapsedTime)
     // アニメーション更新 [※ステートマシン更新後]
     Character::Update(elapsedTime);
 
+    // TODO:テスト用
+    if (GetHealth() <= 0.0f)
+    {
+        if (GetCurrentState() != STATE::Death)
+        {
+            ChangeState(STATE::Death);
+        }
+
+        // 剣の座標更新
+        UpdateSwordTransform();
+
+        return;
+    }
+
     // 移動処理
     Move(elapsedTime);
 
@@ -385,7 +399,7 @@ void Player::UpdateCollisions(const float& elapsedTime)
     for (DamageDetectionData& data : damageDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
+        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), data.GetOffsetPosition()));
 
         data.Update(elapsedTime);
     }
@@ -393,7 +407,7 @@ void Player::UpdateCollisions(const float& elapsedTime)
     for (AttackDetectionData& data : attackDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
+        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), data.GetOffsetPosition()));
     }
 
     // 押し出し判定更新
@@ -406,7 +420,7 @@ void Player::UpdateCollisionDetectionData()
     for (CollisionDetectionData& data : collisionDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        DirectX::XMFLOAT3 pos = GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition());
+        DirectX::XMFLOAT3 pos = GetJointPosition(data.GetUpdateName(), data.GetOffsetPosition());
 
         if (data.GetFixedY()) pos.y = 0.0f;
 

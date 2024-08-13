@@ -5,6 +5,7 @@
 #include "Easing.h"
 #include "MathHelper.h"
 #include "../Enemy/EnemyManager.h"
+#include "Effect/EffectManager.h"
 
 // ----- AddForceData -----
 namespace PlayerState
@@ -83,17 +84,19 @@ namespace PlayerState
     }
 
     // ----- 更新 -----
-    void GamePadVibration::Update(const float& animationFrame)
+    const bool GamePadVibration::Update(const float& animationFrame)
     {
         // 既に振動させている
-        if (isVibraion_) return;
+        if (isVibraion_) return false;
 
         // 現在のアニメーションのフレームがスタートフレームまで達していない
-        if (animationFrame < startFrame_) return;
+        if (animationFrame < startFrame_) return false;
 
         // コントローラーを振動させる
         Input::Instance().GetGamePad().Vibration(time_, power_);
         isVibraion_ = true;
+
+        return true;
     }
 }
 
@@ -589,11 +592,19 @@ namespace PlayerState
     // ----- 初期化 -----
     void DeathState::Initialize()
     {
+        owner_->PlayBlendAnimation(Player::Animation::HitLarge, false, 1.0f, 0.2f);
+        //owner_->PlayBlendAnimation(Player::Animation::KnockDownDeath, false, 1.0f, 0.5f);
+        owner_->SetTransitionTime(0.3f);
     }
 
     // ----- 更新 -----
     void DeathState::Update(const float& elapsedTime)
     {
+        // テスト用
+        if (owner_->GetHealth() > 0)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+        }
     }
 
     // ----- 終了化 -----
@@ -1265,6 +1276,8 @@ namespace PlayerState
 
         isNextInput_ = false;
 
+        isCounterReaction = false;
+
         // フラグをリセットする
         owner_->ResetFlags();
     }
@@ -1284,11 +1297,58 @@ namespace PlayerState
             if (owner_->GetIsCounter() == false) owner_->SetIsCounter(true);
         }
 
-        // カウンターの判定が入ったのでコントローラー振動する
-        if (owner_->GetIsAbleCounterAttack())
+#if 1
+        // TODO:エフェクトがついてこない
+
+        // エフェクトの更新
+        if (isCounterReaction)
         {
-            gamePadVibration_.Update(owner_->GetAnimationSeconds());
+            const DirectX::XMFLOAT3 position = owner_->GetJointPosition("hand_r");
+            //EffectManager::Instance().GetEffekseerManager()->SetLocation(counterEffectHandle_, position.x, position.y, position.z);
+            //EffectManager::Instance().GetEffekseerManager()->SetLocation(counterEffectHandle_, 0, 0, 0);
+            //EffectManager::Instance().GetEffekseerManager()->SetScale(counterEffectHandle_, 0, 0, 0);
+            EffectManager::Instance().GetEffekseerManager()->SetMatrix(counterEffectHandle_, {});
+            bool a = EffectManager::Instance().GetEffekseerManager()->Exists(counterEffectHandle_);
+            int b = 0;
         }
+
+        if (isCounterReaction == false && owner_->GetAnimationSeconds() > 0.7f)
+        {
+            Effect* counterEffect = EffectManager::Instance().GetEffect("Counter");
+            if (counterEffect != nullptr)
+            {
+                const DirectX::XMFLOAT3 position = owner_->GetJointPosition("hand_r");
+                const DirectX::XMFLOAT3 scale = { 0.1f, 0.1f, 0.1f };
+
+                counterEffectHandle_ = counterEffect->Play(position, 10.0f, scale);
+            }
+
+            isCounterReaction = true;
+        }
+
+
+#else
+        // カウンターの判定が入ったのでコントローラー振動する
+        if (owner_->GetIsAbleCounterAttack() && isCounterReaction == false)
+        {
+            bool isvibration = gamePadVibration_.Update(owner_->GetAnimationSeconds());
+
+            if (isvibration)
+            {
+                Effect* counterEffect = EffectManager::Instance().GetEffect("Counter");
+                if (counterEffect != nullptr)
+                {
+                    const DirectX::XMFLOAT3 position = owner_->GetJointPosition("hand_r");
+                    const DirectX::XMFLOAT3 scale = { 0.1f, 0.1f, 0.1f };
+
+                    counterEffectHandle_ = counterEffect->Play(position, 10.0f, scale);
+                }
+
+                isCounterReaction = true;
+            }
+        }
+
+#endif
 
 
 

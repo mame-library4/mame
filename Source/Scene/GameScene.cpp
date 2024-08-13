@@ -52,6 +52,9 @@ void GameScene::CreateResource()
     particles_ = std::make_unique<decltype(particles_)::element_type>(100);
 
     stone_ = std::make_unique<Stone>();
+
+
+    Effect* effect = new Effect("./Resources/Effect/counter.efk", "Counter");
 }
 
 // ----- ‰Šú‰» -----
@@ -204,7 +207,7 @@ void GameScene::Render()
 
     DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
 //#ifdef _DEBUG
-#if 1
+#if 0
     if (isDebugRenderer_)
     {
         // player

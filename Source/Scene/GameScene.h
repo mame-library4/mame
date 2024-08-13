@@ -7,6 +7,8 @@
 
 #include "Stone/Stone.h"
 
+#include "Effect/Effect.h"
+
 class GameScene : public BaseScene
 {
 public:
@@ -51,5 +53,7 @@ private:
     std::unique_ptr<Particles> particles_;
 
     std::unique_ptr<Stone> stone_;
+
+    //std::unique_ptr<Effect> effect_;
 };
 

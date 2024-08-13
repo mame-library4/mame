@@ -1,8 +1,10 @@
 #pragma once
-
 #include <DirectXMath.h>
 #include <Effekseer.h>
 #include <EffekseerRendererDX11.h>
+#include "Effect.h"
+#include <vector>
+#include <set>
 
 // エフェクトマネージャー
 class EffectManager
@@ -12,31 +14,34 @@ private:
     ~EffectManager() {}
 
 public:
-    // 唯一のインスタンス取得
     static EffectManager& Instance()
     {
         static EffectManager instance;
         return instance;
     }
 
-    // 初期化
-    void Initialize();
-
-    // 終了化
-    void Finalize();
-
-    // 更新処理
-    void Update(float elapsedTime);
-
-    // 描画処理
-    void Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& projection);
+    void Initialize();              // 初期化
+    void Finalize();                // 終了化
+    void Update(float elapsedTime); // 更新
+    void Render();                  // 描画
+    void DrawDebug();               // ImGui用
 
     // Effekseerマネージャーの取得
-    Effekseer::ManagerRef GetEffekseerManager() { return effekseerManager; }
+    Effekseer::ManagerRef GetEffekseerManager() { return effekseerManager_; }
+
+    void Register(Effect* effect);  // 登録
+    void Remove(Effect* effect);    // 削除
+    void Clear();                   // 全削除
+
+    [[nodiscard]] Effect* GetEffect(const std::string& name);
 
 private:
-    Effekseer::ManagerRef effekseerManager;
-    EffekseerRenderer::RendererRef effekseerRenderer;
+    Effekseer::ManagerRef effekseerManager_;
+    EffekseerRenderer::RendererRef effekseerRenderer_;
+
+    std::vector<Effect*>    effects_;
+    std::set<Effect*>       removes_;
+    std::set<Effect*>       generates_;
 };
 
 

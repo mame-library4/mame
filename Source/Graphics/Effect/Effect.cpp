@@ -2,10 +2,9 @@
 #include "Effect.h"
 #include "EffectManager.h"
 
-int Effect::nameNum = 0;
-
-// コンストラクタ
-Effect::Effect(const char* filename)
+// ----- コンストラクタ -----
+Effect::Effect(const char* filename, const std::string& effectName)
+    : name_(effectName)
 {
     // エフェクトを読み込みする前にロックする
     // ※マルチスレッドでEffectを作成するとDeviceContextを同時アクセスして
@@ -21,22 +20,22 @@ Effect::Effect(const char* filename)
     Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
 
     // Effekseerエフェクトを読み込み
-    effekseerEffect = Effekseer::Effect::Create(effekseerManager, (EFK_CHAR*)utf16Filename);
+    effekseerEffect_ = Effekseer::Effect::Create(effekseerManager, (EFK_CHAR*)utf16Filename);
 
-    // imgui名前かぶり起きないように...
-    name = "Effect" + std::to_string(nameNum);
-    SetName(name.c_str());
-    ++nameNum;
+    EffectManager::Instance().Register(this);
 }
 
-// 再生
-Effekseer::Handle Effect::Play(const DirectX::XMFLOAT3& position, DirectX::XMFLOAT3 scale, DirectX::XMFLOAT4 color)
+// ----- 再生 -----
+Effekseer::Handle Effect::Play(const DirectX::XMFLOAT3& position, const float& speed, const DirectX::XMFLOAT3& scale, const DirectX::XMFLOAT4& color)
 {
     Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
 
-    Effekseer::Handle handle = effekseerManager->Play(effekseerEffect, position.x, position.y, position.z);
+    Effekseer::Handle handle = effekseerManager->Play(effekseerEffect_, position.x, position.y, position.z);
+    
     effekseerManager->SetScale(handle, scale.x, scale.y, scale.z);
-    effekseerManager->SetRotation(handle, Effekseer::Vector3D(0, 1, 0), angle);
+    effekseerManager->SetRotation(handle, Effekseer::Vector3D(0, 1, 0), angle_);
+
+    effekseerManager->SetSpeed(handle, speed);
 
     // color設定
     {
@@ -78,103 +77,31 @@ void Effect::SetScale(Effekseer::Handle handle, const DirectX::XMFLOAT3& scale)
 
 void Effect::DrawDebug()
 {
-    ImGui::Begin(GetName());
-    
-    if (ImGui::Button("Play"))
+    if (ImGui::TreeNode(name_.c_str()))
     {
-        Play(DirectX::XMFLOAT3(0,0,0));
-    }
+        if (ImGui::Button("Play"))
+        {
+            Play(position_, speed_, scale_, color_);
+        }
 
-    ImGui::DragInt("drawTime", &drawTime);
+        ImGui::DragFloat3("Position", &position_.x);
+        ImGui::DragFloat3("Scale", &scale_.x);
 
-    ImGui::DragFloat3("pos", &pos.x);
-    ImGui::DragFloat3("scale", &scale.x);
+        DirectX::XMFLOAT3 rotate = {};
+        rotate.x = DirectX::XMConvertToDegrees(rotate_.x);
+        rotate.y = DirectX::XMConvertToDegrees(rotate_.y);
+        rotate.z = DirectX::XMConvertToDegrees(rotate_.z);
 
-    DirectX::XMFLOAT3 r{};
-    r.x = DirectX::XMConvertToDegrees(rotate.x);
-    r.y = DirectX::XMConvertToDegrees(rotate.y);
-    r.z = DirectX::XMConvertToDegrees(rotate.z);
-    
-    ImGui::DragFloat3("rotate", &r.x);
+        ImGui::DragFloat3("Rotate", &rotate.x);
 
-    rotate.x = DirectX::XMConvertToRadians(r.x);
-    rotate.y = DirectX::XMConvertToRadians(r.y);
-    rotate.z = DirectX::XMConvertToRadians(r.z);
-    
-    ImGui::ColorEdit4("color", &color.x);
-    ImGui::DragFloat("timer", &timer);
-    ImGui::End();
-}
+        rotate_.x = DirectX::XMConvertToRadians(rotate.x);
+        rotate_.y = DirectX::XMConvertToRadians(rotate.y);
+        rotate_.z = DirectX::XMConvertToRadians(rotate.z);
 
+        ImGui::ColorEdit4("Color", &color_.x);
 
-Effekseer::Handle Effect::FadeOutEffect(const DirectX::XMFLOAT3& position, DirectX::XMFLOAT3 scale, DirectX::XMFLOAT4 color, const float time)
-{
-    Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
+        ImGui::DragFloat("Speed", &speed_);
 
-
-    Effekseer::Vector3D p{ pos.x, pos.y, pos.z };
-
-    Effekseer::Handle handle = effekseerManager->Play(effekseerEffect, p, time);
-    effekseerManager->SetScale(handle, scale.x, scale.y, scale.z);
-
-
-    // color設定
-    {
-        //Effekseerのcolorは0~255らしい
-        Effekseer::Color col{ static_cast<unsigned char>(color.x * 255),
-            static_cast<unsigned char>(color.y * 255),
-        static_cast<unsigned char>(color.z * 255),
-        static_cast<unsigned char>(color.w * 255) };
-        effekseerManager->SetAllColor(handle, col);
-    }
-
-    return handle;
-}
-
-Effekseer::Handle Effect::FadeOutEffect(const DirectX::XMFLOAT3& position, DirectX::XMFLOAT3 scale, DirectX::XMFLOAT3 rotate, DirectX::XMFLOAT4 color, const float time)
-{
-
-    Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
-
-
-    Effekseer::Vector3D p{ pos.x, pos.y, pos.z };
-
-    Effekseer::Handle handle = effekseerManager->Play(effekseerEffect, p, time);
-    effekseerManager->SetScale(handle, scale.x, scale.y, scale.z);
-    
-
-    effekseerManager->SetRotation(handle, rotate.x, rotate.y, rotate.z);
-
-    // color設定
-    {
-        //Effekseerのcolorは0~255らしい
-        Effekseer::Color col{ static_cast<unsigned char>(color.x * 255),
-            static_cast<unsigned char>(color.y * 255),
-        static_cast<unsigned char>(color.z * 255),
-        static_cast<unsigned char>(color.w * 255) };
-        effekseerManager->SetAllColor(handle, col);
-    }
-
-    return handle;
-}
-
-void Effect::FadeOutEffect(Effekseer::Handle handle, const float time)
-{
-    Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
-
-
-    Effekseer::Vector3D p{ pos.x, pos.y, pos.z };
-
-    effekseerManager->Play(effekseerEffect, p, time);
-
-    effekseerManager->SetScale(handle, scale.x, scale.y, scale.z);
-    // color設定
-    {
-        //Effekseerのcolorは0~255らしい
-        Effekseer::Color col{ static_cast<unsigned char>(1.0f * 255),
-            static_cast<unsigned char>(0.0f * 255),
-        static_cast<unsigned char>(0.0f * 255),
-        static_cast<unsigned char>(1.0f * 255) };
-        effekseerManager->SetAllColor(handle, col);
+        ImGui::TreePop();
     }
 }

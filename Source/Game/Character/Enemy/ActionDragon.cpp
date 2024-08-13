@@ -325,23 +325,18 @@ namespace ActionDragon
     {
         const Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(owner_->GetAnimationIndex());
 
-        if (animationIndex == Enemy::DragonAnimation::AttackTurn0)
+        if (animationIndex == Enemy::DragonAnimation::AttackTurn0        || // 回転攻撃
+            animationIndex == Enemy::DragonAnimation::AttackTackle3         // 突進攻撃 
+            )    
         {
-            //owner_->SetTransitionTime(0.3f);
-            owner_->SetTransitionTime(0.15f);
-            owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, true);
-            //owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, true, 1.0f, 0.45f);
-            //owner_->PlayAnimation(Enemy::DragonAnimation::Idle0, true);
-        }
-        else if (animationIndex == Enemy::DragonAnimation::AttackTackle3)
-        {
-            owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, true);
             owner_->SetTransitionTime(0.15f);
         }
-        else
+        else if (animationIndex == Enemy::DragonAnimation::AttackComboSlamEnd)
         {
-            owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, true);
+            owner_->SetTransitionTime(0.1f);
         }
+
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, true);
     }
 }
 
@@ -871,9 +866,9 @@ namespace ActionDragon
         // 実行中ノードを中断するか
         if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
 
-        switch (owner_->GetStep())
+        switch (static_cast<STATE>(owner_->GetStep()))
         {
-        case 0:// 初期化
+        case STATE::Initialize:// 初期化
             // アニメーション再生
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackComboSlam0, false);
 
@@ -883,11 +878,13 @@ namespace ActionDragon
             // 変数初期化
             addForceData_.Initialize(1.0f, 0.4f, 1.0f);
 
-            owner_->SetStep(1);
+            // ステート変更
+            SetState(STATE::Attack0);
 
             break;
-        case 1:
+        case STATE::Attack0:// 攻撃一発目
 
+            // 移動処理
             if (addForceData_.Update(owner_->GetAnimationSeconds()))
             {
                 DirectX::XMFLOAT3 vec = owner_->CalcDirectionToPlayer();
@@ -895,17 +892,11 @@ namespace ActionDragon
                 owner_->AddForce(vec, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
             }
 
+            // 回転処理
             if (owner_->GetAnimationSeconds() > 0.7f &&
                 owner_->GetAnimationSeconds() < 1.3f)
             {
                 owner_->Turn(elapsedTime, PlayerManager::Instance().GetTransform()->GetPosition());
-            }
-
-            if (owner_->IsPlayAnimation() == false)
-            {
-                owner_->PlayAnimation(Enemy::DragonAnimation::AttackComboSlam1, false);
-
-                owner_->SetStep(2);
             }
 
             // 攻撃判定処理
@@ -920,8 +911,17 @@ namespace ActionDragon
                     owner_->SetComboSlamAttackActiveFlag();
             }
 
+            // アニメーション再生終了したらステート変更
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->PlayAnimation(Enemy::DragonAnimation::AttackComboSlam1, false);
+
+                // ステート変更
+                SetState(STATE::Attack1);
+            }
+
             break;
-        case 2:
+        case STATE::Attack1:// 攻撃二発目
 
             // 攻撃判定処理
             if (owner_->GetAnimationSeconds() > 0.75f)
@@ -935,26 +935,142 @@ namespace ActionDragon
                     owner_->SetComboSlamAttackActiveFlag();
             }
 
-
+            // アニメーション再生終了したらステート変更
             if (owner_->IsPlayAnimation() == false)
             {
                 owner_->PlayAnimation(Enemy::DragonAnimation::AttackComboSlamEnd, false);
-                owner_->SetStep(3);
+                
+                // ステート変更
+                SetState(STATE::Recovery);
             }
 
             break;
-        case 3:
-
-            if (owner_->IsPlayAnimation() == false)
+        case STATE::Recovery:// 後隙
+        {
+            // 指定したフレームを超えたら終了
+            const float animationEndFrame = 1.1f;
+            if (owner_->GetAnimationSeconds() > animationEndFrame)
             {
                 owner_->SetStep(0);
                 return ActionBase::State::Complete;
             }
-
+        }
             break;
         }
 
-        return ActionBase::State();
+        return ActionBase::State::Run;
+    }
+}
+
+// ----- コンボたたきつけ攻撃(軸合わせしてくる) -----
+namespace ActionDragon
+{
+    const ActionBase::State ComboFlySlamAction::Run(const float& elapsedTime)
+    {
+        switch(static_cast<STATE>(owner_->GetStep()))
+        {
+        case STATE::Initialize:// 初期化
+            // アニメーション再生
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackComboSlam0, false);
+
+            // ルートモーションを使用する
+            owner_->SetUseRootMotion(true);
+
+            // 変数初期化
+            addForceData_.Initialize(1.0f, 0.4f, 1.0f);
+            comboNum_ = 0;
+
+            // ステート変更
+            SetState(STATE::Attack);
+
+            break;
+        case STATE::Attack:
+
+            // 移動処理
+            if (addForceData_.Update(owner_->GetAnimationSeconds()))
+            {
+                DirectX::XMFLOAT3 vec = owner_->CalcDirectionToPlayer();
+                vec = XMFloat3Normalize({ vec.x, 0.0f, vec.z });
+                owner_->AddForce(vec, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+            }
+
+            // 回転処理
+            if (owner_->GetAnimationSeconds() > 0.7f &&
+                owner_->GetAnimationSeconds() < 1.3f)
+            {
+                owner_->Turn(elapsedTime, PlayerManager::Instance().GetTransform()->GetPosition());
+            }
+
+            // 攻撃判定処理
+            if (owner_->GetAnimationSeconds() > 1.55f)
+            {
+                if (owner_->GetIsAttackActive())
+                    owner_->SetComboSlamAttackActiveFlag(false);
+            }
+            else if (owner_->GetAnimationSeconds() > 1.4f)
+            {
+                if (owner_->GetIsAttackActive() == false)
+                    owner_->SetComboSlamAttackActiveFlag();
+            }
+
+            // アニメーション再生終了したらステート変更
+            if (comboNum_ < maxComboNum_)
+            {
+                if(owner_->GetAnimationSeconds() > 1.9f)
+                {
+                    // ステート変更
+                    SetState(STATE::ComboJudge);
+                }
+            }
+            else
+            {
+                if (owner_->IsPlayAnimation() == false)
+                {
+                    // ステート変更
+                    SetState(STATE::ComboJudge);
+                }
+            }
+            
+
+            break;
+        case STATE::ComboJudge:
+
+            if (comboNum_ < maxComboNum_)
+            {
+                ++comboNum_;
+
+                owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackComboSlam0, false, 1.0f, 0.75f);
+                owner_->SetTransitionTime(0.25f);
+
+                addForceData_.Initialize(1.0f, 0.4f, 1.0f);
+
+                // ステート変更
+                SetState(STATE::Attack);
+            }
+            else
+            {
+                owner_->PlayAnimation(Enemy::DragonAnimation::AttackComboSlamEnd, false);
+                owner_->SetTransitionTime(0.1f);
+
+                // ステート変更
+                SetState(STATE::Recovery);
+            }
+
+            break;
+        case STATE::Recovery:
+        {
+            // 指定したフレームを超えたら終了
+            const float animationEndFrame = 1.1f;
+            if (owner_->GetAnimationSeconds() > animationEndFrame)
+            {
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+        }
+            break;
+        }
+
+        return ActionBase::State::Run;
     }
 }
 
