@@ -233,5 +233,4 @@ private:
     DirectX::XMFLOAT3 socketScale_ = { 1.0f, 1.0f, 1.0f };
 #endif  
     DirectX::XMFLOAT4X4 weaponWorld_;
-
 };

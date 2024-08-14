@@ -210,7 +210,7 @@ protected:
 
     // ---------- 戦闘判定範囲変数 ----------
     float               battleRadius_       = 20.0f;// 戦闘開始範囲
-    float               nearAttackRadius_   = 10.0f;// 近距離攻撃開始範囲
+    float               nearAttackRadius_   = 15.0f;// 近距離攻撃開始範囲
 
     
 

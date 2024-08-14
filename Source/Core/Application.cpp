@@ -16,7 +16,7 @@
 
 #include "mmdeviceapi.h"
 #pragma comment(lib, "ole32.lib")
-#pragma comment(lib, "Mmdevapi.lib");
+//#pragma comment(lib, "Mmdevapi.lib");   
 
 // ----- コンストラクタ -----
 Application::Application(HWND hwnd)

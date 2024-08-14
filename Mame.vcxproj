@@ -120,14 +120,14 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;USE_IMGUI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\External\DirectXTK-main\Inc;C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\include;.\External\cereal-master\include;%(AdditionalIncludeDirectories);.\External\Effekseer170b\include\Effekseer;.\External\Effekseer170b\include\EffekseerRendererDX11;.\Source\AI;.\Source\Core;.\Source\Game;.\Source\Graphics;.\Source\Input;.\Source\Other;.\Source\Resource;.\Source\Scene;.\Source\Shader;.\External</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External\DirectXTK-main\Inc;C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\include;.\External\cereal-master\include;%(AdditionalIncludeDirectories);.\Source\AI;.\Source\Core;.\Source\Game;.\Source\Graphics;.\Source\Input;.\Source\Other;.\Source\Resource;.\Source\Scene;.\Source\Shader;.\External;.\External\Effekseer170e\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>.\External\DirectXTK-main\Bin\Desktop_2019\x64\Debug;C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\lib\vs2019\x64\debug;%(AdditionalLibraryDirectories);.\External\Effekseer170b\lib\vs2019\MD\x64\Debug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>.\External\DirectXTK-main\Bin\Desktop_2019\x64\Debug;C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\lib\vs2019\x64\debug;%(AdditionalLibraryDirectories);.\External\Effekseer170e\lib\vs2022\MD\x64\Debug</AdditionalLibraryDirectories>
       <AdditionalDependencies>d3d11.lib;zlib-md.lib;libxml2-md.lib;libfbxsdk-md.lib;DirectXTK.lib;Effekseer.lib;EffekseerRendererDX11.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <FxCompile>
@@ -175,7 +175,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\include;.\External\cereal-master\include;.\External\DirectXTK-main\Inc;%(AdditionalIncludeDirectories);.\External\Effekseer170b\include\Effekseer;.\External\Effekseer170b\include\EffekseerRendererDX11;.\Source\AI;.\Source\Core;.\Source\Game;.\Source\Graphics;.\Source\Input;.\Source\Other;.\Source\Resource;.\Source\Scene;.\Source\Shader;.\External</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\include;.\External\cereal-master\include;.\External\DirectXTK-main\Inc;%(AdditionalIncludeDirectories);.\Source\AI;.\Source\Core;.\Source\Game;.\Source\Graphics;.\Source\Input;.\Source\Other;.\Source\Resource;.\Source\Scene;.\Source\Shader;.\External;.\External\Effekseer170e\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -184,7 +184,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\lib\vs2019\x64\release;.\External\DirectXTK-main\Bin\Desktop_2019\x64\Release;%(AdditionalLibraryDirectories);.\External\Effekseer170b\lib\vs2019\MD\x64\Release</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\lib\vs2019\x64\release;.\External\DirectXTK-main\Bin\Desktop_2019\x64\Release;%(AdditionalLibraryDirectories);.\External\Effekseer170e\lib\vs2022\MD\x64\Release</AdditionalLibraryDirectories>
       <AdditionalDependencies>d3d11.lib;zlib-md.lib;libxml2-md.lib;libfbxsdk-md.lib;DirectXTK.lib;Effekseer.lib;EffekseerRendererDX11.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <FxCompile>

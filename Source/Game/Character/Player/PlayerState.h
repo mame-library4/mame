@@ -1,7 +1,7 @@
 #pragma once
 #include "StateMachine/State.h"
 #include "Player.h"
-#include <Effekseer.h>
+
 
 namespace PlayerState
 {
@@ -216,6 +216,8 @@ namespace PlayerState
         bool isCounterReaction = false; // カウンターが成功したときの演出
 
         Effekseer::Handle counterEffectHandle_;
+        DirectX::XMFLOAT3 effectPosition_ = {};
+        float length_ = 0.0f;
     };
 
     // ----- カウンター攻撃 -----

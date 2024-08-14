@@ -25,54 +25,18 @@ Effect::Effect(const char* filename, const std::string& effectName)
     EffectManager::Instance().Register(this);
 }
 
+
 // ----- 再生 -----
-Effekseer::Handle Effect::Play(const DirectX::XMFLOAT3& position, const float& speed, const DirectX::XMFLOAT3& scale, const DirectX::XMFLOAT4& color)
+Effekseer::Handle Effect::Play(const DirectX::XMFLOAT3& position, const float& scale, const float& speed)
 {
     Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
-
+    
     Effekseer::Handle handle = effekseerManager->Play(effekseerEffect_, position.x, position.y, position.z);
     
-    effekseerManager->SetScale(handle, scale.x, scale.y, scale.z);
-    effekseerManager->SetRotation(handle, Effekseer::Vector3D(0, 1, 0), angle_);
-
+    effekseerManager->SetScale(handle, scale, scale, scale);
     effekseerManager->SetSpeed(handle, speed);
-
-    // color設定
-    {
-        //Effekseerのcolorは0~255らしい
-        Effekseer::Color col{ static_cast<unsigned char>(color.x * 255),
-            static_cast<unsigned char>(color.y * 255),
-        static_cast<unsigned char>(color.z * 255),
-        static_cast<unsigned char>(color.w * 255) };
-        effekseerManager->SetAllColor(handle, col);
-    }
-
+    
     return handle;
-}
-
-
-// 停止
-void Effect::Stop(Effekseer::Handle handle)
-{
-    Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
-
-    effekseerManager->StopEffect(handle);
-}
-
-// 座標指定
-void Effect::SetPosition(Effekseer::Handle handle, const DirectX::XMFLOAT3& position)
-{
-    Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
-
-    effekseerManager->SetLocation(handle, position.x, position.y, position.z);
-}
-
-// スケール設定
-void Effect::SetScale(Effekseer::Handle handle, const DirectX::XMFLOAT3& scale)
-{
-    Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
-
-    effekseerManager->SetScale(handle, scale.x, scale.y, scale.z);
 }
 
 void Effect::DrawDebug()
@@ -81,11 +45,11 @@ void Effect::DrawDebug()
     {
         if (ImGui::Button("Play"))
         {
-            Play(position_, speed_, scale_, color_);
+            Play(position_, scale_, speed_);
         }
 
         ImGui::DragFloat3("Position", &position_.x);
-        ImGui::DragFloat3("Scale", &scale_.x);
+        ImGui::DragFloat("Scale", &scale_);
 
         DirectX::XMFLOAT3 rotate = {};
         rotate.x = DirectX::XMConvertToDegrees(rotate_.x);

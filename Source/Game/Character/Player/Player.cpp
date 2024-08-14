@@ -3,6 +3,8 @@
 #include "Graphics.h"
 #include "Camera.h"
 
+#include "Effect/EffectManager.h"
+
 // ----- コンストラクタ -----
 Player::Player()
     : Character("./Resources/Model/Character/Player/SwordGirl.gltf", 0.01f),
@@ -354,6 +356,8 @@ void Player::RegisterCollisionData()
         { "head",       0.2f, {} },
         { "spine_02",   0.2f, {} },
         { "pelvis",     0.2f, {} },
+        
+        { "hand_r",     0.05f, 0.0f, {-50, -13, 50} },
     };
     for (int i = 0; i < _countof(damageDetectionData); ++i)
     {

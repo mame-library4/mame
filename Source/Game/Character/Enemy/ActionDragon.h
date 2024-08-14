@@ -374,5 +374,10 @@ namespace ActionDragon
     public:
         MoveAttackAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+
+    private:
+        AddForceData addForceData_;
+
+        int flyCount_ = 0;
     };
 }

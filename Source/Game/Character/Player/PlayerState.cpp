@@ -1297,36 +1297,34 @@ namespace PlayerState
             if (owner_->GetIsCounter() == false) owner_->SetIsCounter(true);
         }
 
+
+
 #if 1
-        // TODO:エフェクトがついてこない
-
-        // エフェクトの更新
-        if (isCounterReaction)
-        {
-            const DirectX::XMFLOAT3 position = owner_->GetJointPosition("hand_r");
-            //EffectManager::Instance().GetEffekseerManager()->SetLocation(counterEffectHandle_, position.x, position.y, position.z);
-            //EffectManager::Instance().GetEffekseerManager()->SetLocation(counterEffectHandle_, 0, 0, 0);
-            //EffectManager::Instance().GetEffekseerManager()->SetScale(counterEffectHandle_, 0, 0, 0);
-            EffectManager::Instance().GetEffekseerManager()->SetMatrix(counterEffectHandle_, {});
-            bool a = EffectManager::Instance().GetEffekseerManager()->Exists(counterEffectHandle_);
-            int b = 0;
-        }
-
-        if (isCounterReaction == false && owner_->GetAnimationSeconds() > 0.7f)
+        if (isCounterReaction == false && owner_->GetAnimationSeconds() > 0.3f)
         {
             Effect* counterEffect = EffectManager::Instance().GetEffect("Counter");
             if (counterEffect != nullptr)
             {
-                const DirectX::XMFLOAT3 position = owner_->GetJointPosition("hand_r");
-                const DirectX::XMFLOAT3 scale = { 0.1f, 0.1f, 0.1f };
+                const DirectX::XMFLOAT3 position = owner_->GetJointPosition("hand_r", { -50, -13, 20 });
+                effectPosition_ = XMFloat3Normalize(position - owner_->GetTransform()->GetPosition());
+                length_ = XMFloat3Length(position - owner_->GetTransform()->GetPosition());
 
-                counterEffectHandle_ = counterEffect->Play(position, 10.0f, scale);
+                //const float scale = 1.0f;
+                const float scale = 0.1f;
+
+                //owner_->counterEffectHandle_ = counterEffect->Play(position, scale, 1.0f);
+                //owner_->counterEffectHandle_ = counterEffect->Play(position, scale, 10.0f);
+                counterEffectHandle_ = counterEffect->Play(position, 0.1f, 4.0f);
             }
 
             isCounterReaction = true;
         }
 
-
+        if (isCounterReaction)
+        {
+            const DirectX::XMFLOAT3 position = owner_->GetTransform()->GetPosition() + effectPosition_ * length_;
+            EffectManager::Instance().SetPosition(counterEffectHandle_, position);
+        }
 #else
         // カウンターの判定が入ったのでコントローラー振動する
         if (owner_->GetIsAbleCounterAttack() && isCounterReaction == false)

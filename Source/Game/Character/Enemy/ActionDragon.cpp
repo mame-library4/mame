@@ -1413,6 +1413,8 @@ namespace ActionDragon
     }
 }
 
+// ----- 移動しながら攻撃 -----
+// 炎吐かせたい
 namespace ActionDragon
 {
     const ActionBase::State MoveAttackAction::Run(const float& elapsedTime)
@@ -1420,6 +1422,78 @@ namespace ActionDragon
         // 実行中ノードを中断するか
         if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
 
-        return ActionBase::State();
+        switch (owner_->GetStep())
+        {
+        case 0:// 初期化
+            // アニメーション設定
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackMove0, false);
+            owner_->SetTransitionTime(0.1f);
+
+            // ルートモーションを使用する
+            owner_->SetUseRootMotion(true);
+
+            // 変数初期化
+            addForceData_.Initialize(0.45f, 0.4f, 1.0f);
+            flyCount_ = 0;
+
+            owner_->SetStep(1);
+
+            break;
+        case 1:
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackMove1, false, 1.0f, 0.2f);
+                owner_->SetTransitionTime(0.3f);
+
+                owner_->SetStep(2);
+            }
+
+            break;
+        case 2:
+            if (owner_->IsPlayAnimation() == false)
+            {
+                if (flyCount_ < 1)
+                {
+                    owner_->PlayAnimation(Enemy::DragonAnimation::AttackMove1, false);
+
+                    ++flyCount_;
+                    
+                    owner_->SetStep(1);
+                }
+                else
+                {
+                    owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackMove2, false);
+                    owner_->SetTransitionTime(0.1f);
+
+                    owner_->SetStep(3);
+                }
+            }
+
+            break;
+        case 3:
+
+            //if (owner_->IsPlayAnimation() == false)
+            //if(owner_->GetAnimationSeconds() > 0.35f)
+            if(owner_->GetAnimationSeconds() > 0.15f)
+            {
+                owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackMove3, false, 1.0f, 0.2f);
+                //owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackMove3, false);
+                owner_->SetTransitionTime(0.2f);
+
+                owner_->SetStep(4);
+            }
+
+            break;
+        case 4:
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+            break;
+        }
+
+        return ActionBase::State::Run;
     }
 }

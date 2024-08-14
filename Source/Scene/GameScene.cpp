@@ -54,7 +54,9 @@ void GameScene::CreateResource()
     stone_ = std::make_unique<Stone>();
 
 
-    Effect* effect = new Effect("./Resources/Effect/counter.efk", "Counter");
+    //Effect* effect = new Effect("./Resources/Effect/Hit.efk", "Counter");
+    //Effect* effect = new Effect("./Resources/Effect/counter.efk", "Counter");
+    Effect* effect = new Effect("./Resources/Effect/counter1.efk", "Counter");
 }
 
 // ----- ‰Šú‰» -----

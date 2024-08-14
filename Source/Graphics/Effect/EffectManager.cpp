@@ -141,3 +141,8 @@ Effect* EffectManager::GetEffect(const std::string& name)
 
     return nullptr;
 }
+
+void EffectManager::SetPosition(const Effekseer::Handle& handle, const DirectX::XMFLOAT3& position)
+{
+    effekseerManager_->SetLocation(handle, position.x, position.y, position.z);
+}
