@@ -35,7 +35,9 @@ public:
 
     [[nodiscard]] Effect* GetEffect(const std::string& name);
 
+    void StopEffect(const Effekseer::Handle& handle);
     void SetPosition(const Effekseer::Handle& handle, const DirectX::XMFLOAT3& position);
+    void AddPosition(const Effekseer::Handle& handle, const DirectX::XMFLOAT3& addPosition);
 
 private:
     Effekseer::ManagerRef effekseerManager_;

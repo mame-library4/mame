@@ -35,7 +35,7 @@ Effekseer::Handle Effect::Play(const DirectX::XMFLOAT3& position, const float& s
     
     effekseerManager->SetScale(handle, scale, scale, scale);
     effekseerManager->SetSpeed(handle, speed);
-    
+
     return handle;
 }
 

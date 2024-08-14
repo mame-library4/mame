@@ -150,6 +150,9 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const float GetNearAttackRadius() const { return nearAttackRadius_; }
     void SetNearAttackRadius(const float& radius) { nearAttackRadius_ = radius; }
 
+    [[nodiscard]] const float GetComboFlyAttackRadius() const { return comboFlyAttackRadius_; }
+    void SetComboFlyAttackRadius(const float& radius) { comboFlyAttackRadius_ = radius; }
+
     // ----- 移動先位置 -----
     [[nodiscard]] const DirectX::XMFLOAT3 GetMovePosition() const { return movePosition_; }
     void SetMovePosition(const DirectX::XMFLOAT3& movePos) { movePosition_ = movePos; }
@@ -210,7 +213,9 @@ protected:
 
     // ---------- 戦闘判定範囲変数 ----------
     float               battleRadius_       = 20.0f;// 戦闘開始範囲
-    float               nearAttackRadius_   = 15.0f;// 近距離攻撃開始範囲
+    
+    float               nearAttackRadius_       = 15.0f; // 近距離攻撃開始範囲
+    float               comboFlyAttackRadius_   = 8.5f;  // ３連続たたきつけ攻撃   
 
     
 

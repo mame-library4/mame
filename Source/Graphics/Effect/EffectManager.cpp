@@ -142,7 +142,17 @@ Effect* EffectManager::GetEffect(const std::string& name)
     return nullptr;
 }
 
+void EffectManager::StopEffect(const Effekseer::Handle& handle)
+{
+    effekseerManager_->StopEffect(handle);
+}
+
 void EffectManager::SetPosition(const Effekseer::Handle& handle, const DirectX::XMFLOAT3& position)
 {
     effekseerManager_->SetLocation(handle, position.x, position.y, position.z);
+}
+
+void EffectManager::AddPosition(const Effekseer::Handle& handle, const DirectX::XMFLOAT3& addPosition)
+{    
+    effekseerManager_->AddLocation(handle, Effekseer::Vector3D(addPosition.x, addPosition.y, addPosition.z));
 }

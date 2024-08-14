@@ -13,6 +13,7 @@ namespace PlayerState
 
         [[nodiscard]] const float GetForce() const { return force_; }
         [[nodiscard]] const float GetDecelerationForce() const { return decelerationForce_; }
+        [[nodiscard]] const bool GetIsAddForce() const { return isAddforce_; }
 
     private:
         float   addForceFrame_      = 0.0f;
@@ -203,7 +204,10 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
+        void Move();
+        
         void SetAnimationSpeed();
+
 
     private:
         AddForceData addForceFront_;
@@ -215,9 +219,13 @@ namespace PlayerState
 
         bool isCounterReaction = false; // カウンターが成功したときの演出
 
-        Effekseer::Handle counterEffectHandle_;
-        DirectX::XMFLOAT3 effectPosition_ = {};
-        float length_ = 0.0f;
+        // ----- Effect用 -----
+        Effekseer::Handle   mikiriEffectHandle_     = 0;
+        Effekseer::Handle   counterEffectHandle_    = 0;
+        DirectX::XMFLOAT3   effectOffsetVec_        = {};
+        float               effectLength_           = 0.0f;
+
+        DirectX::XMFLOAT3 mikiriEffectAddPosition_ = {};
     };
 
     // ----- カウンター攻撃 -----

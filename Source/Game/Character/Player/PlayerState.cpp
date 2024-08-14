@@ -1280,6 +1280,10 @@ namespace PlayerState
 
         // フラグをリセットする
         owner_->ResetFlags();
+
+        const DirectX::XMFLOAT3 pos = owner_->GetJointPosition("spine_02");
+        Effect* counterEffect = EffectManager::Instance().GetEffect("Mikiri");
+        mikiriEffectHandle_ = counterEffect->Play(pos, 0.05f, 2.0f);
     }
 
     // ----- 更新 -----
@@ -1297,68 +1301,109 @@ namespace PlayerState
             if (owner_->GetIsCounter() == false) owner_->SetIsCounter(true);
         }
 
-
-
-#if 1
-        if (isCounterReaction == false && owner_->GetAnimationSeconds() > 0.3f)
+        if (addForceBack_.GetIsAddForce())
         {
-            Effect* counterEffect = EffectManager::Instance().GetEffect("Counter");
-            if (counterEffect != nullptr)
-            {
-                const DirectX::XMFLOAT3 position = owner_->GetJointPosition("hand_r", { -50, -13, 20 });
-                effectPosition_ = XMFloat3Normalize(position - owner_->GetTransform()->GetPosition());
-                length_ = XMFloat3Length(position - owner_->GetTransform()->GetPosition());
-
-                //const float scale = 1.0f;
-                const float scale = 0.1f;
-
-                //owner_->counterEffectHandle_ = counterEffect->Play(position, scale, 1.0f);
-                //owner_->counterEffectHandle_ = counterEffect->Play(position, scale, 10.0f);
-                counterEffectHandle_ = counterEffect->Play(position, 0.1f, 4.0f);
-            }
-
-            isCounterReaction = true;
+            EffectManager::Instance().AddPosition(mikiriEffectHandle_, mikiriEffectAddPosition_ * 3.0f * elapsedTime);
         }
 
-        if (isCounterReaction)
-        {
-            const DirectX::XMFLOAT3 position = owner_->GetTransform()->GetPosition() + effectPosition_ * length_;
-            EffectManager::Instance().SetPosition(counterEffectHandle_, position);
-        }
-#else
-        // カウンターの判定が入ったのでコントローラー振動する
+
+        // 見切りが成功したか
         if (owner_->GetIsAbleCounterAttack() && isCounterReaction == false)
         {
-            bool isvibration = gamePadVibration_.Update(owner_->GetAnimationSeconds());
+            // --------------------------------------------------
+            //      コントローラー振動、エフェクト、効果音を出す。
+            //       出すタイミングはコントローラー振動に任せる
+            // --------------------------------------------------
+            bool isVibrated = gamePadVibration_.Update(owner_->GetAnimationSeconds());
 
-            if (isvibration)
+            if (isVibrated)
             {
+                // エフェクトを再生する
                 Effect* counterEffect = EffectManager::Instance().GetEffect("Counter");
                 if (counterEffect != nullptr)
                 {
-                    const DirectX::XMFLOAT3 position = owner_->GetJointPosition("hand_r");
-                    const DirectX::XMFLOAT3 scale = { 0.1f, 0.1f, 0.1f };
-
-                    counterEffectHandle_ = counterEffect->Play(position, 10.0f, scale);
+                    // エフェクトは剣の位置に出す
+                    const DirectX::XMFLOAT3 offsetPosition = { -50.0f, 13.0f, 20.0f };
+                    const DirectX::XMFLOAT3 position = owner_->GetJointPosition("hand_r", offsetPosition);
+                    
+                    // 位置を更新するためのデータを保存する
+                    effectOffsetVec_ = XMFloat3Normalize(position - owner_->GetTransform()->GetPosition());
+                    effectLength_ = XMFloat3Length(position - owner_->GetTransform()->GetPosition());
+                    counterEffectHandle_ = counterEffect->Play(position, 0.1f, 4.0f);
                 }
+
+                // TODO: 効果音を鳴らす
 
                 isCounterReaction = true;
             }
         }
 
-#endif
-
-
+        // エフェクトの位置を更新する
+        if (isCounterReaction)
+        {
+            const DirectX::XMFLOAT3 position = owner_->GetTransform()->GetPosition() + effectOffsetVec_ * effectLength_;
+            EffectManager::Instance().SetPosition(counterEffectHandle_, position);
+        }
 
         // アニメーションの速度設定
         SetAnimationSpeed();
 
+        // 移動処理
+        Move();
+
+
+        // アニメーション再生終了
+        //if(owner_->GetAnimationSeconds() > 1.0f)
+        if(owner_->GetAnimationSeconds() > 1.2f)
+        //if(owner_->IsPlayAnimation() == false)
+        {
+            EffectManager::Instance().StopEffect(counterEffectHandle_);
+
+            owner_->ChangeState(Player::STATE::Idle);
+
+            return;
+        }
+
+        // カウンター成功
+        // TODO:ここつくる。カウンター
+        //if (owner_->GetIsAbleCounterAttack())
+        {
+            if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER)
+            {
+                isNextInput_ = true;
+            }
+        }
+        if (isNextInput_ && owner_->GetAnimationSeconds() > 0.9f)
+        {
+            EffectManager::Instance().StopEffect(counterEffectHandle_);
+
+            owner_->ChangeState(Player::STATE::CounterCombo);
+            return;
+        }
+    }
+
+    // ----- 終了化 -----
+    void CounterState::Finalize()
+    {
+    }
+
+    // ----- 移動処理 -----
+    void CounterState::Move()
+    {
+        // 前方向に進む
         if (addForceFront_.Update(owner_->GetAnimationSeconds()))
         {
             owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceFront_.GetForce(), addForceFront_.GetDecelerationForce());
         }
+
+        // 後ろ方向に進む
         if (addForceBack_.Update(owner_->GetAnimationSeconds()))
         {
+            // --------------------------------------------------
+            //  左スティックの入力があればその方向に向くようにする
+            //          何も入力がなければ後ろに下がる
+            // --------------------------------------------------
+
             DirectX::XMFLOAT3 addForceDirection = {};
 
             // 左スティックの入力があるか判定
@@ -1406,38 +1451,10 @@ namespace PlayerState
                 addForceDirection = owner_->GetTransform()->CalcForward() * -1.0f;
             }
 
+            mikiriEffectAddPosition_ = addForceDirection;
+
             owner_->AddForce(addForceDirection, addForceBack_.GetForce(), addForceBack_.GetDecelerationForce());
         }
-
-
-        // アニメーション再生終了
-        //if(owner_->GetAnimationSeconds() > 1.0f)
-        if(owner_->GetAnimationSeconds() > 1.2f)
-        //if(owner_->IsPlayAnimation() == false)
-        {
-            owner_->ChangeState(Player::STATE::Idle);
-            return;
-        }
-
-        // カウンター成功
-        // TODO:ここつくる。カウンター
-        //if (owner_->GetIsAbleCounterAttack())
-        {
-            if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER)
-            {
-                isNextInput_ = true;
-            }
-        }
-        if (isNextInput_ && owner_->GetAnimationSeconds() > 0.9f)
-        {
-            owner_->ChangeState(Player::STATE::CounterCombo);
-            return;
-        }
-    }
-
-    // ----- 終了化 -----
-    void CounterState::Finalize()
-    {
     }
 
     // ----- アニメーションの速度設定 -----

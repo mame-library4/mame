@@ -54,9 +54,9 @@ void GameScene::CreateResource()
     stone_ = std::make_unique<Stone>();
 
 
-    //Effect* effect = new Effect("./Resources/Effect/Hit.efk", "Counter");
-    //Effect* effect = new Effect("./Resources/Effect/counter.efk", "Counter");
-    Effect* effect = new Effect("./Resources/Effect/counter1.efk", "Counter");
+    Effect* effect0 = new Effect("./Resources/Effect/Counter.efk", "Counter");
+    Effect* effect1 = new Effect("./Resources/Effect/Mikiri2.efk", "Mikiri");
+    //Effect* effect1 = new Effect("./Resources/Effect/Mikiri.efk", "Mikiri");
 }
 
 // ----- èâä˙âª -----
@@ -209,7 +209,7 @@ void GameScene::Render()
 
     DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
 //#ifdef _DEBUG
-#if 0
+#if 1
     if (isDebugRenderer_)
     {
         // player
