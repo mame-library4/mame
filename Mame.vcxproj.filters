@@ -205,6 +205,15 @@
     <ClCompile Include="Source\Game\Stone\StoneManager.cpp">
       <Filter>Mame\Game\Object\Stone</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\Projectile.cpp">
+      <Filter>Mame\Game\Object\Projectile</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\ProjectileManager.cpp">
+      <Filter>Mame\Game\Object\Projectile</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\Fireball.cpp">
+      <Filter>Mame\Game\Object\Projectile</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -439,6 +448,15 @@
     <ClInclude Include="Source\Game\Stone\StoneManager.h">
       <Filter>Mame\Game\Object\Stone</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\Projectile.h">
+      <Filter>Mame\Game\Object\Projectile</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\ProjectileManager.h">
+      <Filter>Mame\Game\Object\Projectile</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\Fireball.h">
+      <Filter>Mame\Game\Object\Projectile</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -572,6 +590,9 @@
     </Filter>
     <Filter Include="External\ImGui">
       <UniqueIdentifier>{576faab2-b681-4899-afde-5d4eab13b405}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\Object\Projectile">
+      <UniqueIdentifier>{29f0360d-2f8c-4006-a753-0d7005dc2a18}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

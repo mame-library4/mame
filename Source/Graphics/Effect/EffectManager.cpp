@@ -37,7 +37,7 @@ void EffectManager::Finalize()
 }
 
 // ----- çXêV -----
-void EffectManager::Update(float elapsedTime)
+void EffectManager::Update(const float& elapsedTime)
 {
     // -------------------------
     //  ê∂ê¨

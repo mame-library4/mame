@@ -20,11 +20,11 @@ public:
         return instance;
     }
 
-    void Initialize();              // 初期化
-    void Finalize();                // 終了化
-    void Update(float elapsedTime); // 更新
-    void Render();                  // 描画
-    void DrawDebug();               // ImGui用
+    void Initialize();                      // 初期化
+    void Finalize();                        // 終了化
+    void Update(const float& elapsedTime);  // 更新
+    void Render();                          // 描画
+    void DrawDebug();                       // ImGui用
 
     // Effekseerマネージャーの取得
     Effekseer::ManagerRef GetEffekseerManager() { return effekseerManager_; }
@@ -44,8 +44,8 @@ private:
     EffekseerRenderer::RendererRef effekseerRenderer_;
 
     std::vector<Effect*>    effects_;
-    std::set<Effect*>       removes_;
     std::set<Effect*>       generates_;
+    std::set<Effect*>       removes_;
 };
 
 

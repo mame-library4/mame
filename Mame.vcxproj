@@ -223,6 +223,9 @@
     <ClCompile Include="Source\Game\Collision\Collision.cpp" />
     <ClCompile Include="Source\Game\Collision\CollisionData.cpp" />
     <ClCompile Include="Source\Game\Object.cpp" />
+    <ClCompile Include="Source\Game\Projectile\Fireball.cpp" />
+    <ClCompile Include="Source\Game\Projectile\Projectile.cpp" />
+    <ClCompile Include="Source\Game\Projectile\ProjectileManager.cpp" />
     <ClCompile Include="Source\Game\Stage\Stage.cpp" />
     <ClCompile Include="Source\Game\Stage\StageNormal.cpp" />
     <ClCompile Include="Source\Game\Stone\Stone.cpp" />
@@ -298,6 +301,9 @@
     <ClInclude Include="Source\Game\Collision\Collision.h" />
     <ClInclude Include="Source\Game\Collision\CollisionData.h" />
     <ClInclude Include="Source\Game\Object.h" />
+    <ClInclude Include="Source\Game\Projectile\Fireball.h" />
+    <ClInclude Include="Source\Game\Projectile\Projectile.h" />
+    <ClInclude Include="Source\Game\Projectile\ProjectileManager.h" />
     <ClInclude Include="Source\Game\Stage\Stage.h" />
     <ClInclude Include="Source\Game\Stage\StageNormal.h" />
     <ClInclude Include="Source\Game\Stone\Stone.h" />

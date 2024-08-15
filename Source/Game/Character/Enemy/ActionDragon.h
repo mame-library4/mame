@@ -239,12 +239,15 @@ namespace ActionDragon
         const ActionBase::State Run(const float& elapsedTime) override;
     };
 
-    // 前方向攻撃行動
-    class FrontAttackAction : public ActionBase
+    // ブレス
+    class FireBreath : public ActionBase
     {
     public:
-        FrontAttackAction(Enemy* owner) : ActionBase(owner) {}
+        FireBreath(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+
+    private:
+        bool isCreateFireball_ = false;
     };
 
     // コンボたたきつけ行動

@@ -50,7 +50,7 @@ public:
         AttackFly1,     // 空中待機
         AttackFly2,     // たたきつけ攻撃
 
-        AttackFront,
+        FireBreathFront,
 
         BackStepRoar,   // バックステップ後,咆哮
 

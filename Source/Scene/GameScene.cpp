@@ -9,6 +9,8 @@
 #include "Collision/Collision.h"
 #include "UI/UINumber.h"
 
+#include "Projectile/ProjectileManager.h"
+
 
 // ----- ステージの真ん中位置 -----
 DirectX::XMFLOAT3 GameScene::stageCenter_ = {};
@@ -77,6 +79,9 @@ void GameScene::Initialize()
     // 敵初期化
     EnemyManager::Instance().Initialize();
 
+    // 発射物
+    ProjectileManager::Instance().Initialize();
+
     //particles_->Initialize(0);
 }
 
@@ -88,6 +93,9 @@ void GameScene::Finalize()
 
     // 敵終了化
     EnemyManager::Instance().Finalize();
+
+    // 発射物
+    ProjectileManager::Instance().Finalize();
 }
 
 // ----- 更新 -----
@@ -98,6 +106,9 @@ void GameScene::Update(const float& elapsedTime)
 
     // 敵更新
     EnemyManager::Instance().Update(elapsedTime);
+
+    // 発射物
+    ProjectileManager::Instance().Update(elapsedTime);
 
     // ステージ位置更新
     stageCenter_ = stage_->GetTransform()->GetPosition();
@@ -145,6 +156,9 @@ void GameScene::DeferredRender()
     // 敵描画
     EnemyManager::Instance().Render(gBufferPixelShader);
 
+    // 発射物
+    ProjectileManager::Instance().Render(gBufferPixelShader);
+
     stone_->Render(gBufferPixelShader);
 }
 
@@ -168,6 +182,9 @@ void GameScene::ForwardRender()
 
     // 敵描画
     EnemyManager::Instance().Render();
+
+    ProjectileManager::Instance().Render();
+
 #endif
 
 
@@ -237,6 +254,19 @@ void GameScene::Render()
 // ----- ImGui用 -----
 void GameScene::DrawDebug()
 {
+    if (ImGui::BeginMainMenuBar())
+    {
+        // プレイヤーImGui
+        PlayerManager::Instance().DrawDebug();
+
+        // 敵ImGui
+        EnemyManager::Instance().DrawDebug();
+
+        ProjectileManager::Instance().DrawDebug();
+
+        ImGui::EndMainMenuBar();
+    }
+
     ImGui::Checkbox("Debug", &isDebugRenderer_);
     ImGui::DragFloat("stageRadius", &stageRadius1_);
 
@@ -244,11 +274,6 @@ void GameScene::DrawDebug()
 
     stone_->DrawDebug();
 
-    // プレイヤーImGui
-    PlayerManager::Instance().DrawDebug();
-
-    // 敵ImGui
-    EnemyManager::Instance().DrawDebug();
 
     if (ImGui::BeginMenu("stage"))
     {

@@ -5,6 +5,8 @@
 #include "Camera.h"
 #include "../Player/PlayerManager.h"
 
+#include "Projectile/Fireball.h"
+
 // ----- GamePadVibration -----
 namespace ActionDragon
 {
@@ -847,14 +849,48 @@ namespace ActionDragon
     }
 }
 
+// ----- ブレス -----
 namespace ActionDragon
 {
-    const ActionBase::State FrontAttackAction::Run(const float& elapsedTime)
+    const ActionBase::State FireBreath::Run(const float& elapsedTime)
     {
         // 実行中ノードを中断するか
         if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
 
-        return ActionBase::State();
+        switch (owner_->GetStep())
+        {
+        case 0:// 初期化
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::FireBreathFront, false);
+
+            // 変数初期化
+            isCreateFireball_ = false;
+
+            owner_->SetStep(1);
+
+            break;
+        case 1:
+
+            if (owner_->GetAnimationSeconds() > 0.95 && isCreateFireball_ == false)
+            {
+                Fireball* fireball = new Fireball();
+                fireball->GetTransform()->SetPosition(owner_->GetJointPosition("Dragon15_tongue4"));
+                fireball->SetDirection(owner_->GetTransform()->CalcForward());
+
+                isCreateFireball_ = true;
+            }
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+
+            break;
+        case 2:
+            break;
+        }
+
+        return ActionBase::State::Run;
     }
 }
 
