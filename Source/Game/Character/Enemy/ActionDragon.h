@@ -248,6 +248,26 @@ namespace ActionDragon
 
     private:
         bool isCreateFireball_ = false;
+        int delay_ = 0;
+
+        int fireballId_ = 0;
+    };
+
+    // ブレス ( ３連撃 )
+    class FireBreathCombo : public ActionBase
+    {
+    public:
+        FireBreathCombo(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+
+    private:
+        void Launch(const float& launchFrame);
+
+    private:
+        bool isCreateFireball_ = false;
+
+
+
     };
 
     // コンボたたきつけ行動
@@ -369,18 +389,5 @@ namespace ActionDragon
     public:
         MoveTurnAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
-    };
-
-    // 移動攻撃行動
-    class MoveAttackAction : public ActionBase
-    {
-    public:
-        MoveAttackAction(Enemy* owner) : ActionBase(owner) {}
-        const ActionBase::State Run(const float& elapsedTime) override;
-
-    private:
-        AddForceData addForceData_;
-
-        int flyCount_ = 0;
     };
 }

@@ -5,12 +5,19 @@ class Projectile : public Object
 {
 public:
     Projectile(const std::string filename, const float& scaleFactor);
-    ~Projectile() {}
+    ~Projectile();
 
     virtual void Initialize()                                   = 0;
     virtual void Finalize()                                     = 0;
     virtual void Update(const float& elapsedTime)               = 0;
     virtual void Render(ID3D11PixelShader* psShader = nullptr)  = 0;
     virtual void DrawDebug()                                    = 0;
+
+    [[nodiscard]] const int GetId() const { return id_; }
+
+private:
+    int id_ = 0;
+
+    static int idCounter_;
 };
 

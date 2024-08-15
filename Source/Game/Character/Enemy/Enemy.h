@@ -98,8 +98,9 @@ public:
         AttackMove0,
         AttackMove1,
         AttackMove2,
-        AttackMove3,
-        AttackMove4,
+        
+        FireBreathLeft,
+        FireBreathRight,
 
     };
 

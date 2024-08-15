@@ -87,6 +87,8 @@ const bool NearJudgment::Judgment()
 
 const bool ComboFlySlamJudgment::Judgment()
 {
+    return false;
+
     const float distance = owner_->CalcDistanceToPlayer();
 
     if (distance > owner_->GetComboFlyAttackRadius()) return true;

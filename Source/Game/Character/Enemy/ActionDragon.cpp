@@ -5,7 +5,12 @@
 #include "Camera.h"
 #include "../Player/PlayerManager.h"
 
+#include "Effect/EffectManager.h"
+
+#include "Projectile/ProjectileManager.h"
 #include "Projectile/Fireball.h"
+
+
 
 // ----- GamePadVibration -----
 namespace ActionDragon
@@ -873,10 +878,28 @@ namespace ActionDragon
             if (owner_->GetAnimationSeconds() > 0.95 && isCreateFireball_ == false)
             {
                 Fireball* fireball = new Fireball();
-                fireball->GetTransform()->SetPosition(owner_->GetJointPosition("Dragon15_tongue4"));
-                fireball->SetDirection(owner_->GetTransform()->CalcForward());
+                fireballId_ = fireball->GetId();
+                
+                fireball->Launch(owner_->GetJointPosition("Dragon15_tongue4"), owner_->GetTransform()->CalcForward());
 
                 isCreateFireball_ = true;
+            }
+
+            if (isCreateFireball_)
+            {
+                ++delay_;
+                if (delay_ > 3)
+                {
+                    auto fireball = ProjectileManager::Instance().GetProjectile(fireballId_);
+                    if (fireball != nullptr)
+                    {
+                        const DirectX::XMFLOAT3 pos = fireball->GetTransform()->GetPosition();
+
+                        EffectManager::Instance().GetEffect("Fire")->Play(pos, 0.5f, 3.0f);
+
+                        delay_ = 0;
+                    }
+                }
             }
 
             if (owner_->IsPlayAnimation() == false)
@@ -886,11 +909,105 @@ namespace ActionDragon
             }
 
             break;
+        }
+
+        return ActionBase::State::Run;
+    }
+}
+
+// ----- ブレス 3連撃 -----
+namespace ActionDragon
+{
+    const ActionBase::State FireBreathCombo::Run(const float& elapsedTime)
+    {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
+        switch (owner_->GetStep())
+        {
+        case 0:// 初期化
+            // アニメーション設定
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::FireBreathLeft, false, 1.0f, 0.14f);
+            owner_->SetTransitionTime(0.3f);
+
+            // 変数初期化
+            isCreateFireball_ = false;
+
+            owner_->SetStep(1);
+
+            break;
+        case 1:
+
+            // 火球発射
+            Launch(0.95f);
+
+            //if (owner_->IsPlayAnimation() == false)
+            if(owner_->GetAnimationSeconds() > 1.7f)
+            {
+                owner_->PlayBlendAnimation(Enemy::DragonAnimation::FireBreathRight, false, 1.0f, 0.14f);
+                owner_->SetTransitionTime(0.25f);
+
+                isCreateFireball_ = false;
+
+                owner_->SetStep(2);
+            }
+
+            break;
         case 2:
+
+            // 火球発射
+            Launch(0.95f);
+
+            //if (owner_->IsPlayAnimation() == false)
+            if(owner_->GetAnimationSeconds() > 1.7f)
+            {
+                owner_->PlayBlendAnimation(Enemy::DragonAnimation::FireBreathFront, false, 1.0f, 0.2f);
+
+                isCreateFireball_ = false;
+
+                owner_->SetStep(3);
+            }
+
+            break;
+        case 3:
+
+            // 火球発射
+            Launch(0.95f);
+            
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetStep(0);
+
+                return ActionBase::State::Complete;
+            }
+
             break;
         }
 
         return ActionBase::State::Run;
+    }
+
+    // ----- 火球発射 -----
+    void FireBreathCombo::Launch(const float& launchFrame)
+    {
+        // 既に発射している
+        if (isCreateFireball_) return;
+
+        // 指定された発射フレームに達していない
+        if (owner_->GetAnimationSeconds() < launchFrame) return;
+
+
+        Fireball* fireball = new Fireball();
+        DirectX::XMFLOAT3 tongue3Position = owner_->GetJointPosition("Dragon15_tongue3");
+        DirectX::XMFLOAT3 tongue4Position = owner_->GetJointPosition("Dragon15_tongue4");
+
+        DirectX::XMFLOAT3 direction = tongue4Position - tongue3Position;
+        direction.y = 0;
+        direction = XMFloat3Normalize(direction);
+
+        fireball->Launch(tongue4Position, direction);
+
+        isCreateFireball_ = true;
     }
 }
 
@@ -1446,90 +1563,5 @@ namespace ActionDragon
         if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
 
         return ActionBase::State();
-    }
-}
-
-// ----- 移動しながら攻撃 -----
-// 炎吐かせたい
-namespace ActionDragon
-{
-    const ActionBase::State MoveAttackAction::Run(const float& elapsedTime)
-    {
-        // 実行中ノードを中断するか
-        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
-
-        switch (owner_->GetStep())
-        {
-        case 0:// 初期化
-            // アニメーション設定
-            owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackMove0, false);
-            owner_->SetTransitionTime(0.1f);
-
-            // ルートモーションを使用する
-            owner_->SetUseRootMotion(true);
-
-            // 変数初期化
-            addForceData_.Initialize(0.45f, 0.4f, 1.0f);
-            flyCount_ = 0;
-
-            owner_->SetStep(1);
-
-            break;
-        case 1:
-
-            if (owner_->IsPlayAnimation() == false)
-            {
-                owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackMove1, false, 1.0f, 0.2f);
-                owner_->SetTransitionTime(0.3f);
-
-                owner_->SetStep(2);
-            }
-
-            break;
-        case 2:
-            if (owner_->IsPlayAnimation() == false)
-            {
-                if (flyCount_ < 1)
-                {
-                    owner_->PlayAnimation(Enemy::DragonAnimation::AttackMove1, false);
-
-                    ++flyCount_;
-                    
-                    owner_->SetStep(1);
-                }
-                else
-                {
-                    owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackMove2, false);
-                    owner_->SetTransitionTime(0.1f);
-
-                    owner_->SetStep(3);
-                }
-            }
-
-            break;
-        case 3:
-
-            //if (owner_->IsPlayAnimation() == false)
-            //if(owner_->GetAnimationSeconds() > 0.35f)
-            if(owner_->GetAnimationSeconds() > 0.15f)
-            {
-                owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackMove3, false, 1.0f, 0.2f);
-                //owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackMove3, false);
-                owner_->SetTransitionTime(0.2f);
-
-                owner_->SetStep(4);
-            }
-
-            break;
-        case 4:
-            if (owner_->IsPlayAnimation() == false)
-            {
-                owner_->SetStep(0);
-                return ActionBase::State::Complete;
-            }
-            break;
-        }
-
-        return ActionBase::State::Run;
     }
 }

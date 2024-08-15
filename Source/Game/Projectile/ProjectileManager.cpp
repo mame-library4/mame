@@ -104,3 +104,13 @@ void ProjectileManager::Clear()
     projectiles_.clear();
     projectiles_.shrink_to_fit();
 }
+
+Projectile* ProjectileManager::GetProjectile(const int& id)
+{
+    for (Projectile*& projectile : projectiles_)
+    {
+        if (projectile->GetId() == id) return projectile;
+    }
+
+    return nullptr;
+}

@@ -17,7 +17,9 @@ Fireball::~Fireball()
 // ----- ‰Šú‰» -----
 void Fireball::Initialize()
 {
-    speed_ = 10.0f;
+    GetTransform()->SetScaleFactor(0.5f);
+
+    speed_ = 25.0f;
 }
 
 // ----- I—¹‰» -----
@@ -41,4 +43,13 @@ void Fireball::Render(ID3D11PixelShader* psShader)
 void Fireball::DrawDebug()
 {
     Object::DrawDebug();
+}
+
+// ----- ”­ŽË -----
+void Fireball::Launch(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& direction, const float& speed)
+{
+    GetTransform()->SetPosition(position);
+    direction_ = direction;
+    
+    speed_ = (speed == 0.0f) ? speed_ : speed;
 }

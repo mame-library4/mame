@@ -48,7 +48,8 @@ private:
 
     std::unique_ptr<StageNormal> stage_;
 
-    bool isDebugRenderer_ = true;
+    bool isDebugRenderer_ = false;
+    //bool isDebugRenderer_ = true;
 
     std::unique_ptr<Particles> particles_;
 

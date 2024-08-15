@@ -13,8 +13,7 @@ public:
     void Render(ID3D11PixelShader* psShader = nullptr)  override;
     void DrawDebug()                                    override;
 
-    void SetDirection(const DirectX::XMFLOAT3& direction) { direction_ = direction; }
-    void SetSpeed(const float& speed) { speed_ = speed; }
+    void Launch(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& direction, const float& speed = 0.0f);
 
 private:
     DirectX::XMFLOAT3 direction_ = {};

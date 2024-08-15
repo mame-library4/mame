@@ -58,6 +58,8 @@ void GameScene::CreateResource()
 
     Effect* effect0 = new Effect("./Resources/Effect/Counter.efk", "Counter");
     Effect* effect1 = new Effect("./Resources/Effect/Mikiri2.efk", "Mikiri");
+    //Effect* effect2 = new Effect("./Resources/Effect/Fire.efk", "Fire");
+    Effect* effect2 = new Effect("./Resources/Effect/Fire2.efk", "Fire");
     //Effect* effect1 = new Effect("./Resources/Effect/Mikiri.efk", "Mikiri");
 }
 
