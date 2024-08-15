@@ -249,6 +249,8 @@ void GameScene::Render()
             const float radius = PlayerManager::Instance().GetPlayer()->GetCounterActiveRadius();
             debugRenderer->DrawCylinder(dragonPos, radius, 1.5f, { 1, 0, 0, 1 });
         }
+
+        ProjectileManager::Instance().DebugRender(debugRenderer);
     }
 #endif
 }

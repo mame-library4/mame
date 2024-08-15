@@ -2,6 +2,7 @@
 #include "Projectile.h"
 #include <vector>
 #include <set>
+#include "Graphics.h"
 
 class ProjectileManager
 {
@@ -21,6 +22,7 @@ public:
     void Update(const float& elapsedTime);              // çXêV
     void Render(ID3D11PixelShader* psShader = nullptr); // ï`âÊ
     void DrawDebug();                                   // ImGuióp
+    void DebugRender(DebugRenderer* debugRenderer);
 
     void Register(Projectile* projectile);
     void Remove(Projectile* projectile);

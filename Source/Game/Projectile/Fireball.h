@@ -21,5 +21,7 @@ private:
 
     int effectDelay_    = 0;
     int effectMaxDelay_ = 3;
+
+    float lifeTimer_ = 0.0f;
 };
 

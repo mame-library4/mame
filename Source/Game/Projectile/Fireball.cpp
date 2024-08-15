@@ -7,6 +7,7 @@
 Fireball::Fireball()
     : Projectile("./Resources/Model/Sphere.gltf", 1.0f)
 {
+    // Manager‚ÉŽ©•ªŽ©g‚ð“o˜^
     ProjectileManager::Instance().Register(this);
 }
 
@@ -18,7 +19,11 @@ Fireball::~Fireball()
 // ----- ‰Šú‰» -----
 void Fireball::Initialize()
 {
+    // ƒTƒCƒYÝ’è
     GetTransform()->SetScaleFactor(0.5f);
+
+    // “–‚½‚è”»’è‚Ì”¼ŒaÝ’è
+    SetRadius(0.5f);
 
     speed_ = 25.0f;
 }
@@ -41,6 +46,12 @@ void Fireball::Update(const float& elapsedTime)
 
         effectDelay_ = 0;
     }
+
+    lifeTimer_ += elapsedTime;
+    if (lifeTimer_ > 10.0f)
+    {
+        ProjectileManager::Instance().Remove(this);
+    }
 }
 
 // ----- •`‰æ -----
@@ -52,7 +63,12 @@ void Fireball::Render(ID3D11PixelShader* psShader)
 // ----- ImGui—p -----
 void Fireball::DrawDebug()
 {
-    Object::DrawDebug();
+    std::string name = "Fireball" + std::to_string(GetId());
+    if (ImGui::TreeNode(name.c_str()))
+    {
+        Projectile::DrawDebug();
+        ImGui::TreePop();
+    }
 }
 
 // ----- ”­ŽË -----

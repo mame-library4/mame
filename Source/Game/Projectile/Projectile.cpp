@@ -6,10 +6,17 @@ int Projectile::idCounter_ = 0;
 Projectile::Projectile(const std::string filename, const float& scaleFactor)
     : Object(filename, scaleFactor)
 {
+    // ìoò^î‘çÜê›íË
     id_ = idCounter_++;
 }
 
 Projectile::~Projectile()
 {
-    --idCounter_;
+}
+
+void Projectile::DrawDebug()
+{
+    Object::DrawDebug();
+
+    ImGui::DragFloat("Radius", &radius_);
 }

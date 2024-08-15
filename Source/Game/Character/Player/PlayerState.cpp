@@ -1564,8 +1564,9 @@ namespace PlayerState
             isRotating_ = false;
         }
 
-        const float speed = owner_->GetRotateSpeed() * elapsedTime;
-        //const float speed = 7.0f * elapsedTime;
+        // TODO:‰ñ“]‘¬“x‚ðŒÅ’è’l‚Å“ü‚ê‚¿‚á‚Á‚Ä‚é
+        //const float speed = owner_->GetRotateSpeed() * elapsedTime;
+        const float speed = 8.0f * elapsedTime;
         float rotateY = forwardDot * speed;
         rotateY = std::min(rotateY, -0.7f * speed);
 

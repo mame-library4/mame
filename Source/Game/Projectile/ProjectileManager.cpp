@@ -82,6 +82,14 @@ void ProjectileManager::DrawDebug()
     }
 }
 
+void ProjectileManager::DebugRender(DebugRenderer* debugRenderer)
+{
+    for (Projectile*& projectile : projectiles_)
+    {
+        debugRenderer->DrawSphere(projectile->GetTransform()->GetPosition(), projectile->GetRadius(), { 1,0,0,1 });
+    }
+}
+
 // ----- “o˜^ -----
 void ProjectileManager::Register(Projectile* projectile)
 {
