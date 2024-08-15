@@ -18,5 +18,8 @@ public:
 private:
     DirectX::XMFLOAT3 direction_ = {};
     float speed_ = 0.0f;
+
+    int effectDelay_    = 0;
+    int effectMaxDelay_ = 3;
 };
 

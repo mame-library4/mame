@@ -248,9 +248,6 @@ namespace ActionDragon
 
     private:
         bool isCreateFireball_ = false;
-        int delay_ = 0;
-
-        int fireballId_ = 0;
     };
 
     // ブレス ( ３連撃 )
@@ -265,9 +262,6 @@ namespace ActionDragon
 
     private:
         bool isCreateFireball_ = false;
-
-
-
     };
 
     // コンボたたきつけ行動

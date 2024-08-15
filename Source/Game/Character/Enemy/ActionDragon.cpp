@@ -878,28 +878,10 @@ namespace ActionDragon
             if (owner_->GetAnimationSeconds() > 0.95 && isCreateFireball_ == false)
             {
                 Fireball* fireball = new Fireball();
-                fireballId_ = fireball->GetId();
                 
                 fireball->Launch(owner_->GetJointPosition("Dragon15_tongue4"), owner_->GetTransform()->CalcForward());
 
                 isCreateFireball_ = true;
-            }
-
-            if (isCreateFireball_)
-            {
-                ++delay_;
-                if (delay_ > 3)
-                {
-                    auto fireball = ProjectileManager::Instance().GetProjectile(fireballId_);
-                    if (fireball != nullptr)
-                    {
-                        const DirectX::XMFLOAT3 pos = fireball->GetTransform()->GetPosition();
-
-                        EffectManager::Instance().GetEffect("Fire")->Play(pos, 0.5f, 3.0f);
-
-                        delay_ = 0;
-                    }
-                }
             }
 
             if (owner_->IsPlayAnimation() == false)
@@ -937,12 +919,12 @@ namespace ActionDragon
 
             break;
         case 1:
-
+        {
             // ‰Î‹…”­ŽË
             Launch(0.95f);
 
             //if (owner_->IsPlayAnimation() == false)
-            if(owner_->GetAnimationSeconds() > 1.7f)
+            if (owner_->GetAnimationSeconds() > 1.7f)
             {
                 owner_->PlayBlendAnimation(Enemy::DragonAnimation::FireBreathRight, false, 1.0f, 0.14f);
                 owner_->SetTransitionTime(0.25f);
@@ -951,15 +933,15 @@ namespace ActionDragon
 
                 owner_->SetStep(2);
             }
-
+        }
             break;
         case 2:
-
+        {
             // ‰Î‹…”­ŽË
             Launch(0.95f);
 
             //if (owner_->IsPlayAnimation() == false)
-            if(owner_->GetAnimationSeconds() > 1.7f)
+            if (owner_->GetAnimationSeconds() > 1.7f)
             {
                 owner_->PlayBlendAnimation(Enemy::DragonAnimation::FireBreathFront, false, 1.0f, 0.2f);
 
@@ -967,20 +949,20 @@ namespace ActionDragon
 
                 owner_->SetStep(3);
             }
-
+        }
             break;
         case 3:
-
+        {
             // ‰Î‹…”­ŽË
             Launch(0.95f);
-            
+
             if (owner_->IsPlayAnimation() == false)
             {
                 owner_->SetStep(0);
 
                 return ActionBase::State::Complete;
             }
-
+        }
             break;
         }
 

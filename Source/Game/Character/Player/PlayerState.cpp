@@ -1163,7 +1163,7 @@ namespace PlayerState
             float dot = acosf(XMFloat2Dot(cameraInput, ownerFront));
 
             // 左右判定
-            float corss = XMFloat2Cross(cameraInput, ownerFront);
+            float cross = XMFloat2Cross(cameraInput, ownerFront);
 
             // 回転角が９０度よりも小さければ 前,右,左 の三択
             if (dot < DirectX::XM_PIDIV2)
@@ -1176,7 +1176,7 @@ namespace PlayerState
                 }
 
                 // 右方向
-                if (corss < 0)
+                if (cross < 0)
                 {
                     owner_->PlayBlendAnimation(Player::Animation::RollRight, false, animationSpeed, animationStartFrame);
                 }
@@ -1197,7 +1197,7 @@ namespace PlayerState
                 }
 
                 // 右方向
-                if (corss < 0)
+                if (cross < 0)
                 {
                     owner_->PlayBlendAnimation(Player::Animation::RollRight, false, animationSpeed, animationStartFrame);
                 }
@@ -1274,9 +1274,13 @@ namespace PlayerState
         //gamePadVibration_.Initialize(0.3f, 0.3f, 1.0f);
         gamePadVibration_.Initialize(0.3f, 0.2f, 0.5f);
 
+        attackData_.Initialize(0.75f, 1.0f);
+
         isNextInput_ = false;
 
         isCounterReaction = false;
+
+        isTurnChecked_ = false;
 
         // フラグをリセットする
         owner_->ResetFlags();
@@ -1301,11 +1305,11 @@ namespace PlayerState
             if (owner_->GetIsCounter() == false) owner_->SetIsCounter(true);
         }
 
+        // エフェクト
         if (addForceBack_.GetIsAddForce())
         {
             EffectManager::Instance().AddPosition(mikiriEffectHandle_, mikiriEffectAddPosition_ * 3.0f * elapsedTime);
         }
-
 
         // 見切りが成功したか
         if (owner_->GetIsAbleCounterAttack() && isCounterReaction == false)
@@ -1351,6 +1355,12 @@ namespace PlayerState
         // 移動処理
         Move();
 
+        // 旋回処理
+        Turn(elapsedTime);
+
+        // 攻撃判定
+        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
+        owner_->SetIsAbleAttack(attackFlag);
 
         // アニメーション再生終了
         //if(owner_->GetAnimationSeconds() > 1.0f)
@@ -1390,20 +1400,14 @@ namespace PlayerState
     // ----- 移動処理 -----
     void CounterState::Move()
     {
-        // 前方向に進む
-        if (addForceFront_.Update(owner_->GetAnimationSeconds()))
-        {
-            owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceFront_.GetForce(), addForceFront_.GetDecelerationForce());
-        }
-
         // 後ろ方向に進む
+#pragma region ---------- 後ろ方向に進む ----------
         if (addForceBack_.Update(owner_->GetAnimationSeconds()))
         {
             // --------------------------------------------------
             //  左スティックの入力があればその方向に向くようにする
             //          何も入力がなければ後ろに下がる
             // --------------------------------------------------
-
             DirectX::XMFLOAT3 addForceDirection = {};
 
             // 左スティックの入力があるか判定
@@ -1431,12 +1435,12 @@ namespace PlayerState
                 ownerForward = XMFloat2Normalize(ownerForward);
 
                 // 外積をしてどちらに回転するのかを判定する
-                float forwardCorss = XMFloat2Cross(cameraForward_float2, ownerForward);
+                float forwardCross = XMFloat2Cross(cameraForward_float2, ownerForward);
 
                 // 内積で回転幅を算出
                 float forwardDot = XMFloat2Dot(cameraForward_float2, ownerForward) - 1.0f;
 
-                if (forwardCorss > 0)
+                if (forwardCross > 0)
                 {
                     owner_->GetTransform()->AddRotationY(forwardDot);
                 }
@@ -1454,6 +1458,124 @@ namespace PlayerState
             mikiriEffectAddPosition_ = addForceDirection;
 
             owner_->AddForce(addForceDirection, addForceBack_.GetForce(), addForceBack_.GetDecelerationForce());
+        }
+#pragma endregion ---------- 後ろ方向に進む ----------
+
+        // 前方向に進む
+#pragma region ---------- 前方向に進む ----------
+        if (addForceFront_.Update(owner_->GetAnimationSeconds()))
+        {
+            // --------------------------------------------------
+            //  左スティックの入力があればその方向に向くようにする
+            //          何も入力がなければそのまま前に進む
+            // --------------------------------------------------
+            DirectX::XMFLOAT3 addForceDirection = {};
+
+            // 左スティックの入力があるか判定
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
+            {
+                // カメラから見た左スティックの傾きを適応した方向を算出する
+                const DirectX::XMFLOAT3 cameraForward = Camera::Instance().CalcForward();
+                const DirectX::XMFLOAT3 cameraRight = Camera::Instance().CalcRight();
+                addForceDirection =
+                {
+                    aLy * cameraForward.x + aLx * cameraRight.x,
+                    0,
+                    aLy * cameraForward.z + aLx * cameraRight.z
+                };
+                addForceDirection = XMFloat3Normalize(addForceDirection);
+
+                addForceDirection_ = { addForceDirection.x, addForceDirection.z };
+                addForceDirection_ = XMFloat2Normalize(addForceDirection_);
+
+                // ------------------------------------------------------------
+                //              回転する角度は左右ともに９０度まで
+                // 
+                //                      ownerFront
+                //                          |
+                //                          | 
+                //             Left ================== Right
+                //                         Back
+                // 
+                //           0° ~ 90°, 270° ~ 360° になるように補正する
+                // ------------------------------------------------------------
+                DirectX::XMFLOAT2 ownerFront = { owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z };
+                ownerFront = XMFloat2Normalize(ownerFront);
+
+                // 内積で角度を算出
+                float dot = acosf(XMFloat2Dot(addForceDirection_, ownerFront));
+
+                // 90度以上回転角がある
+                if (dot > DirectX::XM_PIDIV2)
+                {
+                    // 左右判定
+                    float cross = XMFloat2Cross(addForceDirection_, ownerFront);
+
+                    const DirectX::XMFLOAT3 ownerRight_float3 = owner_->GetTransform()->CalcRight();
+                    const DirectX::XMFLOAT2 ownerRight_float2 = XMFloat2Normalize({ ownerRight_float3.x, ownerRight_float3.z });
+
+                    if (cross < 0)
+                    {
+                        addForceDirection_ = ownerRight_float2;
+                        addForceDirection = { addForceDirection_.x, 0.0f, addForceDirection_.y };
+                    }
+                    else
+                    {
+                        addForceDirection_ = ownerRight_float2 * -1;
+                        addForceDirection = { addForceDirection_.x, 0.0f, addForceDirection_.y };
+                    }
+                }
+
+                isRotating_ = true;
+            }
+            else
+            {
+                addForceDirection = owner_->GetTransform()->CalcForward();
+            }
+
+            owner_->AddForce(addForceDirection, addForceFront_.GetForce(), addForceFront_.GetDecelerationForce());
+        }
+#pragma endregion ---------- 前方向に進む ----------
+    }
+
+    // ----- 旋回処理 -----
+    void CounterState::Turn(const float& elapsedTime)
+    {
+        // 回転角度がないのでここで終了
+        if (isRotating_ == false) return;
+
+        // まだ旋回処理を行わない
+        if (addForceFront_.GetIsAddForce() == false) return;
+
+
+        DirectX::XMFLOAT2 ownerForward = { owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z };
+        ownerForward = XMFloat2Normalize(ownerForward);
+
+        // 外積をしてどちらに回転するのかを判定する
+        float forwardCross = XMFloat2Cross(addForceDirection_, ownerForward);
+
+        // 内積で回転幅を算出
+        float forwardDot = XMFloat2Dot(addForceDirection_, ownerForward) - 1.0f;
+
+        if (forwardDot > -0.01f)
+        {
+            isRotating_ = false;
+        }
+
+        const float speed = owner_->GetRotateSpeed() * elapsedTime;
+        //const float speed = 7.0f * elapsedTime;
+        float rotateY = forwardDot * speed;
+        rotateY = std::min(rotateY, -0.7f * speed);
+
+        if (forwardCross > 0)
+        {
+            owner_->GetTransform()->AddRotationY(rotateY);
+        }
+        else
+        {
+            owner_->GetTransform()->AddRotationY(-rotateY);
         }
     }
 

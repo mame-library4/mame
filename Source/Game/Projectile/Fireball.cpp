@@ -1,6 +1,7 @@
 #include "Fireball.h"
 #include "ProjectileManager.h"
 #include "MathHelper.h"
+#include "Effect/EffectManager.h"
 
 // ----- コンストラクタ -----
 Fireball::Fireball()
@@ -31,6 +32,15 @@ void Fireball::Finalize()
 void Fireball::Update(const float& elapsedTime)
 {
     GetTransform()->AddPosition(direction_ * speed_ * elapsedTime);
+
+    // エフェクト更新
+    ++effectDelay_;
+    if (effectDelay_ > effectMaxDelay_)
+    {
+        EffectManager::Instance().GetEffect("Fire")->Play(GetTransform()->GetPosition(), 0.5f, 3.0f);
+
+        effectDelay_ = 0;
+    }
 }
 
 // ----- 描画 -----

@@ -204,20 +204,29 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
-        void Move();
+        void Move();                            // 移動
+        void Turn(const float& elapsedTime);    // 旋回
         
         void SetAnimationSpeed();
 
 
     private:
-        AddForceData addForceFront_;
-        AddForceData addForceBack_;
+        AddForceData        addForceFront_; // 前方向
+        AddForceData        addForceBack_;  // 後ろ方向
+        AttackData          attackData_;
 
         GamePadVibration gamePadVibration_;
 
         bool isNextInput_ = false; // カウンター攻撃の先行入力用
 
         bool isCounterReaction = false; // カウンターが成功したときの演出
+
+        // ----- 旋回用 -----
+        bool isTurnChecked_ = false; // 旋回するか判定用
+
+        bool isRotating_ = false;
+
+        DirectX::XMFLOAT2  addForceDirection_ = {};
 
         // ----- Effect用 -----
         Effekseer::Handle   mikiriEffectHandle_     = 0;
