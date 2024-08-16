@@ -28,6 +28,7 @@ public:
     void Remove(Projectile* projectile);
     void Clear();
 
+    std::vector<Projectile*> GetProjectiles() { return projectiles_; }
     Projectile* GetProjectile(const int& id);
 
 private:

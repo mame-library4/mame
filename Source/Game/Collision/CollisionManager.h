@@ -25,8 +25,8 @@ private:
     void UpdatePlayerCollisionVsEnemyCollision();
     void UpdatePlayerCounterCollision() {}
 
-
     void UpdatePlayerVsProjectile();
+    void UpdatePlayerDamageVsProjectileAttack();
 
 private:// ”»’è—pŠÖ”
 #pragma region ---------- ”»’è—pŠÖ” ----------

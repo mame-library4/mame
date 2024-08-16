@@ -218,6 +218,49 @@ void CollisionManager::UpdatePlayerVsProjectile()
     // カウンター判定
 
     // くらい判定
+    UpdatePlayerDamageVsProjectileAttack();
+}
+
+// ----- Playerのくらい判定と Projectileの攻撃判定をチェック -----
+void CollisionManager::UpdatePlayerDamageVsProjectileAttack()
+{
+    Player* player = PlayerManager::Instance().GetPlayer().get();
+
+    // 現在無敵状態なので判定を行わない
+    if (player->GetIsInvincible()) return;
+
+    // カウンターが成功したのでダメージをくらわない
+    if (player->GetIsAbleCounterAttack()) return;
+
+    for (int playerDataIndex = 0; playerDataIndex < player->GetDamageDetectionDataCount(); ++playerDataIndex)
+    {
+        const DamageDetectionData playerData = player->GetDamageDetectionData(playerDataIndex);
+
+        std::vector<Projectile*> projectiles = ProjectileManager::Instance().GetProjectiles();
+        
+        for(int projectileIndex = 0; projectileIndex < projectiles.size(); ++projectileIndex)
+        {
+            Projectile* projectile = projectiles.at(projectileIndex);
+
+            // 当たったかチェック
+            if (IntersectSphereVsSphere(
+                playerData.GetPosition(), playerData.GetRadius(),
+                projectile->GetTransform()->GetPosition(), projectile->GetRadius()))
+            {
+                // カウンター状態ならカウンター成功
+                if (player->GetIsCounter())
+                {
+                    player->SetIsAbleCounterAttack(true);
+                    return;
+                }
+
+                // DamageStateに遷移
+                player->ChangeState(Player::STATE::Damage);
+                return;
+            }
+        }
+
+    }
 }
 
 // ---------- 球と球の交差判定 ----------
