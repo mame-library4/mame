@@ -124,9 +124,6 @@
     <ClCompile Include="Source\Graphics\Effect\EffectManager.cpp">
       <Filter>Mame\Graphics\Effect</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Game\Collision\Collision.cpp">
-      <Filter>Mame\Game\Collision</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Game\Object.cpp">
       <Filter>Mame\Game\Object</Filter>
     </ClCompile>
@@ -213,6 +210,9 @@
     </ClCompile>
     <ClCompile Include="Source\Game\Projectile\Fireball.cpp">
       <Filter>Mame\Game\Object\Projectile</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Collision\CollisionManager.cpp">
+      <Filter>Mame\Game\Collision</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -361,9 +361,6 @@
     <ClInclude Include="Source\Graphics\Effect\EffectManager.h">
       <Filter>Mame\Graphics\Effect</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\Collision\Collision.h">
-      <Filter>Mame\Game\Collision</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Game\Object.h">
       <Filter>Mame\Game\Object</Filter>
     </ClInclude>
@@ -456,6 +453,9 @@
     </ClInclude>
     <ClInclude Include="Source\Game\Projectile\Fireball.h">
       <Filter>Mame\Game\Object\Projectile</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Collision\CollisionManager.h">
+      <Filter>Mame\Game\Collision</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

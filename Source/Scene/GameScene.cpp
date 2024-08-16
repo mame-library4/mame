@@ -6,7 +6,7 @@
 #include "Character/Enemy/EnemyManager.h"
 #include "Character/Enemy/EnemyDragon.h"
 #include "Camera.h"
-#include "Collision/Collision.h"
+#include "Collision/CollisionManager.h"
 #include "UI/UINumber.h"
 
 #include "Projectile/ProjectileManager.h"
@@ -115,8 +115,8 @@ void GameScene::Update(const float& elapsedTime)
     // ステージ位置更新
     stageCenter_ = stage_->GetTransform()->GetPosition();
 
-    // Collision
-    UpdateCollisions(elapsedTime);
+    // Collision更新
+    CollisionManager::Instance().Update(elapsedTime);
 
 
     // カメラの位置更新
@@ -284,205 +284,6 @@ void GameScene::DrawDebug()
         stage_->DrawDebug();
         ImGui::EndMenu();
     }
-
-}
-
-// ----- 当たり判定更新 -----
-void GameScene::UpdateCollisions(const float& elapsedTime)
-{
-    if (EnemyManager::Instance().GetEnemyCount() == 0) return;
-    Player* player = PlayerManager::Instance().GetPlayer().get();
-    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
-
-    // プレイヤーの攻撃判定
-    UpdatePlayerAttackCollisions(elapsedTime);
-
-    // カウンター判定
-    UpdateCounterCollisions();
-    
-    // プレイヤーのくらい判定
-    UpdatePlayerDamageCollisions(elapsedTime);
-
-
-#pragma region 押し出し判定
-    // 押し出し判定が有効なら、押し出し判定を行う
-    if (PlayerManager::Instance().GetUseCollisionDetection())
-    {
-        for (int playerDataIndex = 0; playerDataIndex < player->GetCollisionDetectionDataCount(); ++playerDataIndex)
-        {
-            const CollisionDetectionData playerData = player->GetCollisionDetectionData(playerDataIndex);
-
-            for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetCollisionDetectionDataCount(); ++enemyDataIndex)
-            {
-                const CollisionDetectionData enemyData = enemy->GetCollisionDetectionData(enemyDataIndex);
-
-                // 敵の押し出し判定が現在有効ではないので処理をしない
-                if (enemyData.GetIsActive() == false) continue;
-
-                DirectX::XMFLOAT3 resultPos = {};
-
-                // Y値が固定のデータとの判定
-                if (enemyData.GetFixedY())
-                {
-                    if (Collision::IntersectSphereVsSphere(
-                        enemyData.GetPosition(), enemyData.GetRadius(),
-                        player->GetTransform()->GetPosition(), playerData.GetRadius(),
-                        resultPos))
-                    {
-                        player->GetTransform()->SetPosition(resultPos);
-                    }
-                }
-                // その他のデータとの判定
-                else
-                {
-                    // CollisionDataの位置を更新する
-                    player->UpdateCollisionDetectionData();
-
-                    if (Collision::IntersectSphereVsSphereNotConsiderY(
-                        enemyData.GetPosition(), enemyData.GetRadius(),
-                        playerData.GetPosition(), playerData.GetRadius(),
-                        resultPos))
-                    {
-                        resultPos = player->GetTransform()->GetPosition() - resultPos;
-                        player->GetTransform()->SetPosition(resultPos);
-                    }
-                }
-            }
-        }
-    }
-
-#pragma endregion 押し出し判定
-
-}
-
-// ----- プレイヤーの攻撃判定 -----
-void GameScene::UpdatePlayerAttackCollisions(const float& elapsedTime)
-{
-    // 攻撃判定が有効ではないのでここで終了
-    if (PlayerManager::Instance().GetPlayer()->GetIsAbleAttack() == false) return;
-
-    Player* player = PlayerManager::Instance().GetPlayer().get();
-    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
-
-    for (int playerDataIndex = 0; playerDataIndex < player->GetAttackDetectionDataCount(); ++playerDataIndex)
-    {
-        const AttackDetectionData playerData = player->GetAttackDetectionData(playerDataIndex);
-
-        for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetDamageDetectionDataCount(); ++enemyDataIndex)
-        {
-            const DamageDetectionData enemyData = enemy->GetDamageDetectionData(enemyDataIndex);
-
-            // 当たったかチェック
-            if (Collision::IntersectSphereVsSphere(
-                enemyData.GetPosition(), enemyData.GetRadius(),
-                playerData.GetPosition(), playerData.GetRadius()))
-            {
-                // 現在チェックしている敵のデータがまだあったってない場合
-                if (enemyData.GetIsHit() == false)
-                {
-                    // Hitフラグを立てる、このデータの無敵時間設定、ダメージ処理
-                    enemy->GetDamageDetectionData(enemyDataIndex).SetIsHit(true);
-                    enemy->GetDamageDetectionData(enemyDataIndex).SetHitTimer(0.01f);
-                    enemy->AddDamage(enemyData.GetDamage());
-
-                    // 攻撃当たった ( 攻撃判定を無くす )
-                    player->SetIsAbleAttack(false);
-
-                    if (player->GetCurrentState() == Player::STATE::CounterCombo)
-                    {
-                        Input::Instance().GetGamePad().Vibration(0.3f, 1.0f);
-                    }
-
-                    // TODO: ヒットストップ処理
-
-                    // 敵が生きていたらUI生成
-                    if (PlayerManager::Instance().GetUseCollisionDetection())
-                    {
-                        UINumber* ui = new UINumber(enemyData.GetDamage(), enemyData.GetPosition());
-                    }
-
-                    return;
-                }
-            }
-        }
-    }
-}
-
-// ----- プレイヤーのくらい判定 -----
-void GameScene::UpdatePlayerDamageCollisions(const float& elapsedTime)
-{
-    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
-    // 敵の攻撃判定が有効ではないのでここで終了
-    if (enemy->GetIsAttackActive() == false) return;
-
-    Player* player = PlayerManager::Instance().GetPlayer().get();
-    // 既にダメージ処理に入ってる。カウンターの無敵状態。
-    // の場合ここで終了
-    const Player::STATE playerCurrentState = player->GetCurrentState();
-    if (playerCurrentState == Player::STATE::Damage ||
-        playerCurrentState == Player::STATE::CounterCombo ||
-        player->GetIsAbleCounterAttack())
-    {
-        return;
-    }
-
-    // 現在無敵状態なのでここで終了
-    if (player->GetIsInvincible()) return;
-
-    // くらい判定 (吹っ飛ばされる怯み)
-    for (int playerDataIndex = 0; playerDataIndex < player->GetDamageDetectionDataCount(); ++playerDataIndex)
-    {
-        const DamageDetectionData playerData = player->GetDamageDetectionData(playerDataIndex);
-
-        for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetAttackDetectionDataCount(); ++enemyDataIndex)
-        {
-            const AttackDetectionData enemyData = enemy->GetAttackDetectionData(enemyDataIndex);
-
-            // 敵の攻撃判定が現在有効ではないので処理をしない
-            if (enemyData.GetIsActive() == false) continue;
-
-            // 当たったかチェック
-            if (Collision::IntersectSphereVsSphere(
-                enemyData.GetPosition(), enemyData.GetRadius(),
-                playerData.GetPosition(), playerData.GetRadius()))
-            {
-                if (player->GetIsCounter() && player->GetCurrentState() == Player::STATE::Counter)
-                {
-                    player->SetIsAbleCounterAttack(true);
-                }
-                // プレイヤーが現在DamageStateではない場合DamageStateへ
-                else
-                {
-                    player->ChangeState(Player::STATE::Damage);
-                }
-            }
-        }
-    }
-
-    if (player->GetCurrentState() == Player::STATE::Damage) return;
-
-    // 弱怯み
-    for (int playerDataIndex = 0; playerDataIndex < player->GetDamageDetectionDataCount(); ++playerDataIndex)
-    {
-        const DamageDetectionData playerData = player->GetDamageDetectionData(playerDataIndex);
-
-        for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetFlinchDetectionDataCount(); ++enemyDataIndex)
-        {
-            const AttackDetectionData enemyData = enemy->GetFlinchDetectionData(enemyDataIndex);
-
-            // 敵の攻撃判定が現在有効ではないので処理をしない
-            if (enemyData.GetIsActive() == false) continue;
-
-            // 当たったかチェック
-            if (Collision::IntersectSphereVsSphere(
-                enemyData.GetPosition(), enemyData.GetRadius(),
-                playerData.GetPosition(), playerData.GetRadius()))
-            {
-                player->ChangeState(Player::STATE::LightFlinch);
-            }
-        }
-    }
-
 
 }
 

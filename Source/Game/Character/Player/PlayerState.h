@@ -31,8 +31,6 @@ namespace PlayerState
     private:
         float attackStartFrame_ = 0.0f;     // 攻撃判定有効スタートフレーム
         float attackEndFrame_   = 0.0f;     // 攻撃判定有効エンドフレーム
-        bool  isAttacked_       = false;    // 攻撃したか
-        bool  isFirstTime_      = false;    // 攻撃判定有効フレームに入った一回目のフレームかどうか
     };
 
     struct GamePadVibration

@@ -166,7 +166,11 @@ public:// --- 取得・設定 ---
     // ----- カウンター(追加の)攻撃が可能か -----
     [[nodiscard]] const bool GetIsAbleCounterAttack() const { return isAbleCounterAttack_; }
     void SetIsAbleCounterAttack(const bool& flag) { isAbleCounterAttack_ = flag; }
+    
     // ----- 攻撃判定 -----
+    [[nodiscard]] const bool GetIsAttackValid() const { return isAttackValid_; }
+    void SetIsAttackValid(const bool& flag) { isAttackValid_ = flag; }
+
     [[nodiscard]] const bool GetIsAbleAttack() const { return isAbleAttack_; }
     void SetIsAbleAttack(const bool& flag) { isAbleAttack_ = flag; }
 
@@ -207,6 +211,8 @@ private:
     bool isAvoidance_           = false;            // 回避
     bool isCounter_             = false;            // カウンター状態か
     bool isAbleCounterAttack_   = false;            // カウンター攻撃が可能か( 追加の )
+    
+    bool isAttackValid_         = false;            // 攻撃が有効か
     bool isAbleAttack_          = false;            // 攻撃可能か
 
     // ---------- カウンター有効範囲 ----------

@@ -41,31 +41,16 @@ namespace PlayerState
     {
         attackStartFrame_ = startFrame;
         attackEndFrame_ = endFrame;
-        isAttacked_ = false;
-        isFirstTime_ = true;
     }
 
     // ----- 更新 -----
     bool AttackData::Update(const float& animationFrame, const bool& flag)
     {
-        // 既に攻撃しているのでここで終了
-        if (isAttacked_) return false;
-
         // 攻撃スタートフレームに達していないので終了
         if (animationFrame < attackStartFrame_) return false;
 
         // 攻撃エンドフレームを越しているのでここで終了
         if (animationFrame > attackEndFrame_) return false;
-
-        // 攻撃が当たったので終了
-        if (isFirstTime_ == false && flag == false)
-        {
-            isAttacked_ = true;
-            return false;
-        }        
-
-        // 一度通ったので false にする
-        isFirstTime_ = false;
 
         return true;
     }
@@ -106,11 +91,11 @@ namespace PlayerState
     // ----- 初期化 -----
     void IdleState::Initialize()
     {
-        // アニメーション設定
-        SetAnimation();
-
         // フラグをリセットする
         owner_->ResetFlags();
+
+        // アニメーション設定
+        SetAnimation();
     }
 
     // ----- 更新 -----
@@ -186,10 +171,11 @@ namespace PlayerState
     // ----- 初期化 -----
     void WalkState::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション設定
         SetAnimation();
-
-        owner_->ResetFlags();
 
         // 最大速度を設定
         owner_->SetMaxSpeed(2.5f);
@@ -279,10 +265,11 @@ namespace PlayerState
     // ----- 初期化 -----
     void RunState::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション設定
         SetAnimation();
-
-        owner_->ResetFlags();
 
         // 最大速度を設定
         owner_->SetMaxSpeed(5.0f);
@@ -389,6 +376,9 @@ namespace PlayerState
     // ----- 初期化 -----
     void LightFlinchState::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         owner_->PlayBlendAnimation(Player::Animation::KnockDownStart, false);
     }
 
@@ -414,6 +404,9 @@ namespace PlayerState
     // ----- 初期化 -----
     void FlinchState::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::KnockDownStart, false, 2.0f);
 
@@ -465,11 +458,15 @@ namespace PlayerState
     // ----- 初期化 -----
     void DamageState::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション再生 
         owner_->PlayAnimation(Player::Animation::HitLarge, false, 1.2f);
 
-        // フラグをリセットする
-        owner_->ResetFlags();
+        // 無敵状態にする
+        owner_->SetIsInvincible(true);
+
 
         // 変数初期化
         addForceData_.Initialize(0.1f, 0.3f, 0.5f);
@@ -541,6 +538,8 @@ namespace PlayerState
     // ----- 終了化 -----
     void DamageState::Finalize()
     {
+        // 無敵状態を解除する
+        owner_->SetIsInvincible(false);
     }
 
     // ----- アニメーションの速度設定 -----
@@ -592,6 +591,9 @@ namespace PlayerState
     // ----- 初期化 -----
     void DeathState::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         owner_->PlayBlendAnimation(Player::Animation::HitLarge, false, 1.0f, 0.2f);
         //owner_->PlayBlendAnimation(Player::Animation::KnockDownDeath, false, 1.0f, 0.5f);
         owner_->SetTransitionTime(0.3f);
@@ -619,6 +621,9 @@ namespace PlayerState
     // ----- 初期化 -----
     void AvoidanceState::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション設定
         SetAnimation();
 
@@ -627,9 +632,6 @@ namespace PlayerState
 
         // 無敵状態にする
         owner_->SetIsInvincible(true);
-
-        // フラグをリセットする
-        owner_->ResetFlags();
 
         // 変数初期化
         addForceData_.Initialize(0.15f, 0.27f, 0.4f);
@@ -1261,9 +1263,15 @@ namespace PlayerState
     // ----- 初期化 -----
     void CounterState::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::Counter, false);
         owner_->SetTransitionTime(0.1f);
+
+        // 攻撃可能にする
+        owner_->SetIsAbleAttack(true);
 
         // カウンター時カメラを使用する
         Camera::Instance().SetUseCounterCamera();
@@ -1281,9 +1289,6 @@ namespace PlayerState
         isCounterReaction = false;
 
         isTurnChecked_ = false;
-
-        // フラグをリセットする
-        owner_->ResetFlags();
 
         const DirectX::XMFLOAT3 pos = owner_->GetJointPosition("spine_02");
         Effect* counterEffect = EffectManager::Instance().GetEffect("Mikiri");
@@ -1358,9 +1363,9 @@ namespace PlayerState
         // 旋回処理
         Turn(elapsedTime);
 
-        // 攻撃判定
+        // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
-        owner_->SetIsAbleAttack(attackFlag);
+        owner_->SetIsAttackValid(attackFlag);
 
         // アニメーション再生終了
         //if(owner_->GetAnimationSeconds() > 1.0f)
@@ -1602,15 +1607,21 @@ namespace PlayerState
     // ----- 初期化 -----
     void CounterComboState::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション再生
         owner_->PlayBlendAnimation(Player::Animation::ParryCounterAttack1, false, 1.0f, 0.35f);        
+
+        // 攻撃可能にする
+        owner_->SetIsAbleAttack(true);
+
+        // 無敵状態にする
+        owner_->SetIsInvincible(true);
 
         // 変数初期化
         addForceData_.Initialize(0.35f, 0.3f, 1.0f);
         attackData_.Initialize(0.35f, 0.7f);
-
-        // フラグをリセットする
-        owner_->ResetFlags();
     }
 
     // ----- 更新 -----
@@ -1623,7 +1634,7 @@ namespace PlayerState
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
-        owner_->SetIsAbleAttack(attackFlag);
+        owner_->SetIsAttackValid(attackFlag);
 
         // アニメーション終了
         if (!owner_->IsPlayAnimation())
@@ -1636,6 +1647,8 @@ namespace PlayerState
     // ----- 終了化 -----
     void CounterComboState::Finalize()
     {
+        // 無敵状態にを解除する
+        owner_->SetIsInvincible(false);
     }
 }
 
@@ -1645,12 +1658,15 @@ namespace PlayerState
     // ----- 初期化 -----
     void RunAttackState::Initialize()
     {
+        // フラグリセット
+        owner_->ResetFlags();
+
         // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::RunAttack1, false, 1.0f, 0.2f);
         owner_->SetTransitionTime(0.1f);
 
-        // フラグリセット
-        owner_->ResetFlags();
+        // 攻撃可能にする
+        owner_->SetIsAbleAttack(true);
 
         // 変数初期化
         addForceData_.Initialize(0.2f, 0.4f, 1.0f);
@@ -1671,7 +1687,7 @@ namespace PlayerState
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
-        owner_->SetIsAbleAttack(attackFlag);
+        owner_->SetIsAttackValid(attackFlag);
 
         if (owner_->IsPlayAnimation() == false)
         {
@@ -1753,11 +1769,14 @@ namespace PlayerState
     // ----- 初期化 -----
     void ComboAttack0_0::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション設定
         SetAnimation();
 
-        // フラグリセット
-        owner_->ResetFlags();
+        // 攻撃可能にする
+        owner_->SetIsAbleAttack(true);
 
         // 変数初期化
         addForceData_.Initialize(0.15f, 0.2f, 1.0f);
@@ -1782,7 +1801,7 @@ namespace PlayerState
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
-        owner_->SetIsAbleAttack(attackFlag);
+        owner_->SetIsAttackValid(attackFlag);
 
         if (owner_->IsPlayAnimation() == false)
         {
@@ -1917,11 +1936,14 @@ namespace PlayerState
     // ----- 初期化 -----
     void ComboAttack0_1::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション設定
         SetAnimation();
 
-        // フラグリセット
-        owner_->ResetFlags();
+        // 攻撃可能にする
+        owner_->SetIsAbleAttack(true);
 
         // 変数初期化
         addForceData_.Initialize(0.05f, 0.25f, 1.0f);
@@ -1945,7 +1967,7 @@ namespace PlayerState
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
-        owner_->SetIsAbleAttack(attackFlag);
+        owner_->SetIsAttackValid(attackFlag);
 
         //if (owner_->IsPlayAnimation() == false)
         if(owner_->GetAnimationSeconds() > 1.0f)
@@ -2067,12 +2089,15 @@ namespace PlayerState
     // ----- 初期化 -----
     void ComboAttack0_2::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_2, false, 1.3f, 0.4f);
         owner_->SetTransitionTime(0.3f);
 
-        // フラグリセット
-        owner_->ResetFlags();
+        // 攻撃可能にする
+        owner_->SetIsAbleAttack(true);
 
         // 変数初期化
         addForceData_.Initialize(0.6f, 0.2f, 1.0f);
@@ -2096,7 +2121,7 @@ namespace PlayerState
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
-        owner_->SetIsAbleAttack(attackFlag);
+        owner_->SetIsAttackValid(attackFlag);
 
 
         if (owner_->IsPlayAnimation() == false)
@@ -2197,12 +2222,15 @@ namespace PlayerState
     // ----- 初期化 -----
     void ComboAttack0_3::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_3, false);
         owner_->SetTransitionTime(0.1f);
 
-        // フラグリセット
-        owner_->ResetFlags();
+        // 攻撃可能にする
+        owner_->SetIsAbleAttack(true);
 
         // 変数初期化
         addForceData_.Initialize(0.45f, 0.25f, 0.5f);
@@ -2239,7 +2267,7 @@ namespace PlayerState
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
-        owner_->SetIsAbleAttack(attackFlag);
+        owner_->SetIsAttackValid(attackFlag);
 
         // コントローラー＆カメラ 振動
         if (owner_->GetAnimationSeconds() > 0.8f && isVibration_ == false)

@@ -29,11 +29,7 @@ public:
 
     void DrawDebug()                        override; // ImGui—p
 
-    void UpdateCollisions(const float& elapsedTime);
-
 private:
-    void UpdatePlayerAttackCollisions(const float& elapsedTime);
-    void UpdatePlayerDamageCollisions(const float& elapsedTime);
     void UpdateCounterCollisions();
 
 public:
