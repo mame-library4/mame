@@ -36,6 +36,7 @@ void CollisionManager::UpdatePlayerVsEnemy()
     UpdatePlayerAttackVsEnemyDamage();
 
     // カウンター判定
+    CounterCheckEnemyAttack();
 
     // くらい判定
     UpdatePlayerDamageVsEnemyAttack();
@@ -209,6 +210,35 @@ void CollisionManager::UpdatePlayerCollisionVsEnemyCollision()
     }
 }
 
+// ----- 敵の攻撃に対するカウンター判定 -----
+void CollisionManager::CounterCheckEnemyAttack()
+{
+    Player* player = PlayerManager::Instance().GetPlayer().get();
+
+    // 現在のステートがカウンターではないのでここで終了
+    if (player->GetCurrentState() != Player::STATE::Counter) return;
+
+    // カウンターを受け付けていない
+    if (player->GetIsCounter() == false) return;
+
+    // 既にカウンター成功している
+    if (player->GetIsAbleCounterAttack()) return;
+
+    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
+
+    // 敵の攻撃判定が無効
+    if (enemy->GetIsAttackActive() == false) return;
+
+    const float distance = enemy->CalcDistanceToPlayer();
+    const float counterActiveRadius = player->GetCounterActiveRadius();
+
+    // カウンターが成功した
+    if (distance < counterActiveRadius)
+    {
+        player->SetIsAbleCounterAttack(true);
+    }
+}
+
 // ----- PlayerとProjectileの判定 -----
 void CollisionManager::UpdatePlayerVsProjectile()
 {
@@ -216,6 +246,7 @@ void CollisionManager::UpdatePlayerVsProjectile()
     //   ここから下の処理はプレイヤーから見た処理になっています
     // -------------------------------------------------------
     // カウンター判定
+    CounterCheckProjectile();
 
     // くらい判定
     UpdatePlayerDamageVsProjectileAttack();
@@ -261,6 +292,40 @@ void CollisionManager::UpdatePlayerDamageVsProjectileAttack()
         }
 
     }
+}
+
+// ----- 発射物に対するカウンター判定 -----
+void CollisionManager::CounterCheckProjectile()
+{
+    Player* player = PlayerManager::Instance().GetPlayer().get();
+
+    // 現在のステートがカウンターではないのでここで終了
+    if (player->GetCurrentState() != Player::STATE::Counter) return;
+
+    // カウンターを受け付けていない
+    if (player->GetIsCounter() == false) return;
+
+    // 既にカウンター成功している
+    if (player->GetIsAbleCounterAttack()) return;
+
+    const DirectX::XMFLOAT3 playerPosition = player->GetTransform()->GetPosition();
+
+    std::vector<Projectile*> projectiles = ProjectileManager::Instance().GetProjectiles();
+    for (int projectileIndex = 0; projectileIndex < projectiles.size(); ++projectileIndex)
+    {
+        Projectile* projectile = projectiles.at(projectileIndex);
+        const DirectX::XMFLOAT3 projectilePosition = projectile->GetTransform()->GetPosition();
+        
+        // 範囲内にいるか判定
+        if (IntersectSphereVsSphere(
+            playerPosition, 0.0f,
+            projectilePosition, projectile->GetCounterRadius()))
+        {
+            // カウンター成功
+            player->SetIsAbleCounterAttack(true);
+        }
+    }
+
 }
 
 // ---------- 球と球の交差判定 ----------

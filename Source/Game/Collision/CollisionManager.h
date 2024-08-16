@@ -23,10 +23,11 @@ private:
     void UpdatePlayerAttackVsEnemyDamage();
     void UpdatePlayerDamageVsEnemyAttack();
     void UpdatePlayerCollisionVsEnemyCollision();
-    void UpdatePlayerCounterCollision() {}
+    void CounterCheckEnemyAttack();                 // 敵の攻撃に対するカウンター判定
 
     void UpdatePlayerVsProjectile();
     void UpdatePlayerDamageVsProjectileAttack();
+    void CounterCheckProjectile();                  // 発射物に対するカウンター判定
 
 private:// 判定用関数
 #pragma region ---------- 判定用関数 ----------

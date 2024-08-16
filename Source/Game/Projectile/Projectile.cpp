@@ -19,4 +19,5 @@ void Projectile::DrawDebug()
     Object::DrawDebug();
 
     ImGui::DragFloat("Radius", &radius_);
+    ImGui::DragFloat("CounterRadius", &counterRadius_);
 }

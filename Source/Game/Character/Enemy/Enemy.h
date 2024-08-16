@@ -102,6 +102,8 @@ public:
         FireBreathLeft,
         FireBreathRight,
 
+        TurnLeft,
+        TurnRight,
     };
 
 public:

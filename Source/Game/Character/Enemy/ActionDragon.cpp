@@ -905,9 +905,9 @@ namespace ActionDragon
         // 実行中ノードを中断するか
         if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
 
-        switch (owner_->GetStep())
+        switch (static_cast<STATE>(owner_->GetStep()))
         {
-        case 0:// 初期化
+        case STATE::Initialize:// 初期化
             // アニメーション設定
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::FireBreathLeft, false, 1.0f, 0.14f);
             owner_->SetTransitionTime(0.3f);
@@ -915,10 +915,11 @@ namespace ActionDragon
             // 変数初期化
             isCreateFireball_ = false;
 
-            owner_->SetStep(1);
+            // ステート変更
+            SetState(STATE::FirstAttack);
 
             break;
-        case 1:
+        case STATE::FirstAttack:
         {
             // 火球発射
             Launch(0.95f);
@@ -931,11 +932,12 @@ namespace ActionDragon
 
                 isCreateFireball_ = false;
 
-                owner_->SetStep(2);
+                // ステート変更
+                SetState(STATE::SecondAttack);
             }
         }
             break;
-        case 2:
+        case STATE::SecondAttack:
         {
             // 火球発射
             Launch(0.95f);
@@ -947,11 +949,12 @@ namespace ActionDragon
 
                 isCreateFireball_ = false;
 
-                owner_->SetStep(3);
+                // ステート変更
+                SetState(STATE::ThirdAttack);
             }
         }
             break;
-        case 3:
+        case STATE::ThirdAttack:
         {
             // 火球発射
             Launch(0.95f);

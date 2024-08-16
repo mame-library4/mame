@@ -17,11 +17,15 @@ public:// [Get, Set] Function
     [[nodiscard]] const float GetRadius() const { return radius_; }
     void SetRadius(const float& radius) { radius_ = radius; }
 
+    [[nodiscard]] const float GetCounterRadius() const { return counterRadius_; }
+    void SetCounterRadius(const float& radius) { counterRadius_ = radius; }
+
     [[nodiscard]] const int GetId() const { return id_; }
 
 private:
 
     float radius_ = 0.0f;
+    float counterRadius_ = 0.0f; // ƒJƒEƒ“ƒ^[”ÍˆÍ‚Ì”¼Œa
 
     int id_ = 0; // “o˜^”Ô†
 

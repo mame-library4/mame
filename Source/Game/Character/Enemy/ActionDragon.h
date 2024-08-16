@@ -258,6 +258,15 @@ namespace ActionDragon
         const ActionBase::State Run(const float& elapsedTime) override;
 
     private:
+        enum class STATE
+        {
+            Initialize,     // ‰Šú‰»
+            FirstAttack,    // ˆê”­–Ú
+            SecondAttack,   // “ñ”­–Ú
+            ThirdAttack,    // ŽO”­–Ú
+        };
+
+        void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
         void Launch(const float& launchFrame);
 
     private:

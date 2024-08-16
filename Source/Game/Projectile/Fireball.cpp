@@ -25,6 +25,9 @@ void Fireball::Initialize()
     // 当たり判定の半径設定
     SetRadius(0.5f);
 
+    // カウンター判定用の半径設定
+    SetCounterRadius(2.0f);
+
     speed_ = 25.0f;
 }
 

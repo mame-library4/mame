@@ -108,8 +108,8 @@ private:
     // ---------- カウンター攻撃時のカメラ更新 ----------
     [[nodiscard]] const bool UpdateCounterAttackCamera(const float& elapsedTime);
 
-    void SetState(const EnemyDeathCamera& state)    { state_ = static_cast<int>(state); }
-    void SetState(const CounterAttackCamera& state) { state_ = static_cast<int>(state); }
+    void SetState(const EnemyDeathCamera& state)    { enemyDeathstate_ = static_cast<int>(state); }
+    void SetState(const CounterAttackCamera& state) { playerCounterStae_ = static_cast<int>(state); }
 
 private:
     Transform           transform_          = {};
@@ -147,7 +147,10 @@ private:
     float               vibrationTimer_         = 0.0f; // 振動時間を測るタイマー
 
     // ---------- 特殊な動き制御用 ----------    
-    int     state_                  = 0;
+    int     playerDeathState_       = 0;
+    int     playerCounterStae_      = 0;
+    int     enemyDeathstate_        = 0;
+
     float   easingTimer_            = 0.0f;
     bool    useEnemyDeathCamera_    = false; // 敵死亡カメラ
     bool    usePlayerDeathCamera_   = false; // 自機死亡カメラ

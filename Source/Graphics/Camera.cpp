@@ -15,7 +15,9 @@ void Camera::Initialize()
 {
     useEnemyDeathCamera_ = false;
 
-    state_ = 0;
+    enemyDeathstate_ = 0;
+    playerDeathState_ = 0;
+    playerCounterStae_ = 0;
 
 
     GetTransform()->SetRotationY(DirectX::XMConvertToRadians(180));
@@ -41,7 +43,6 @@ void Camera::Update(const float& elapsedTime)
 
     const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
     Camera::Instance().SetTarget(cameraTargetPosition);
-    //return;
 
     // ドラゴンの上昇攻撃のカメラ更新
     //if (UpdateRiseAttackCamera(elapsedTime)) return;
@@ -241,14 +242,14 @@ const DirectX::XMFLOAT3 Camera::CalcRight()
 void Camera::SetUseEnemyDeathCamera()
 {
     useEnemyDeathCamera_ = true;
-    state_ = 0;
+    enemyDeathstate_ = 0;
 }
 
 // ----- カウンター時カメラを使用する -----
 void Camera::SetUseCounterCamera()
 {
     useCounterCamera_ = true;
-    state_ = 0;
+    playerCounterStae_ = 0;
 }
 
 // ----- 敵死亡時カメラ -----
@@ -259,10 +260,10 @@ const bool Camera::UpdateEnemyDeathCamera(const float& elapsedTime)
 
     Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
 
-    std::string nodeName = (state_ >= 3) ? "root" : "Dragon15_spine2";
+    std::string nodeName = (enemyDeathstate_ >= 3) ? "root" : "Dragon15_spine2";
     target_ = enemy->GetJointPosition(nodeName);
 
-    switch (static_cast<EnemyDeathCamera>(state_))
+    switch (static_cast<EnemyDeathCamera>(enemyDeathstate_))
     {
     case EnemyDeathCamera::Initialize:// 初期化
 #pragma region ---------- 初期化 ----------
@@ -530,7 +531,7 @@ const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
 
     Player* player = PlayerManager::Instance().GetPlayer().get();
 
-    switch (static_cast<CounterAttackCamera>(state_))
+    switch (static_cast<CounterAttackCamera>(playerCounterStae_))
     {
     case CounterAttackCamera::CounterInitialize:// カウンター初期化
         // 現在のカメラ項目を保存する
