@@ -467,7 +467,6 @@ namespace PlayerState
         // –³“Gó‘Ô‚É‚·‚é
         owner_->SetIsInvincible(true);
 
-
         // •Ï”‰Šú‰»
         addForceData_.Initialize(0.1f, 0.3f, 0.5f);
         isFirstAnimation_ = true;

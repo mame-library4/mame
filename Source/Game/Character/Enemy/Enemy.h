@@ -179,6 +179,10 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const bool GetUseRootMotion() const { return useRootMotion_; }
     void SetUseRootMotion(const bool& flag) { useRootMotion_ = flag; }
 
+    // ----- 攻撃ダメージ -----
+    [[nodiscard]] const bool GetAttackDamage() const { return attackDamage_; }
+    void SetAttackDamage(const bool& damage) { attackDamage_ = damage; }
+
 #pragma endregion [Get, Set] Function
 
     [[nodiscard]] const std::string GetActiveNodeName() const { return (activeNode_ != nullptr) ? activeNode_->GetName() : ""; }
@@ -220,7 +224,7 @@ protected:
     float               nearAttackRadius_       = 15.0f; // 近距離攻撃開始範囲
     float               comboFlyAttackRadius_   = 8.5f;  // ３連続たたきつけ攻撃   
 
-    
+    float attackDamage_ = 0.0f; // 攻撃ダメージ
 
     DirectX::XMFLOAT3 movePosition_ = {}; // 移動先位置
 
