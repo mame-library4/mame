@@ -180,8 +180,8 @@ public:// --- 取得・設定 ---
     void SetUseRootMotion(const bool& flag) { useRootMotion_ = flag; }
 
     // ----- 攻撃ダメージ -----
-    [[nodiscard]] const bool GetAttackDamage() const { return attackDamage_; }
-    void SetAttackDamage(const bool& damage) { attackDamage_ = damage; }
+    [[nodiscard]] const float GetAttackDamage() const { return attackDamage_; }
+    void SetAttackDamage(const float& damage) { attackDamage_ = damage; }
 
 #pragma endregion [Get, Set] Function
 

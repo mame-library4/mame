@@ -14,6 +14,10 @@ public:
     virtual void DrawDebug();
 
 public:// [Get, Set] Function
+    // ----- Damage -----
+    [[nodiscard]] const float GetDamage() const { return damage_; }
+    void SetDamage(const float& damage) { damage_ = damage; }
+    
     [[nodiscard]] const float GetRadius() const { return radius_; }
     void SetRadius(const float& radius) { radius_ = radius; }
 
@@ -23,6 +27,8 @@ public:// [Get, Set] Function
     [[nodiscard]] const int GetId() const { return id_; }
 
 private:
+
+    float damage_ = 0.0f;
 
     float radius_ = 0.0f;
     float counterRadius_ = 0.0f; // カウンター範囲の半径

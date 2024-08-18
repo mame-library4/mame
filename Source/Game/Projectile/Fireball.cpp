@@ -28,6 +28,9 @@ void Fireball::Initialize()
     // カウンター判定用の半径設定
     SetCounterRadius(2.0f);
 
+    // ダメージ設定
+    SetDamage(40);
+
     speed_ = 25.0f;
 }
 

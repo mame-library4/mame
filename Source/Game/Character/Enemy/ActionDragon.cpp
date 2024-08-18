@@ -11,7 +11,6 @@
 #include "Projectile/Fireball.h"
 
 
-
 // ----- GamePadVibration -----
 namespace ActionDragon
 {
@@ -598,6 +597,9 @@ namespace ActionDragon
             // アニメーション設定
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackFly0, false);
 
+            // ダメージ設定
+            owner_->SetAttackDamage(50.0f);
+
             // ルートモーションは使わない
             owner_->SetUseRootMotion(false);
 
@@ -769,6 +771,9 @@ namespace ActionDragon
             // ルートモーションを使用する
             owner_->SetUseRootMotion(true);
 
+            // ダメージ設定
+            owner_->SetAttackDamage(50.0f);
+
             // 変数初期化
             {
                 loopMax_ = rand() % 3;
@@ -867,6 +872,9 @@ namespace ActionDragon
         case 0:// 初期化
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::FireBreathFront, false);
 
+            // ダメージ設定
+            owner_->SetAttackDamage(50.0f);
+            
             // 変数初期化
             isCreateFireball_ = false;
 
@@ -911,6 +919,9 @@ namespace ActionDragon
             // アニメーション設定
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::FireBreathLeft, false, 1.0f, 0.14f);
             owner_->SetTransitionTime(0.3f);
+
+            // ダメージ設定
+            owner_->SetAttackDamage(50.0f);
 
             // 変数初期化
             isCreateFireball_ = false;
@@ -1009,6 +1020,9 @@ namespace ActionDragon
         case STATE::Initialize:// 初期化
             // アニメーション再生
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackComboSlam0, false);
+
+            // ダメージ設定
+            owner_->SetAttackDamage(50.0f);
 
             // ルートモーションを使用する
             owner_->SetUseRootMotion(true);
@@ -1113,6 +1127,9 @@ namespace ActionDragon
 
             // ルートモーションを使用する
             owner_->SetUseRootMotion(true);
+
+            // ダメージ設定
+            owner_->SetAttackDamage(50.0f);
 
             // 変数初期化
             addForceData_.Initialize(1.0f, 0.4f, 1.0f);
@@ -1237,6 +1254,9 @@ namespace ActionDragon
             // アニメーション設定
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurnStart, false);
 
+            // ダメージ設定
+            owner_->SetAttackDamage(50.0f);
+
             // ルートモーションを使用する
             owner_->SetUseRootMotion(true);
 
@@ -1305,6 +1325,9 @@ namespace ActionDragon
         case STATE::Initialize:// 初期化
             // アニメーション設定
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTackle0, false);
+
+            // ダメージ設定
+            owner_->SetAttackDamage(50.0f);
 
             // ルートモーション使用
             owner_->SetUseRootMotion(true);
@@ -1440,6 +1463,9 @@ namespace ActionDragon
         {
         case 0:// 初期化
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackRise, false);
+
+            // ダメージ設定
+            owner_->SetAttackDamage(50.0f);
 
             // 変数初期化
             addForceData_.Initialize(1.9f, 1.5f, 2.0f);

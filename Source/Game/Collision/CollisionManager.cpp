@@ -147,6 +147,7 @@ void CollisionManager::UpdatePlayerDamageVsEnemyAttack()
                 }
 
                 // ƒ_ƒ[ƒW‚ð—^‚¦‚é
+                int damage = enemy->GetAttackDamage();
                 player->AddDamage(enemy->GetAttackDamage());
 
                 // HP‚ª‚Ü‚¾‚ ‚é‚Ì‚ÅDamageState‚É‘JˆÚ
@@ -297,8 +298,19 @@ void CollisionManager::UpdatePlayerDamageVsProjectileAttack()
                     return;
                 }
 
-                // DamageState‚É‘JˆÚ
-                player->ChangeState(Player::STATE::Damage);
+                // ƒ_ƒ[ƒW‚ð—^‚¦‚é
+                player->AddDamage(projectile->GetDamage());
+
+                // HP‚ª‚Ü‚¾‚ ‚é‚Ì‚ÅDamageState‚É‘JˆÚ
+                if (player->GetHealth() > 0.0f)
+                {
+                    player->ChangeState(Player::STATE::Damage);
+                }
+                // HP‚ª‚à‚¤‚È‚¢‚Ì‚ÅDeathState‚É‘JˆÚ
+                else
+                {
+                    player->ChangeState(Player::STATE::Death);
+                }
                 return;
             }
         }

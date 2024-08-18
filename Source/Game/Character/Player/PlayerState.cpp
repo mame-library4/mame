@@ -596,6 +596,9 @@ namespace PlayerState
         owner_->PlayBlendAnimation(Player::Animation::HitLarge, false, 1.0f, 0.2f);
         //owner_->PlayBlendAnimation(Player::Animation::KnockDownDeath, false, 1.0f, 0.5f);
         owner_->SetTransitionTime(0.3f);
+
+        // Ž€–S‚µ‚½‚Ì‚Å–³“Gó‘Ô‚É‚·‚é
+        owner_->SetIsInvincible(true);
     }
 
     // ----- XV -----
@@ -611,6 +614,7 @@ namespace PlayerState
     // ----- I—¹‰» -----
     void DeathState::Finalize()
     {
+        owner_->SetIsInvincible(false);
     }
 }
 
