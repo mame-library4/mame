@@ -628,17 +628,10 @@ const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
     {
         const float totalFrame = 0.17f;
 
-        length_ = Easing::InSine(easingTimer_, totalFrame, 4.5f, oldLength_);
-
-        const float maxRotateX = oldRotate_.x + DirectX::XMConvertToRadians(3.0f);
-        const float rotateX = Easing::InSine(easingTimer_, totalFrame, maxRotateX, oldRotate_.x);
-        GetTransform()->SetRotationX(rotateX);
-
-
         easingTimer_ += elapsedTime;
         easingTimer_ = min(easingTimer_, totalFrame);
 
-#if 0
+#if 1
         length_ = Easing::InSine(easingTimer_, totalFrame, 4.5f, oldLength_);
 
         const float maxRotateX = oldRotate_.x + DirectX::XMConvertToRadians(3.0f);
