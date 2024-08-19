@@ -50,7 +50,7 @@ public:
         AttackFly1,     // 空中待機
         AttackFly2,     // たたきつけ攻撃
 
-        AttackFront,
+        FireBreathFront,
 
         BackStepRoar,   // バックステップ後,咆哮
 
@@ -98,9 +98,12 @@ public:
         AttackMove0,
         AttackMove1,
         AttackMove2,
-        AttackMove3,
-        AttackMove4,
+        
+        FireBreathLeft,
+        FireBreathRight,
 
+        TurnLeft,
+        TurnRight,
     };
 
 public:
@@ -150,6 +153,9 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const float GetNearAttackRadius() const { return nearAttackRadius_; }
     void SetNearAttackRadius(const float& radius) { nearAttackRadius_ = radius; }
 
+    [[nodiscard]] const float GetComboFlyAttackRadius() const { return comboFlyAttackRadius_; }
+    void SetComboFlyAttackRadius(const float& radius) { comboFlyAttackRadius_ = radius; }
+
     // ----- 移動先位置 -----
     [[nodiscard]] const DirectX::XMFLOAT3 GetMovePosition() const { return movePosition_; }
     void SetMovePosition(const DirectX::XMFLOAT3& movePos) { movePosition_ = movePos; }
@@ -173,15 +179,20 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const bool GetUseRootMotion() const { return useRootMotion_; }
     void SetUseRootMotion(const bool& flag) { useRootMotion_ = flag; }
 
+    // ----- 攻撃ダメージ -----
+    [[nodiscard]] const float GetAttackDamage() const { return attackDamage_; }
+    void SetAttackDamage(const float& damage) { attackDamage_ = damage; }
+
 #pragma endregion [Get, Set] Function
 
     [[nodiscard]] const std::string GetActiveNodeName() const { return (activeNode_ != nullptr) ? activeNode_->GetName() : ""; }
 
     // ---------- 攻撃判定 ----------
-    virtual void ResetAllAttackActiveFlag()                         = 0; // 全攻撃判定無効化
-    virtual void SetTurnAttackActiveFlag(const bool& flag = true)   = 0; // 回転攻撃
-    virtual void SetTackleAttackActiveFlag(const bool& flag = true) = 0; // 突進攻撃
-    virtual void SetFlyAttackActiveFlag(const bool& flag = true)    = 0; // 上昇攻撃
+    virtual void ResetAllAttackActiveFlag()                             = 0; // 全攻撃判定無効化
+    virtual void SetTurnAttackActiveFlag(const bool& flag = true)       = 0; // 回転攻撃
+    virtual void SetTackleAttackActiveFlag(const bool& flag = true)     = 0; // 突進攻撃
+    virtual void SetFlyAttackActiveFlag(const bool& flag = true)        = 0; // 上昇攻撃
+    virtual void SetComboSlamAttackActiveFlag(const bool& flag = true)  = 0; // たたきつけ攻撃
 
     // ---------- 押し出し判定 ----------
     virtual void SetDownCollisionActiveFlag(const bool& flag = true) = 0;
@@ -189,10 +200,17 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const bool GetIsStageCollisionJudgement() const { return isStageCollisionJudgement_; }
     void SetIsStageCollisionJudgement(const bool& flag) { isStageCollisionJudgement_ = flag; }
 
+    // ---------- 怯み判定用データ ----------
+    [[nodiscard]] const int GetFlinchDetectionDataCount() const { return flinchDetectionData_.size(); }
+    std::vector<AttackDetectionData> GetFlinchDetectionData() { return flinchDetectionData_; }
+    AttackDetectionData& GetFlinchDetectionData(const int& index) { return flinchDetectionData_.at(index); }
+
 protected:
     std::unique_ptr<BehaviorTree>   behaviorTree_;
     std::unique_ptr<BehaviorData>   behaviorData_;
     NodeBase*                       activeNode_ = nullptr;
+
+    std::vector<AttackDetectionData> flinchDetectionData_; // 怯み判定用データ
 
     int     step_       = 0;        // 行動ステップ
     bool    isFlinch_   = false;    // ひるみフラグ
@@ -202,9 +220,11 @@ protected:
 
     // ---------- 戦闘判定範囲変数 ----------
     float               battleRadius_       = 20.0f;// 戦闘開始範囲
-    float               nearAttackRadius_   = 10.0f;// 近距離攻撃開始範囲
-
     
+    float               nearAttackRadius_       = 15.0f; // 近距離攻撃開始範囲
+    float               comboFlyAttackRadius_   = 8.5f;  // ３連続たたきつけ攻撃   
+
+    float attackDamage_ = 0.0f; // 攻撃ダメージ
 
     DirectX::XMFLOAT3 movePosition_ = {}; // 移動先位置
 

@@ -3,6 +3,8 @@
 #include "Graphics.h"
 #include "Camera.h"
 
+#include "Effect/EffectManager.h"
+
 // ----- コンストラクタ -----
 Player::Player()
     : Character("./Resources/Model/Character/Player/SwordGirl.gltf", 0.01f),
@@ -17,6 +19,7 @@ Player::Player()
         //GetStateMachine()->RegisterState(new PlayerState::MoveState(this));             // 移動
         GetStateMachine()->RegisterState(new PlayerState::WalkState(this));
         GetStateMachine()->RegisterState(new PlayerState::RunState(this));
+        GetStateMachine()->RegisterState(new PlayerState::LightFlinchState(this));
         GetStateMachine()->RegisterState(new PlayerState::FlinchState(this));
         GetStateMachine()->RegisterState(new PlayerState::DamageState(this));           // ダメージ
         GetStateMachine()->RegisterState(new PlayerState::DeathState(this));            // 死亡
@@ -86,6 +89,20 @@ void Player::Update(const float& elapsedTime)
     
     // アニメーション更新 [※ステートマシン更新後]
     Character::Update(elapsedTime);
+
+    // TODO:テスト用
+    if (GetHealth() <= 0.0f)
+    {
+        if (GetCurrentState() != STATE::Death)
+        {
+            ChangeState(STATE::Death);
+        }
+
+        // 剣の座標更新
+        UpdateSwordTransform();
+
+        return;
+    }
 
     // 移動処理
     Move(elapsedTime);
@@ -210,7 +227,7 @@ void Player::Turn(const float& elapsedTime)
         playerForward = XMFloat2Normalize(playerForward);
 
         // 外積をしてどちらに回転するのかを判定する
-        float forwardCorss = XMFloat2Cross(cameraForward, playerForward);
+        float forwardCross = XMFloat2Cross(cameraForward, playerForward);
 
         // 内積で回転幅を算出
         float forwardDot = XMFloat2Dot(cameraForward, playerForward) - 1.0f;
@@ -222,7 +239,7 @@ void Player::Turn(const float& elapsedTime)
         float rotateY = forwardDot * speed;      
         rotateY = std::min(rotateY, -0.7f * speed);
 
-        if (forwardCorss > 0)
+        if (forwardCross > 0)
         {
             GetTransform()->AddRotationY(rotateY);
         }
@@ -339,6 +356,8 @@ void Player::RegisterCollisionData()
         { "head",       0.2f, {} },
         { "spine_02",   0.2f, {} },
         { "pelvis",     0.2f, {} },
+        
+        { "hand_r",     0.05f, 0.0f, {-50, -13, 50} },
     };
     for (int i = 0; i < _countof(damageDetectionData); ++i)
     {
@@ -384,7 +403,7 @@ void Player::UpdateCollisions(const float& elapsedTime)
     for (DamageDetectionData& data : damageDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
+        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), data.GetOffsetPosition()));
 
         data.Update(elapsedTime);
     }
@@ -392,7 +411,7 @@ void Player::UpdateCollisions(const float& elapsedTime)
     for (AttackDetectionData& data : attackDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
+        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), data.GetOffsetPosition()));
     }
 
     // 押し出し判定更新
@@ -405,7 +424,7 @@ void Player::UpdateCollisionDetectionData()
     for (CollisionDetectionData& data : collisionDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        DirectX::XMFLOAT3 pos = GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition());
+        DirectX::XMFLOAT3 pos = GetJointPosition(data.GetUpdateName(), data.GetOffsetPosition());
 
         if (data.GetFixedY()) pos.y = 0.0f;
 

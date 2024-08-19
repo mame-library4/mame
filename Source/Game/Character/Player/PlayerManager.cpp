@@ -1,10 +1,4 @@
 #include "PlayerManager.h"
-#include "../Enemy/EnemyManager.h"
-#include "../Game/Collision/Collision.h"
-#include "../Other/MathHelper.h"
-
-#include "UI/UINumber.h"
-#include "UI/UIManager.h"
 
 // ----- ‰Šúİ’è -----
 void PlayerManager::Initialize()

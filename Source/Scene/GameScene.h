@@ -7,6 +7,8 @@
 
 #include "Stone/Stone.h"
 
+#include "Effect/Effect.h"
+
 class GameScene : public BaseScene
 {
 public:
@@ -27,11 +29,7 @@ public:
 
     void DrawDebug()                        override; // ImGui—p
 
-    void UpdateCollisions(const float& elapsedTime);
-
 private:
-    void UpdatePlayerAttackCollisions(const float& elapsedTime);
-    void UpdatePlayerDamageCollisions(const float& elapsedTime);
     void UpdateCounterCollisions();
 
 public:
@@ -46,10 +44,13 @@ private:
 
     std::unique_ptr<StageNormal> stage_;
 
-    bool isDebugRenderer_ = true;
+    bool isDebugRenderer_ = false;
+    //bool isDebugRenderer_ = true;
 
     std::unique_ptr<Particles> particles_;
 
     std::unique_ptr<Stone> stone_;
+
+    //std::unique_ptr<Effect> effect_;
 };
 

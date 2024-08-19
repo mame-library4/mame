@@ -14,6 +14,7 @@ const bool DeathJudgment::Judgment()
 // ----- ‚Ğ‚é‚İ”»’è -----
 const bool FlinchJudgment::Judgment()
 {
+    //return true;
     return owner_->GetIsFlinch();
 }
 
@@ -82,4 +83,11 @@ const bool NearJudgment::Judgment()
     }
 }
 
+const bool ComboFlySlamJudgment::Judgment()
+{
+    const float distance = owner_->CalcDistanceToPlayer();
 
+    if (distance > owner_->GetComboFlyAttackRadius()) return true;
+
+    return false;
+}

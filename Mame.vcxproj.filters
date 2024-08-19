@@ -2,31 +2,31 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="External\imgui\imgui.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>External\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="External\imgui\imgui_demo.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>External\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="External\imgui\imgui_draw.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>External\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="External\imgui\imgui_impl_dx11.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>External\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="External\imgui\imgui_impl_win32.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>External\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="External\imgui\imgui_ja_gryph_ranges.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>External\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="External\imgui\imgui_tables.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>External\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="External\imgui\imgui_widgets.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>External\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="External\imgui\ImGuiCtrl.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>External\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="Source\Core\Application.cpp">
       <Filter>Mame\Core</Filter>
@@ -124,9 +124,6 @@
     <ClCompile Include="Source\Graphics\Effect\EffectManager.cpp">
       <Filter>Mame\Graphics\Effect</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Game\Collision\Collision.cpp">
-      <Filter>Mame\Game\Collision</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Game\Object.cpp">
       <Filter>Mame\Game\Object</Filter>
     </ClCompile>
@@ -205,35 +202,47 @@
     <ClCompile Include="Source\Game\Stone\StoneManager.cpp">
       <Filter>Mame\Game\Object\Stone</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\Projectile.cpp">
+      <Filter>Mame\Game\Object\Projectile</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\ProjectileManager.cpp">
+      <Filter>Mame\Game\Object\Projectile</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\Fireball.cpp">
+      <Filter>Mame\Game\Object\Projectile</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Collision\CollisionManager.cpp">
+      <Filter>Mame\Game\Collision</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
     <ClInclude Include="External\imgui\imconfig.h">
-      <Filter>ImGui</Filter>
+      <Filter>External\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="External\imgui\imgui.h">
-      <Filter>ImGui</Filter>
+      <Filter>External\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="External\imgui\imgui_impl_dx11.h">
-      <Filter>ImGui</Filter>
+      <Filter>External\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="External\imgui\imgui_impl_win32.h">
-      <Filter>ImGui</Filter>
+      <Filter>External\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="External\imgui\imgui_internal.h">
-      <Filter>ImGui</Filter>
+      <Filter>External\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="External\imgui\ImGuiCtrl.h">
-      <Filter>ImGui</Filter>
+      <Filter>External\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="External\imgui\imstb_rectpack.h">
-      <Filter>ImGui</Filter>
+      <Filter>External\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="External\imgui\imstb_textedit.h">
-      <Filter>ImGui</Filter>
+      <Filter>External\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="External\imgui\imstb_truetype.h">
-      <Filter>ImGui</Filter>
+      <Filter>External\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\Application.h">
       <Filter>Mame\Core</Filter>
@@ -352,9 +361,6 @@
     <ClInclude Include="Source\Graphics\Effect\EffectManager.h">
       <Filter>Mame\Graphics\Effect</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\Collision\Collision.h">
-      <Filter>Mame\Game\Collision</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Game\Object.h">
       <Filter>Mame\Game\Object</Filter>
     </ClInclude>
@@ -439,6 +445,18 @@
     <ClInclude Include="Source\Game\Stone\StoneManager.h">
       <Filter>Mame\Game\Object\Stone</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\Projectile.h">
+      <Filter>Mame\Game\Object\Projectile</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\ProjectileManager.h">
+      <Filter>Mame\Game\Object\Projectile</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\Fireball.h">
+      <Filter>Mame\Game\Object\Projectile</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Collision\CollisionManager.h">
+      <Filter>Mame\Game\Collision</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -446,9 +464,6 @@
     </Filter>
     <Filter Include="Mame\Core">
       <UniqueIdentifier>{c40b3777-d072-4de1-b094-caed7142fc9a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ImGui">
-      <UniqueIdentifier>{576faab2-b681-4899-afde-5d4eab13b405}</UniqueIdentifier>
     </Filter>
     <Filter Include="Mame\Game">
       <UniqueIdentifier>{490b7ea1-ca74-4052-b94a-15ad302b2b07}</UniqueIdentifier>
@@ -569,6 +584,15 @@
     </Filter>
     <Filter Include="Mame\Game\Object\Stone">
       <UniqueIdentifier>{3071a3f6-12dd-4737-8fb0-07bb33436a43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External">
+      <UniqueIdentifier>{049396fd-0641-42b7-98c7-f0572ba20bd2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\ImGui">
+      <UniqueIdentifier>{576faab2-b681-4899-afde-5d4eab13b405}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\Object\Projectile">
+      <UniqueIdentifier>{29f0360d-2f8c-4006-a753-0d7005dc2a18}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

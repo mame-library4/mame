@@ -204,8 +204,6 @@ namespace ActionDragon
         float easingTimer_ = 0.0f;
         bool isDown_ = false;
         bool isRise_ = false;
-
-        bool isAttackActive_ = false;
     };
 
     // ノックバック行動
@@ -241,12 +239,38 @@ namespace ActionDragon
         const ActionBase::State Run(const float& elapsedTime) override;
     };
 
-    // 前方向攻撃行動
-    class FrontAttackAction : public ActionBase
+    // ブレス
+    class FireBreath : public ActionBase
     {
     public:
-        FrontAttackAction(Enemy* owner) : ActionBase(owner) {}
+        FireBreath(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+
+    private:
+        bool isCreateFireball_ = false;
+    };
+
+    // ブレス ( ３連撃 )
+    class FireBreathCombo : public ActionBase
+    {
+    public:
+        FireBreathCombo(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+
+    private:
+        enum class STATE
+        {
+            Initialize,     // 初期化
+            FirstAttack,    // 一発目
+            SecondAttack,   // 二発目
+            ThirdAttack,    // 三発目
+        };
+
+        void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
+        void Launch(const float& launchFrame);
+
+    private:
+        bool isCreateFireball_ = false;
     };
 
     // コンボたたきつけ行動
@@ -257,7 +281,42 @@ namespace ActionDragon
         const ActionBase::State Run(const float& elapsedTime) override;
 
     private:
+        enum class STATE
+        {
+            Initialize, // 初期化
+            Attack0,    // 攻撃一発目
+            Attack1,    // 攻撃二発目
+            Recovery,   // 後隙
+        };
+
+        void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
+
+    private:
         AddForceData addForceData_;
+    };
+
+    // コンボたたきつけ攻撃(軸合わせしてくる)
+    class ComboFlySlamAction : public ActionBase
+    {
+    public:
+        ComboFlySlamAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+
+    private:
+        enum class STATE
+        {
+            Initialize, // 初期化
+            Attack,     // たたきつけ攻撃
+            ComboJudge, // コンボ攻撃するか判定
+            Recovery,   // 後隙
+        };
+
+        void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
+
+    private:
+        AddForceData    addForceData_;
+        int             comboNum_       = 0;
+        const int       maxComboNum_    = 2; // 最大コンボ数
     };
 
     // コンボチャージ行動
@@ -287,7 +346,6 @@ namespace ActionDragon
 
     private:
         AddForceData addForceData_;
-        bool isAttackActive_ = false;
     };
 
     // タックル行動
@@ -311,8 +369,6 @@ namespace ActionDragon
     private:
         AddForceData addForceData_;
         float easingTimer_ = 0.0f;
-
-        bool isAttackActive_ = false;
     };
 
     // 上昇攻撃行動
@@ -335,14 +391,6 @@ namespace ActionDragon
     {
     public:
         MoveTurnAction(Enemy* owner) : ActionBase(owner) {}
-        const ActionBase::State Run(const float& elapsedTime) override;
-    };
-
-    // 移動攻撃行動
-    class MoveAttackAction : public ActionBase
-    {
-    public:
-        MoveAttackAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
     };
 }

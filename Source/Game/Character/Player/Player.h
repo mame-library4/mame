@@ -18,6 +18,7 @@ public:// --- 定数 ---
         //Move,           // 移動
         Walk,
         Run,
+        LightFlinch,
         Flinch,
         Damage,         // ダメージ
         Death,          // 死亡
@@ -165,9 +166,17 @@ public:// --- 取得・設定 ---
     // ----- カウンター(追加の)攻撃が可能か -----
     [[nodiscard]] const bool GetIsAbleCounterAttack() const { return isAbleCounterAttack_; }
     void SetIsAbleCounterAttack(const bool& flag) { isAbleCounterAttack_ = flag; }
+    
     // ----- 攻撃判定 -----
+    [[nodiscard]] const bool GetIsAttackValid() const { return isAttackValid_; }
+    void SetIsAttackValid(const bool& flag) { isAttackValid_ = flag; }
+
     [[nodiscard]] const bool GetIsAbleAttack() const { return isAbleAttack_; }
     void SetIsAbleAttack(const bool& flag) { isAbleAttack_ = flag; }
+
+    // ----- 無敵判定 -----
+    [[nodiscard]] const bool GetIsInvincible() const { return isInvincible_; }
+    void SetIsInvincible(const bool& flag) { isInvincible_ = flag; }
 
     // ----- カウンター有効範囲 -----
     [[nodiscard]] const float GetCounterActiveRadius() const { return counterActiveRadius_; }
@@ -202,10 +211,15 @@ private:
     bool isAvoidance_           = false;            // 回避
     bool isCounter_             = false;            // カウンター状態か
     bool isAbleCounterAttack_   = false;            // カウンター攻撃が可能か( 追加の )
+    
+    bool isAttackValid_         = false;            // 攻撃が有効か
     bool isAbleAttack_          = false;            // 攻撃可能か
 
     // ---------- カウンター有効範囲 ----------
     float counterActiveRadius_   = 0.0f; // カウンター有効範囲
+
+    // ---------- 無敵 ----------
+    bool isInvincible_ = false;
 
     // ---------- Debug用 --------------------
     bool isCollisionSphere_ = true;
@@ -225,5 +239,4 @@ private:
     DirectX::XMFLOAT3 socketScale_ = { 1.0f, 1.0f, 1.0f };
 #endif  
     DirectX::XMFLOAT4X4 weaponWorld_;
-
 };

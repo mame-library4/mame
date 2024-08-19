@@ -51,6 +51,7 @@ void EnemyDragon::Initialize()
     SetTurnAttackActiveFlag(false);
     SetTackleAttackActiveFlag(false);
     SetFlyAttackActiveFlag(false);
+    SetComboSlamAttackActiveFlag(false);
 
     // 押し出し判定
     SetDownCollisionActiveFlag(false);
@@ -107,6 +108,7 @@ void EnemyDragon::DrawDebug()
         if (ImGui::TreeNode("Judgment"))
         {
             ImGui::DragFloat("NearAttackRadius", &nearAttackRadius_);
+            ImGui::DragFloat("ComboFlyAttackRadius", &comboFlyAttackRadius_);
 
             ImGui::TreePop();
         }
@@ -125,6 +127,7 @@ void EnemyDragon::DrawDebug()
 void EnemyDragon::DebugRender(DebugRenderer* debugRenderer)
 {
     debugRenderer->DrawCylinder(GetTransform()->GetPosition(), nearAttackRadius_, 1.0f, { 0,1,0,1 });
+    debugRenderer->DrawCylinder(GetTransform()->GetPosition(), comboFlyAttackRadius_, 1.0f, { 0,1,1,1 });
 
     if (isCollisionSphere_)
     {
@@ -153,6 +156,15 @@ void EnemyDragon::DebugRender(DebugRenderer* debugRenderer)
             debugRenderer->DrawSphere(data.GetPosition(), data.GetRadius(), data.GetColor());
         }
     }
+
+    for (auto& data : GetFlinchDetectionData())
+    {
+        // 現在アクティブではないでの表示しない
+        if (data.GetIsActive() == false) continue;
+
+        debugRenderer->DrawSphere(data.GetPosition(), data.GetRadius(), {1,0,1,1});
+    }
+
 }
 
 // ----- Behavior登録 -----
@@ -182,25 +194,32 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Battle", "Far", 2, BehaviorTree::SelectRule::Random, nullptr, nullptr);
 #else
     behaviorTree_->AddNode("Battle", "Near",  1, BehaviorTree::SelectRule::Priority, new NearJudgment(this), nullptr);
-    behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Random, nullptr, nullptr);
+    //behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
 #endif
 
     //behaviorTree_->AddNode("Shout", "Roar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
     behaviorTree_->AddNode("Shout", "RoarLong",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarLongAction(this));
 
-    behaviorTree_->AddNode("Near", "TurnAttack",  0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
-    behaviorTree_->AddNode("Near", "FlyAttack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));
-    behaviorTree_->AddNode("Near", "ComboSlam",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));
     
-    behaviorTree_->AddNode("Near", "KnockBack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::KnockBackAction(this));
+    behaviorTree_->AddNode("Near", "ComboFlySlam",  0, BehaviorTree::SelectRule::None, new ComboFlySlamJudgment(this), new ActionDragon::ComboFlySlamAction(this));    
+    
+
+    behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
+
+    behaviorTree_->AddNode("MostNear", "TurnAttack",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
+    behaviorTree_->AddNode("MostNear", "FlyAttack",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));    
+    behaviorTree_->AddNode("MostNear", "ComboSlam",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));    
+    behaviorTree_->AddNode("MostNear", "KnockBack",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::KnockBackAction(this));
     
 
     
     //behaviorTree_->AddNode("Near", "BackStep",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::BackStepAction(this));
     //behaviorTree_->AddNode("Near", "Slam",        1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAction(this));
-    //behaviorTree_->AddNode("Near", "FrontAttack", 1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FrontAttackAction(this));
     //behaviorTree_->AddNode("Near", "ComboCharge", 1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboChargeAction(this));
 
+    behaviorTree_->AddNode("Far", "FireBreathCombo",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireBreathCombo(this));
+    behaviorTree_->AddNode("Far", "FireBreath",        0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireBreath(this));
     behaviorTree_->AddNode("Far", "Tackle",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
     behaviorTree_->AddNode("Far", "RiseAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RiseAttackAction(this));
     //behaviorTree_->AddNode("Far", "MoveTurn",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveTurnAction(this));
@@ -435,10 +454,47 @@ void EnemyDragon::RegisterCollisionData()
         { "FlyAttack_0", 1.0f, {}, "Dragon15_r_hand" },    // 11
         { "FlyAttack_1", 1.0f, {}, "Dragon15_l_hand" },    // 12
 
+        // ----- コンボたたきつけ攻撃 -----
+        { "ComboSlam_0", 0.8f, {}, "Dragon15_r_hand" },     // 13
+        { "ComboSlam_1", 0.8f, {}, "Dragon15_r_forearm" },  // 
+        { "ComboSlam_2", 0.7f, {}, "Dragon15_r_finger21" }, // 15
+
     };
     for (int i = 0; i < _countof(attackDetectionData); ++i)
     {
         RegisterAttackDetectionData(attackDetectionData[i]);
+    }
+
+    // 怯み判定登録
+    AttackDetectionData flinchDetectionData[] =
+    {
+        //// ----- 回転攻撃用 -----
+        //{ "TurnAttack_0", 1.0f, {}, "Dragon15_tail_00" }, // 0
+        //{ "TurnAttack_1", 1.0f, {}, "Dragon15_tail_01" }, // 
+        //{ "TurnAttack_2", 1.0f, {}, "Dragon15_tail_02" }, // 
+        //{ "TurnAttack_3", 1.0f, {}, "Dragon15_tail_03" }, // 
+        //{ "TurnAttack_4", 1.0f, {}, "Dragon15_tail_04" }, // 
+        //{ "TurnAttack_5", 1.0f, {}, "Dragon15_tail_05" }, // 5
+
+        //// ----- 突進攻撃用 -----
+        //{ "TackleAttack_0", 1.0f, {}, "Dragon15_neck_3" },  // 6
+        //{ "TackleAttack_1", 1.0f, {}, "Dragon15_neck_1" },  // 
+        //{ "TackleAttack_2", 1.0f, {}, "Dragon15_spine2" },  // 
+        //{ "TackleAttack_3", 1.0f, {}, "Dragon15_spine0" },  // 
+        //{ "TackleAttack_4", 1.0f, {}, "Dragon15_tail_00" }, // 10
+
+        //// ----- 空中からたたきつけ攻撃 -----
+        //{ "FlyAttack_0", 1.0f, {}, "Dragon15_r_hand" },    // 11
+        //{ "FlyAttack_1", 1.0f, {}, "Dragon15_l_hand" },    // 12
+
+        // ----- コンボたたきつけ攻撃 -----
+        { "ComboSlam_0", 1.0f, {}, "Dragon15_r_hand" },     // 13
+        { "ComboSlam_1", 1.0f, {}, "Dragon15_r_forearm" },  // 
+        { "ComboSlam_2", 1.0f, {}, "Dragon15_r_finger21" }, // 15
+    };
+    for (int i = 0; i < _countof(flinchDetectionData); ++i)
+    {
+        flinchDetectionData_.emplace_back(flinchDetectionData[i]);
     }
 }
 
@@ -448,7 +504,7 @@ void EnemyDragon::UpdateCollisions(const float& elapsedTime)
     for (DamageDetectionData& data : damageDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
+        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), data.GetOffsetPosition()));
 
         data.Update(elapsedTime);
     }
@@ -456,7 +512,7 @@ void EnemyDragon::UpdateCollisions(const float& elapsedTime)
     for (AttackDetectionData& data : attackDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition()));
+        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), data.GetOffsetPosition()));
     }
 
     for (int i = AttackData::TrunAttackStart; i <= AttackData::TackleAttackEnd; ++i)
@@ -472,12 +528,19 @@ void EnemyDragon::UpdateCollisions(const float& elapsedTime)
     for (CollisionDetectionData& data : collisionDetectionData_)
     {
         // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        DirectX::XMFLOAT3 pos = GetJointPosition(data.GetUpdateName(), GetScaleFactor(), data.GetOffsetPosition());
+        DirectX::XMFLOAT3 pos = GetJointPosition(data.GetUpdateName(), data.GetOffsetPosition());
         
         if(data.GetFixedY()) 
             pos.y = 0.0f;
 
         data.SetJointPosition(pos);
+    }
+
+
+    for (AttackDetectionData& data : flinchDetectionData_)
+    {
+        // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
+        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), data.GetOffsetPosition()));
     }
 }
 
@@ -526,6 +589,18 @@ void EnemyDragon::SetFlyAttackActiveFlag(const bool& flag)
     SetIsAttackActive(flag);
 
     for (int i = AttackData::FlyAttackStart; i <= AttackData::FlyAttackEnd; ++i)
+    {
+        GetAttackDetectionData(i).SetIsActive(flag);
+    }
+}
+
+// ----- コンボたたきつけ攻撃判定設定 -----
+void EnemyDragon::SetComboSlamAttackActiveFlag(const bool& flag)
+{
+    // 攻撃判定フラグをセットする
+    SetIsAttackActive(flag);
+
+    for (int i = AttackData::ComboSlamAttackStart; i <= AttackData::ComboSlamAttackEnd; ++i)
     {
         GetAttackDetectionData(i).SetIsActive(flag);
     }

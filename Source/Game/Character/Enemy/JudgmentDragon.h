@@ -71,3 +71,11 @@ public:
 private:
     int num_ = 0;
 };
+
+// ----- ‚R˜A‘±‚½‚½‚«‚Â‚¯UŒ‚ -----
+class ComboFlySlamJudgment : public JudgmentBase
+{
+public:
+    ComboFlySlamJudgment(Enemy* owner) : JudgmentBase(owner) {}
+    const bool Judgment() override;
+};

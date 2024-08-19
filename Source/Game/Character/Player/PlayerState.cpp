@@ -5,6 +5,7 @@
 #include "Easing.h"
 #include "MathHelper.h"
 #include "../Enemy/EnemyManager.h"
+#include "Effect/EffectManager.h"
 
 // ----- AddForceData -----
 namespace PlayerState
@@ -40,31 +41,16 @@ namespace PlayerState
     {
         attackStartFrame_ = startFrame;
         attackEndFrame_ = endFrame;
-        isAttacked_ = false;
-        isFirstTime_ = true;
     }
 
     // ----- 更新 -----
     bool AttackData::Update(const float& animationFrame, const bool& flag)
     {
-        // 既に攻撃しているのでここで終了
-        if (isAttacked_) return false;
-
         // 攻撃スタートフレームに達していないので終了
         if (animationFrame < attackStartFrame_) return false;
 
         // 攻撃エンドフレームを越しているのでここで終了
         if (animationFrame > attackEndFrame_) return false;
-
-        // 攻撃が当たったので終了
-        if (isFirstTime_ == false && flag == false)
-        {
-            isAttacked_ = true;
-            return false;
-        }        
-
-        // 一度通ったので false にする
-        isFirstTime_ = false;
 
         return true;
     }
@@ -83,17 +69,19 @@ namespace PlayerState
     }
 
     // ----- 更新 -----
-    void GamePadVibration::Update(const float& animationFrame)
+    const bool GamePadVibration::Update(const float& animationFrame)
     {
         // 既に振動させている
-        if (isVibraion_) return;
+        if (isVibraion_) return false;
 
         // 現在のアニメーションのフレームがスタートフレームまで達していない
-        if (animationFrame < startFrame_) return;
+        if (animationFrame < startFrame_) return false;
 
         // コントローラーを振動させる
         Input::Instance().GetGamePad().Vibration(time_, power_);
         isVibraion_ = true;
+
+        return true;
     }
 }
 
@@ -103,11 +91,11 @@ namespace PlayerState
     // ----- 初期化 -----
     void IdleState::Initialize()
     {
-        // アニメーション設定
-        SetAnimation();
-
         // フラグをリセットする
         owner_->ResetFlags();
+
+        // アニメーション設定
+        SetAnimation();
     }
 
     // ----- 更新 -----
@@ -183,10 +171,11 @@ namespace PlayerState
     // ----- 初期化 -----
     void WalkState::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション設定
         SetAnimation();
-
-        owner_->ResetFlags();
 
         // 最大速度を設定
         owner_->SetMaxSpeed(2.5f);
@@ -276,10 +265,11 @@ namespace PlayerState
     // ----- 初期化 -----
     void RunState::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション設定
         SetAnimation();
-
-        owner_->ResetFlags();
 
         // 最大速度を設定
         owner_->SetMaxSpeed(5.0f);
@@ -380,12 +370,43 @@ namespace PlayerState
     }
 }
 
+// ----- 弱怯み -----
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void LightFlinchState::Initialize()
+    {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
+        owner_->PlayBlendAnimation(Player::Animation::KnockDownStart, false);
+    }
+
+    // ----- 更新 -----
+    void LightFlinchState::Update(const float& elapsedTime)
+    {
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+    }
+
+    // ----- 終了化 -----
+    void LightFlinchState::Finalize()
+    {
+    }
+}
+
 // ----- 怯み -----
 namespace PlayerState
 {
     // ----- 初期化 -----
     void FlinchState::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::KnockDownStart, false, 2.0f);
 
@@ -437,11 +458,14 @@ namespace PlayerState
     // ----- 初期化 -----
     void DamageState::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション再生 
         owner_->PlayAnimation(Player::Animation::HitLarge, false, 1.2f);
 
-        // フラグをリセットする
-        owner_->ResetFlags();
+        // 無敵状態にする
+        owner_->SetIsInvincible(true);
 
         // 変数初期化
         addForceData_.Initialize(0.1f, 0.3f, 0.5f);
@@ -513,6 +537,8 @@ namespace PlayerState
     // ----- 終了化 -----
     void DamageState::Finalize()
     {
+        // 無敵状態を解除する
+        owner_->SetIsInvincible(false);
     }
 
     // ----- アニメーションの速度設定 -----
@@ -564,16 +590,31 @@ namespace PlayerState
     // ----- 初期化 -----
     void DeathState::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
+        owner_->PlayBlendAnimation(Player::Animation::HitLarge, false, 1.0f, 0.2f);
+        //owner_->PlayBlendAnimation(Player::Animation::KnockDownDeath, false, 1.0f, 0.5f);
+        owner_->SetTransitionTime(0.3f);
+
+        // 死亡したので無敵状態にする
+        owner_->SetIsInvincible(true);
     }
 
     // ----- 更新 -----
     void DeathState::Update(const float& elapsedTime)
     {
+        // テスト用
+        if (owner_->GetHealth() > 0)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+        }
     }
 
     // ----- 終了化 -----
     void DeathState::Finalize()
     {
+        owner_->SetIsInvincible(false);
     }
 }
 
@@ -583,17 +624,23 @@ namespace PlayerState
     // ----- 初期化 -----
     void AvoidanceState::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション設定
         SetAnimation();
 
         // 移動方向を算出
         CalcMoveDirection();
 
-        // フラグをリセットする
-        owner_->ResetFlags();
+        // 無敵状態にする
+        owner_->SetIsInvincible(true);
 
         // 変数初期化
         addForceData_.Initialize(0.15f, 0.27f, 0.4f);
+        isRotating_ = false;
+
+        isFirstTime_ = false;
     }
 
     // ----- 更新 -----
@@ -601,6 +648,8 @@ namespace PlayerState
     {
         // 先行入力処理
         if (CheckNextInput()) return;
+
+        Turn(elapsedTime);
 
         // アニメーションの速度設定
         SetAnimationSpeed();
@@ -621,12 +670,119 @@ namespace PlayerState
     // ----- 終了化 -----
     void AvoidanceState::Finalize()
     {
+        // 変数をリセットしておく
+        isFirstTime_ = true;
+
+        owner_->SetIsInvincible(false);
+    }
+
+    // ----- 回転処理 -----
+    void AvoidanceState::Turn(const float& elapsedTime)
+    {
+        // 回転量がないためここで終了
+        if (isRotating_ == false) return;
+        // 入力値がないので回転する必要がない。ここで終了
+        if (isInputStick_ == false) return;
+
+        DirectX::XMFLOAT2 playerForward = { owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z };
+        playerForward = XMFloat2Normalize(playerForward);
+
+        float forwardCross = XMFloat2Cross(inputDirection_, playerForward);
+
+        float forwardDot = XMFloat2Dot(inputDirection_, playerForward) - 1.0f;
+
+        if (forwardDot > -0.01f)
+        {
+            isRotating_ = false;
+            return;
+        }
+
+        const float speed = owner_->GetRotateSpeed() * elapsedTime;
+        float rotateY = forwardDot * speed;
+        rotateY = std::min(rotateY, -0.7f * speed);
+
+        if (forwardCross > 0)
+        {
+            owner_->GetTransform()->AddRotationY(rotateY);
+        }
+        else
+        {
+            owner_->GetTransform()->AddRotationY(-rotateY);
+        }
+    }
+
+    // ----- このステートをリセット(初期化)する -----
+    void AvoidanceState::ResetState()
+    {
+        // ------------------------------
+        //  回避を連続して出している場合
+        // ------------------------------
+        if (isFirstTime_ == false)
+        {
+            // 回転処理を行う
+            isRotating_ = true;
+        }
+
+        // アニメーション設定
+        SetAnimation();
+
+        // 移動方向を算出
+        CalcMoveDirection();
+
+        // フラグをリセットする
+        owner_->ResetFlags();
+
+        // 変数初期化
+        addForceData_.Initialize(0.15f, 0.27f, 0.4f);
     }
 
     // ----- 先行入力処理 -----
     const bool AvoidanceState::CheckNextInput()
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
+
+
+#if 1
+        const float nextInputStartFrame = 0.5f; // 先行入力開始フレーム
+
+        if (animationSeconds > nextInputStartFrame)
+        {
+            if (owner_->GetComboAttack0KeyDown())
+            {
+                owner_->SetNextInput(Player::NextInput::ComboAttack0);
+            }
+
+            // 回避
+            if (owner_->GetAvoidanceKeyDown() &&
+                owner_->GetAnimationIndex() != static_cast<int>(Player::Animation::RollBack))
+            {
+                owner_->SetNextInput(Player::NextInput::Avoidance);
+
+                GamePad& gamePad = Input::Instance().GetGamePad();
+                const float aLx = gamePad.GetAxisLX();
+                const float aLy = gamePad.GetAxisLY();
+                if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
+                {
+                    const DirectX::XMFLOAT3 cameraFront = Camera::Instance().CalcForward();
+                    const DirectX::XMFLOAT3 cameraRight = Camera::Instance().CalcRight();
+                    inputDirection_ =
+                    {
+                        aLy * cameraFront.x + aLx * cameraRight.x,
+                        aLy * cameraFront.z + aLx * cameraRight.z,
+                    };
+                    inputDirection_ = XMFloat2Normalize(inputDirection_);
+
+                    isInputStick_ = true;
+                }
+                else
+                {
+                    isInputStick_ = false;
+                }
+            }
+        }
+
+#else 
+
 
         // 先行入力受付
 #pragma region 先行入力受付
@@ -701,6 +857,7 @@ namespace PlayerState
             break;
         }
 #pragma endregion 先行入力受付
+#endif
 
         // 先行入力によるステート変更処理
 #pragma region 先行入力によるステート変更処理
@@ -715,7 +872,7 @@ namespace PlayerState
                 if (animationSeconds > avoidanceFrame)
                 {
                     //回避は現在と同じステートなので、初期化を呼ぶ
-                    Initialize();
+                    ResetState();
                     return true;
                 }
             }
@@ -802,7 +959,7 @@ namespace PlayerState
                 if (animationSeconds > avoidanceFrame)
                 {
                     //回避は現在と同じステートなので、初期化を呼ぶ
-                    Initialize();
+                    ResetState();
                     return true;
                 }
             }
@@ -851,7 +1008,7 @@ namespace PlayerState
                 if (animationSeconds > avoidanceFrame)
                 {
                     //回避は現在と同じステートなので、初期化を呼ぶ
-                    Initialize();
+                    ResetState();
                     return true;
                 }
             }
@@ -954,6 +1111,17 @@ namespace PlayerState
     // ----- アニメーション設定 -----
     void AvoidanceState::SetAnimation()
     {
+        // --------------------------------------------------
+        //  回避を連続して出している場合
+        // --------------------------------------------------
+        if (isFirstTime_ == false)
+        {
+            // 前方向のアニメーションを設定する
+            owner_->PlayBlendAnimation(Player::Animation::RollForward, false, 1.0f, 0.15f);
+            owner_->SetTransitionTime(0.05f);
+            return;            
+        }
+
         // 元のアニメーションに応じてブレンドの時間を設定する
         const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
         if (animationIndex == Player::Animation::ComboAttack0_0)
@@ -1000,7 +1168,7 @@ namespace PlayerState
             float dot = acosf(XMFloat2Dot(cameraInput, ownerFront));
 
             // 左右判定
-            float corss = XMFloat2Cross(cameraInput, ownerFront);
+            float cross = XMFloat2Cross(cameraInput, ownerFront);
 
             // 回転角が９０度よりも小さければ 前,右,左 の三択
             if (dot < DirectX::XM_PIDIV2)
@@ -1013,7 +1181,7 @@ namespace PlayerState
                 }
 
                 // 右方向
-                if (corss < 0)
+                if (cross < 0)
                 {
                     owner_->PlayBlendAnimation(Player::Animation::RollRight, false, animationSpeed, animationStartFrame);
                 }
@@ -1034,7 +1202,7 @@ namespace PlayerState
                 }
 
                 // 右方向
-                if (corss < 0)
+                if (cross < 0)
                 {
                     owner_->PlayBlendAnimation(Player::Animation::RollRight, false, animationSpeed, animationStartFrame);
                 }
@@ -1056,21 +1224,30 @@ namespace PlayerState
     // ----- 移動方向算出 -----
     void AvoidanceState::CalcMoveDirection()
     {
+        if (isFirstTime_ == false)
+        {
+            if (isInputStick_)
+            {
+                moveDirection_ = { inputDirection_.x, 0.0f, inputDirection_.y };
+            }
+            else
+            {
+                moveDirection_ = owner_->GetTransform()->CalcForward();
+            }
+            return;
+        }
+
         // ----------------------------------------
         // 自分自身から見た前後左右のベクトルを用意する
         // ----------------------------------------        
         const DirectX::XMFLOAT3 ownerFront = owner_->GetTransform()->CalcForward();
         const DirectX::XMFLOAT3 ownerRight = owner_->GetTransform()->CalcRight();
-        const DirectX::XMFLOAT3 moveDirection[static_cast<int>(Direction::Max)] =
+        const DirectX::XMFLOAT3 moveDirection[4] =
         {
             ownerFront,
             ownerFront * -1,
             ownerRight,
             ownerRight * -1,
-        };
-        const Direction direction[static_cast<int>(Direction::Max)] =
-        {
-            Direction::Fornt, Direction::Back, Direction::Right, Direction::Left
         };
         
         // ----------------------------------------
@@ -1080,7 +1257,6 @@ namespace PlayerState
         const int differenceNum = static_cast<int>(Player::Animation::RollForward);
 
         moveDirection_  = moveDirection[animationIndex - differenceNum];
-        direction_      = direction[animationIndex - differenceNum];
     }
 }
 
@@ -1090,9 +1266,15 @@ namespace PlayerState
     // ----- 初期化 -----
     void CounterState::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::Counter, false);
         owner_->SetTransitionTime(0.1f);
+
+        // 攻撃可能にする
+        owner_->SetIsAbleAttack(true);
 
         // カウンター時カメラを使用する
         Camera::Instance().SetUseCounterCamera();
@@ -1103,10 +1285,17 @@ namespace PlayerState
         //gamePadVibration_.Initialize(0.3f, 0.3f, 1.0f);
         gamePadVibration_.Initialize(0.3f, 0.2f, 0.5f);
 
+        attackData_.Initialize(0.75f, 1.0f);
+
         isNextInput_ = false;
 
-        // フラグをリセットする
-        owner_->ResetFlags();
+        isCounterReaction = false;
+
+        isTurnChecked_ = false;
+
+        const DirectX::XMFLOAT3 pos = owner_->GetJointPosition("spine_02");
+        Effect* counterEffect = EffectManager::Instance().GetEffect("Mikiri");
+        mikiriEffectHandle_ = counterEffect->Play(pos, 0.05f, 2.0f);
     }
 
     // ----- 更新 -----
@@ -1124,23 +1313,109 @@ namespace PlayerState
             if (owner_->GetIsCounter() == false) owner_->SetIsCounter(true);
         }
 
-        // カウンターの判定が入ったのでコントローラー振動する
-        if (owner_->GetIsAbleCounterAttack())
+        // エフェクト
+        if (addForceBack_.GetIsAddForce())
         {
-            gamePadVibration_.Update(owner_->GetAnimationSeconds());
+            EffectManager::Instance().AddPosition(mikiriEffectHandle_, mikiriEffectAddPosition_ * 3.0f * elapsedTime);
         }
 
+        // 見切りが成功したか
+        if (owner_->GetIsAbleCounterAttack() && isCounterReaction == false)
+        {
+            // --------------------------------------------------
+            //      コントローラー振動、エフェクト、効果音を出す。
+            //       出すタイミングはコントローラー振動に任せる
+            // --------------------------------------------------
+            bool isVibrated = gamePadVibration_.Update(owner_->GetAnimationSeconds());
 
+            if (isVibrated)
+            {
+                // エフェクトを再生する
+                Effect* counterEffect = EffectManager::Instance().GetEffect("Counter");
+                if (counterEffect != nullptr)
+                {
+                    // エフェクトは剣の位置に出す
+                    const DirectX::XMFLOAT3 offsetPosition = { -50.0f, 13.0f, 20.0f };
+                    const DirectX::XMFLOAT3 position = owner_->GetJointPosition("hand_r", offsetPosition);
+                    
+                    // 位置を更新するためのデータを保存する
+                    effectOffsetVec_ = XMFloat3Normalize(position - owner_->GetTransform()->GetPosition());
+                    effectLength_ = XMFloat3Length(position - owner_->GetTransform()->GetPosition());
+                    counterEffectHandle_ = counterEffect->Play(position, 0.1f, 4.0f);
+                }
+
+                // TODO: 効果音を鳴らす
+
+                isCounterReaction = true;
+            }
+        }
+
+        // エフェクトの位置を更新する
+        if (isCounterReaction)
+        {
+            const DirectX::XMFLOAT3 position = owner_->GetTransform()->GetPosition() + effectOffsetVec_ * effectLength_;
+            EffectManager::Instance().SetPosition(counterEffectHandle_, position);
+        }
 
         // アニメーションの速度設定
         SetAnimationSpeed();
 
-        if (addForceFront_.Update(owner_->GetAnimationSeconds()))
+        // 移動処理
+        Move();
+
+        // 旋回処理
+        Turn(elapsedTime);
+
+        // 攻撃判定処理
+        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
+        owner_->SetIsAttackValid(attackFlag);
+
+        // アニメーション再生終了
+        //if(owner_->GetAnimationSeconds() > 1.0f)
+        if(owner_->GetAnimationSeconds() > 1.2f)
+        //if(owner_->IsPlayAnimation() == false)
         {
-            owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceFront_.GetForce(), addForceFront_.GetDecelerationForce());
+            EffectManager::Instance().StopEffect(counterEffectHandle_);
+
+            owner_->ChangeState(Player::STATE::Idle);
+
+            return;
         }
+
+        // カウンター成功
+        // TODO:ここつくる。カウンター
+        //if (owner_->GetIsAbleCounterAttack())
+        {
+            if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER)
+            {
+                isNextInput_ = true;
+            }
+        }
+        if (isNextInput_ && owner_->GetAnimationSeconds() > 0.9f)
+        {
+            EffectManager::Instance().StopEffect(counterEffectHandle_);
+
+            owner_->ChangeState(Player::STATE::CounterCombo);
+            return;
+        }
+    }
+
+    // ----- 終了化 -----
+    void CounterState::Finalize()
+    {
+    }
+
+    // ----- 移動処理 -----
+    void CounterState::Move()
+    {
+        // 後ろ方向に進む
+#pragma region ---------- 後ろ方向に進む ----------
         if (addForceBack_.Update(owner_->GetAnimationSeconds()))
         {
+            // --------------------------------------------------
+            //  左スティックの入力があればその方向に向くようにする
+            //          何も入力がなければ後ろに下がる
+            // --------------------------------------------------
             DirectX::XMFLOAT3 addForceDirection = {};
 
             // 左スティックの入力があるか判定
@@ -1168,12 +1443,12 @@ namespace PlayerState
                 ownerForward = XMFloat2Normalize(ownerForward);
 
                 // 外積をしてどちらに回転するのかを判定する
-                float forwardCorss = XMFloat2Cross(cameraForward_float2, ownerForward);
+                float forwardCross = XMFloat2Cross(cameraForward_float2, ownerForward);
 
                 // 内積で回転幅を算出
                 float forwardDot = XMFloat2Dot(cameraForward_float2, ownerForward) - 1.0f;
 
-                if (forwardCorss > 0)
+                if (forwardCross > 0)
                 {
                     owner_->GetTransform()->AddRotationY(forwardDot);
                 }
@@ -1188,38 +1463,129 @@ namespace PlayerState
                 addForceDirection = owner_->GetTransform()->CalcForward() * -1.0f;
             }
 
+            mikiriEffectAddPosition_ = addForceDirection;
+
             owner_->AddForce(addForceDirection, addForceBack_.GetForce(), addForceBack_.GetDecelerationForce());
         }
+#pragma endregion ---------- 後ろ方向に進む ----------
 
-
-        // アニメーション再生終了
-        //if(owner_->GetAnimationSeconds() > 1.0f)
-        if(owner_->GetAnimationSeconds() > 1.2f)
-        //if(owner_->IsPlayAnimation() == false)
+        // 前方向に進む
+#pragma region ---------- 前方向に進む ----------
+        if (addForceFront_.Update(owner_->GetAnimationSeconds()))
         {
-            owner_->ChangeState(Player::STATE::Idle);
-            return;
-        }
+            // --------------------------------------------------
+            //  左スティックの入力があればその方向に向くようにする
+            //          何も入力がなければそのまま前に進む
+            // --------------------------------------------------
+            DirectX::XMFLOAT3 addForceDirection = {};
 
-        // カウンター成功
-        // TODO:ここつくる。カウンター
-        //if (owner_->GetIsAbleCounterAttack())
-        {
-            if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER)
+            // 左スティックの入力があるか判定
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
             {
-                isNextInput_ = true;
+                // カメラから見た左スティックの傾きを適応した方向を算出する
+                const DirectX::XMFLOAT3 cameraForward = Camera::Instance().CalcForward();
+                const DirectX::XMFLOAT3 cameraRight = Camera::Instance().CalcRight();
+                addForceDirection =
+                {
+                    aLy * cameraForward.x + aLx * cameraRight.x,
+                    0,
+                    aLy * cameraForward.z + aLx * cameraRight.z
+                };
+                addForceDirection = XMFloat3Normalize(addForceDirection);
+
+                addForceDirection_ = { addForceDirection.x, addForceDirection.z };
+                addForceDirection_ = XMFloat2Normalize(addForceDirection_);
+
+                // ------------------------------------------------------------
+                //              回転する角度は左右ともに９０度まで
+                // 
+                //                      ownerFront
+                //                          |
+                //                          | 
+                //             Left ================== Right
+                //                         Back
+                // 
+                //           0° ~ 90°, 270° ~ 360° になるように補正する
+                // ------------------------------------------------------------
+                DirectX::XMFLOAT2 ownerFront = { owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z };
+                ownerFront = XMFloat2Normalize(ownerFront);
+
+                // 内積で角度を算出
+                float dot = acosf(XMFloat2Dot(addForceDirection_, ownerFront));
+
+                // 90度以上回転角がある
+                if (dot > DirectX::XM_PIDIV2)
+                {
+                    // 左右判定
+                    float cross = XMFloat2Cross(addForceDirection_, ownerFront);
+
+                    const DirectX::XMFLOAT3 ownerRight_float3 = owner_->GetTransform()->CalcRight();
+                    const DirectX::XMFLOAT2 ownerRight_float2 = XMFloat2Normalize({ ownerRight_float3.x, ownerRight_float3.z });
+
+                    if (cross < 0)
+                    {
+                        addForceDirection_ = ownerRight_float2;
+                        addForceDirection = { addForceDirection_.x, 0.0f, addForceDirection_.y };
+                    }
+                    else
+                    {
+                        addForceDirection_ = ownerRight_float2 * -1;
+                        addForceDirection = { addForceDirection_.x, 0.0f, addForceDirection_.y };
+                    }
+                }
+
+                isRotating_ = true;
             }
+            else
+            {
+                addForceDirection = owner_->GetTransform()->CalcForward();
+            }
+
+            owner_->AddForce(addForceDirection, addForceFront_.GetForce(), addForceFront_.GetDecelerationForce());
         }
-        if (isNextInput_ && owner_->GetAnimationSeconds() > 0.9f)
-        {
-            owner_->ChangeState(Player::STATE::CounterCombo);
-            return;
-        }
+#pragma endregion ---------- 前方向に進む ----------
     }
 
-    // ----- 終了化 -----
-    void CounterState::Finalize()
+    // ----- 旋回処理 -----
+    void CounterState::Turn(const float& elapsedTime)
     {
+        // 回転角度がないのでここで終了
+        if (isRotating_ == false) return;
+
+        // まだ旋回処理を行わない
+        if (addForceFront_.GetIsAddForce() == false) return;
+
+
+        DirectX::XMFLOAT2 ownerForward = { owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z };
+        ownerForward = XMFloat2Normalize(ownerForward);
+
+        // 外積をしてどちらに回転するのかを判定する
+        float forwardCross = XMFloat2Cross(addForceDirection_, ownerForward);
+
+        // 内積で回転幅を算出
+        float forwardDot = XMFloat2Dot(addForceDirection_, ownerForward) - 1.0f;
+
+        if (forwardDot > -0.01f)
+        {
+            isRotating_ = false;
+        }
+
+        // TODO:回転速度を固定値で入れちゃってる
+        //const float speed = owner_->GetRotateSpeed() * elapsedTime;
+        const float speed = 8.0f * elapsedTime;
+        float rotateY = forwardDot * speed;
+        rotateY = std::min(rotateY, -0.7f * speed);
+
+        if (forwardCross > 0)
+        {
+            owner_->GetTransform()->AddRotationY(rotateY);
+        }
+        else
+        {
+            owner_->GetTransform()->AddRotationY(-rotateY);
+        }
     }
 
     // ----- アニメーションの速度設定 -----
@@ -1244,15 +1610,21 @@ namespace PlayerState
     // ----- 初期化 -----
     void CounterComboState::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション再生
         owner_->PlayBlendAnimation(Player::Animation::ParryCounterAttack1, false, 1.0f, 0.35f);        
+
+        // 攻撃可能にする
+        owner_->SetIsAbleAttack(true);
+
+        // 無敵状態にする
+        owner_->SetIsInvincible(true);
 
         // 変数初期化
         addForceData_.Initialize(0.35f, 0.3f, 1.0f);
         attackData_.Initialize(0.35f, 0.7f);
-
-        // フラグをリセットする
-        owner_->ResetFlags();
     }
 
     // ----- 更新 -----
@@ -1265,7 +1637,7 @@ namespace PlayerState
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
-        owner_->SetIsAbleAttack(attackFlag);
+        owner_->SetIsAttackValid(attackFlag);
 
         // アニメーション終了
         if (!owner_->IsPlayAnimation())
@@ -1278,6 +1650,8 @@ namespace PlayerState
     // ----- 終了化 -----
     void CounterComboState::Finalize()
     {
+        // 無敵状態にを解除する
+        owner_->SetIsInvincible(false);
     }
 }
 
@@ -1287,12 +1661,15 @@ namespace PlayerState
     // ----- 初期化 -----
     void RunAttackState::Initialize()
     {
+        // フラグリセット
+        owner_->ResetFlags();
+
         // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::RunAttack1, false, 1.0f, 0.2f);
         owner_->SetTransitionTime(0.1f);
 
-        // フラグリセット
-        owner_->ResetFlags();
+        // 攻撃可能にする
+        owner_->SetIsAbleAttack(true);
 
         // 変数初期化
         addForceData_.Initialize(0.2f, 0.4f, 1.0f);
@@ -1313,7 +1690,7 @@ namespace PlayerState
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
-        owner_->SetIsAbleAttack(attackFlag);
+        owner_->SetIsAttackValid(attackFlag);
 
         if (owner_->IsPlayAnimation() == false)
         {
@@ -1395,11 +1772,14 @@ namespace PlayerState
     // ----- 初期化 -----
     void ComboAttack0_0::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション設定
         SetAnimation();
 
-        // フラグリセット
-        owner_->ResetFlags();
+        // 攻撃可能にする
+        owner_->SetIsAbleAttack(true);
 
         // 変数初期化
         addForceData_.Initialize(0.15f, 0.2f, 1.0f);
@@ -1424,7 +1804,7 @@ namespace PlayerState
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
-        owner_->SetIsAbleAttack(attackFlag);
+        owner_->SetIsAttackValid(attackFlag);
 
         if (owner_->IsPlayAnimation() == false)
         {
@@ -1559,11 +1939,14 @@ namespace PlayerState
     // ----- 初期化 -----
     void ComboAttack0_1::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション設定
         SetAnimation();
 
-        // フラグリセット
-        owner_->ResetFlags();
+        // 攻撃可能にする
+        owner_->SetIsAbleAttack(true);
 
         // 変数初期化
         addForceData_.Initialize(0.05f, 0.25f, 1.0f);
@@ -1587,7 +1970,7 @@ namespace PlayerState
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
-        owner_->SetIsAbleAttack(attackFlag);
+        owner_->SetIsAttackValid(attackFlag);
 
         //if (owner_->IsPlayAnimation() == false)
         if(owner_->GetAnimationSeconds() > 1.0f)
@@ -1709,12 +2092,15 @@ namespace PlayerState
     // ----- 初期化 -----
     void ComboAttack0_2::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_2, false, 1.3f, 0.4f);
         owner_->SetTransitionTime(0.3f);
 
-        // フラグリセット
-        owner_->ResetFlags();
+        // 攻撃可能にする
+        owner_->SetIsAbleAttack(true);
 
         // 変数初期化
         addForceData_.Initialize(0.6f, 0.2f, 1.0f);
@@ -1738,7 +2124,7 @@ namespace PlayerState
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
-        owner_->SetIsAbleAttack(attackFlag);
+        owner_->SetIsAttackValid(attackFlag);
 
 
         if (owner_->IsPlayAnimation() == false)
@@ -1839,12 +2225,15 @@ namespace PlayerState
     // ----- 初期化 -----
     void ComboAttack0_3::Initialize()
     {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
         // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_3, false);
         owner_->SetTransitionTime(0.1f);
 
-        // フラグリセット
-        owner_->ResetFlags();
+        // 攻撃可能にする
+        owner_->SetIsAbleAttack(true);
 
         // 変数初期化
         addForceData_.Initialize(0.45f, 0.25f, 0.5f);
@@ -1881,7 +2270,7 @@ namespace PlayerState
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
-        owner_->SetIsAbleAttack(attackFlag);
+        owner_->SetIsAttackValid(attackFlag);
 
         // コントローラー＆カメラ 振動
         if (owner_->GetAnimationSeconds() > 0.8f && isVibration_ == false)

@@ -2,6 +2,7 @@
 #include "StateMachine/State.h"
 #include "Player.h"
 
+
 namespace PlayerState
 {
     struct AddForceData
@@ -12,6 +13,7 @@ namespace PlayerState
 
         [[nodiscard]] const float GetForce() const { return force_; }
         [[nodiscard]] const float GetDecelerationForce() const { return decelerationForce_; }
+        [[nodiscard]] const bool GetIsAddForce() const { return isAddforce_; }
 
     private:
         float   addForceFrame_      = 0.0f;
@@ -29,15 +31,13 @@ namespace PlayerState
     private:
         float attackStartFrame_ = 0.0f;     // 攻撃判定有効スタートフレーム
         float attackEndFrame_   = 0.0f;     // 攻撃判定有効エンドフレーム
-        bool  isAttacked_       = false;    // 攻撃したか
-        bool  isFirstTime_      = false;    // 攻撃判定有効フレームに入った一回目のフレームかどうか
     };
 
     struct GamePadVibration
     {
     public:
         void Initialize(const float& startFrame, const float& time, const float& power);
-        void Update(const float& animationFrame);
+        const bool Update(const float& animationFrame);
 
     private:
         float startFrame_ = 0.0f;
@@ -95,6 +95,17 @@ namespace PlayerState
 
     private:
         float stateChangeTimer_ = 0.0f;
+    };
+
+    class LightFlinchState : public State<Player>
+    {
+    public:
+        LightFlinchState(Player* player) : State(player, "LightFlinchState") {}
+        ~LightFlinchState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
     };
 
     class FlinchState : public State<Player>
@@ -158,14 +169,9 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
-        enum class Direction
-        {
-            Fornt,
-            Back,
-            Right,
-            Left,
-            Max,
-        };
+        void Turn(const float& elapsedTime);
+
+        void ResetState(); // このステートをリセット(初期化)する
 
         [[nodiscard]] const bool CheckNextInput();
         void SetAnimationSpeed();
@@ -175,9 +181,13 @@ namespace PlayerState
 
     private:
         DirectX::XMFLOAT3   moveDirection_  = {};
-        Direction           direction_      = Direction::Back;
 
         AddForceData addForceData_;
+
+        DirectX::XMFLOAT2 inputDirection_ = {};
+        bool isFirstTime_   = true;     // このステートに入るのが初めてかどうか
+        bool isRotating_    = false;    // 回転処理をするか
+        bool isInputStick_  = false;    // スティック入力があるか
     };
 
     // ----- カウンター -----
@@ -192,15 +202,37 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
+        void Move();                            // 移動
+        void Turn(const float& elapsedTime);    // 旋回
+        
         void SetAnimationSpeed();
 
+
     private:
-        AddForceData addForceFront_;
-        AddForceData addForceBack_;
+        AddForceData        addForceFront_; // 前方向
+        AddForceData        addForceBack_;  // 後ろ方向
+        AttackData          attackData_;
 
         GamePadVibration gamePadVibration_;
 
         bool isNextInput_ = false; // カウンター攻撃の先行入力用
+
+        bool isCounterReaction = false; // カウンターが成功したときの演出
+
+        // ----- 旋回用 -----
+        bool isTurnChecked_ = false; // 旋回するか判定用
+
+        bool isRotating_ = false;
+
+        DirectX::XMFLOAT2  addForceDirection_ = {};
+
+        // ----- Effect用 -----
+        Effekseer::Handle   mikiriEffectHandle_     = 0;
+        Effekseer::Handle   counterEffectHandle_    = 0;
+        DirectX::XMFLOAT3   effectOffsetVec_        = {};
+        float               effectLength_           = 0.0f;
+
+        DirectX::XMFLOAT3 mikiriEffectAddPosition_ = {};
     };
 
     // ----- カウンター攻撃 -----
