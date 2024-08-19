@@ -616,10 +616,10 @@ const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
     case CounterAttackCamera::CounterComboZoomIn:
     {
         const float totalFrame = 0.17f;
-        length_ = Easing::InSine(easingTimer_, totalFrame, 4.5f, oldCameraLength_);
+        length_ = Easing::InSine(easingTimer_, totalFrame, 4.5f, oldLength_);
 
-        const float maxRotateX = oldRotateX_ + DirectX::XMConvertToRadians(3.0f);
-        const float rotateX = Easing::InSine(easingTimer_, totalFrame, maxRotateX, oldRotateX_);
+        const float maxRotateX = oldRotate_.x + DirectX::XMConvertToRadians(3.0f);
+        const float rotateX = Easing::InSine(easingTimer_, totalFrame, maxRotateX, oldRotate_.x);
         GetTransform()->SetRotationX(rotateX);
 
 
