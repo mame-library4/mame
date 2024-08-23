@@ -599,6 +599,9 @@ namespace PlayerState
 
         // 死亡したので無敵状態にする
         owner_->SetIsInvincible(true);
+
+        // 死亡カメラを使用する
+        Camera::Instance().SetUsePlayerDeathCmaera();
     }
 
     // ----- 更新 -----

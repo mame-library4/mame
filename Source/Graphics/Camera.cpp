@@ -39,7 +39,8 @@ void Camera::Update(const float& elapsedTime)
     if (SceneManager::Instance().GetCurrentSceneName() == SceneManager::SceneName::Title) return;
 
     // 死亡カメラ使用時はここで終了
-    if (UpdateEnemyDeathCamera(elapsedTime)) return;    
+    if (UpdatePlayerDeathCamera(elapsedTime)) return; // Player死亡カメラ
+    if (UpdateEnemyDeathCamera(elapsedTime))  return; // Enemy死亡カメラ
 
     const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
     Camera::Instance().SetTarget(cameraTargetPosition);
@@ -238,6 +239,13 @@ const DirectX::XMFLOAT3 Camera::CalcRight()
     return XMFloat3Cross(up, forward);
 }
 
+// ---- 自機死亡時カメラを使用する -----
+void Camera::SetUsePlayerDeathCmaera()
+{
+    usePlayerDeathCamera_ = true;
+    playerDeathState_ = 0;
+}
+
 // ----- 敵死亡時カメラ使用する -----
 void Camera::SetUseEnemyDeathCamera()
 {
@@ -252,10 +260,59 @@ void Camera::SetUseCounterCamera()
     playerCounterStae_ = 0;
 }
 
+// ----- 自機死亡カメラ -----
+const bool Camera::UpdatePlayerDeathCamera(const float& elapsedTime)
+{
+    // 自機死亡時カメラの使用フラグが立っていないのでここで終了
+    if (usePlayerDeathCamera_ == false) return false;
+
+    target_ = PlayerManager::Instance().GetTransform()->GetPosition();
+
+    switch (playerDeathState_)
+    {
+    case 0:// 初期化
+        length_ = 4.0f;
+        GetTransform()->SetRotationX(10.0f);
+        GetTransform()->SetRotationY(0.0f);
+        targetOffset_ = { 0.0f, -1.0f, 0.0f };
+        cameraOffset_ = { 0.0f, 2.0f, 0.0f };
+
+        easingTimer_ = 0.0f;
+
+        playerDeathState_ = 1;
+
+        break;
+    case 1:
+    {
+        const float totalFrame = 1.5f;
+
+        easingTimer_ += elapsedTime;
+        easingTimer_ = min(easingTimer_, totalFrame);
+
+        const float rotateX = Easing::OutCubic(easingTimer_, totalFrame, 20.0f, 0.0f);
+        const float rotateY = Easing::OutCubic(easingTimer_, totalFrame, 90.0f, 0.0f);
+
+        GetTransform()->SetRotationX(DirectX::XMConvertToRadians(rotateX));
+        GetTransform()->SetRotationY(DirectX::XMConvertToRadians(rotateY));
+
+        if (easingTimer_ == totalFrame)
+        {
+            usePlayerDeathCamera_ = false;
+        }
+    }     
+        break;
+    case 2:
+        break;
+    }
+
+
+    return true;
+}
+
 // ----- 敵死亡時カメラ -----
 const bool Camera::UpdateEnemyDeathCamera(const float& elapsedTime)
 {
-    // 敵死亡時カメラ使用フラグが立っていないのでここで終了
+    // 敵死亡時カメラの使用フラグが立っていないのでここで終了
     if (useEnemyDeathCamera_ == false) return false;
 
     Enemy* enemy = EnemyManager::Instance().GetEnemy(0);

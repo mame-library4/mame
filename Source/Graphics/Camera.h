@@ -71,6 +71,7 @@ public:// --- 取得・設定 ---
     void SetCameraOffset(const DirectX::XMFLOAT3& offset) { cameraOffset_ = offset; }
 
     // ---------- 特殊な動き制御用 ----------
+    void SetUsePlayerDeathCmaera();
     void SetUseEnemyDeathCamera();
     void SetUseCounterCamera();
 
@@ -101,6 +102,8 @@ private:
 
 
 private:
+    // ---------- 自機死亡カメラ ----------
+    [[nodiscard]] const bool UpdatePlayerDeathCamera(const float& elapsedTime);
     // ---------- 敵死亡カメラ ----------
     [[nodiscard]] const bool UpdateEnemyDeathCamera(const float& elapsedTime);
     // ---------- ドラゴン上昇攻撃時のカメラ ----------
