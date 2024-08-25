@@ -266,43 +266,45 @@ const bool Camera::UpdatePlayerDeathCamera(const float& elapsedTime)
     // 自機死亡時カメラの使用フラグが立っていないのでここで終了
     if (usePlayerDeathCamera_ == false) return false;
 
-    target_ = PlayerManager::Instance().GetTransform()->GetPosition();
+    DirectX::XMFLOAT3 target = PlayerManager::Instance().GetPlayer()->GetJointPosition("spine_02");
+    target.y = 0.5f;
+    target_ = target;
+    //target_ = PlayerManager::Instance().GetPlayer()->GetJointPosition("spine_03");
+    //target_ = PlayerManager::Instance().GetPlayer()->GetJointPosition("neck_01");
 
     switch (playerDeathState_)
     {
-    case 0:// 初期化
-        length_ = 4.0f;
-        GetTransform()->SetRotationX(10.0f);
-        GetTransform()->SetRotationY(0.0f);
-        targetOffset_ = { 0.0f, -1.0f, 0.0f };
-        cameraOffset_ = { 0.0f, 2.0f, 0.0f };
-
+    case 0:
         easingTimer_ = 0.0f;
+
+        length_ = 4.0f;
+        targetOffset_ = { 0.0f, -1.0f, 0.0f };
+        cameraOffset_ = { 0.0f, 1.0f, 0.0f };
 
         playerDeathState_ = 1;
 
         break;
     case 1:
     {
-        const float totalFrame = 1.5f;
-
+        const float totalFrame = 1.0f;
         easingTimer_ += elapsedTime;
         easingTimer_ = min(easingTimer_, totalFrame);
 
-        const float rotateX = Easing::OutCubic(easingTimer_, totalFrame, 20.0f, 0.0f);
-        const float rotateY = Easing::OutCubic(easingTimer_, totalFrame, 90.0f, 0.0f);
+        const float rotateX = Easing::OutCubic(easingTimer_, totalFrame, 4.0f, 10.0f);
+        const float rotateY = Easing::OutCubic(easingTimer_, totalFrame, 140.0f, 160.0f);
 
         GetTransform()->SetRotationX(DirectX::XMConvertToRadians(rotateX));
         GetTransform()->SetRotationY(DirectX::XMConvertToRadians(rotateY));
 
         if (easingTimer_ == totalFrame)
         {
-            usePlayerDeathCamera_ = false;
+            playerDeathState_ = 2;
         }
-    }     
-        break;
+    }
+
     case 2:
         break;
+
     }
 
 
