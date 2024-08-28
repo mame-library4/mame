@@ -1,4 +1,5 @@
 #include "UIManager.h"
+#include "UI.h"
 #include "Common.h"
 
 // ----- çXêV -----
@@ -34,18 +35,38 @@ void UIManager::Update(const float& elapsedTime)
 // ----- ï`âÊ -----
 void UIManager::Render()
 {
-    for (UI*& ui : userInterface_)
+    for (int i = 0; i < static_cast<int>(UIType::Max); ++i)
     {
-        ui->Render();
+        for (UI*& ui : userInterface_)
+        {
+            if (ui->GetType() != static_cast<UIType>(i)) continue;
+
+            ui->Render();
+        }
     }
 }
 
 // ----- ImGuióp -----
 void UIManager::DrawDebug()
 {
-    for (UI*& ui : userInterface_)
+    if (ImGui::BeginMainMenuBar())
     {
-        ui->DrawDebug();
+
+        if (ImGui::BeginMenu("UIManager"))
+        {
+            for (int i = 0; i < userInterface_.size(); ++i)
+            {
+                userInterface_.at(i)->DrawDebug();
+            }
+
+            //for (UI*& ui : userInterface_)
+            //{
+            //    ui->DrawDebug();
+            //}
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMainMenuBar();
     }
 }
 

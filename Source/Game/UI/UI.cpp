@@ -2,12 +2,16 @@
 #include "UIManager.h"
 
 // ----- コンストラクタ -----
-UI::UI(const wchar_t* filename)
+UI::UI(const UIManager::UIType& type, const wchar_t* filename, const std::string& name)
+    : type_(type)
 {
     if (filename != nullptr)
     {
         sprite_ = std::make_unique<Sprite>(filename);
     }
+
+    // 名前を設定
+    name_ = name + std::to_string(UIManager::Instance().GetImGuiNameNum());
 
     // マネージャーへ登録
     UIManager::Instance().Register(this);

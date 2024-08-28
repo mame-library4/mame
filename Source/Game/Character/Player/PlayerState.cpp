@@ -7,6 +7,8 @@
 #include "../Enemy/EnemyManager.h"
 #include "Effect/EffectManager.h"
 
+#include "UI/UIFader.h"
+
 // ----- AddForceData -----
 namespace PlayerState
 {
@@ -602,11 +604,36 @@ namespace PlayerState
 
         // 死亡カメラを使用する
         Camera::Instance().SetUsePlayerDeathCmaera();
+
+        // 変数初期化
+        deathTimer_ = 0.0f;
+        isCreateFadeUi_ = false;
     }
 
     // ----- 更新 -----
     void DeathState::Update(const float& elapsedTime)
     {
+        deathTimer_ += elapsedTime;
+
+        if (deathTimer_ > 2.2f)
+        {
+            if (isCreateFadeUi_ == false)
+            {
+                UIFader* uiFader = new UIFader();
+
+                isCreateFadeUi_ = true;
+            }
+        }
+
+        if (deathTimer_ > 3.0f)
+        {
+            Camera::Instance().SetUsePlayerDeathCmaera(false);
+            Camera::Instance().Initialize();
+            owner_->SetHealth(owner_->GetMaxHealth());
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+
         // テスト用
         if (owner_->GetHealth() > 0)
         {

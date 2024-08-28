@@ -7,6 +7,7 @@
 #include "Character/Enemy/EnemyDragon.h"
 #include "Camera.h"
 #include "Collision/CollisionManager.h"
+
 #include "UI/UINumber.h"
 
 #include "Projectile/ProjectileManager.h"
@@ -118,6 +119,11 @@ void GameScene::Update(const float& elapsedTime)
     // Collision更新
     CollisionManager::Instance().Update(elapsedTime);
 
+    if (GetAsyncKeyState('Q') & 0x8000)
+    {
+        PlayerManager::Instance().GetPlayer()->SetHealth(0);
+    }
+    
 
     // カメラの位置更新
     //const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };

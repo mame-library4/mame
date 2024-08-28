@@ -11,7 +11,7 @@
 
 class Sprite
 {
-private:
+public:
     struct Transform
     {
     public:

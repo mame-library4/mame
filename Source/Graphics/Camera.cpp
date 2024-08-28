@@ -240,9 +240,9 @@ const DirectX::XMFLOAT3 Camera::CalcRight()
 }
 
 // ---- 自機死亡時カメラを使用する -----
-void Camera::SetUsePlayerDeathCmaera()
+void Camera::SetUsePlayerDeathCmaera(const float& flag)
 {
-    usePlayerDeathCamera_ = true;
+    usePlayerDeathCamera_ = flag;
     playerDeathState_ = 0;
 }
 
@@ -269,15 +269,14 @@ const bool Camera::UpdatePlayerDeathCamera(const float& elapsedTime)
     DirectX::XMFLOAT3 target = PlayerManager::Instance().GetPlayer()->GetJointPosition("spine_02");
     target.y = 0.5f;
     target_ = target;
-    //target_ = PlayerManager::Instance().GetPlayer()->GetJointPosition("spine_03");
-    //target_ = PlayerManager::Instance().GetPlayer()->GetJointPosition("neck_01");
 
     switch (playerDeathState_)
     {
     case 0:
         easingTimer_ = 0.0f;
 
-        length_ = 4.0f;
+        length_ = 4.5f;
+        //length_ = 4.0f;
         targetOffset_ = { 0.0f, -1.0f, 0.0f };
         cameraOffset_ = { 0.0f, 1.0f, 0.0f };
 
@@ -286,22 +285,25 @@ const bool Camera::UpdatePlayerDeathCamera(const float& elapsedTime)
         break;
     case 1:
     {
-        const float totalFrame = 1.0f;
+        const float totalFrame = 3.5f;
         easingTimer_ += elapsedTime;
         easingTimer_ = min(easingTimer_, totalFrame);
 
-        const float rotateX = Easing::OutCubic(easingTimer_, totalFrame, 4.0f, 10.0f);
-        const float rotateY = Easing::OutCubic(easingTimer_, totalFrame, 140.0f, 160.0f);
+        const float rotateX = Easing::OutQuad(easingTimer_, totalFrame, -20.0f, 10.0f);
+        const float rotateY = Easing::InSine(easingTimer_, totalFrame, 70.0f, 160.0f);
+
+        length_ = Easing::OutCubic(easingTimer_, totalFrame, 4.0f, 4.5f);
 
         GetTransform()->SetRotationX(DirectX::XMConvertToRadians(rotateX));
         GetTransform()->SetRotationY(DirectX::XMConvertToRadians(rotateY));
 
         if (easingTimer_ == totalFrame)
         {
-            playerDeathState_ = 2;
+            easingTimer_ = 0.0f;
+            playerDeathState_ = 3;
         }
     }
-
+        break;
     case 2:
         break;
 

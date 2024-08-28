@@ -155,6 +155,10 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+
+    private:
+        float deathTimer_ = 0.0f;
+        bool isCreateFadeUi_ = false;
     };
 
     // ----- ‰ñ”ð -----

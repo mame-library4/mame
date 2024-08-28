@@ -7,8 +7,9 @@ public:
     UINumber(const int& num, const DirectX::XMFLOAT3& hitPos);
     ~UINumber() override {}
 
-    void Update(const float& elapsedTime)   override;
-    void Render()                           override;
+    void Update(const float& elapsedTime)   override; // XV
+    void Render()                           override; // •`‰æ
+    void DrawDebug()                        override; // ImGui—p
 
 private:
     void SetNumSproteNumbers();     // ”š‚ğİ’è‚·‚é

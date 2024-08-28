@@ -214,6 +214,9 @@
     <ClCompile Include="Source\Game\Collision\CollisionManager.cpp">
       <Filter>Mame\Game\Collision</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\UI\UIFader.cpp">
+      <Filter>Mame\Game\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -456,6 +459,9 @@
     </ClInclude>
     <ClInclude Include="Source\Game\Collision\CollisionManager.h">
       <Filter>Mame\Game\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\UI\UIFader.h">
+      <Filter>Mame\Game\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

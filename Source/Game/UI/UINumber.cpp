@@ -1,10 +1,9 @@
 #include "UINumber.h"
-#include "UIManager.h"
 #include "Easing.h"
 
 // ----- コンストラクタ -----
 UINumber::UINumber(const int& num, const DirectX::XMFLOAT3& hitPos) :
-    UI(),
+    UI(UIManager::UIType::UINumber, nullptr, "UINumber"),
     num_(num), hitPos_(hitPos)
 {
     // ランダムでaddPosを決める
@@ -48,6 +47,8 @@ void UINumber::Update(const float& elapsedTime)
         const float alpha = Easing::InSine(easingTimer_, totalFrame, 0.0f, 1.0f);
         easingTimer_ += elapsedTime;
         easingTimer_ = min(easingTimer_, totalFrame);
+
+        // 生存時間が０になったら自身を消す
         if (easingTimer_ >= totalFrame) UIManager::Instance().Remove(this);
 
         for (int spriteIndex = 0; spriteIndex < digit_; ++spriteIndex)
@@ -64,6 +65,16 @@ void UINumber::Render()
     for (int spriteIndex = 0; spriteIndex < digit_; ++spriteIndex)
     {
         numSprite_[spriteIndex]->Render();
+    }
+}
+
+void UINumber::DrawDebug()
+{
+    if (ImGui::TreeNode(GetName().c_str()))
+    {
+        ImGui::DragFloat("LifeTimer", &lifeTimer_);
+
+        ImGui::TreePop();
     }
 }
 

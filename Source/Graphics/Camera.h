@@ -71,7 +71,7 @@ public:// --- æ“¾Eİ’è ---
     void SetCameraOffset(const DirectX::XMFLOAT3& offset) { cameraOffset_ = offset; }
 
     // ---------- “Áê‚È“®‚«§Œä—p ----------
-    void SetUsePlayerDeathCmaera();
+    void SetUsePlayerDeathCmaera(const float& flag = true);
     void SetUseEnemyDeathCamera();
     void SetUseCounterCamera();
 
