@@ -755,6 +755,9 @@ const int GltfModel::GetNodeIndex(const std::string& nodeName)
 // ----- RootMotion -----
 void GltfModel::RootMotion(const float& scaleFacter)
 {
+    if (isBlendAnimation_) return;
+    if (animationEndFlag_) return;
+
     // ルートモーションを使用しない
     if (useRootMotionMovement_ == false) return;
 

@@ -1820,19 +1820,20 @@ namespace PlayerState
     // ----- 更新 -----
     void ComboAttack0_0::Update(const float& elapsedTime)
     {
+        // RootMotionの設定
+        if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+        {
+            // RootMotionを使用する
+            owner_->SetUseRootMotion(true);
+        }
+        
         // 先行入力
         if (CheckNextInput()) return;
         
         // アニメーションの速度設定
         SetAnimationSpeed();
 
-#if 1
-        if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
-        {
-            owner_->SetUseRootMotion(true);
-            //owner_->SetUseRootMotionMovement(true);
-        }
-#else
+#if 0
         for (int i = 0; i < 2; ++i)
         {
             if (addForceData_[i].Update(owner_->GetAnimationSeconds()))
@@ -2006,6 +2007,13 @@ namespace PlayerState
     // ----- 更新 -----
     void ComboAttack0_1::Update(const float& elapsedTime)
     {
+        // RootMotionの設定
+        if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+        {
+            // RootMotionを使用する
+            owner_->SetUseRootMotion(true);
+        }
+
         // 先行入力処理
         if (CheckNextInput()) return;
 
@@ -2013,10 +2021,12 @@ namespace PlayerState
         SetAnimationSpeed();
 
         // 移動処理
+#if 0
         if (addForceData_.Update(owner_->GetAnimationSeconds()))
         {
             owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
         }
+#endif  
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
@@ -2033,7 +2043,7 @@ namespace PlayerState
     // ----- 終了化 -----
     void ComboAttack0_1::Finalize()
     {
-
+        owner_->SetUseRootMotion(false);
     }
 
     // ----- アニメーション設定 -----
@@ -2166,11 +2176,18 @@ namespace PlayerState
         // アニメーションの速度設定
         SetAnimationSpeed();
 
-        // 移動処理        
-        if (addForceData_.Update(owner_->GetAnimationSeconds()))
+        // RootMotionの設定
+        if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
         {
-            owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
-        }        
+            // RootMotionを使用する
+            owner_->SetUseRootMotion(true);
+        }
+
+        //// 移動処理        
+        //if (addForceData_.Update(owner_->GetAnimationSeconds()))
+        //{
+        //    owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+        //}        
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
@@ -2187,7 +2204,7 @@ namespace PlayerState
     // ----- 終了化 -----
     void ComboAttack0_2::Finalize()
     {
-
+        owner_->SetUseRootMotion(false);
     }
 
     // ----- アニメーションの速度設定 -----
@@ -2313,10 +2330,17 @@ namespace PlayerState
         // アニメーションの速度設定
         SetAnimationSpeed();
 
-        if (addForceData_.Update(owner_->GetAnimationSeconds()))
+        // RootMotionの設定
+        if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
         {
-            owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+            // RootMotionを使用する
+            owner_->SetUseRootMotion(true);
         }
+
+        //if (addForceData_.Update(owner_->GetAnimationSeconds()))
+        //{
+        //    owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+        //}
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
@@ -2357,7 +2381,7 @@ namespace PlayerState
     // ----- 終了化 -----
     void ComboAttack0_3::Finalize()
     {
-
+        owner_->SetUseRootMotion(false);
     }
 
     // ----- アニメーションの速度設定 -----

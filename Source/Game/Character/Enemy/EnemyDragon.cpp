@@ -71,7 +71,7 @@ void EnemyDragon::Update(const float& elapsedTime)
     UpdateNode(elapsedTime);
 
     // RootMotion
-    if(GetUseRootMotion()) RootMotion();
+    //if(GetUseRootMotion()) RootMotion();
 
     // Collisionデータ更新
     UpdateCollisions(elapsedTime);
