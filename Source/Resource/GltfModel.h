@@ -384,6 +384,12 @@ public:
     [[nodiscard]] const int GetNodeIndex(const std::string& nodeName);
     std::vector<Node>* GetNodes() { return &nodes_; }
 
+    // ----- RootMotion -----
+    void RootMotion(const float& scaleFacter);
+
+    void SetRootJointIndex(const int& index) { rootJointIndex_ = index; }
+    void SetUseRootMotion(const bool& flag);
+
 private:
     void FetchNodes(const tinygltf::Model& gltfModel);
     void FetchMeshes(ID3D11Device* device, const tinygltf::Model& gltfModel);
@@ -432,4 +438,11 @@ private:
     bool    useRootMotionMovement_  = false;    // ルートモーションの移動値を使用するか
     std::vector<Node> animatedNodes_[2];
     std::vector<Node> blendedAnimationNodes_;    
+
+    // ---------- RootMotion ----------
+    std::vector<GltfModel::Node> zeroAnimatedNodes_;
+    DirectX::XMFLOAT3   previousPosition_       = {};
+    int                 rootJointIndex_         = 1;
+    float               rootMotionSpeed_        = 1.0f;
+    bool                isFirstTimeRootMotion_  = false; // RootMotion初回判定
 };

@@ -1812,7 +1812,8 @@ namespace PlayerState
         owner_->SetIsAbleAttack(true);
 
         // 変数初期化
-        addForceData_.Initialize(0.15f, 0.2f, 1.0f);
+        addForceData_[0].Initialize(0.15f, 0.2f, 1.0f);
+        addForceData_[1].Initialize(0.87f, 0.1f, 1.0f);
         attackData_.Initialize(0.1f, 0.35f);
     }
 
@@ -1825,12 +1826,30 @@ namespace PlayerState
         // アニメーションの速度設定
         SetAnimationSpeed();
 
-        // 移動処理
-        if (addForceData_.Update(owner_->GetAnimationSeconds()))
+#if 1
+        if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
         {
-            owner_->AddForce(owner_->GetTransform()->CalcForward(),
-                addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+            owner_->SetUseRootMotion(true);
+            //owner_->SetUseRootMotionMovement(true);
         }
+#else
+        for (int i = 0; i < 2; ++i)
+        {
+            if (addForceData_[i].Update(owner_->GetAnimationSeconds()))
+            {
+                owner_->AddForce(owner_->GetTransform()->CalcForward(),
+                    addForceData_[i].GetForce(), addForceData_[i].GetDecelerationForce());
+            }
+
+        }
+#endif
+
+        // 移動処理
+        //if (addForceData_.Update(owner_->GetAnimationSeconds()))
+        //{
+        //    owner_->AddForce(owner_->GetTransform()->CalcForward(),
+        //        addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+        //}
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
@@ -1847,6 +1866,7 @@ namespace PlayerState
     // ----- 終了化 -----
     void ComboAttack0_0::Finalize()
     {
+        owner_->SetUseRootMotion(false);
     }
 
     // ----- アニメーション設定 -----

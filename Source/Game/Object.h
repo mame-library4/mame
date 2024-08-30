@@ -26,6 +26,10 @@ public:
     void SetTransitionTime(const float& time) { gltfModel_.SetTransitionTime(time); }
     void SetUseRootMotionMovement(const bool& flag) { gltfModel_.SetUseRootMotionMovement(flag); }
 
+    // ---------- RootMotion ----------
+    void RootMotion() { gltfModel_.RootMotion(scaleFactor_); }
+    void SetUseRootMotion(const bool& flag) { gltfModel_.SetUseRootMotion(flag); }
+
 public:
     // ---------- Transform ----------
     Transform* GetTransform() { return gltfModel_.GetTransform(); }
@@ -51,11 +55,5 @@ public:
 private:
     GltfModel   gltfModel_;
     const float scaleFactor_;
-
-    // ---------- RootMotion ----------
-    std::vector<GltfModel::Node>    animatedNodes_;
-    std::vector<GltfModel::Node>    zeroAnimatedNodes_;
-    DirectX::XMFLOAT3               previousPosition_    = {};
-    float rootMotionTimer_ = 0;
 };
 

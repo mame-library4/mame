@@ -90,6 +90,9 @@ void Player::Update(const float& elapsedTime)
     // アニメーション更新 [※ステートマシン更新後]
     Character::Update(elapsedTime);
 
+    // ルートモーション
+    RootMotion();
+
     // TODO:テスト用
     if (GetHealth() <= 0.0f)
     {
@@ -106,6 +109,8 @@ void Player::Update(const float& elapsedTime)
 
     // 移動処理
     Move(elapsedTime);
+
+    
 
     // ステージの外に出ないようにする
     CollisionCharacterVsStage();

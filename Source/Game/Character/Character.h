@@ -30,10 +30,6 @@ public:
     void LookAtInitilaize(const std::string& nodeName);
     void LookAtUpdate();
 
-    // ----- RootMotion -----
-    void UpdateRootMotion();
-    void SetRootMotionSpeed(const float& speed) { rootMotionSpeed_ = speed; }
-
 public:// --- éÊìæÅEê›íË ---
 #pragma region [Get, Set] Function
     // ---------- ë¨ìx ----------
@@ -117,10 +113,4 @@ private:
     DirectX::XMFLOAT3   lookAtTargetPosition_   = {};
     int                 headJointIndex_         = 0;
     bool                isLookAt_               = false;
-
-    // ---------- RootMotion --------------------
-    std::vector<GltfModel::Node> zeroAnimatedNodes_;
-    DirectX::XMFLOAT3   previousPosition_   = {};
-    int                 rootJointIndex_     = 0;
-    float               rootMotionSpeed_    = 1.0f;
 };

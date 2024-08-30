@@ -296,7 +296,7 @@ namespace PlayerState
         float nextInputEndFrame_    = 0.0f;
         float nextAttackFrame_      = 0.0f;
 
-        AddForceData    addForceData_;
+        AddForceData    addForceData_[2];
         AttackData      attackData_;
     };
 
