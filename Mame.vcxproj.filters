@@ -61,9 +61,6 @@
     <ClCompile Include="Source\Graphics\Shader.cpp">
       <Filter>Mame\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graphics\ShadowMap.cpp">
-      <Filter>Mame\Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Graphics\SkyMap.cpp">
       <Filter>Mame\Graphics</Filter>
     </ClCompile>
@@ -217,6 +214,12 @@
     <ClCompile Include="Source\Game\UI\UIFader.cpp">
       <Filter>Mame\Game\UI</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\ShadowMap.cpp">
+      <Filter>Mame\Graphics\Shadow</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\CascadedShadowMap.cpp">
+      <Filter>Mame\Graphics\Shadow</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -284,9 +287,6 @@
       <Filter>Mame\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Source\Graphics\Shader.h">
-      <Filter>Mame\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Graphics\ShadowMap.h">
       <Filter>Mame\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Source\Graphics\SkyMap.h">
@@ -463,6 +463,12 @@
     <ClInclude Include="Source\Game\UI\UIFader.h">
       <Filter>Mame\Game\UI</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Graphics\ShadowMap.h">
+      <Filter>Mame\Graphics\Shadow</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\CascadedShadowMap.h">
+      <Filter>Mame\Graphics\Shadow</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -599,6 +605,9 @@
     </Filter>
     <Filter Include="Mame\Game\Object\Projectile">
       <UniqueIdentifier>{29f0360d-2f8c-4006-a753-0d7005dc2a18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Graphics\Shadow">
+      <UniqueIdentifier>{45bf14d4-c871-4d80-81eb-9db7464a4469}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
