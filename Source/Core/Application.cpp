@@ -129,7 +129,7 @@ void Application::Render()
     // --- ShadowMap作成 ---
     shadowMap_.Clear();
     shadowMap_.Activate();
-    SceneManager::Instance().ShadowRender();
+    //SceneManager::Instance().ShadowRender();
     shadowMap_.Deactivete();
 
     camera.SetPerspectiveFov();

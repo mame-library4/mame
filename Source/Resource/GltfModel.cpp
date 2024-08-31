@@ -19,7 +19,7 @@
 
 // ----- コンストラクタ -----
 GltfModel::GltfModel(const std::string& filename)
-    : filename_(filename), useRootMotionMovement_(true)
+    : filename_(filename)
 {
     ID3D11Device* device = Graphics::Instance().GetDevice();
 
@@ -628,8 +628,6 @@ void GltfModel::Animate(size_t animationIndex, float time, std::vector<Node>& an
 // ----- アニメーション再生 -----
 void GltfModel::PlayAnimation(const int& index, const bool& loop, const float& speed)
 {
-    //if (animationIndex_ == index) return;
-
     animationIndex_ = index;
     animationSeconds_ = 0.0f;
 
@@ -755,8 +753,8 @@ const int GltfModel::GetNodeIndex(const std::string& nodeName)
 // ----- RootMotion -----
 void GltfModel::RootMotion(const float& scaleFacter)
 {
-    if (isBlendAnimation_) return;
-    if (animationEndFlag_) return;
+    if (isBlendAnimation_) return; // BlendAnimationしている
+    if (animationEndFlag_) return; // Animationが再生されていない
 
     // ルートモーションを使用しない
     if (useRootMotionMovement_ == false) return;

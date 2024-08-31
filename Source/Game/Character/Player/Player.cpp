@@ -108,9 +108,7 @@ void Player::Update(const float& elapsedTime)
     }
 
     // 移動処理
-    Move(elapsedTime);
-
-    
+    Move(elapsedTime);    
 
     // ステージの外に出ないようにする
     CollisionCharacterVsStage();

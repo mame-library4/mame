@@ -69,6 +69,8 @@ const bool ShoutJudgment::Judgment()
 
 const bool NearJudgment::Judgment()
 {
+    return false;
+
     const DirectX::XMFLOAT3 ownerPos = owner_->GetTransform()->GetPosition();
     const DirectX::XMFLOAT3 playerPos = PlayerManager::Instance().GetTransform()->GetPosition();
     const float length = XMFloat3Length(ownerPos - playerPos);

@@ -176,9 +176,6 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const bool GetIsRoar() const { return isRoar_; }
     void SetIsRoar(const bool& flag) { isRoar_ = flag; }
 
-    [[nodiscard]] const bool GetUseRootMotion() const { return useRootMotion_; }
-    void SetUseRootMotion(const bool& flag) { useRootMotion_ = flag; }
-
     // ----- 攻撃ダメージ -----
     [[nodiscard]] const float GetAttackDamage() const { return attackDamage_; }
     void SetAttackDamage(const float& damage) { attackDamage_ = damage; }
@@ -214,9 +211,6 @@ protected:
 
     int     step_       = 0;        // 行動ステップ
     bool    isFlinch_   = false;    // ひるみフラグ
-
-
-    bool useRootMotion_ = false; // ルートモーション使用するかフラグ
 
     // ---------- 戦闘判定範囲変数 ----------
     float               battleRadius_       = 20.0f;// 戦闘開始範囲

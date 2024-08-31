@@ -204,9 +204,6 @@ namespace ActionDragon
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::CriticalStart, false);
             owner_->SetTransitionTime(0.35f);
 
-            // ルートモーションの移動値をなくす
-            owner_->SetUseRootMotionMovement(false);
-
             // 怯み時の押し出し判定
             owner_->SetDownCollisionActiveFlag();
 
@@ -307,6 +304,9 @@ namespace ActionDragon
             // アニメーション設定
             SetAnimation();
 
+            // ルートモーションを使用しない
+            owner_->SetUseRootMotion(false);
+
             timer_ = 0.0f;
 
             owner_->SetStep(1);
@@ -331,13 +331,28 @@ namespace ActionDragon
     {
         const Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(owner_->GetAnimationIndex());
 
-        if (animationIndex == Enemy::DragonAnimation::AttackTurn0        || // 回転攻撃
-            animationIndex == Enemy::DragonAnimation::AttackTackle3         // 突進攻撃 
-            )    
+        // 通常アニメーションを再生する
+        if (animationIndex == Enemy::DragonAnimation::AttackTackle3         || // 突進攻撃
+            animationIndex == Enemy::DragonAnimation::AttackKnockBackEnd0   || // 吹き飛ばし攻撃
+            animationIndex == Enemy::DragonAnimation::AttackFly2            || // 空中からたたきつけ攻撃
+            animationIndex == Enemy::DragonAnimation::FireBreathFront       || // ブレス 
+            animationIndex == Enemy::DragonAnimation::AttackRiseEnd            // 上昇攻撃
+            )
         {
-            owner_->SetTransitionTime(0.15f);
+            owner_->PlayAnimation(Enemy::DragonAnimation::Idle0, true);
+            return;
         }
-        else if (animationIndex == Enemy::DragonAnimation::AttackComboSlamEnd)
+
+        // 回転攻撃
+        if (animationIndex == Enemy::DragonAnimation::AttackTurn0)
+        {
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, true, 1.0f, 0.2f);
+            owner_->SetTransitionTime(0.2f);
+            return;
+        }
+
+        // たたきつけ攻撃
+        if (animationIndex == Enemy::DragonAnimation::AttackComboSlamEnd)
         {
             owner_->SetTransitionTime(0.1f);
         }
@@ -600,9 +615,6 @@ namespace ActionDragon
             // ダメージ設定
             owner_->SetAttackDamage(50.0f);
 
-            // ルートモーションは使わない
-            owner_->SetUseRootMotion(false);
-
             // 変数初期化
             {
                 addForceData_[MoveDirection::UpBack].Initialize(0.35f, 0.4f, 1.0f);
@@ -768,8 +780,8 @@ namespace ActionDragon
             // アニメーション設定
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackKnockBackStart, false);
 
-            // ルートモーションを使用する
-            owner_->SetUseRootMotion(true);
+            // ルートモーションを使用しない
+            owner_->SetUseRootMotion(false);
 
             // ダメージ設定
             owner_->SetAttackDamage(50.0f);
@@ -836,6 +848,9 @@ namespace ActionDragon
             {
                 // ステートリセット
                 owner_->SetStep(0);
+
+                owner_->SetUseRootMotion(false);
+
                 return ActionBase::State::Complete;
             }
 
@@ -1068,6 +1083,9 @@ namespace ActionDragon
             {
                 owner_->PlayAnimation(Enemy::DragonAnimation::AttackComboSlam1, false);
 
+                // ルートモーションリセット
+                owner_->SetUseRootMotion(true);
+
                 // ステート変更
                 SetState(STATE::Attack1);
             }
@@ -1104,6 +1122,9 @@ namespace ActionDragon
             if (owner_->GetAnimationSeconds() > animationEndFrame)
             {
                 owner_->SetStep(0);
+
+                owner_->SetUseRootMotion(false);
+
                 return ActionBase::State::Complete;
             }
         }
@@ -1125,11 +1146,11 @@ namespace ActionDragon
             // アニメーション再生
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackComboSlam0, false);
 
-            // ルートモーションを使用する
-            owner_->SetUseRootMotion(true);
-
             // ダメージ設定
             owner_->SetAttackDamage(50.0f);
+
+            // 最初の段階ではルートモーションを使用しない
+            owner_->SetUseRootMotion(false);
 
             // 変数初期化
             addForceData_.Initialize(1.0f, 0.4f, 1.0f);
@@ -1140,6 +1161,11 @@ namespace ActionDragon
 
             break;
         case STATE::Attack:
+
+            if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == true)
+            {
+                owner_->SetUseRootMotion(true);
+            }
 
             // 移動処理
             if (addForceData_.Update(owner_->GetAnimationSeconds()))
@@ -1197,6 +1223,8 @@ namespace ActionDragon
                 owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackComboSlam0, false, 1.0f, 0.75f);
                 owner_->SetTransitionTime(0.25f);
 
+                owner_->SetUseRootMotion(false);
+
                 addForceData_.Initialize(1.0f, 0.4f, 1.0f);
 
                 // ステート変更
@@ -1219,6 +1247,9 @@ namespace ActionDragon
             if (owner_->GetAnimationSeconds() > animationEndFrame)
             {
                 owner_->SetStep(0);
+
+                owner_->SetUseRootMotion(false);
+
                 return ActionBase::State::Complete;
             }
         }
@@ -1299,8 +1330,7 @@ namespace ActionDragon
                     owner_->SetTurnAttackActiveFlag();
             }
 
-            if (owner_->GetAnimationSeconds() > 3.3f)
-            //if (owner_->IsPlayAnimation() == false)
+            if (owner_->IsPlayAnimation() == false)
             {
                 owner_->SetStep(0);
                 return ActionBase::State::Complete;
@@ -1358,6 +1388,7 @@ namespace ActionDragon
             if (owner_->IsPlayAnimation() == false)
             {
                 owner_->PlayAnimation(Enemy::DragonAnimation::AttackTackle1, false);
+
                 SetState(STATE::Tackle);
             }
         }
@@ -1411,11 +1442,16 @@ namespace ActionDragon
             // アニメーション再生終了
             if (owner_->IsPlayAnimation() == false)
             {
+                // 地面に埋まらないように０地点にリセットする
                 owner_->GetTransform()->SetPositionY(0);
 
                 addForceData_.Initialize(0.03f, 0.6f, 0.8f);
 
                 owner_->PlayAnimation(Enemy::DragonAnimation::AttackTackle3, false);
+
+                // ルートモーションリセット
+                owner_->SetUseRootMotion(true);
+
                 SetState(STATE::Recovery);
             }
         }
@@ -1431,16 +1467,17 @@ namespace ActionDragon
                 }
             }
 
+            // 移動処理
             if (addForceData_.Update(owner_->GetAnimationSeconds()))
             {
                 owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
             }
 
             // アニメーション終了
-            const float animationEndFrame = 1.9f;
-            if (owner_->GetAnimationSeconds() > animationEndFrame)
+            if(owner_->IsPlayAnimation() == false)
             {
                 owner_->SetStep(0);
+
                 return ActionBase::State::Complete;
             }
         }
@@ -1466,6 +1503,9 @@ namespace ActionDragon
 
             // ダメージ設定
             owner_->SetAttackDamage(50.0f);
+
+            // ルートモーションを使用しない
+            owner_->SetUseRootMotion(false);
 
             // 変数初期化
             addForceData_.Initialize(1.9f, 1.5f, 2.0f);
