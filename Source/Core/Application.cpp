@@ -24,6 +24,7 @@ Application::Application(HWND hwnd)
     graphics_(hwnd, FALSE),
     input_(hwnd),
     shadowMap_(SCREEN_WIDTH, SCREEN_HEIGHT),
+    cascadedShadowMap_(),
     deferredRendering_(),
     sceneConstants_()
 {
@@ -127,10 +128,11 @@ void Application::Render()
     sceneConstants_.Activate(1, true, true, true, true);
 
     // --- ShadowMap作成 ---
-    shadowMap_.Clear();
-    shadowMap_.Activate();
-    //SceneManager::Instance().ShadowRender();
-    shadowMap_.Deactivete();
+    //shadowMap_.Clear();
+    //shadowMap_.Activate();
+    ////SceneManager::Instance().ShadowRender();
+    //shadowMap_.Deactivete();
+
 
     camera.SetPerspectiveFov();
     DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->viewProjection_, camera.GetViewMatrix() * camera.GetProjectionMatrix());
@@ -139,6 +141,7 @@ void Application::Render()
     DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->inverseViewProjection_, DirectX::XMMatrixInverse(NULL, camera.GetViewMatrix() * camera.GetProjectionMatrix()));
     sceneConstants_.Activate(1, true, true, true, true);
 
+    cascadedShadowMap_.Make(sceneConstants_.GetData()->lightDirection_, []() { SceneManager::Instance().ShadowRender(); });
 
 
     // ShadowMap Set 9

@@ -66,6 +66,14 @@ void EnemyManager::Render(ID3D11PixelShader* psShader)
     }
 }
 
+void EnemyManager::CastShadow()
+{
+    for (Enemy*& enemy : enemies_)
+    {
+        enemy->CastShadow();
+    }
+}
+
 // ----- ImGui—p -----
 void EnemyManager::DrawDebug()
 {

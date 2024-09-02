@@ -13,7 +13,7 @@ public:
     CascadedShadowMap();
     ~CascadedShadowMap() {}
 
-    void Make(const DirectX::XMFLOAT4& lightDirection);
+    void Make(const DirectX::XMFLOAT4& lightDirection, std::function<void()> drawcallback);
 
 private:
     Microsoft::WRL::ComPtr<ID3D11Texture2D>         depthStencilBuffer_;

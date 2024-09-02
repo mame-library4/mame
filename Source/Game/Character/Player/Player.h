@@ -99,12 +99,24 @@ public:// --- 定数 ---
         Counter,
     };
 
+    // 先行入力の種類
     enum class NextInput
     {
-        None,           // 先行入力なし
-        ComboAttack0,   // コンボ攻撃0
-        ComboAttack1,   // コンボ攻撃1
+        // -----------------------------------
+        //  先行入力の種類
+        //   先行入力なし : None
+        //   攻撃        : ComboAttack0
+        //   回避        : Avoidance
+        // 　カウンター   : Counter
+        // -----------------------------------
+        // カウンター受付可能   : AbleCounter
+        // カウンター受付不可能 : None
+        // -----------------------------------
+        None,           // 先行入力なし or カウンター判定なし
+        ComboAttack0,   // コンボ攻撃
         Avoidance,      // 回避
+        Counter,        // カウンター
+        AbleCounter,    // カウンター判定あり
     };
 
 #pragma endregion 定数
@@ -155,6 +167,12 @@ public:// --- 取得・設定 ---
     // ----- フラグをリセット -----
     void ResetFlags();    
     // ----- 先行入力 -----
+    void SetNextInputStartFrame(const float& avoidance = 0.0f, const float& attack = 0.0f, const float& counter = 0.0f);
+    void SetNextInputEndFrame(const float& avoidance = 3.0f, const float& attack = 3.0f, const float& counter = 3.0f);
+    void SetNextInputTransitionFrame(const float& avoidance = 0.0f, const float& attack = 0.0f, const float& counter = 0.0f);
+
+
+
     [[nodiscard]] const NextInput GetNextInput() const { return nextInput_; }
     void SetNextInput(const NextInput& nextInput) { nextInput_ = nextInput; }
     // ----- 回避 -----
@@ -207,7 +225,17 @@ private:
     DirectX::XMFLOAT3 moveDirection_ = {};
 
     // ---------- 行動 ------------------------------
-    NextInput nextInput_        = NextInput::None;  // 先行入力
+    NextInput   nextInput_                  = NextInput::None;  // 先行入力保存用
+    float       avoidanceInputStartFrame_   = 0.0f;             // 回避先行入力開始フレーム
+    float       attackInputStartFrame_      = 0.0f;             // 攻撃先行入力開始フレーム
+    float       counterInputStartFrame_     = 0.0f;             // カウンター先行入力開始フレーム
+    float       avoidanceInputEndFrame_     = 0.0f;
+    float       attackInputEndFrame_        = 0.0f;
+    float       counterInputEndFrame_       = 0.0f;
+    float       avoidanceTransitionFrame_   = 0.0f;             // 回避へ遷移可能フレーム
+    float       attackTransitionFrame_      = 0.0f;             // 攻撃へ遷移可能フレーム
+    float       counterTransitionFrame_     = 0.0f;             // カウンターへ遷移可能フレーム
+
     bool isAvoidance_           = false;            // 回避
     bool isCounter_             = false;            // カウンター状態か
     bool isAbleCounterAttack_   = false;            // カウンター攻撃が可能か( 追加の )

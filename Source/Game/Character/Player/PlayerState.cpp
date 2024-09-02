@@ -98,20 +98,18 @@ namespace PlayerState
 
         // アニメーション設定
         SetAnimation();
+
+        // 先行入力設定
+        owner_->SetNextInputStartFrame();
+        owner_->SetNextInputEndFrame(10.0f, 10.0f, 10.0f);
+        owner_->SetNextInputTransitionFrame();
     }
 
     // ----- 更新 -----
     void IdleState::Update(const float& elapsedTime)
     {
-        // 回避、攻撃入力受付
         if (owner_->CheckNextInput(Player::NextInput::None)) return;
 
-        // カウンター受付
-        if (owner_->GetCounterStanceKey())
-        {
-            owner_->ChangeState(Player::STATE::Counter);
-            return;
-        }
 
         if (owner_->GetOldState() == Player::STATE::Counter && owner_->GetIsBlendAnimation()) return;
 
@@ -1300,8 +1298,7 @@ namespace PlayerState
         owner_->ResetFlags();
 
         // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::Counter, false);
-        owner_->SetTransitionTime(0.1f);
+        SetAnimation();
 
         // 攻撃可能にする
         owner_->SetIsAbleAttack(true);
@@ -1433,6 +1430,21 @@ namespace PlayerState
     // ----- 終了化 -----
     void CounterState::Finalize()
     {
+    }
+
+    // ----- アニメーション設定 -----
+    void CounterState::SetAnimation()
+    {
+        if (owner_->GetOldState() == Player::STATE::ComboAttack0_0)
+        {
+            owner_->PlayBlendAnimation(Player::Animation::Counter, false, 1.0f, 0.15f);
+            owner_->SetTransitionTime(0.1f);
+            return;
+        }
+
+        owner_->PlayBlendAnimation(Player::Animation::Counter, false, 1.0f);
+        owner_->SetTransitionTime(0.1f);
+
     }
 
     // ----- 移動処理 -----
@@ -1811,6 +1823,11 @@ namespace PlayerState
         // 攻撃可能にする
         owner_->SetIsAbleAttack(true);
 
+        // 先行入力設定
+        owner_->SetNextInputStartFrame(0.13f, 0.13f, 0.13f);
+        owner_->SetNextInputEndFrame(1.583f, 0.75f, 1.5f);
+        owner_->SetNextInputTransitionFrame(0.4f, 0.3f, 0.3f);
+
         // 変数初期化
         addForceData_[0].Initialize(0.15f, 0.2f, 1.0f);
         addForceData_[1].Initialize(0.87f, 0.1f, 1.0f);
@@ -1827,6 +1844,8 @@ namespace PlayerState
             owner_->SetUseRootMotion(true);
         }
         
+        if (owner_->CheckNextInput(Player::NextInput::AbleCounter)) return;
+
         // 先行入力
         if (CheckNextInput()) return;
         
@@ -1928,40 +1947,6 @@ namespace PlayerState
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
 
-        // 先行入力受付
-        if (animationSeconds > 0.1)
-        {
-            // コンボ攻撃
-            if (owner_->GetComboAttack0KeyDown())
-            {
-                owner_->SetNextInput(Player::NextInput::ComboAttack0);
-            }
-            // 回避
-            if (owner_->GetAvoidanceKeyDown())
-            {
-                owner_->SetNextInput(Player::NextInput::Avoidance);
-            }
-        }
-
-        if (animationSeconds > 0.3f)
-        {
-            // コンボ攻撃
-            if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
-            {
-                owner_->ChangeState(Player::STATE::ComboAttack0_1);
-                return true;
-            }
-        }
-
-        if(animationSeconds > 0.4f)
-        {
-            // 回避
-            if (owner_->GetNextInput() == Player::NextInput::Avoidance)
-            {
-                owner_->ChangeState(Player::STATE::Avoidance);
-                return true;
-            }
-        }
 
         if (animationSeconds > 0.6f)
         {

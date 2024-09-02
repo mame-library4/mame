@@ -661,6 +661,9 @@
     <None Include="Source\Shader\Particle.hlsli">
       <Filter>Mame\Shader\Particle</Filter>
     </None>
+    <None Include="Source\Shader\CsmOpaque.hlsli">
+      <Filter>Mame\Shader\GltfModel</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shader\blur_ps.hlsl">
@@ -737,6 +740,12 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\ParticleVS.hlsl">
       <Filter>Mame\Shader\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\GltfModelShadowGS.hlsl">
+      <Filter>Mame\Shader\GltfModel</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\GltfModelShadowVS.hlsl">
+      <Filter>Mame\Shader\GltfModel</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

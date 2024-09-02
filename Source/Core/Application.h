@@ -12,6 +12,8 @@
 #include "../Input/Input.h"
 
 #include "ShadowMap.h"
+#include "CascadedShadowMap.h"
+
 #include "../Graphics/DeferredRendering.h"
 #include "SkyMap.h"
 
@@ -61,6 +63,8 @@ private:
 	Input input_;
 
 	ShadowMap shadowMap_;
+	CascadedShadowMap cascadedShadowMap_;
+
 	DeferredRendering	deferredRendering_;
 
 	SkyMap skymap_;

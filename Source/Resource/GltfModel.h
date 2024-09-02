@@ -13,6 +13,8 @@
 #include <cereal/types/set.hpp>
 #include <cereal/types/unordered_map.hpp>
 
+#include "ConstantBuffer.h"
+
 namespace DirectX
 {  
     template<class T>
@@ -330,12 +332,6 @@ public:
             archive(name_, duration_, channels_, samplers_, timelines_, scales_, rotations_, translations_);
         }
     };
-        
-    static const size_t PRIMITIVE_MAX_JOINT = 512;
-    struct PrimitiveJointConstants
-    {
-        DirectX::XMFLOAT4X4 matrices_[PRIMITIVE_MAX_JOINT];
-    };   
 
     std::vector<Scene>      scenes_;
     std::vector<Node>       nodes_;
@@ -352,6 +348,8 @@ public:
 public:
     void Render(const float& scaleFactor, ID3D11PixelShader* psShader = nullptr);
     void Render(const DirectX::XMFLOAT4X4 world, ID3D11PixelShader* psShader = nullptr);
+    void CastShadow(const float& scaleFactor);
+
     void DrawDebug();
 
     // ---------- Animation ----------
@@ -413,16 +411,26 @@ private:
     Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader_;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader_;
     Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout_;
-    struct primitiveConstants
+    struct PrimitiveConstants
     {
         DirectX::XMFLOAT4X4 world_;
-        int material_ = -1;
-        int hasTangent_ = 0;
-        int skin_ = -1;
-        float emissiveIntencity_ = 1.0f;
+        int                 material_               = -1;
+        int                 hasTangent_             = 0;
+        int                 skin_                   = -1;
+        int                 startInstanceLocation_  = 0;
     };
-    Microsoft::WRL::ComPtr<ID3D11Buffer> primitiveCbuffer_;
-    float emissiveIntencity_ = 1.0f;
+    std::unique_ptr<ConstantBuffer<PrimitiveConstants>> primitiveConstants_;
+
+    static const size_t maxJoints_ = 512;
+    struct JointConstants
+    {
+        DirectX::XMFLOAT4X4 matrices_[maxJoints_];
+    };
+    std::unique_ptr<ConstantBuffer<JointConstants>> jointConstants_;
+
+    Microsoft::WRL::ComPtr<ID3D11VertexShader>   shadowVertexShader_;
+    Microsoft::WRL::ComPtr<ID3D11GeometryShader> shadowGeometryShader_;
+    Microsoft::WRL::ComPtr<ID3D11InputLayout>    shadowInputLayout_;
 
     // ---------- Animation ----------
     int     animationIndex_         = -1;       // アニメーション番号

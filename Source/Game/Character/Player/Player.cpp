@@ -296,34 +296,62 @@ void Player::Move(const float& elapsedTime)
 // ----- 先行入力を受付してる -----
 bool Player::CheckNextInput(const Player::NextInput& nextInput)
 {
-    // 回避入力があった時
-    if (GetAvoidanceKeyDown())
-    {
-        if (nextInput == NextInput::None)
-        {
-            ChangeState(STATE::Avoidance);
-            return true;
-        }
+    const float animationSeconds = GetAnimationSeconds();
 
-        nextInput_ = NextInput::Avoidance;
+    // --------------- 回避先行入力受付 ---------------
+    if (animationSeconds >= avoidanceInputStartFrame_ &&
+        animationSeconds <= avoidanceInputEndFrame_)
+    {
+        if(GetAvoidanceKeyDown()) nextInput_ = NextInput::Avoidance;
     }
 
-    // カウンター受付
-    if (GetCounterStanceKey())
+    // --------------- 攻撃先行入力受付 ---------------
+    if (animationSeconds >= attackInputStartFrame_ &&
+        animationSeconds <= attackInputEndFrame_)
     {
-        ChangeState(STATE::Counter);
-        return true;
+        if (GetComboAttack0KeyDown()) nextInput_ = NextInput::ComboAttack0;
     }
 
-    // コンボ攻撃0
-    if (GetComboAttack0KeyDown())
+    // --------------- カウンター先行入力受付 ---------------
+    if (nextInput == NextInput::AbleCounter)
     {
-        if (nextInput == NextInput::None)
+        if (animationSeconds >= counterInputStartFrame_ &&
+            animationSeconds <= counterInputEndFrame_)
         {
-            ChangeState(STATE::ComboAttack0_0);
-            return true;
+            if (GetCounterStanceKey()) nextInput_ = NextInput::Counter;
         }
     }
+
+
+
+    // --------------- 回避遷移チェック ---------------
+    if (nextInput_ == NextInput::Avoidance)
+    {
+        if (animationSeconds >= avoidanceTransitionFrame_)
+        {
+            ChangeState(Player::STATE::Avoidance);
+            return true;
+        }
+    }
+    // --------------- 攻撃遷移チェック ---------------
+    if (nextInput_ == NextInput::ComboAttack0)
+    {
+        if (animationSeconds >= attackTransitionFrame_)
+        {
+            ChangeState(Player::STATE::ComboAttack0_0);
+            return true;
+        }
+    }
+    // --------------- カウンター遷移チェック ---------------
+    if (nextInput_ == NextInput::Counter)
+    {
+        if (animationSeconds >= counterTransitionFrame_)
+        {
+            ChangeState(Player::STATE::Counter);
+            return true;
+        }
+    }
+
 
     return false;
 }
@@ -335,6 +363,34 @@ void Player::ResetFlags()
     isCounter_              = false;            // カウンター状態かフラグ
     isAbleCounterAttack_    = false;            // カウンター攻撃可能か
     isAbleAttack_           = false;            // 攻撃できるかのフラグ
+}
+
+// ----- 先行入力受付開始フレーム設定 -----
+void Player::SetNextInputStartFrame(const float& avoidance, const float& attack, const float& counter)
+{
+    // 先行入力をリセットする
+    nextInput_ = NextInput::None;
+
+    // 先行入力受付開始フレーム設定
+    avoidanceInputStartFrame_   = avoidance;
+    attackInputStartFrame_      = attack;
+    counterInputStartFrame_     = counter;
+}
+
+// ----- 先行入力受付終了フレーム設定 -----
+void Player::SetNextInputEndFrame(const float& avoidance, const float& attack, const float& counter)
+{
+    avoidanceInputEndFrame_ = avoidance;
+    attackInputEndFrame_    = attack;
+    counterInputEndFrame_   = counter;
+}
+
+// ----- 先行入力での遷移フレーム設定 -----
+void Player::SetNextInputTransitionFrame(const float& avoidance, const float& attack, const float& counter)
+{
+    avoidanceTransitionFrame_   = avoidance;
+    attackTransitionFrame_      = attack;
+    counterTransitionFrame_     = counter;
 }
 
 // ----- CollisionData登録 -----

@@ -23,7 +23,8 @@ cbuffer PRIMITIVE_CONSTANT_BUFFER : register(b0)
     int material;
     bool hasTangent;
     int skin;
-    float emissiveIntencity;
+    
+    int startInstanceLocation;
 };
 
 cbuffer SCENE_CONSTANT_BUFFER : register(b1)

@@ -36,6 +36,11 @@ void PlayerManager::Render(ID3D11PixelShader* psShader)
     player_->Render(psShader);
 }
 
+void PlayerManager::CastShadow()
+{
+    player_->CastShadow();
+}
+
 void PlayerManager::RenderTrail()
 {
     player_->RenderTrail();

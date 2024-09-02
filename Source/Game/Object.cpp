@@ -25,6 +25,11 @@ void Object::Render(ID3D11PixelShader* psShader)
     gltfModel_.Render(scaleFactor_, psShader);
 }
 
+void Object::CastShadow()
+{
+    gltfModel_.CastShadow(scaleFactor_);
+}
+
 // ----- ImGui—p -----
 void Object::DrawDebug()
 {

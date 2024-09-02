@@ -80,9 +80,15 @@ CascadedShadowMap::CascadedShadowMap()
     constants_ = std::make_unique<ConstantBuffer<Constats>>();
 }
 
-void CascadedShadowMap::Make(const DirectX::XMFLOAT4& lightDirection)
+void CascadedShadowMap::Make(const DirectX::XMFLOAT4& lightDirection, std::function<void()> drawcallback)
 {
     ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
+
+    deviceContext->ClearDepthStencilView(depthStencilView_.Get(), D3D11_CLEAR_DEPTH, 1, 0);
+
+    Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_ON_ZW_ON);
+    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
+    Graphics::Instance().SetBlendState(Shader::BLEND_STATE::NONE);
 
     D3D11_VIEWPORT cachedViewports[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
     UINT viewportCount = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
@@ -205,6 +211,8 @@ void CascadedShadowMap::Make(const DirectX::XMFLOAT4& lightDirection)
     deviceContext->OMSetRenderTargets(1, nullRenderTargetView.GetAddressOf(), depthStencilView_.Get());
     deviceContext->RSSetViewports(1, &viewPort_);
 
+    drawcallback();
 
-
+    deviceContext->RSSetViewports(viewportCount, cachedViewports);
+    deviceContext->OMSetRenderTargets(1, cachedRenderTargetView.GetAddressOf(), cachedDepthStencilView.Get());
 }

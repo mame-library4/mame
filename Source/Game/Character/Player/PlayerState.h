@@ -206,11 +206,12 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
+        void SetAnimation();
+
         void Move();                            // ˆÚ“®
         void Turn(const float& elapsedTime);    // ù‰ñ
         
         void SetAnimationSpeed();
-
 
     private:
         AddForceData        addForceFront_; // ‘O•ûŒü

@@ -105,6 +105,7 @@ float4 main(VS_OUT pin) : SV_TARGET
     diffuse = lerp(diffuse, diffuse * occlusionFactor, occlusionStrength);
     specular = lerp(specular, specular * occlusionFactor, occlusionStrength);
 
+    const float emissiveIntencity = 1.0f;
     float3 Lo = diffuse + specular + emissive * emissiveIntencity;
     
     
