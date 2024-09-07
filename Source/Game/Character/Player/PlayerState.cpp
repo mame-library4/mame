@@ -108,25 +108,10 @@ namespace PlayerState
     // ----- 更新 -----
     void IdleState::Update(const float& elapsedTime)
     {
+        // 先行入力判定
         if (owner_->CheckNextInput(Player::NextInput::None)) return;
 
-
         if (owner_->GetOldState() == Player::STATE::Counter && owner_->GetIsBlendAnimation()) return;
-
-        // 移動値があれば MoveState へ遷移する
-        const float aLx = fabsf(Input::Instance().GetGamePad().GetAxisLX());
-        const float aLy = fabsf(Input::Instance().GetGamePad().GetAxisLY());
-        if (aLx != 0.0f || aLy != 0.0f)
-        {
-            if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
-            {
-                owner_->ChangeState(Player::STATE::Run);
-                return;
-            }
-
-            owner_->ChangeState(Player::STATE::Walk);
-            return;
-        }
     }
 
     // ----- 終了化 -----
@@ -186,13 +171,6 @@ namespace PlayerState
     {
         // 回避、攻撃受付
         if (owner_->CheckNextInput(Player::NextInput::None)) return;
-
-        // カウンター受付
-        if (owner_->GetCounterStanceKey())
-        {
-            owner_->ChangeState(Player::STATE::Counter);
-            return;
-        }
 
         // 旋回
         owner_->Turn(elapsedTime);
@@ -304,12 +282,6 @@ namespace PlayerState
             }
         }
 
-        // カウンター受付
-        if (owner_->GetCounterStanceKey())
-        {
-            owner_->ChangeState(Player::STATE::Counter);
-            return;
-        }
 
         // 旋回
         owner_->Turn(elapsedTime);
@@ -1672,10 +1644,19 @@ namespace PlayerState
     // ----- 更新 -----
     void CounterComboState::Update(const float& elapsedTime)
     {
+        // RootMotionの設定
+        if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+        {
+            // RootMotionを使用する
+            owner_->SetUseRootMotion(true);
+        }
+
+#if 0
         if (addForceData_.Update(owner_->GetAnimationSeconds()))
         {
             owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
         }
+#endif
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
@@ -1694,6 +1675,8 @@ namespace PlayerState
     {
         // 無敵状態にを解除する
         owner_->SetIsInvincible(false);
+
+        owner_->SetUseRootMotion(false);
     }
 }
 
@@ -1824,7 +1807,7 @@ namespace PlayerState
         owner_->SetIsAbleAttack(true);
 
         // 先行入力設定
-        owner_->SetNextInputStartFrame(0.13f, 0.13f, 0.13f);
+        owner_->SetNextInputStartFrame(0.13f, 0.13f, 0.13f, 0.6f);
         owner_->SetNextInputEndFrame(1.583f, 0.75f, 1.5f);
         owner_->SetNextInputTransitionFrame(0.4f, 0.3f, 0.3f);
 
@@ -1844,10 +1827,8 @@ namespace PlayerState
             owner_->SetUseRootMotion(true);
         }
         
+        // 先行入力判定
         if (owner_->CheckNextInput(Player::NextInput::AbleCounter)) return;
-
-        // 先行入力
-        if (CheckNextInput()) return;
         
         // アニメーションの速度設定
         SetAnimationSpeed();
@@ -1941,32 +1922,6 @@ namespace PlayerState
             owner_->SetAnimationSpeed(1.3f);
         }
     }
-
-    // ----- 先行入力処理 -----
-    const bool ComboAttack0_0::CheckNextInput()
-    {
-        const float animationSeconds = owner_->GetAnimationSeconds();
-
-
-        if (animationSeconds > 0.6f)
-        {
-            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
-            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
-            if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
-            {
-                if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
-                {
-                    owner_->ChangeState(Player::STATE::Run);
-                    return true;
-                }
-
-                owner_->ChangeState(Player::STATE::Walk);
-                return true;
-            }
-        }
-
-        return false;
-    }
 }
 
 // ----- コンボ攻撃0_1 -----
@@ -1983,6 +1938,11 @@ namespace PlayerState
 
         // 攻撃可能にする
         owner_->SetIsAbleAttack(true);
+
+        // 先行入力設定
+        owner_->SetNextInputStartFrame(0.13f, 0.13f, 0.13f);
+        owner_->SetNextInputEndFrame(1.583f, 0.75f, 1.5f);
+        owner_->SetNextInputTransitionFrame(0.4f, 0.3f, 0.3f);
 
         // 変数初期化
         addForceData_.Initialize(0.05f, 0.25f, 1.0f);

@@ -297,7 +297,9 @@ void Player::Move(const float& elapsedTime)
 bool Player::CheckNextInput(const Player::NextInput& nextInput)
 {
     const float animationSeconds = GetAnimationSeconds();
+    const STATE currentState = GetCurrentState();
 
+#pragma region ----- 先行入力受付 -----
     // --------------- 回避先行入力受付 ---------------
     if (animationSeconds >= avoidanceInputStartFrame_ &&
         animationSeconds <= avoidanceInputEndFrame_)
@@ -306,14 +308,17 @@ bool Player::CheckNextInput(const Player::NextInput& nextInput)
     }
 
     // --------------- 攻撃先行入力受付 ---------------
-    if (animationSeconds >= attackInputStartFrame_ &&
-        animationSeconds <= attackInputEndFrame_)
+    if (nextInput != NextInput::None)// 攻撃可能か
     {
-        if (GetComboAttack0KeyDown()) nextInput_ = NextInput::ComboAttack0;
+        if (animationSeconds >= attackInputStartFrame_ &&
+            animationSeconds <= attackInputEndFrame_)
+        {
+            if (GetComboAttack0KeyDown()) nextInput_ = NextInput::ComboAttack0;
+        }
     }
 
     // --------------- カウンター先行入力受付 ---------------
-    if (nextInput == NextInput::AbleCounter)
+    if (nextInput == NextInput::All)// カウンター受付可能
     {
         if (animationSeconds >= counterInputStartFrame_ &&
             animationSeconds <= counterInputEndFrame_)
@@ -322,8 +327,9 @@ bool Player::CheckNextInput(const Player::NextInput& nextInput)
         }
     }
 
+#pragma endregion ----- 先行入力受付 -----
 
-
+#pragma region ----- 遷移チェック -----
     // --------------- 回避遷移チェック ---------------
     if (nextInput_ == NextInput::Avoidance)
     {
@@ -334,16 +340,27 @@ bool Player::CheckNextInput(const Player::NextInput& nextInput)
         }
     }
     // --------------- 攻撃遷移チェック ---------------
-    if (nextInput_ == NextInput::ComboAttack0)
+    else if (nextInput_ == NextInput::ComboAttack0)
     {
         if (animationSeconds >= attackTransitionFrame_)
         {
-            ChangeState(Player::STATE::ComboAttack0_0);
+            switch (currentState)
+            {
+            case STATE::Run:
+                if (GetIsBlendAnimation()) ChangeState(STATE::ComboAttack0_0);
+                else ChangeState(STATE::RunAttack);
+                break;
+            case STATE::ComboAttack0_0: ChangeState(STATE::ComboAttack0_1); break; // 攻撃0 -> 攻撃1
+            case STATE::ComboAttack0_1: ChangeState(STATE::ComboAttack0_2); break; // 攻撃1 -> 攻撃2
+            case STATE::ComboAttack0_2: ChangeState(STATE::ComboAttack0_3); break; // 攻撃2 -> 攻撃3
+            default: ChangeState(STATE::ComboAttack0_0); break;                    // 何もなし -> 攻撃0
+            }
+
             return true;
         }
     }
     // --------------- カウンター遷移チェック ---------------
-    if (nextInput_ == NextInput::Counter)
+    else if (nextInput_ == NextInput::Counter)
     {
         if (animationSeconds >= counterTransitionFrame_)
         {
@@ -352,6 +369,35 @@ bool Player::CheckNextInput(const Player::NextInput& nextInput)
         }
     }
 
+#pragma endregion ----- 遷移チェック -----
+
+    // --------------- 移動入力判定 ---------------
+    if (nextInput == NextInput::None) return false; // 移動可能か
+    if (animationSeconds >= moveInputStartFrame_)
+    {
+        // スティック入力があるか判定
+        const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+        const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+        if (fabsf(aLx) == 0.0f || fabsf(aLy) == 0.0f) return false;
+        
+        // 走るボタン押されているか
+        if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
+        {
+            // 現在既に走りステートなので何もしない
+            if (currentState == STATE::Run) return false;
+            
+            ChangeState(Player::STATE::Run);
+            return true;
+        }
+        else
+        {
+            // 現在既に歩きステートなので何もしない
+            if (currentState == STATE::Walk) return false;
+            
+            ChangeState(Player::STATE::Walk);
+            return true;
+        }
+    }
 
     return false;
 }
@@ -366,7 +412,7 @@ void Player::ResetFlags()
 }
 
 // ----- 先行入力受付開始フレーム設定 -----
-void Player::SetNextInputStartFrame(const float& avoidance, const float& attack, const float& counter)
+void Player::SetNextInputStartFrame(const float& avoidance, const float& attack, const float& counter, const float& move)
 {
     // 先行入力をリセットする
     nextInput_ = NextInput::None;
@@ -375,6 +421,7 @@ void Player::SetNextInputStartFrame(const float& avoidance, const float& attack,
     avoidanceInputStartFrame_   = avoidance;
     attackInputStartFrame_      = attack;
     counterInputStartFrame_     = counter;
+    moveInputStartFrame_        = move;
 }
 
 // ----- 先行入力受付終了フレーム設定 -----

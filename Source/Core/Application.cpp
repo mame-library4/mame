@@ -141,7 +141,7 @@ void Application::Render()
     DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->inverseViewProjection_, DirectX::XMMatrixInverse(NULL, camera.GetViewMatrix() * camera.GetProjectionMatrix()));
     sceneConstants_.Activate(1, true, true, true, true);
 
-    cascadedShadowMap_.Make(sceneConstants_.GetData()->lightDirection_, []() { SceneManager::Instance().ShadowRender(); });
+    //cascadedShadowMap_.Make(sceneConstants_.GetData()->lightDirection_, []() { SceneManager::Instance().ShadowRender(); });
 
 
     // ShadowMap Set 9

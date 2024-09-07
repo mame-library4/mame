@@ -289,7 +289,6 @@ namespace PlayerState
         void SetAnimation();
 
         void SetAnimationSpeed();
-        [[nodiscard]] const bool CheckNextInput();
 
     private:
         // ----- æs“ü—Í—p -----

@@ -8,6 +8,21 @@
 
 #include "Effect/Effect.h"
 
+// ----------------------------------------------------------------------------------------------------------------
+//            | 待機 / 歩き / 走り / 攻撃0 / 攻撃1 / 攻撃2 / 攻撃3 / 走り攻撃 / 回避 / カウンター / カウンター攻撃 /
+//  ----------|----------------------------------------------------------------------------------------------------
+//  移動      |  〇  | △  |      |   〇　 |  〇　| 　〇　|     　|    〇    |      |           |               |
+//  攻撃      |  〇  | 〇  |  〇  |   〇   |  〇  |   〇  |       |   〇    |  〇  |           |               |
+//  回避      |  〇  | 〇  |  〇  |   〇   |  〇  |   〇  |  〇   |   〇     |  〇  |           |               |
+//  カウンター |      |    |      |   〇   |  〇  |   〇  |       |   〇     |      |           |               |
+// ----------------------------------------------------------------------------------------------------------------
+// 待機/歩き/走り/攻撃0/攻撃1/攻撃2/攻撃3/走り攻撃/回避/カウンター/カウンター攻撃
+// None/Walk/Run/AbleCounter/AbleCounter/AbleCounter/Avoidance/
+// ----------------------------------------------------------------------------------------------------------------
+// All       / 移動,攻撃,回避,カウンター
+// NoConter  / 移動,攻撃,回避
+// None      / 回避
+
 class Player : public Character
 {
 public:// --- 定数 ---
@@ -109,14 +124,18 @@ public:// --- 定数 ---
         //   回避        : Avoidance
         // 　カウンター   : Counter
         // -----------------------------------
-        // カウンター受付可能   : AbleCounter
-        // カウンター受付不可能 : None
+        // All       / 移動,攻撃,回避,カウンター
+        // NoConter  / 移動,攻撃,回避
+        // None      / 回避
         // -----------------------------------
-        None,           // 先行入力なし or カウンター判定なし
+
+        None,           // 先行入力なし or 回避のみ判定
         ComboAttack0,   // コンボ攻撃
         Avoidance,      // 回避
         Counter,        // カウンター
-        AbleCounter,    // カウンター判定あり
+
+        All,            // 全種類OK
+        NoCounter,      // カウンター以外OK
     };
 
 #pragma endregion 定数
@@ -167,8 +186,8 @@ public:// --- 取得・設定 ---
     // ----- フラグをリセット -----
     void ResetFlags();    
     // ----- 先行入力 -----
-    void SetNextInputStartFrame(const float& avoidance = 0.0f, const float& attack = 0.0f, const float& counter = 0.0f);
-    void SetNextInputEndFrame(const float& avoidance = 3.0f, const float& attack = 3.0f, const float& counter = 3.0f);
+    void SetNextInputStartFrame(const float& avoidance = 0.0f, const float& attack = 0.0f, const float& counter = 0.0f, const float& move = 0.0f);
+    void SetNextInputEndFrame(const float& avoidance = 10.0f, const float& attack = 10.0f, const float& counter = 10.0f);
     void SetNextInputTransitionFrame(const float& avoidance = 0.0f, const float& attack = 0.0f, const float& counter = 0.0f);
 
 
@@ -229,6 +248,7 @@ private:
     float       avoidanceInputStartFrame_   = 0.0f;             // 回避先行入力開始フレーム
     float       attackInputStartFrame_      = 0.0f;             // 攻撃先行入力開始フレーム
     float       counterInputStartFrame_     = 0.0f;             // カウンター先行入力開始フレーム
+    float       moveInputStartFrame_        = 0.0f;
     float       avoidanceInputEndFrame_     = 0.0f;
     float       attackInputEndFrame_        = 0.0f;
     float       counterInputEndFrame_       = 0.0f;

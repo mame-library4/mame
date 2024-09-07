@@ -194,8 +194,8 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Battle", "Far", 2, BehaviorTree::SelectRule::Random, nullptr, nullptr);
 #else
     behaviorTree_->AddNode("Battle", "Near",  1, BehaviorTree::SelectRule::Priority, new NearJudgment(this), nullptr);
-    //behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Random, nullptr, nullptr);
-    behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Random, nullptr, nullptr);
+    //behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
 #endif
 
     //behaviorTree_->AddNode("Shout", "Roar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
@@ -205,8 +205,8 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Near", "ComboFlySlam",  0, BehaviorTree::SelectRule::None, new ComboFlySlamJudgment(this), new ActionDragon::ComboFlySlamAction(this));    
     
 
-    behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
-    //behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
+    //behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
 
     
     behaviorTree_->AddNode("MostNear", "FlyAttack",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));    
@@ -302,7 +302,7 @@ void EnemyDragon::RegisterCollisionData()
         { "Down_Dragon15_l_foot",        0.35f, true, { 0.05f, -1.0f, 0.1f },   "Dragon15_l_foot" },
         { "Down_Dragon15_r_foot",        0.35f, true, { 0.1f, 0.0f, -0.1f },    "Dragon15_r_foot" },
 
-        #pragma region ---------- êKîˆ ----------
+#pragma region ---------- êKîˆ ----------
         { "Dragon15_tail_00", 0.70f, true, {} },
         { "Dragon15_tail_01", 0.55f, true, {  0.20f, 0.0f,  0.00f } },
         { "Dragon15_tail_02", 0.42f, true, {  0.01f, 0.0f,  0.03f } },
