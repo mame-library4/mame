@@ -62,21 +62,7 @@ namespace PlayerState
 
     private:
         void SetAnimation();
-    };
-
-    // ----- ï‡Ç´ -----
-    class WalkState : public State<Player>
-    {
-    public:
-        WalkState(Player* player) : State(player, "WalkState") {}
-        ~WalkState() {}
-
-        void Initialize()                       override;
-        void Update(const float& elapsedTime)   override;
-        void Finalize()                         override;
-
-    private:
-        void SetAnimation();
+        [[nodiscard]] const bool CheckNextInput();
     };
 
     // ----- ëñÇË -----
@@ -92,9 +78,10 @@ namespace PlayerState
 
     private:
         void SetAnimation();
+        [[nodiscard]] const bool CheckNextInput();
 
     private:
-        float stateChangeTimer_ = 0.0f;
+        float changeStateTimer_ = 0.0f;
     };
 
     class LightFlinchState : public State<Player>
@@ -185,6 +172,7 @@ namespace PlayerState
 
     private:
         DirectX::XMFLOAT3   moveDirection_  = {};
+        float invincibleTimer_ = 0.0f;
 
         AddForceData addForceData_;
 
@@ -207,6 +195,7 @@ namespace PlayerState
 
     private:
         void SetAnimation();
+        [[nodiscard]] const bool CheckNextInput();
 
         void Move();                            // à⁄ìÆ
         void Turn(const float& elapsedTime);    // ê˘âÒ
@@ -252,6 +241,9 @@ namespace PlayerState
         void Finalize()                         override;
 
     private:
+        [[nodiscard]] const bool CheckNextInput();
+
+    private:
         AddForceData        addForceData_;
         AttackData          attackData_;
     };
@@ -287,16 +279,10 @@ namespace PlayerState
 
     private:
         void SetAnimation();
-
         void SetAnimationSpeed();
+        [[nodiscard]] const bool CheckNextInput();
 
     private:
-        // ----- êÊçsì¸óÕóp -----
-        float nextInputStartFrame_  = 0.0f;
-        float nextInputEndFrame_    = 0.0f;
-        float nextAttackFrame_      = 0.0f;
-
-        AddForceData    addForceData_[2];
         AttackData      attackData_;
     };
 
@@ -317,7 +303,6 @@ namespace PlayerState
         [[nodiscard]] const bool CheckNextInput();
 
     private:
-        AddForceData    addForceData_;
         AttackData      attackData_;
     };
 
@@ -337,7 +322,6 @@ namespace PlayerState
         [[nodiscard]] const bool CheckNextInput();
 
     private:
-        AddForceData    addForceData_;
         AttackData      attackData_;
     };
 
@@ -354,11 +338,10 @@ namespace PlayerState
 
     private:
         void SetAnimationSpeed();
+        [[nodiscard]] const bool CheckNextInput();
 
     private:
-        AddForceData    addForceData_;
         AttackData      attackData_;
-
         bool isVibration_ = false;
     };
 }

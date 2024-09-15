@@ -789,7 +789,6 @@ namespace ActionDragon
             // 変数初期化
             {
                 loopMax_ = rand() % 3;
-                //loopMax_ = rand() % 3;
                 loopCounter_ = 0;
             }
 
@@ -803,6 +802,9 @@ namespace ActionDragon
             {
                 owner_->PlayAnimation(Enemy::DragonAnimation::AttackKnockBackLoop, false);
                 
+                // 現在の体力を保存する
+                oldHealth_ = owner_->GetHealth();
+
                 // ステート変更
                 SetState(STATE::Loop);
                 break;
@@ -810,6 +812,16 @@ namespace ActionDragon
 
             break;
         case STATE::Loop:// ループ
+
+            // 攻撃をくらったか判定
+            if (owner_->GetHealth() != oldHealth_)
+            {
+                // 攻撃を受けたのでAttackに移行
+                owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackKnockBackEnd0, false);
+
+                // ステート変更
+                SetState(STATE::Attack);
+            }
 
             // アニメーション再生終了
             if (owner_->IsPlayAnimation() == false)
@@ -824,10 +836,11 @@ namespace ActionDragon
                 // ループ終了
                 else
                 {
-                    owner_->PlayAnimation(Enemy::DragonAnimation::AttackKnockBackEnd0, false);
+                    // 攻撃をくらわなかった
+                    owner_->PlayAnimation(Enemy::DragonAnimation::AttackKnockBackEnd1, false);
                     
                     // ステート変更
-                    SetState(STATE::Attack);
+                    SetState(STATE::Failed);
                 }
                 
                 break;
@@ -844,6 +857,18 @@ namespace ActionDragon
 
             break;
         case STATE::Attack:// 攻撃成功
+            // 攻撃判定処理
+            if (owner_->GetAnimationSeconds() > 1.0f)
+            {
+                if (owner_->GetIsAttackActive())
+                    owner_->SetKnockBackAttackActiveFalg(false);
+            }
+            else if (owner_->GetAnimationSeconds() > 0.36f)
+            {
+                if (owner_->GetIsAttackActive() == false)
+                    owner_->SetKnockBackAttackActiveFalg();
+            }
+
             if (owner_->IsPlayAnimation() == false)
             {
                 // ステートリセット
@@ -856,10 +881,20 @@ namespace ActionDragon
 
             break;
         case STATE::Failed:// 攻撃失敗
+            if (owner_->IsPlayAnimation() == false)
+            {
+                // ステートリセット
+                owner_->SetStep(0);
+
+                owner_->SetUseRootMotion(false);
+
+                return ActionBase::State::Complete;
+            }
+
             break;
         }
 
-        return ActionBase::State();
+        return ActionBase::State::Run;
     }
 }
 
@@ -1283,7 +1318,8 @@ namespace ActionDragon
         {
         case STATE::Initialize:// 初期化
             // アニメーション設定
-            owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurnStart, false);
+            //owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurnStart, false);
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurn0, false);
 
             // ダメージ設定
             owner_->SetAttackDamage(50.0f);
@@ -1298,7 +1334,8 @@ namespace ActionDragon
             addForceData_.Initialize(1.5f, 0.3f, 0.5f);
  
             // ステート変更
-            SetState(STATE::PreAction);
+            //SetState(STATE::PreAction);
+            SetState(STATE::Attack);
 
             break;
         case STATE::PreAction:// 予備動作
@@ -1366,7 +1403,8 @@ namespace ActionDragon
             PlayerManager::Instance().GetPlayer()->SetCounterActiveRadius(6.0f);
 
             // 変数初期化
-            addForceData_.Initialize(0.15f, 0.8f, 0.6f);
+            addForceData_.Initialize(0.15f, 0.6f, 0.6f);
+            //addForceData_.Initialize(0.15f, 0.8f, 0.6f);
             easingTimer_ = 0.0f;
 
             // ステート変更
@@ -1445,7 +1483,8 @@ namespace ActionDragon
                 // 地面に埋まらないように０地点にリセットする
                 owner_->GetTransform()->SetPositionY(0);
 
-                addForceData_.Initialize(0.03f, 0.6f, 0.8f);
+                addForceData_.Initialize(0.03f, 0.5f, 0.6f);
+                //addForceData_.Initialize(0.03f, 0.6f, 0.8f);
 
                 owner_->PlayAnimation(Enemy::DragonAnimation::AttackTackle3, false);
 
@@ -1485,6 +1524,14 @@ namespace ActionDragon
         }
 
         return ActionBase::State::Run;
+    }
+}
+
+namespace ActionDragon
+{
+    const ActionBase::State ComboTackleAction::Run(const float& elapsedTime)
+    {
+        return ActionBase::State();
     }
 }
 
@@ -1614,5 +1661,50 @@ namespace ActionDragon
         if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
 
         return ActionBase::State();
+    }
+}
+
+namespace ActionDragon
+{
+    const ActionBase::State MoveAction::Run(const float& elapsedTime)
+    {        
+        switch (owner_->GetStep())
+        {
+        case 0:// 初期化
+            // アニメーション設定
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::Walk, true);
+            //owner_->PlayBlendAnimation(Enemy::DragonAnimation::Run, true);
+            owner_->SetTransitionTime(0.1f);
+
+            // 移動目的地を設定
+            targetPosition_ = PlayerManager::Instance().GetTransform()->GetPosition();
+
+            owner_->SetStep(1);
+
+            break;
+        case 1:
+        {
+            // 回転処理
+            owner_->Turn(elapsedTime, targetPosition_);
+
+            // 移動処理
+            const DirectX::XMFLOAT3 vec = XMFloat3Normalize(owner_->CalcDirectionToPlayer());
+            const float speed = owner_->GetWalkSpeed() * elapsedTime;
+
+            owner_->GetTransform()->AddPosition(vec * speed);
+
+            const float distance = owner_->CalcDistanceToPlayer();
+            if (distance < 10.0f)
+            {
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+
+
+        }
+            break;
+        }
+
+        return ActionBase::State::Run;
     }
 }

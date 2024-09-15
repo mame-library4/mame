@@ -101,7 +101,7 @@ namespace PlayerState
 
         // 先行入力設定
         owner_->SetNextInputStartFrame();
-        owner_->SetNextInputEndFrame(10.0f, 10.0f, 10.0f);
+        owner_->SetNextInputEndFrame();
         owner_->SetNextInputTransitionFrame();
     }
 
@@ -109,9 +109,9 @@ namespace PlayerState
     void IdleState::Update(const float& elapsedTime)
     {
         // 先行入力判定
-        if (owner_->CheckNextInput(Player::NextInput::None)) return;
+        if (CheckNextInput()) return;
 
-        if (owner_->GetOldState() == Player::STATE::Counter && owner_->GetIsBlendAnimation()) return;
+        //if (owner_->GetOldState() == Player::STATE::Counter && owner_->GetIsBlendAnimation()) return;
     }
 
     // ----- 終了化 -----
@@ -136,8 +136,8 @@ namespace PlayerState
             owner_->SetTransitionTime(0.3f);
         }
         else if (animationIndex == Player::Animation::RollForward ||
-            animationIndex == Player::Animation::RollBack    ||
-            animationIndex == Player::Animation::RollRight   ||
+            animationIndex == Player::Animation::RollBack ||
+            animationIndex == Player::Animation::RollRight ||
             animationIndex == Player::Animation::RollLeft)
         {
             owner_->SetTransitionTime(0.15f);
@@ -148,92 +148,63 @@ namespace PlayerState
         }
         owner_->PlayBlendAnimation(Player::Animation::Idle, true);
     }
-}
 
-// ----- 歩き -----
-namespace PlayerState
-{
-    // ----- 初期化 -----
-    void WalkState::Initialize()
+    // ----- 先行入力判定 -----
+    const bool IdleState::CheckNextInput()
     {
-        // フラグをリセットする
-        owner_->ResetFlags();
+        const float animationSeconds = owner_->GetAnimationSeconds();
 
-        // アニメーション設定
-        SetAnimation();
-
-        // 最大速度を設定
-        owner_->SetMaxSpeed(2.5f);
-    }
-
-    // ----- 更新 -----
-    void WalkState::Update(const float& elapsedTime)
-    {
-        // 回避、攻撃受付
-        if (owner_->CheckNextInput(Player::NextInput::None)) return;
-
-        // 旋回
-        owner_->Turn(elapsedTime);
-
-        const float aLx = fabsf(Input::Instance().GetGamePad().GetAxisLX());
-        const float aLy = fabsf(Input::Instance().GetGamePad().GetAxisLY());
-        if (aLx == 0.0f && aLy == 0.0f && owner_->GetIsBlendAnimation() == false)
+#pragma region ----- 先行入力受付 -----
+        // 回避先行入力受付
+        if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
+            animationSeconds <= owner_->GetAvoidanceInputEndFrame())
         {
-            owner_->ChangeState(Player::STATE::Idle);
-            return;
+            if (owner_->GetAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+        }
+        // 攻撃先行入力受付
+        if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
+            animationSeconds <= owner_->GetAttackInputEndFrame())
+        {
+            if (owner_->GetComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
         }
 
-        if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
+#pragma endregion ----- 先行入力受付 -----
+
+#pragma region ----- 遷移チェック -----
+        // 回避遷移チェック
+        if (owner_->GetNextInput() == Player::NextInput::Avoidance)
         {
+            if (animationSeconds >= owner_->GetAvoidanceTransitionFrame())
+            {
+                owner_->ChangeState(Player::STATE::Avoidance);
+                return true;
+            }
+        }
+        // 攻撃遷移チェック
+        else if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
+        {
+            if (animationSeconds >= owner_->GetAttackTransitionFrame())
+            {
+                owner_->ChangeState(Player::STATE::ComboAttack0_0);
+                return true;
+            }
+        }
+
+#pragma endregion ----- 遷移チェック -----
+
+        // 移動入力判定
+        if (animationSeconds >= owner_->GetMoveInputStartFrame())
+        {
+            // スティック入力があるか
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (aLx == 0.0f && aLy == 0.0f) return false;
+
             owner_->ChangeState(Player::STATE::Run);
-        }
-    }
-
-    // ----- 終了化 -----
-    void WalkState::Finalize()
-    {
-        owner_->SetMoveDirection({});
-        owner_->SetVelocity({});
-    }
-
-    // ----- アニメーション設定 -----
-    void WalkState::SetAnimation()
-    {
-        const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
-
-        if (animationIndex == Player::Animation::RollForward ||
-            animationIndex == Player::Animation::RollBack    ||
-            animationIndex == Player::Animation::RollRight   ||
-            animationIndex == Player::Animation::RollLeft)
-        {
-            owner_->SetTransitionTime(0.3f);
-        }
-        else if (animationIndex == Player::Animation::ComboAttack0_0)
-        {
-            owner_->SetTransitionTime(0.3f);
-        }
-        else if (animationIndex == Player::Animation::ComboAttack0_1)
-        {
-            owner_->SetTransitionTime(0.4f);
-        }
-        else if (animationIndex == Player::Animation::ComboAttack0_2)
-        {
-            owner_->SetTransitionTime(0.25f);
-        }
-        else if (animationIndex == Player::Animation::RunAttack1)
-        {
-            owner_->SetTransitionTime(0.5f);
-        }
-        else if (animationIndex == Player::Animation::Run)
-        {
-            owner_->SetTransitionTime(0.2f);
-        }
-        else
-        {
-            owner_->SetTransitionTime(0.15f);
+            return true;
         }
 
-        owner_->PlayBlendAnimation(Player::Animation::Walk, true, 1.4f);
+        return false;
     }
 }
 
@@ -252,57 +223,26 @@ namespace PlayerState
         // 最大速度を設定
         owner_->SetMaxSpeed(5.0f);
 
+        // 先行入力設定
+        owner_->SetNextInputStartFrame();
+        owner_->SetNextInputEndFrame();
+        owner_->SetNextInputTransitionFrame();
+
         // 変数初期化
-        stateChangeTimer_ = 0.0f;
+        changeStateTimer_ = 0.0f;
     }
 
     // ----- 更新 -----
     void RunState::Update(const float& elapsedTime)
     {
-        // 回避入力受付
-        if (owner_->GetAvoidanceKeyDown())
-        {
-            owner_->ChangeState(Player::STATE::Avoidance);
-            return;
-        }
-
-        // 攻撃入力受付
-        if (owner_->GetComboAttack0KeyDown())
-        {
-            //if (owner_->GetAnimationSeconds() > 0.2f || owner_->GetIsAnimationLooped())
-            if(owner_->GetIsBlendAnimation() == false)
-            {
-                owner_->ChangeState(Player::STATE::RunAttack);
-                return;
-            }
-            else
-            {
-                owner_->ChangeState(Player::STATE::ComboAttack0_0);
-                return;
-            }
-        }
-
+        // 先行入力判定
+        if (CheckNextInput()) return;
 
         // 旋回
         owner_->Turn(elapsedTime);
 
-        // 制御用
-        if (owner_->GetIsBlendAnimation() == false) stateChangeTimer_ += elapsedTime;
-
-        const float aLx = fabsf(Input::Instance().GetGamePad().GetAxisLX());
-        const float aLy = fabsf(Input::Instance().GetGamePad().GetAxisLY());
-        if (aLx == 0.0f && aLy == 0.0f)
-        {
-            owner_->ChangeState(Player::STATE::Idle);
-            return;
-        }
-
-        if ((Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER) == false &&
-            stateChangeTimer_ > 0.1f)
-        {
-            owner_->ChangeState(Player::STATE::Walk);
-            return;
-        }
+        // タイマー加算
+        changeStateTimer_ += elapsedTime;
     }
     
     // ----- 終了化 -----
@@ -339,6 +279,72 @@ namespace PlayerState
             owner_->SetTransitionTime(0.15f);
         }
         owner_->PlayBlendAnimation(Player::Animation::Run, true);
+    }
+
+    // ----- 先行入力判定 -----
+    const bool RunState::CheckNextInput()
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+
+#pragma region ----- 先行入力受付 -----
+        // 回避先行入力受付
+        if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
+            animationSeconds <= owner_->GetAvoidanceInputEndFrame())
+        {
+            if (owner_->GetAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+        }
+        // 攻撃先行入力受付
+        if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
+            animationSeconds <= owner_->GetAttackInputEndFrame())
+        {
+            if (owner_->GetComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
+        }
+
+#pragma endregion ----- 先行入力受付 -----
+
+#pragma region ----- 遷移チェック -----
+        // 回避遷移チェック
+        if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+        {
+            if (animationSeconds >= owner_->GetAvoidanceTransitionFrame())
+            {
+                owner_->ChangeState(Player::STATE::Avoidance);
+                return true;
+            }
+        }
+        // 攻撃遷移チェック
+        else if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
+        {
+            if (animationSeconds >= owner_->GetAttackTransitionFrame())
+            {
+                //if(owner_->GetIsBlendAnimation()) owner_->ChangeState(Player::STATE::ComboAttack0_0);
+                //else owner_->ChangeState(Player::STATE::RunAttack);
+
+                owner_->ChangeState(Player::STATE::ComboAttack0_0);
+
+                return true;
+            }
+        }
+
+#pragma endregion ----- 遷移チェック -----
+
+        // 移動入力判定
+        if (animationSeconds >= owner_->GetMoveInputStartFrame())
+        {
+            // 走り->待機 の遷移制御
+            if (changeStateTimer_ <= 0.2f) return false;
+
+            // スティック入力があるか
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (aLx == 0.0f && aLy == 0.0f)
+            {
+                owner_->ChangeState(Player::STATE::Idle);
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 
@@ -638,8 +644,9 @@ namespace PlayerState
 
         // 変数初期化
         addForceData_.Initialize(0.15f, 0.27f, 0.4f);
-        isRotating_ = false;
+        invincibleTimer_ = 0.0f;
 
+        isRotating_ = false;
         isFirstTime_ = false;
     }
 
@@ -660,6 +667,13 @@ namespace PlayerState
             owner_->AddForce(moveDirection_, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
         }
 
+        // 無敵時間処理
+        invincibleTimer_ += elapsedTime;
+        if (invincibleTimer_ >= 0.4f)
+        {
+            owner_->SetIsInvincible(false);
+        }
+
         if(owner_->IsPlayAnimation() == false)
         {
             owner_->ChangeState(Player::STATE::Idle);
@@ -672,8 +686,6 @@ namespace PlayerState
     {
         // 変数をリセットしておく
         isFirstTime_ = true;
-
-        owner_->SetIsInvincible(false);
     }
 
     // ----- 回転処理 -----
@@ -734,6 +746,7 @@ namespace PlayerState
 
         // 変数初期化
         addForceData_.Initialize(0.15f, 0.27f, 0.4f);
+        invincibleTimer_ = 0.0f;
     }
 
     // ----- 先行入力処理 -----
@@ -897,15 +910,7 @@ namespace PlayerState
                     const float aLy = Input::Instance().GetGamePad().GetAxisLY();
                     if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
                     {
-                        // 移動値がある状態で RightShoulderが押されていれば 走りに遷移
-                        if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
-                        {
-                            owner_->ChangeState(Player::STATE::Run);
-                            return true;
-                        }
-
-                        // 歩きに遷移
-                        owner_->ChangeState(Player::STATE::Walk);
+                        owner_->ChangeState(Player::STATE::Run);
                         return true;
                     }
                 }
@@ -935,15 +940,7 @@ namespace PlayerState
                     const float aLy = Input::Instance().GetGamePad().GetAxisLY();
                     if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
                     {
-                        // 移動値がある状態で RightShoulderが押されていれば 走りに遷移
-                        if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
-                        {
-                            owner_->ChangeState(Player::STATE::Run);
-                            return true;
-                        }
-
-                        // 歩きに遷移
-                        owner_->ChangeState(Player::STATE::Walk);
+                        owner_->ChangeState(Player::STATE::Run);
                         return true;
                     }
                 }
@@ -984,15 +981,7 @@ namespace PlayerState
                     const float aLy = Input::Instance().GetGamePad().GetAxisLY();
                     if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
                     {
-                        // 移動値がある状態で RightShoulderが押されていれば 走りに遷移
-                        if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
-                        {
-                            owner_->ChangeState(Player::STATE::Run);
-                            return true;
-                        }
-
-                        // 歩きに遷移
-                        owner_->ChangeState(Player::STATE::Walk);
+                        owner_->ChangeState(Player::STATE::Run);
                         return true;
                     }
                 }
@@ -1033,15 +1022,7 @@ namespace PlayerState
                     const float aLy = Input::Instance().GetGamePad().GetAxisLY();
                     if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
                     {
-                        // 移動値がある状態で RightShoulderが押されていれば 走りに遷移
-                        if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
-                        {
-                            owner_->ChangeState(Player::STATE::Run);
-                            return true;
-                        }
-
-                        // 歩きに遷移
-                        owner_->ChangeState(Player::STATE::Walk);
+                        owner_->ChangeState(Player::STATE::Run);
                         return true;
                     }
                 }
@@ -1407,7 +1388,11 @@ namespace PlayerState
     // ----- アニメーション設定 -----
     void CounterState::SetAnimation()
     {
-        if (owner_->GetOldState() == Player::STATE::ComboAttack0_0)
+        const Player::STATE oldState = owner_->GetOldState();
+        if (oldState == Player::STATE::ComboAttack0_0 ||
+            oldState == Player::STATE::ComboAttack0_1 ||
+            oldState == Player::STATE::ComboAttack0_2 ||
+            oldState == Player::STATE::RunAttack)
         {
             owner_->PlayBlendAnimation(Player::Animation::Counter, false, 1.0f, 0.15f);
             owner_->SetTransitionTime(0.1f);
@@ -1416,7 +1401,6 @@ namespace PlayerState
 
         owner_->PlayBlendAnimation(Player::Animation::Counter, false, 1.0f);
         owner_->SetTransitionTime(0.1f);
-
     }
 
     // ----- 移動処理 -----
@@ -1696,6 +1680,11 @@ namespace PlayerState
         // 攻撃可能にする
         owner_->SetIsAbleAttack(true);
 
+        // 先行入力設定
+        owner_->SetNextInputStartFrame(0.0f, 0.3f, 0.3f, 0.8f);
+        owner_->SetNextInputEndFrame(1.8f, 1.8f, 1.8f);
+        owner_->SetNextInputTransitionFrame(0.6f, 0.6f, 0.6f);
+
         // 変数初期化
         addForceData_.Initialize(0.2f, 0.4f, 1.0f);
         attackData_.Initialize(0.25f, 0.5f);
@@ -1734,60 +1723,73 @@ namespace PlayerState
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
 
-        if (owner_->GetAvoidanceKeyDown())
+#pragma region ----- 先行入力受付 -----
+        // 回避先行入力受付
+        if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
+            animationSeconds <= owner_->GetAvoidanceInputEndFrame())
         {
-            owner_->SetNextInput(Player::NextInput::Avoidance);
+            if (owner_->GetAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
         }
-        if (animationSeconds > 0.6f)
+        // 攻撃先行入力受付
+        if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
+            animationSeconds <= owner_->GetAttackInputEndFrame())
         {
-            if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+            if (owner_->GetComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
+        }
+        // カウンター先行入力受付
+        if (animationSeconds >= owner_->GetCounterInputStartFrame() &&
+            animationSeconds <= owner_->GetCounterInputEndFrame())
+        {
+            if (owner_->GetCounterStanceKey()) owner_->SetNextInput(Player::NextInput::Counter);
+        }
+
+#pragma endregion ----- 先行入力受付 -----
+
+#pragma region ----- 遷移チェック -----
+        // 回避遷移チェック
+        if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+        {
+            if (animationSeconds >= owner_->GetAvoidanceTransitionFrame())
             {
                 owner_->ChangeState(Player::STATE::Avoidance);
                 return true;
             }
         }
-
-        
-
-        const float changeComboAttack0StateFrame = 0.6f; // ステート切り替え
-        if (animationSeconds > changeComboAttack0StateFrame)
+        // 攻撃遷移チェック
+        else if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
         {
-            if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
+            if (animationSeconds >= owner_->GetAttackTransitionFrame())
             {
                 owner_->ChangeState(Player::STATE::ComboAttack0_1);
                 return true;
             }
         }
-
-        // 移動入力値があればステート切り替え
-        const float changeMoveStateFrame = 0.8f;
-        if (animationSeconds > changeMoveStateFrame)
+        // カウンター遷移チェック
+        else if (owner_->GetNextInput() == Player::NextInput::Counter)
         {
-            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
-            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
-            if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
+            if (animationSeconds >= owner_->GetCounterTransitionFrame())
             {
-                if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
-                {
-                    owner_->ChangeState(Player::STATE::Run);
-                    return true;
-                }
-
-                owner_->ChangeState(Player::STATE::Walk);
+                owner_->ChangeState(Player::STATE::Counter);
                 return true;
             }
         }
 
-        const float comboAttack0NextInputStartFrame = 0.3f; // 先行入力開始フレーム
-        if (animationSeconds > comboAttack0NextInputStartFrame)
+#pragma endregion ----- 遷移チェック -----
+
+        // 移動入力判定
+        if (animationSeconds >= owner_->GetMoveInputStartFrame())
         {
-            if (owner_->GetComboAttack0KeyDown())
-            {
-                owner_->SetNextInput(Player::NextInput::ComboAttack0);
-            }
+            // スティック入力があるか
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (aLx == 0.0f && aLy == 0.0f) return false;
+
+            owner_->ChangeState(Player::STATE::Run);
+            return true;
         }
 
         return false;
+
     }
 }
 
@@ -1812,14 +1814,15 @@ namespace PlayerState
         owner_->SetNextInputTransitionFrame(0.4f, 0.3f, 0.3f);
 
         // 変数初期化
-        addForceData_[0].Initialize(0.15f, 0.2f, 1.0f);
-        addForceData_[1].Initialize(0.87f, 0.1f, 1.0f);
         attackData_.Initialize(0.1f, 0.35f);
     }
 
     // ----- 更新 -----
     void ComboAttack0_0::Update(const float& elapsedTime)
     {
+        // 先行入力判定
+        if (CheckNextInput()) return;
+
         // RootMotionの設定
         if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
         {
@@ -1827,30 +1830,8 @@ namespace PlayerState
             owner_->SetUseRootMotion(true);
         }
         
-        // 先行入力判定
-        if (owner_->CheckNextInput(Player::NextInput::AbleCounter)) return;
-        
         // アニメーションの速度設定
         SetAnimationSpeed();
-
-#if 0
-        for (int i = 0; i < 2; ++i)
-        {
-            if (addForceData_[i].Update(owner_->GetAnimationSeconds()))
-            {
-                owner_->AddForce(owner_->GetTransform()->CalcForward(),
-                    addForceData_[i].GetForce(), addForceData_[i].GetDecelerationForce());
-            }
-
-        }
-#endif
-
-        // 移動処理
-        //if (addForceData_.Update(owner_->GetAnimationSeconds()))
-        //{
-        //    owner_->AddForce(owner_->GetTransform()->CalcForward(),
-        //        addForceData_.GetForce(), addForceData_.GetDecelerationForce());
-        //}
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
@@ -1859,7 +1840,6 @@ namespace PlayerState
         if (owner_->IsPlayAnimation() == false)
         {
             owner_->ChangeState(Player::STATE::Idle);
-            //owner_->ChangeState(Player::STATE::ComboAttack0_1);
             return;
         }
     }
@@ -1922,6 +1902,79 @@ namespace PlayerState
             owner_->SetAnimationSpeed(1.3f);
         }
     }
+    
+    // ----- 先行入力判定 -----
+    const bool ComboAttack0_0::CheckNextInput()
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+
+#pragma region ----- 先行入力受付 -----
+        // 回避先行入力受付
+        if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
+            animationSeconds <= owner_->GetAvoidanceInputEndFrame())
+        {
+            if (owner_->GetAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+        }
+        // 攻撃先行入力受付
+        if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
+            animationSeconds <= owner_->GetAttackInputEndFrame())
+        {
+            if (owner_->GetComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
+        }
+        // カウンター先行入力受付
+        if (animationSeconds >= owner_->GetCounterInputStartFrame() &&
+            animationSeconds <= owner_->GetCounterInputEndFrame())
+        {
+            if (owner_->GetCounterStanceKey()) owner_->SetNextInput(Player::NextInput::Counter);
+        }
+
+#pragma endregion ----- 先行入力受付 -----
+
+#pragma region ----- 遷移チェック -----
+        // 回避遷移チェック
+        if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+        {
+            if (animationSeconds >= owner_->GetAvoidanceTransitionFrame())
+            {
+                owner_->ChangeState(Player::STATE::Avoidance);
+                return true;
+            }
+        }
+        // 攻撃遷移チェック
+        else if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
+        {
+            if (animationSeconds >= owner_->GetAttackTransitionFrame())
+            {
+                owner_->ChangeState(Player::STATE::ComboAttack0_1);
+                return true;
+            }
+        }
+        // カウンター遷移チェック
+        else if (owner_->GetNextInput() == Player::NextInput::Counter)
+        {
+            if (animationSeconds >= owner_->GetCounterTransitionFrame())
+            {
+                owner_->ChangeState(Player::STATE::Counter);
+                return true;
+            }
+        }
+
+#pragma endregion ----- 遷移チェック -----
+
+        // 移動入力判定
+        if (animationSeconds >= owner_->GetMoveInputStartFrame())
+        {
+            // スティック入力があるか
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (aLx == 0.0f && aLy == 0.0f) return false;
+
+            owner_->ChangeState(Player::STATE::Run);
+            return true;
+        }
+
+        return false;
+    }
 }
 
 // ----- コンボ攻撃0_1 -----
@@ -1940,18 +1993,20 @@ namespace PlayerState
         owner_->SetIsAbleAttack(true);
 
         // 先行入力設定
-        owner_->SetNextInputStartFrame(0.13f, 0.13f, 0.13f);
+        owner_->SetNextInputStartFrame(0.13f, 0.13f, 0.13f, 0.5f);
         owner_->SetNextInputEndFrame(1.583f, 0.75f, 1.5f);
         owner_->SetNextInputTransitionFrame(0.4f, 0.3f, 0.3f);
 
         // 変数初期化
-        addForceData_.Initialize(0.05f, 0.25f, 1.0f);
         attackData_.Initialize(0.06f, 0.3f);
     }
 
     // ----- 更新 -----
     void ComboAttack0_1::Update(const float& elapsedTime)
     {
+        // 先行入力処理
+        if (CheckNextInput()) return;
+
         // RootMotionの設定
         if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
         {
@@ -1959,19 +2014,8 @@ namespace PlayerState
             owner_->SetUseRootMotion(true);
         }
 
-        // 先行入力処理
-        if (CheckNextInput()) return;
-
         // アニメーションの速度設定
         SetAnimationSpeed();
-
-        // 移動処理
-#if 0
-        if (addForceData_.Update(owner_->GetAnimationSeconds()))
-        {
-            owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
-        }
-#endif  
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
@@ -2029,62 +2073,70 @@ namespace PlayerState
     const bool ComboAttack0_1::CheckNextInput()
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
-        
-        if (animationSeconds > 0.1f)
+
+#pragma region ----- 先行入力受付 -----
+        // 回避先行入力受付
+        if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
+            animationSeconds <= owner_->GetAvoidanceInputEndFrame())
         {
-            // コンボ攻撃
-            if (owner_->GetComboAttack0KeyDown())
-            {
-                owner_->SetNextInput(Player::NextInput::ComboAttack0);
-            }
+            if (owner_->GetAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
         }
-        if (animationSeconds > 0.1f)
+        // 攻撃先行入力受付
+        if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
+            animationSeconds <= owner_->GetAttackInputEndFrame())
         {
-            // 回避
-            if (owner_->GetAvoidanceKeyDown())
-            {
-                owner_->SetNextInput(Player::NextInput::Avoidance);
-            }
+            if (owner_->GetComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
+        }
+        // カウンター先行入力受付
+        if (animationSeconds >= owner_->GetCounterInputStartFrame() &&
+            animationSeconds <= owner_->GetCounterInputEndFrame())
+        {
+            if (owner_->GetCounterStanceKey()) owner_->SetNextInput(Player::NextInput::Counter);
         }
 
-        // 回避に遷移できるフレーム
-        const float changeAvoidanceFrame = 0.25f;
-        if (animationSeconds > changeAvoidanceFrame)
+#pragma endregion ----- 先行入力受付 -----
+
+#pragma region ----- 遷移チェック -----
+        // 回避遷移チェック
+        if (owner_->GetNextInput() == Player::NextInput::Avoidance)
         {
-            if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+            if (animationSeconds >= owner_->GetAvoidanceTransitionFrame())
             {
                 owner_->ChangeState(Player::STATE::Avoidance);
                 return true;
             }
         }
-
-        const float changeComboAttack0Frame = 0.3f;
-        if (animationSeconds > changeComboAttack0Frame)
+        // 攻撃遷移チェック
+        else if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
         {
-            if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
+            if (animationSeconds >= owner_->GetAttackTransitionFrame())
             {
                 owner_->ChangeState(Player::STATE::ComboAttack0_2);
                 return true;
             }
         }
-
-        // 移動入力値があればステート切り替え
-        const float changeMoveStateFrame = 0.5f;
-        if (animationSeconds > changeMoveStateFrame)
+        // カウンター遷移チェック
+        else if (owner_->GetNextInput() == Player::NextInput::Counter)
         {
-            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
-            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
-            if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
+            if (animationSeconds >= owner_->GetCounterTransitionFrame())
             {
-                if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
-                {
-                    owner_->ChangeState(Player::STATE::Run);
-                    return true;
-                }
-
-                owner_->ChangeState(Player::STATE::Walk);
+                owner_->ChangeState(Player::STATE::Counter);
                 return true;
             }
+        }
+
+#pragma endregion ----- 遷移チェック -----
+
+        // 移動入力判定
+        if (animationSeconds >= owner_->GetMoveInputStartFrame())
+        {
+            // スティック入力があるか
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (aLx == 0.0f && aLy == 0.0f) return false;
+
+            owner_->ChangeState(Player::STATE::Run);
+            return true;
         }
 
         return false;
@@ -2107,8 +2159,12 @@ namespace PlayerState
         // 攻撃可能にする
         owner_->SetIsAbleAttack(true);
 
+        // 先行入力設定
+        owner_->SetNextInputStartFrame(0.7f, 0.7f, 0.7f, 1.4f);
+        owner_->SetNextInputEndFrame(1.9f, 1.3f, 1.3f);
+        owner_->SetNextInputTransitionFrame(1.1f, 0.9f, 0.9f);
+        
         // 変数初期化
-        addForceData_.Initialize(0.6f, 0.2f, 1.0f);
         attackData_.Initialize(0.7f, 0.9f);
     }
 
@@ -2118,9 +2174,6 @@ namespace PlayerState
         // 先行入力処理
         if (CheckNextInput()) return;
 
-        // アニメーションの速度設定
-        SetAnimationSpeed();
-
         // RootMotionの設定
         if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
         {
@@ -2128,11 +2181,8 @@ namespace PlayerState
             owner_->SetUseRootMotion(true);
         }
 
-        //// 移動処理        
-        //if (addForceData_.Update(owner_->GetAnimationSeconds()))
-        //{
-        //    owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
-        //}        
+        // アニメーションの速度設定
+        SetAnimationSpeed();
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
@@ -2176,55 +2226,69 @@ namespace PlayerState
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
 
-        if (animationSeconds > 0.7f)
+#pragma region ----- 先行入力受付 -----
+        // 回避先行入力受付
+        if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
+            animationSeconds <= owner_->GetAvoidanceInputEndFrame())
         {
-            if (owner_->GetComboAttack0KeyDown())
-            {
-                owner_->SetNextInput(Player::NextInput::ComboAttack0);
-            }
+            if (owner_->GetAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+        }
+        // 攻撃先行入力受付
+        if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
+            animationSeconds <= owner_->GetAttackInputEndFrame())
+        {
+            if (owner_->GetComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
+        }
+        // カウンター先行入力受付
+        if (animationSeconds >= owner_->GetCounterInputStartFrame() &&
+            animationSeconds <= owner_->GetCounterInputEndFrame())
+        {
+            if (owner_->GetCounterStanceKey()) owner_->SetNextInput(Player::NextInput::Counter);
         }
 
-        if (animationSeconds > 0.9f)
-        {
-            if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
-            {
-                owner_->ChangeState(Player::STATE::ComboAttack0_3);
-                return true;
-            }
-        }
+#pragma endregion ----- 先行入力受付 -----
 
-        if (animationSeconds > 0.7f)
+#pragma region ----- 遷移チェック -----
+        // 回避遷移チェック
+        if (owner_->GetNextInput() == Player::NextInput::Avoidance)
         {
-            if (owner_->GetAvoidanceKeyDown())
-            {
-                owner_->SetNextInput(Player::NextInput::Avoidance);
-            }
-        }
-        if (animationSeconds > 1.1f)
-        {
-            if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+            if (animationSeconds >= owner_->GetAvoidanceTransitionFrame())
             {
                 owner_->ChangeState(Player::STATE::Avoidance);
                 return true;
             }
         }
-
-        // 移動値があれば 移動へ遷移
-        if (animationSeconds > 1.4f)
+        // 攻撃遷移チェック
+        else if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
         {
-            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
-            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
-            if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
+            if (animationSeconds >= owner_->GetAttackTransitionFrame())
             {
-                if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
-                {
-                    owner_->ChangeState(Player::STATE::Run);
-                    return true;
-                }
-
-                owner_->ChangeState(Player::STATE::Walk);
+                owner_->ChangeState(Player::STATE::ComboAttack0_3);
                 return true;
             }
+        }
+        // カウンター遷移チェック
+        else if (owner_->GetNextInput() == Player::NextInput::Counter)
+        {
+            if (animationSeconds >= owner_->GetCounterTransitionFrame())
+            {
+                owner_->ChangeState(Player::STATE::Counter);
+                return true;
+            }
+        }
+
+#pragma endregion ----- 遷移チェック -----
+
+        // 移動入力判定
+        if (animationSeconds >= owner_->GetMoveInputStartFrame())
+        {
+            // スティック入力があるか
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (aLx == 0.0f && aLy == 0.0f) return false;
+
+            owner_->ChangeState(Player::STATE::Run);
+            return true;
         }
 
         return false;
@@ -2247,8 +2311,12 @@ namespace PlayerState
         // 攻撃可能にする
         owner_->SetIsAbleAttack(true);
 
+        // 先行入力設定
+        owner_->SetNextInputStartFrame(0.7f, 3.0f, 3.0f, 3.0f);
+        owner_->SetNextInputEndFrame(2.0f, 3.0f, 3.0f);
+        owner_->SetNextInputTransitionFrame(1.3f, 3.0f, 3.0f);
+
         // 変数初期化
-        addForceData_.Initialize(0.45f, 0.25f, 0.5f);
         attackData_.Initialize(0.65f, 0.8f);
         isVibration_ = false;
     }
@@ -2256,21 +2324,8 @@ namespace PlayerState
     // ----- 更新 -----
     void ComboAttack0_3::Update(const float& elapsedTime)
     {
-        if (owner_->GetAnimationSeconds() > 0.7f)
-        {
-            if (owner_->GetAvoidanceKeyDown())
-            {
-                owner_->SetNextInput(Player::NextInput::Avoidance);
-            }
-        }
-        if (owner_->GetAnimationSeconds() > 1.3f)
-        {
-            if (owner_->GetNextInput() == Player::NextInput::Avoidance)
-            {
-                owner_->ChangeState(Player::STATE::Avoidance);
-                return;
-            }
-        }
+        // 先行入力判定
+        if (CheckNextInput()) return;
 
         // アニメーションの速度設定
         SetAnimationSpeed();
@@ -2281,11 +2336,6 @@ namespace PlayerState
             // RootMotionを使用する
             owner_->SetUseRootMotion(true);
         }
-
-        //if (addForceData_.Update(owner_->GetAnimationSeconds()))
-        //{
-        //    owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
-        //}
 
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
@@ -2300,24 +2350,8 @@ namespace PlayerState
             isVibration_ = true;
         }
 
-        //if (owner_->IsPlayAnimation() == false)
-        //if(owner_->GetAnimationSeconds() > 1.6f)
         if(owner_->GetAnimationSeconds() > 1.7f)
         {
-            //const float aLx = Input::Instance().GetGamePad().GetAxisLX();
-            //const float aLy = Input::Instance().GetGamePad().GetAxisLY();
-            //if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
-            //{
-            //    if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
-            //    {
-            //        owner_->ChangeState(Player::STATE::Run);
-            //        return;
-            //    }
-
-            //    owner_->ChangeState(Player::STATE::Walk);
-            //    return;
-            //}
-
             owner_->ChangeState(Player::STATE::Idle);
             return;
         }
@@ -2335,5 +2369,30 @@ namespace PlayerState
         const float animationSeconds = owner_->GetAnimationSeconds();
 
 
+    }
+    
+    // ----- 先行入力処理 -----
+    const bool ComboAttack0_3::CheckNextInput()
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+
+        // 回避先行入力受付
+        if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
+            animationSeconds <= owner_->GetAvoidanceInputEndFrame())
+        {
+            if (owner_->GetAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+        }
+
+        // 回避遷移チェック
+        if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+        {
+            if (animationSeconds >= owner_->GetAvoidanceTransitionFrame())
+            {
+                owner_->ChangeState(Player::STATE::Avoidance);
+                return true;
+            }
+        }
+
+        return false;
     }
 }

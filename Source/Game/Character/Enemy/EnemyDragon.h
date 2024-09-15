@@ -29,6 +29,7 @@ private:
     void SetTackleAttackActiveFlag(const bool& flag = true)     override;
     void SetFlyAttackActiveFlag(const bool& flag = true)        override;
     void SetComboSlamAttackActiveFlag(const bool& flag = true)  override;
+    void SetKnockBackAttackActiveFalg(const bool& flag = true)  override;
 
     // ---------- âüÇµèoÇµîªíË ----------
     void SetDownCollisionActiveFlag(const bool& flag = true) override;
@@ -43,8 +44,8 @@ private:
     //bool isDamageSphere_    = true;
     bool isDamageSphere_    = false;
 
-    bool isUpdateAnimation_ = false;
-    //bool isUpdateAnimation_ = true;
+    //bool isUpdateAnimation_ = false;
+    bool isUpdateAnimation_ = true;
     
 
     float oldHealth_ = 0.0f;
@@ -65,6 +66,8 @@ private:
         FlyAttackEnd            = 12,
         ComboSlamAttackStart    = 13,
         ComboSlamAttackEnd      = 15,
+        KnockBackAttackStart    = 16,
+        KnockBackAttackEnd      = 34,
     };
 };
 

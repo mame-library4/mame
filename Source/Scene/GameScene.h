@@ -35,8 +35,7 @@ private:
 public:
     // ----- ステージ判定用 -----
     static DirectX::XMFLOAT3 stageCenter_;
-    //static constexpr float stageRadius_ = 17.5f; // ステージ用の半径
-    static constexpr float stageRadius_ = 26.0f; // ステージ用の半径
+    static constexpr float stageRadius_ = 29.5f; // ステージ用の半径
     float stageRadius1_ = 17.5f; // ステージ用の半径
 
 private:

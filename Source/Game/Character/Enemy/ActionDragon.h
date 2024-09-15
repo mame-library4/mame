@@ -229,6 +229,8 @@ namespace ActionDragon
     private:
         int loopMax_ = 0;
         int loopCounter_ = 0;
+
+        float oldHealth_ = 0.0f;
     };
 
     // ÇΩÇΩÇ´Ç¬ÇØçsìÆ
@@ -371,6 +373,13 @@ namespace ActionDragon
         float easingTimer_ = 0.0f;
     };
 
+    class ComboTackleAction : public ActionBase
+    {
+    public:
+        ComboTackleAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+    };
+
     // è„è∏çUåÇçsìÆ
     class RiseAttackAction : public ActionBase
     {
@@ -392,5 +401,15 @@ namespace ActionDragon
     public:
         MoveTurnAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+    };
+
+    class MoveAction : public ActionBase
+    {
+    public:
+        MoveAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+
+    private:
+        DirectX::XMFLOAT3 targetPosition_ = {};
     };
 }

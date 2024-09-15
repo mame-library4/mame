@@ -16,8 +16,6 @@ Player::Player()
 
         // ステートを登録する
         GetStateMachine()->RegisterState(new PlayerState::IdleState(this));             // 待機
-        //GetStateMachine()->RegisterState(new PlayerState::MoveState(this));             // 移動
-        GetStateMachine()->RegisterState(new PlayerState::WalkState(this));
         GetStateMachine()->RegisterState(new PlayerState::RunState(this));
         GetStateMachine()->RegisterState(new PlayerState::LightFlinchState(this));
         GetStateMachine()->RegisterState(new PlayerState::FlinchState(this));
@@ -293,115 +291,6 @@ void Player::Move(const float& elapsedTime)
     GetTransform()->AddPosition(velocity * elapsedTime);
 }
 
-// ----- 先行入力を受付してる -----
-bool Player::CheckNextInput(const Player::NextInput& nextInput)
-{
-    const float animationSeconds = GetAnimationSeconds();
-    const STATE currentState = GetCurrentState();
-
-#pragma region ----- 先行入力受付 -----
-    // --------------- 回避先行入力受付 ---------------
-    if (animationSeconds >= avoidanceInputStartFrame_ &&
-        animationSeconds <= avoidanceInputEndFrame_)
-    {
-        if(GetAvoidanceKeyDown()) nextInput_ = NextInput::Avoidance;
-    }
-
-    // --------------- 攻撃先行入力受付 ---------------
-    if (nextInput != NextInput::None)// 攻撃可能か
-    {
-        if (animationSeconds >= attackInputStartFrame_ &&
-            animationSeconds <= attackInputEndFrame_)
-        {
-            if (GetComboAttack0KeyDown()) nextInput_ = NextInput::ComboAttack0;
-        }
-    }
-
-    // --------------- カウンター先行入力受付 ---------------
-    if (nextInput == NextInput::All)// カウンター受付可能
-    {
-        if (animationSeconds >= counterInputStartFrame_ &&
-            animationSeconds <= counterInputEndFrame_)
-        {
-            if (GetCounterStanceKey()) nextInput_ = NextInput::Counter;
-        }
-    }
-
-#pragma endregion ----- 先行入力受付 -----
-
-#pragma region ----- 遷移チェック -----
-    // --------------- 回避遷移チェック ---------------
-    if (nextInput_ == NextInput::Avoidance)
-    {
-        if (animationSeconds >= avoidanceTransitionFrame_)
-        {
-            ChangeState(Player::STATE::Avoidance);
-            return true;
-        }
-    }
-    // --------------- 攻撃遷移チェック ---------------
-    else if (nextInput_ == NextInput::ComboAttack0)
-    {
-        if (animationSeconds >= attackTransitionFrame_)
-        {
-            switch (currentState)
-            {
-            case STATE::Run:
-                if (GetIsBlendAnimation()) ChangeState(STATE::ComboAttack0_0);
-                else ChangeState(STATE::RunAttack);
-                break;
-            case STATE::ComboAttack0_0: ChangeState(STATE::ComboAttack0_1); break; // 攻撃0 -> 攻撃1
-            case STATE::ComboAttack0_1: ChangeState(STATE::ComboAttack0_2); break; // 攻撃1 -> 攻撃2
-            case STATE::ComboAttack0_2: ChangeState(STATE::ComboAttack0_3); break; // 攻撃2 -> 攻撃3
-            default: ChangeState(STATE::ComboAttack0_0); break;                    // 何もなし -> 攻撃0
-            }
-
-            return true;
-        }
-    }
-    // --------------- カウンター遷移チェック ---------------
-    else if (nextInput_ == NextInput::Counter)
-    {
-        if (animationSeconds >= counterTransitionFrame_)
-        {
-            ChangeState(Player::STATE::Counter);
-            return true;
-        }
-    }
-
-#pragma endregion ----- 遷移チェック -----
-
-    // --------------- 移動入力判定 ---------------
-    if (nextInput == NextInput::None) return false; // 移動可能か
-    if (animationSeconds >= moveInputStartFrame_)
-    {
-        // スティック入力があるか判定
-        const float aLx = Input::Instance().GetGamePad().GetAxisLX();
-        const float aLy = Input::Instance().GetGamePad().GetAxisLY();
-        if (fabsf(aLx) == 0.0f || fabsf(aLy) == 0.0f) return false;
-        
-        // 走るボタン押されているか
-        if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER)
-        {
-            // 現在既に走りステートなので何もしない
-            if (currentState == STATE::Run) return false;
-            
-            ChangeState(Player::STATE::Run);
-            return true;
-        }
-        else
-        {
-            // 現在既に歩きステートなので何もしない
-            if (currentState == STATE::Walk) return false;
-            
-            ChangeState(Player::STATE::Walk);
-            return true;
-        }
-    }
-
-    return false;
-}
-
 void Player::ResetFlags()
 {
     nextInput_              = NextInput::None;  // 先行入力管理フラグ
@@ -438,6 +327,14 @@ void Player::SetNextInputTransitionFrame(const float& avoidance, const float& at
     avoidanceTransitionFrame_   = avoidance;
     attackTransitionFrame_      = attack;
     counterTransitionFrame_     = counter;
+}
+
+bool Player::GetCounterStanceKey() const
+{
+    if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B && Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_TRIGGER) return true;
+    if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_B && Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER) return true;
+
+    return false;
 }
 
 // ----- CollisionData登録 -----

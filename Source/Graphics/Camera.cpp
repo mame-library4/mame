@@ -10,6 +10,8 @@
 #include "Character/Enemy/EnemyManager.h"
 #include "Character/Player/PlayerManager.h"
 
+#include "GameScene.h"
+
 // ----- 初期化 -----
 void Camera::Initialize()
 {
@@ -70,6 +72,53 @@ void Camera::SetPerspectiveFov()
     view_.focus_ = target_ + cameraOffset_ + targetOffset_;
 
     GetTransform()->SetPosition(view_.eye_);
+
+    // ----- カメラをステージ内に収める -----
+    {
+        //const float radius = 29.8f;
+        //DirectX::XMFLOAT3 stageCenter = GameScene::stageCenter_;
+        //DirectX::XMFLOAT3 cameraPosition = view_.eye_;
+        //stageCenter.y = cameraPosition.y;
+        //
+        //DirectX::XMFLOAT3 vec = cameraPosition - stageCenter;
+        //float length = XMFloat3Length(vec);
+
+        //if (length > radius)
+        //{
+        //    // カメラからプレイヤーに向かうベクトルを作る
+
+        //    // cameraPosition + cameraToPlayer * length
+        //}
+
+#if 0
+        const float radius = 29.8f;
+        DirectX::XMFLOAT3 stageCenter = GameScene::stageCenter_;
+        DirectX::XMFLOAT3 cameraPosition = view_.eye_;
+        stageCenter.y = cameraPosition.y;
+
+        DirectX::XMFLOAT3 vec = cameraPosition - stageCenter;
+        float length = XMFloat3Length(vec);
+
+        if (length > radius)
+        {
+            vec = stageCenter + XMFloat3Normalize(vec) * radius;
+            view_.eye_ = vec;
+
+            // 押し出し差分
+            float collisionOffset = length - radius;
+            //view_.focus_ = view_.focus_ - XMFloat3Normalize(vec) * (collisionOffset * 0.5f);
+
+            // 壁に近くなるほど回転速度を遅くする
+            horizontalRotationSpeed_ = (collisionOffset > 4) ? 1.5f : 2.0f;
+            verticalRotationSpeed_ = 0.5f;
+        }
+        else
+        {
+            horizontalRotationSpeed_ = 2.5f;
+            verticalRotationSpeed_ = 1.0f;
+        }
+#endif
+    }
 
     // --- projectionMatrix 設定 ---
     float aspectRatio = SCREEN_WIDTH / (float)SCREEN_HEIGHT;
@@ -762,56 +811,6 @@ const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
     }
         break;
     }
-
-#if 0
-    switch (state_)
-    {
-    case 1:
-    {
-        const float totalFrame = 0.17f;
-        length_ = Easing::InSine(easingTimer_, totalFrame, 4.5f, oldCameraLength_);
-
-        const float maxRotateX = oldRotateX_ + DirectX::XMConvertToRadians(3.0f);
-        const float rotateX = Easing::InSine(easingTimer_, totalFrame, maxRotateX, oldRotateX_);
-        GetTransform()->SetRotationX(rotateX);
-
-
-        easingTimer_ += elapsedTime;
-        easingTimer_ = min(easingTimer_, totalFrame);
-
-        if (easingTimer_ == totalFrame)
-        {
-            state_ = 2;
-            easingTimer_ = 0.0f;
-        }
-
-    }
-        break;
-    case 2:
-    {
-        const float totalFrame = 0.2f;
-        length_ = Easing::InSine(easingTimer_, totalFrame, 9.0f, 4.5f);
-        
-        const float minRotateX = oldRotateX_ + DirectX::XMConvertToRadians(3.0f);
-        const float maxRotateX = oldRotateX_ + DirectX::XMConvertToRadians(-3.5f);
-        const float rotateX = Easing::InSine(easingTimer_, totalFrame, maxRotateX, minRotateX);
-        GetTransform()->SetRotationX(rotateX);
-
-
-        easingTimer_ += elapsedTime;
-        easingTimer_ = min(easingTimer_, totalFrame);
-
-        if (easingTimer_ == totalFrame)
-        {
-            state_ = 3;
-            easingTimer_ = 0.0f;
-        }
-    }
-        break;
-    case 3:
-        break;
-    }
-#endif
 
     return true;
 }

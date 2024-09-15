@@ -34,12 +34,9 @@ void EnemyDragon::Initialize()
     SetRotateSpeed(5.0f);
 
     // ï‡çsë¨ìxê›íË
-    SetWalkSpeed(3.0f);
+    SetWalkSpeed(15.0f);
 
     // ëÃóÕê›íË
-    //SetMaxHealth(30.0f);
-    //SetMaxHealth(100.0f);
-    //SetMaxHealth(0.0f);
     SetMaxHealth(600.0f);
     //SetMaxHealth(3000.0f);
     SetHealth(GetMaxHealth());
@@ -48,10 +45,7 @@ void EnemyDragon::Initialize()
 
 
     // çUåÇîªíË ñ≥å¯âª
-    SetTurnAttackActiveFlag(false);
-    SetTackleAttackActiveFlag(false);
-    SetFlyAttackActiveFlag(false);
-    SetComboSlamAttackActiveFlag(false);
+    ResetAllAttackActiveFlag();
 
     // âüÇµèoÇµîªíË
     SetDownCollisionActiveFlag(false);
@@ -104,6 +98,11 @@ void EnemyDragon::DrawDebug()
         ImGui::Checkbox("DamageSphere", &isDamageSphere_);
         ImGui::Checkbox("AttackSphere", &isAttackSphere_);
         ImGui::Checkbox("collision", &isCollisionSphere_);
+
+        ImGui::DragFloat("WalkSpeed", &walkSpeed_);
+
+        float playerLength = CalcDistanceToPlayer();
+        ImGui::DragFloat("PlayerLength", &playerLength);
 
         if (ImGui::TreeNode("Judgment"))
         {
@@ -162,7 +161,7 @@ void EnemyDragon::DebugRender(DebugRenderer* debugRenderer)
         // åªç›ÉAÉNÉeÉBÉuÇ≈ÇÕÇ»Ç¢Ç≈ÇÃï\é¶ÇµÇ»Ç¢
         if (data.GetIsActive() == false) continue;
 
-        debugRenderer->DrawSphere(data.GetPosition(), data.GetRadius(), {1,0,1,1});
+        //debugRenderer->DrawSphere(data.GetPosition(), data.GetRadius(), {1,0,1,1});
     }
 
 }
@@ -194,8 +193,9 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Battle", "Far", 2, BehaviorTree::SelectRule::Random, nullptr, nullptr);
 #else
     behaviorTree_->AddNode("Battle", "Near",  1, BehaviorTree::SelectRule::Priority, new NearJudgment(this), nullptr);
-    behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Random, nullptr, nullptr);
-    //behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    
+    //behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Random, nullptr, nullptr);
+    behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
 #endif
 
     //behaviorTree_->AddNode("Shout", "Roar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
@@ -205,24 +205,28 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Near", "ComboFlySlam",  0, BehaviorTree::SelectRule::None, new ComboFlySlamJudgment(this), new ActionDragon::ComboFlySlamAction(this));    
     
 
-    //behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
-    behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
+    behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    //behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
 
     
-    behaviorTree_->AddNode("MostNear", "FlyAttack",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));    
-    behaviorTree_->AddNode("MostNear", "TurnAttack",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
-    behaviorTree_->AddNode("MostNear", "ComboSlam",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));    
     behaviorTree_->AddNode("MostNear", "KnockBack",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::KnockBackAction(this));
+    behaviorTree_->AddNode("MostNear", "TurnAttack",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
+    behaviorTree_->AddNode("MostNear", "FlyAttack",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));    
+    behaviorTree_->AddNode("MostNear", "ComboSlam",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));    
 
     
     //behaviorTree_->AddNode("Near", "BackStep",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::BackStepAction(this));
     //behaviorTree_->AddNode("Near", "Slam",        1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAction(this));
     //behaviorTree_->AddNode("Near", "ComboCharge", 1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboChargeAction(this));
 
-    behaviorTree_->AddNode("Far", "RiseAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RiseAttackAction(this));
+    //behaviorTree_->AddNode("Far", "RiseAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RiseAttackAction(this));
+    
+    
     behaviorTree_->AddNode("Far", "Tackle",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
     behaviorTree_->AddNode("Far", "FireBreathCombo",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireBreathCombo(this));
     behaviorTree_->AddNode("Far", "FireBreath",        0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireBreath(this));
+    behaviorTree_->AddNode("Far", "Move",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveAction(this));
+    
     //behaviorTree_->AddNode("Far", "MoveTurn",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveTurnAction(this));
     //behaviorTree_->AddNode("Far", "MoveAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveAttackAction(this));
 
@@ -279,84 +283,65 @@ bool EnemyDragon::CheckStatusChange()
 // ----- CollisionDataìoò^ -----
 void EnemyDragon::RegisterCollisionData()
 {
-    // âüÇµèoÇµîªíËìoò^
-    CollisionDetectionData collisionDetectionData[] =
-    {
-#pragma region É_ÉEÉìéûÇÃâüÇµèoÇµîªíË
-        // ----- É_ÉEÉìéû -----
-        { "Down_Dragon15_head",      0.6f,  true, {},                    "Dragon15_head"   },                          // 0
-        { "Down_Dragon15_neck_2",    1.0f,  true, { -0.4f, 0.0f, 0.0f }, "Dragon15_neck_2" },
-        { "Down_Dragon15_neck_1",    1.0f,  true, { -0.4f, 0.0f, 0.0f }, "Dragon15_neck_1" },
-        { "Down_Dragon15_spine2",    1.05f, true, {},                    "Dragon15_spine2" },
-        { "Down_Dragon15_spine0",    0.85f, true, {},                    "Dragon15_spine0" },
-        
-        { "Down_Dragon15_l_upperarm1",   0.7f,  false, { 0.2f, -0.15f, 0.0f }, "Dragon15_l_upperarm1" },
-        { "Down_Dragon15_r_upperarm1",   0.7f,  false, { 0.2f, 0.15f, 0.0f }, "Dragon15_r_upperarm1"},
-        { "Down_Dragon15_l_forearm",     0.55f, false, {}, "Dragon15_l_forearm"},
-        { "Down_Dragon15_r_forearm",     0.55f, false, {}, "Dragon15_r_forearm" },
 
-        { "Down_Dragon15_l_calf",        0.55f, true, { -0.1f, 0.5f, 0.0f },    "Dragon15_l_calf" },
-        { "Down_Dragon15_r_calf",        0.55f, true, { -0.1f, -0.5f, 0.0f },   "Dragon15_r_calf" },
-        { "Down_Dragon15_l_horselink",   0.55f,  true, {},                       "Dragon15_l_horselink" },
-        { "Down_Dragon15_r_horselink",   0.55f,  true, {},                       "Dragon15_r_horselink" },
-        { "Down_Dragon15_l_foot",        0.35f, true, { 0.05f, -1.0f, 0.1f },   "Dragon15_l_foot" },
-        { "Down_Dragon15_r_foot",        0.35f, true, { 0.1f, 0.0f, -0.1f },    "Dragon15_r_foot" },
+#pragma region ---------- É_ÉEÉìéûÇÃâüÇµèoÇµîªíË ----------
+    RegisterCollisionDetectionData({ "Down_Dragon15_head",          0.6f,  true,  {},                       "Dragon15_head"         });
+    RegisterCollisionDetectionData({ "Down_Dragon15_neck_2",        1.0f,  true,  { -0.4f, 0.0f, 0.0f },    "Dragon15_neck_2"       });
+    RegisterCollisionDetectionData({ "Down_Dragon15_neck_1",        1.0f,  true,  { -0.4f, 0.0f, 0.0f },    "Dragon15_neck_1"       });
+    RegisterCollisionDetectionData({ "Down_Dragon15_spine2",        1.05f, true,  {},                       "Dragon15_spine2"       });
+    RegisterCollisionDetectionData({ "Down_Dragon15_spine0",        0.85f, true,  {},                       "Dragon15_spine0"       });    
+    RegisterCollisionDetectionData({ "Down_Dragon15_l_upperarm1",   0.7f,  false, { 0.2f, -0.15f, 0.0f },   "Dragon15_l_upperarm1"  });
+    RegisterCollisionDetectionData({ "Down_Dragon15_r_upperarm1",   0.7f,  false, { 0.2f, 0.15f, 0.0f },    "Dragon15_r_upperarm1"  });
+    RegisterCollisionDetectionData({ "Down_Dragon15_l_forearm",     0.55f, false, {},                       "Dragon15_l_forearm"    });
+    RegisterCollisionDetectionData({ "Down_Dragon15_r_forearm",     0.55f, false, {},                       "Dragon15_r_forearm"    });    
+    RegisterCollisionDetectionData({ "Down_Dragon15_l_calf",        0.55f, true,  { -0.1f, 0.5f, 0.0f },    "Dragon15_l_calf"       });
+    RegisterCollisionDetectionData({ "Down_Dragon15_r_calf",        0.55f, true,  { -0.1f, -0.5f, 0.0f },   "Dragon15_r_calf"       });
+    RegisterCollisionDetectionData({ "Down_Dragon15_l_horselink",   0.55f, true,  {},                       "Dragon15_l_horselink"  });
+    RegisterCollisionDetectionData({ "Down_Dragon15_r_horselink",   0.55f, true,  {},                       "Dragon15_r_horselink"  });
+    RegisterCollisionDetectionData({ "Down_Dragon15_l_foot",        0.35f, true,  { 0.05f, -1.0f, 0.1f },   "Dragon15_l_foot"       });
+    RegisterCollisionDetectionData({ "Down_Dragon15_r_foot",        0.35f, true,  { 0.1f, 0.0f, -0.1f },    "Dragon15_r_foot"       });
+    
+    RegisterCollisionDetectionData({ "Down_Dragon15_tail_00",       0.70f, true,  {},                       "Dragon15_tail_00"      });
+    RegisterCollisionDetectionData({ "Down_Dragon15_tail_01",       0.55f, true,  { 0.20f, 0.0f,  0.00f },  "Dragon15_tail_01"      });
+    RegisterCollisionDetectionData({ "Down_Dragon15_tail_02",       0.42f, true,  { 0.01f, 0.0f,  0.03f },  "Dragon15_tail_02"      });
+    RegisterCollisionDetectionData({ "Down_Dragon15_tail_03",       0.35f, true,  { -0.10f, 0.0f, -0.05f }, "Dragon15_tail_03"      });
+    RegisterCollisionDetectionData({ "Down_Dragon15_tail_04",       0.25f, true,  {},                       "Dragon15_tail_04"      });
+    RegisterCollisionDetectionData({ "Down_Dragon15_tail_05",       0.20f, true,  {},                       "Dragon15_tail_05"      });
 
-#pragma region ---------- êKîˆ ----------
-        { "Dragon15_tail_00", 0.70f, true, {} },
-        { "Dragon15_tail_01", 0.55f, true, {  0.20f, 0.0f,  0.00f } },
-        { "Dragon15_tail_02", 0.42f, true, {  0.01f, 0.0f,  0.03f } },
-        { "Dragon15_tail_03", 0.35f, true, { -0.10f, 0.0f, -0.05f } },
-        { "Dragon15_tail_04", 0.25f, true,  {} },
-        { "Dragon15_tail_05", 0.20f, true,  {} },
+    RegisterCollisionDetectionData({ "Down_Dragon15_tail_add_0",    0.30f, true,  { 0.40f, 0.0f,  0.00f },  "Dragon15_tail_03"      });
+    RegisterCollisionDetectionData({ "Down_Dragon15_tail_add_1",    0.20f, true,  { 0.40f, 0.0f,  0.03f },  "Dragon15_tail_04"      });
+    RegisterCollisionDetectionData({ "Down_Dragon15_tail_add_2",    0.20f, true,  { 0.30f, 0.0f, -0.05f },  "Dragon15_tail_05"      });
+    RegisterCollisionDetectionData({ "Down_Dragon15_tail_add_3",    0.20f, true,  { 0.60f, 0.0f, -0.13f },  "Dragon15_tail_05"      });
+#pragma endregion ---------- É_ÉEÉìéûÇÃâüÇµèoÇµîªíË ----------
 
-        { "Dragon15_tail_add_0", 0.30f, true, {  0.40f, 0.0f,  0.00f }, "Dragon15_tail_03" },
-        { "Dragon15_tail_add_1", 0.20f, true, {  0.40f, 0.0f,  0.03f }, "Dragon15_tail_04" },
-        { "Dragon15_tail_add_2", 0.2f,  true, {  0.30f, 0.0f, -0.05f }, "Dragon15_tail_05" },
-        { "Dragon15_tail_add_3", 0.2f,  true, {  0.60f, 0.0f, -0.13f }, "Dragon15_tail_05" },
-#pragma endregion ---------- êKîˆ ----------
-#pragma endregion É_ÉEÉìéûÇÃâüÇµèoÇµîªíË
+#pragma region ---------- âüÇµèoÇµîªíËìoò^ ----------
+    RegisterCollisionDetectionData({ "Dragon15_head",        0.4f,  false, {} });
+    RegisterCollisionDetectionData({ "Dragon15_neck_1",      1.0f,  false, { -0.4f, 0.0f, 0.0f } });
+    RegisterCollisionDetectionData({ "Dragon15_spine2",      1.05f, false, {} });    
+    RegisterCollisionDetectionData({ "Dragon15_spine0",      0.85f, false, {} });
+    RegisterCollisionDetectionData({ "root",                 0.85f, false, {} });
+    RegisterCollisionDetectionData({ "Dragon15_r_hand",      0.3f,  false, {} });
+    RegisterCollisionDetectionData({ "Dragon15_r_forearm",   0.32,  false, {} });
+    RegisterCollisionDetectionData({ "Dragon15_l_hand",      0.3f,  false, {} });
+    RegisterCollisionDetectionData({ "Dragon15_l_forearm",   0.32f, false, {} });
+    RegisterCollisionDetectionData({ "Dragon15_r_foot",      0.32f, false, {} });
+    RegisterCollisionDetectionData({ "Dragon15_r_horselink", 0.3f,  false, { 0.06f, 0.01f, -0.09f } });
+    RegisterCollisionDetectionData({ "Dragon15_r_calf",      0.35f, false, { 0.03f, 0.0f, 0.15f } });
+    RegisterCollisionDetectionData({ "Dragon15_l_foot",      0.32f, false, {} });
+    RegisterCollisionDetectionData({ "Dragon15_l_horselink", 0.3f,  false, { 0.06f, 0.01f, -0.09f } });
+    RegisterCollisionDetectionData({ "Dragon15_l_calf",      0.35f, false, { 0.03f, 0.0f, 0.15f } });
+    RegisterCollisionDetectionData({ "Dragon15_tail_00",     0.70f, false, {} });
+    RegisterCollisionDetectionData({ "Dragon15_tail_01",     0.55f, false, {  0.20f, 0.0f,  0.00f } });
+    RegisterCollisionDetectionData({ "Dragon15_tail_02",     0.42f, false, {  0.01f, 0.0f,  0.03f } });
+    RegisterCollisionDetectionData({ "Dragon15_tail_03",     0.35f, false, { -0.10f, 0.0f, -0.05f } });
+    RegisterCollisionDetectionData({ "Dragon15_tail_04",     0.25f, false, {} });
+    RegisterCollisionDetectionData({ "Dragon15_tail_05",     0.20f, false, {} });
+    RegisterCollisionDetectionData({ "Dragon15_tail_add_0",  0.30f, false, {  0.40f, 0.0f,  0.00f }, "Dragon15_tail_03" });
+    RegisterCollisionDetectionData({ "Dragon15_tail_add_1",  0.20f, false, {  0.40f, 0.0f,  0.03f }, "Dragon15_tail_04" });
+    RegisterCollisionDetectionData({ "Dragon15_tail_add_2",  0.2f,  false, {  0.30f, 0.0f, -0.05f }, "Dragon15_tail_05" });
+    RegisterCollisionDetectionData({ "Dragon15_tail_add_3",  0.2f,  false, {  0.60f, 0.0f, -0.13f }, "Dragon15_tail_05" });
 
-        { "Dragon15_head", 0.4f, false, {} }, // ì™
-
-        { "Dragon15_neck_1",    1.0f,  false, { -0.4f, 0.0f, 0.0f } },
-        { "Dragon15_spine2",    1.05f, false, {} },
-        { "Dragon15_spine0",    0.85f, false, {} },
-        { "root",    0.85f, false, {} },
-
-        { "Dragon15_r_hand",    0.3f, false, {} },
-        { "Dragon15_r_forearm", 0.32, false, {} },
-
-        { "Dragon15_l_hand",    0.3f, false, {} },
-        { "Dragon15_l_forearm", 0.32f, false,  {} },
-
-        { "Dragon15_r_foot",        0.32f, false, {} },
-        { "Dragon15_r_horselink",   0.3f,  false, { 0.06f, 0.01f, -0.09f } },
-        { "Dragon15_r_calf",        0.35f, false, { 0.03f, 0.0f, 0.15f } },
-
-        { "Dragon15_l_foot",        0.32f, false, {} },
-        { "Dragon15_l_horselink",   0.3f,  false, { 0.06f, 0.01f, -0.09f } },
-        { "Dragon15_l_calf",        0.35f, false, { 0.03f, 0.0f, 0.15f } },
-
-        // ---------- êKîˆ ----------
-#pragma region ---------- êKîˆ ----------
-        { "Dragon15_tail_00", 0.70f, false, {} },
-        { "Dragon15_tail_01", 0.55f, false, {  0.20f, 0.0f,  0.00f } },
-        { "Dragon15_tail_02", 0.42f, false, {  0.01f, 0.0f,  0.03f } },
-        { "Dragon15_tail_03", 0.35f, false, { -0.10f, 0.0f, -0.05f } },
-        { "Dragon15_tail_04", 0.25f, false,  {} },
-        { "Dragon15_tail_05", 0.20f, false,  {} },
-        
-        { "Dragon15_tail_add_0", 0.30f, false, {  0.40f, 0.0f,  0.00f }, "Dragon15_tail_03" },
-        { "Dragon15_tail_add_1", 0.20f, false, {  0.40f, 0.0f,  0.03f }, "Dragon15_tail_04" },
-        { "Dragon15_tail_add_2", 0.2f,  false, {  0.30f, 0.0f, -0.05f }, "Dragon15_tail_05" },
-        { "Dragon15_tail_add_3", 0.2f,  false, {  0.60f, 0.0f, -0.13f }, "Dragon15_tail_05" },
-#pragma endregion ---------- êKîˆ ----------
-    };
-    for (int i = 0; i < _countof(collisionDetectionData); ++i)
-    {
-        RegisterCollisionDetectionData(collisionDetectionData[i]);
-    }
+#pragma endregion ---------- âüÇµèoÇµîªíËìoò^ ----------
 
     // Ç≠ÇÁÇ¢îªíËìoò^
     DamageDetectionData damageDetectionData[] =
@@ -439,38 +424,54 @@ void EnemyDragon::RegisterCollisionData()
         RegisterDamageDetectionData(damageDetectionData[i]);
     }
 
-    // çUåÇîªíËìoò^
-    AttackDetectionData attackDetectionData[] =
-    {
-        // ----- âÒì]çUåÇóp -----
-        { "TurnAttack_0", 1.0f, {}, "Dragon15_tail_00" }, // 0
-        { "TurnAttack_1", 1.0f, {}, "Dragon15_tail_01" }, // 
-        { "TurnAttack_2", 1.0f, {}, "Dragon15_tail_02" }, // 
-        { "TurnAttack_3", 1.0f, {}, "Dragon15_tail_03" }, // 
-        { "TurnAttack_4", 1.0f, {}, "Dragon15_tail_04" }, // 
-        { "TurnAttack_5", 1.0f, {}, "Dragon15_tail_05" }, // 5
+#pragma region ---------- çUåÇîªíËìoò^ ----------
+    // ----- âÒì]çUåÇóp -----
+    RegisterAttackDetectionData({ "TurnAttack_0", 1.0f, {}, "Dragon15_tail_00" }); // 0
+    RegisterAttackDetectionData({ "TurnAttack_1", 1.0f, {}, "Dragon15_tail_01" });
+    RegisterAttackDetectionData({ "TurnAttack_2", 1.0f, {}, "Dragon15_tail_02" });
+    RegisterAttackDetectionData({ "TurnAttack_3", 1.0f, {}, "Dragon15_tail_03" });
+    RegisterAttackDetectionData({ "TurnAttack_4", 1.0f, {}, "Dragon15_tail_04" });
+    RegisterAttackDetectionData({ "TurnAttack_5", 1.0f, {}, "Dragon15_tail_05" }); // 5
 
-        // ----- ìÀêiçUåÇóp -----
-        { "TackleAttack_0", 1.0f, {}, "Dragon15_neck_3" },  // 6
-        { "TackleAttack_1", 1.0f, {}, "Dragon15_neck_1" },  // 
-        { "TackleAttack_2", 1.0f, {}, "Dragon15_spine2" },  // 
-        { "TackleAttack_3", 1.0f, {}, "Dragon15_spine0" },  // 
-        { "TackleAttack_4", 1.0f, {}, "Dragon15_tail_00" }, // 10
+    // ----- ìÀêiçUåÇóp -----
+    RegisterAttackDetectionData({ "TackleAttack_0", 1.0f, {}, "Dragon15_neck_3" }); // 6
+    RegisterAttackDetectionData({ "TackleAttack_1", 1.0f, {}, "Dragon15_neck_1" }); 
+    RegisterAttackDetectionData({ "TackleAttack_2", 1.0f, {}, "Dragon15_spine2" }); 
+    RegisterAttackDetectionData({ "TackleAttack_3", 1.0f, {}, "Dragon15_spine0" }); 
+    RegisterAttackDetectionData({ "TackleAttack_4", 1.0f, {}, "Dragon15_tail_00"}); // 10
 
-        // ----- ãÛíÜÇ©ÇÁÇΩÇΩÇ´Ç¬ÇØçUåÇ -----
-        { "FlyAttack_0", 1.0f, {}, "Dragon15_r_hand" },    // 11
-        { "FlyAttack_1", 1.0f, {}, "Dragon15_l_hand" },    // 12
+    // ----- ãÛíÜÇ©ÇÁÇΩÇΩÇ´Ç¬ÇØçUåÇ -----
+    RegisterAttackDetectionData({ "FlyAttack_0", 1.0f, {}, "Dragon15_r_hand" }); // 11
+    RegisterAttackDetectionData({ "FlyAttack_1", 1.0f, {}, "Dragon15_l_hand" }); // 12
+    
+    // ----- ÉRÉìÉ{ÇΩÇΩÇ´Ç¬ÇØçUåÇ -----
+    RegisterAttackDetectionData({ "ComboSlam_0", 0.8f, {}, "Dragon15_r_hand"     }); // 13
+    RegisterAttackDetectionData({ "ComboSlam_1", 0.8f, {}, "Dragon15_r_forearm"  }); 
+    RegisterAttackDetectionData({ "ComboSlam_2", 0.7f, {}, "Dragon15_r_finger21" }); // 15
 
-        // ----- ÉRÉìÉ{ÇΩÇΩÇ´Ç¬ÇØçUåÇ -----
-        { "ComboSlam_0", 0.8f, {}, "Dragon15_r_hand" },     // 13
-        { "ComboSlam_1", 0.8f, {}, "Dragon15_r_forearm" },  // 
-        { "ComboSlam_2", 0.7f, {}, "Dragon15_r_finger21" }, // 15
+    // ----- êÅÇ´îÚÇŒÇµçUåÇ -----
+    RegisterAttackDetectionData({ "KnockBack_0",  0.55f, { 1.9f,  0.15f, 0.0f },  "Dragon15_r_wing_04" }); // 16
+    RegisterAttackDetectionData({ "KnockBack_1",  0.6f,  { 1.21f, 0.15f, 0.0f },  "Dragon15_r_wing_04" });
+    RegisterAttackDetectionData({ "KnockBack_2",  0.65f, { 0.4f,  0.2f,  0.0f },  "Dragon15_r_wing_04" });
+    RegisterAttackDetectionData({ "KnockBack_3",  0.6f,  { -0.2f, 0.55f, -0.2f }, "Dragon15_r_wing_04" });
+    RegisterAttackDetectionData({ "KnockBack_4",  0.6f,  { 0.7f, 0.2f, -0.2f },   "Dragon15_r_wing_03" });
+    RegisterAttackDetectionData({ "KnockBack_5",  0.6f,  { 0.0f, 0.2f, -0.2f },   "Dragon15_r_wing_03" });
+    RegisterAttackDetectionData({ "KnockBack_6",  0.55f, { 1.4f, 0.0f, 0.0f },    "Dragon15_r_wing_07" });
+    RegisterAttackDetectionData({ "KnockBack_7",  0.6f,  { 0.7f, 0.0f, 0.0f },    "Dragon15_r_wing_07" });
+    RegisterAttackDetectionData({ "KnockBack_8",  0.65f, {},                      "Dragon15_r_wing_07" });
+    RegisterAttackDetectionData({ "KnockBack_9",  0.6f,  { 0.95f, 0.0f, 0.0f },   "Dragon15_r_wing_06" });
+    RegisterAttackDetectionData({ "KnockBack_10", 0.5f,  { 0.3f, 0.0f, 0.0f },    "Dragon15_r_wing_06" });
+    RegisterAttackDetectionData({ "KnockBack_11", 0.5f,  { 1.25f, 0.0f, 0.0f },   "Dragon15_r_wing_10" });
+    RegisterAttackDetectionData({ "KnockBack_12", 0.55f, { 0.5f, 0.0f, 0.0f },    "Dragon15_r_wing_10" });
+    RegisterAttackDetectionData({ "KnockBack_13", 0.6f,  { -0.3f, 0.0f, 0.0f },   "Dragon15_r_wing_10" });
+    RegisterAttackDetectionData({ "KnockBack_14", 0.65f, { 0.22f, 0.0f, 0.0f },   "Dragon15_r_wing_09" });
+    RegisterAttackDetectionData({ "KnockBack_15", 0.65f, { -0.65f, 0.0f, 0.0f },  "Dragon15_r_wing_09" });
+    RegisterAttackDetectionData({ "KnockBack_16", 0.5f,  { 1.55f, 0.0f, 0.0f },   "Dragon15_r_wing_12" });
+    RegisterAttackDetectionData({ "KnockBack_17", 0.6f,  { 0.8f, 0.0f, 0.0f },    "Dragon15_r_wing_12" });
+    RegisterAttackDetectionData({ "KnockBack_18", 0.65f, {},                      "Dragon15_r_wing_12" }); // 34
 
-    };
-    for (int i = 0; i < _countof(attackDetectionData); ++i)
-    {
-        RegisterAttackDetectionData(attackDetectionData[i]);
-    }
+#pragma endregion ---------- çUåÇîªíËìoò^ ----------
+
 
     // ãØÇ›îªíËìoò^
     AttackDetectionData flinchDetectionData[] =
@@ -608,6 +609,18 @@ void EnemyDragon::SetComboSlamAttackActiveFlag(const bool& flag)
     SetIsAttackActive(flag);
 
     for (int i = AttackData::ComboSlamAttackStart; i <= AttackData::ComboSlamAttackEnd; ++i)
+    {
+        GetAttackDetectionData(i).SetIsActive(flag);
+    }
+}
+
+// ----- êÅÇ´îÚÇŒÇµçUåÇîªíËê›íË -----
+void EnemyDragon::SetKnockBackAttackActiveFalg(const bool& flag)
+{
+    // çUåÇîªíËÉtÉâÉOÇÉZÉbÉgÇ∑ÇÈ
+    SetIsAttackActive(flag);
+
+    for (int i = AttackData::KnockBackAttackStart; i <= AttackData::KnockBackAttackEnd; ++i)
     {
         GetAttackDetectionData(i).SetIsActive(flag);
     }

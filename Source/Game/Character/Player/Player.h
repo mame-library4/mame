@@ -8,30 +8,13 @@
 
 #include "Effect/Effect.h"
 
-// ----------------------------------------------------------------------------------------------------------------
-//            | ‘Ò‹@ / •à‚« / ‘–‚è / UŒ‚0 / UŒ‚1 / UŒ‚2 / UŒ‚3 / ‘–‚èUŒ‚ / ‰ñ”ğ / ƒJƒEƒ“ƒ^[ / ƒJƒEƒ“ƒ^[UŒ‚ /
-//  ----------|----------------------------------------------------------------------------------------------------
-//  ˆÚ“®      |  Z  | ¢  |      |   Z@ |  Z@| @Z@|     @|    Z    |      |           |               |
-//  UŒ‚      |  Z  | Z  |  Z  |   Z   |  Z  |   Z  |       |   Z    |  Z  |           |               |
-//  ‰ñ”ğ      |  Z  | Z  |  Z  |   Z   |  Z  |   Z  |  Z   |   Z     |  Z  |           |               |
-//  ƒJƒEƒ“ƒ^[ |      |    |      |   Z   |  Z  |   Z  |       |   Z     |      |           |               |
-// ----------------------------------------------------------------------------------------------------------------
-// ‘Ò‹@/•à‚«/‘–‚è/UŒ‚0/UŒ‚1/UŒ‚2/UŒ‚3/‘–‚èUŒ‚/‰ñ”ğ/ƒJƒEƒ“ƒ^[/ƒJƒEƒ“ƒ^[UŒ‚
-// None/Walk/Run/AbleCounter/AbleCounter/AbleCounter/Avoidance/
-// ----------------------------------------------------------------------------------------------------------------
-// All       / ˆÚ“®,UŒ‚,‰ñ”ğ,ƒJƒEƒ“ƒ^[
-// NoConter  / ˆÚ“®,UŒ‚,‰ñ”ğ
-// None      / ‰ñ”ğ
-
 class Player : public Character
 {
 public:// --- ’è” ---
-#pragma region ’è” 
+#pragma region ----- ’è” -----
     enum class STATE
     {
         Idle,           // ‘Ò‹@
-        //Move,           // ˆÚ“®
-        Walk,
         Run,
         LightFlinch,
         Flinch,
@@ -117,28 +100,13 @@ public:// --- ’è” ---
     // æs“ü—Í‚Ìí—Ş
     enum class NextInput
     {
-        // -----------------------------------
-        //  æs“ü—Í‚Ìí—Ş
-        //   æs“ü—Í‚È‚µ : None
-        //   UŒ‚        : ComboAttack0
-        //   ‰ñ”ğ        : Avoidance
-        // @ƒJƒEƒ“ƒ^[   : Counter
-        // -----------------------------------
-        // All       / ˆÚ“®,UŒ‚,‰ñ”ğ,ƒJƒEƒ“ƒ^[
-        // NoConter  / ˆÚ“®,UŒ‚,‰ñ”ğ
-        // None      / ‰ñ”ğ
-        // -----------------------------------
-
-        None,           // æs“ü—Í‚È‚µ or ‰ñ”ğ‚Ì‚İ”»’è
+        None,           // æs“ü—Í‚È‚µ
         ComboAttack0,   // ƒRƒ“ƒ{UŒ‚
         Avoidance,      // ‰ñ”ğ
         Counter,        // ƒJƒEƒ“ƒ^[
-
-        All,            // ‘Sí—ŞOK
-        NoCounter,      // ƒJƒEƒ“ƒ^[ˆÈŠOOK
     };
 
-#pragma endregion ’è”
+#pragma endregion ----- ’è” -----
 
 public:
     Player();
@@ -168,8 +136,6 @@ public:
 
     // ---------- Œ•‚ÌÀ•WXV ----------
     void UpdateSwordTransform();
-
-    bool Player::CheckNextInput(const Player::NextInput& nextInput);
 
 public:// --- æ“¾Eİ’è ---
 #pragma region [Get, Set] Function
@@ -223,9 +189,20 @@ public:// --- æ“¾Eİ’è ---
     [[nodiscard]] bool GetComboAttack0KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
     [[nodiscard]] bool GetComboAttack1KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y; }
     [[nodiscard]] bool GetAvoidanceKeyDown()    const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_A; }
-    [[nodiscard]] bool GetCounterStanceKey()    const { return Input::Instance().GetGamePad().GetButton() & GamePad::BTN_B && Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_TRIGGER; }
+    [[nodiscard]] bool GetCounterStanceKey()    const;
 
 #pragma endregion [Get, Set] Function
+
+    [[nodiscard]] const float GetMoveInputStartFrame()      const { return moveInputStartFrame_; }
+    [[nodiscard]] const float GetAvoidanceInputStartFrame() const { return avoidanceInputStartFrame_; }
+    [[nodiscard]] const float GetAvoidanceInputEndFrame()   const { return avoidanceInputEndFrame_; }
+    [[nodiscard]] const float GetAvoidanceTransitionFrame() const { return avoidanceTransitionFrame_; }
+    [[nodiscard]] const float GetAttackInputStartFrame()    const { return attackInputStartFrame_; }
+    [[nodiscard]] const float GetAttackInputEndFrame()      const { return attackInputEndFrame_; }
+    [[nodiscard]] const float GetAttackTransitionFrame()    const { return attackTransitionFrame_; }
+    [[nodiscard]] const float GetCounterInputStartFrame()   const { return counterInputStartFrame_; }
+    [[nodiscard]] const float GetCounterInputEndFrame()     const { return counterInputEndFrame_; }
+    [[nodiscard]] const float GetCounterTransitionFrame()   const { return counterTransitionFrame_; }
 
 private:
     // ---------- Collision ----------

@@ -190,6 +190,7 @@ public:// --- æ“¾Eİ’è ---
     virtual void SetTackleAttackActiveFlag(const bool& flag = true)     = 0; // “ËiUŒ‚
     virtual void SetFlyAttackActiveFlag(const bool& flag = true)        = 0; // ã¸UŒ‚
     virtual void SetComboSlamAttackActiveFlag(const bool& flag = true)  = 0; // ‚½‚½‚«‚Â‚¯UŒ‚
+    virtual void SetKnockBackAttackActiveFalg(const bool& flag = true)  = 0; // ‚«”ò‚Î‚µUŒ‚
 
     // ---------- ‰Ÿ‚µo‚µ”»’è ----------
     virtual void SetDownCollisionActiveFlag(const bool& flag = true) = 0;
