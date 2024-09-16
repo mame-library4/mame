@@ -194,8 +194,8 @@ void EnemyDragon::RegisterBehaviorNode()
 #else
     behaviorTree_->AddNode("Battle", "Near",  1, BehaviorTree::SelectRule::Priority, new NearJudgment(this), nullptr);
     
-    //behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Random, nullptr, nullptr);
-    behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Random, nullptr, nullptr);
+    //behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
 #endif
 
     //behaviorTree_->AddNode("Shout", "Roar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
@@ -205,8 +205,8 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Near", "ComboFlySlam",  0, BehaviorTree::SelectRule::None, new ComboFlySlamJudgment(this), new ActionDragon::ComboFlySlamAction(this));    
     
 
-    behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
-    //behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
+    //behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
 
     
     behaviorTree_->AddNode("MostNear", "KnockBack",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::KnockBackAction(this));
@@ -223,9 +223,9 @@ void EnemyDragon::RegisterBehaviorNode()
     
     
     behaviorTree_->AddNode("Far", "Tackle",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
-    behaviorTree_->AddNode("Far", "FireBreathCombo",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireBreathCombo(this));
     behaviorTree_->AddNode("Far", "FireBreath",        0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireBreath(this));
-    behaviorTree_->AddNode("Far", "Move",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveAction(this));
+    behaviorTree_->AddNode("Far", "FireBreathCombo",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireBreathCombo(this));
+    //behaviorTree_->AddNode("Far", "Move",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveAction(this));
     
     //behaviorTree_->AddNode("Far", "MoveTurn",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveTurnAction(this));
     //behaviorTree_->AddNode("Far", "MoveAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveAttackAction(this));
@@ -453,22 +453,17 @@ void EnemyDragon::RegisterCollisionData()
     RegisterAttackDetectionData({ "KnockBack_0",  0.55f, { 1.9f,  0.15f, 0.0f },  "Dragon15_r_wing_04" }); // 16
     RegisterAttackDetectionData({ "KnockBack_1",  0.6f,  { 1.21f, 0.15f, 0.0f },  "Dragon15_r_wing_04" });
     RegisterAttackDetectionData({ "KnockBack_2",  0.65f, { 0.4f,  0.2f,  0.0f },  "Dragon15_r_wing_04" });
-    RegisterAttackDetectionData({ "KnockBack_3",  0.6f,  { -0.2f, 0.55f, -0.2f }, "Dragon15_r_wing_04" });
-    RegisterAttackDetectionData({ "KnockBack_4",  0.6f,  { 0.7f, 0.2f, -0.2f },   "Dragon15_r_wing_03" });
-    RegisterAttackDetectionData({ "KnockBack_5",  0.6f,  { 0.0f, 0.2f, -0.2f },   "Dragon15_r_wing_03" });
-    RegisterAttackDetectionData({ "KnockBack_6",  0.55f, { 1.4f, 0.0f, 0.0f },    "Dragon15_r_wing_07" });
-    RegisterAttackDetectionData({ "KnockBack_7",  0.6f,  { 0.7f, 0.0f, 0.0f },    "Dragon15_r_wing_07" });
-    RegisterAttackDetectionData({ "KnockBack_8",  0.65f, {},                      "Dragon15_r_wing_07" });
-    RegisterAttackDetectionData({ "KnockBack_9",  0.6f,  { 0.95f, 0.0f, 0.0f },   "Dragon15_r_wing_06" });
-    RegisterAttackDetectionData({ "KnockBack_10", 0.5f,  { 0.3f, 0.0f, 0.0f },    "Dragon15_r_wing_06" });
-    RegisterAttackDetectionData({ "KnockBack_11", 0.5f,  { 1.25f, 0.0f, 0.0f },   "Dragon15_r_wing_10" });
-    RegisterAttackDetectionData({ "KnockBack_12", 0.55f, { 0.5f, 0.0f, 0.0f },    "Dragon15_r_wing_10" });
-    RegisterAttackDetectionData({ "KnockBack_13", 0.6f,  { -0.3f, 0.0f, 0.0f },   "Dragon15_r_wing_10" });
-    RegisterAttackDetectionData({ "KnockBack_14", 0.65f, { 0.22f, 0.0f, 0.0f },   "Dragon15_r_wing_09" });
-    RegisterAttackDetectionData({ "KnockBack_15", 0.65f, { -0.65f, 0.0f, 0.0f },  "Dragon15_r_wing_09" });
-    RegisterAttackDetectionData({ "KnockBack_16", 0.5f,  { 1.55f, 0.0f, 0.0f },   "Dragon15_r_wing_12" });
-    RegisterAttackDetectionData({ "KnockBack_17", 0.6f,  { 0.8f, 0.0f, 0.0f },    "Dragon15_r_wing_12" });
-    RegisterAttackDetectionData({ "KnockBack_18", 0.65f, {},                      "Dragon15_r_wing_12" }); // 34
+    RegisterAttackDetectionData({ "KnockBack_3",  0.45f, { 2.0f, 0.0f, 0.0f },    "Dragon15_r_wing_07" });
+    RegisterAttackDetectionData({ "KnockBack_4",  0.55f, { 1.4f, 0.0f, 0.0f },    "Dragon15_r_wing_07" });
+    RegisterAttackDetectionData({ "KnockBack_5",  0.6f,  { 0.7f, 0.0f, 0.0f },    "Dragon15_r_wing_07" });
+    RegisterAttackDetectionData({ "KnockBack_6",  0.65f, {},                      "Dragon15_r_wing_07" });
+    RegisterAttackDetectionData({ "KnockBack_7",  0.45f, { 1.85f, 0.0f, 0.0f },   "Dragon15_r_wing_10" });
+    RegisterAttackDetectionData({ "KnockBack_8",  0.5f,  { 1.25f, 0.0f, 0.0f },   "Dragon15_r_wing_10" });
+    RegisterAttackDetectionData({ "KnockBack_9",  0.55f, { 0.5f, 0.0f, 0.0f },    "Dragon15_r_wing_10" });
+    RegisterAttackDetectionData({ "KnockBack_10", 0.6f,  { -0.3f, 0.0f, 0.0f },   "Dragon15_r_wing_10" });
+    RegisterAttackDetectionData({ "KnockBack_11", 0.45f, { 2.25f, 0.0f, 0.0f },   "Dragon15_r_wing_12" });
+    RegisterAttackDetectionData({ "KnockBack_12", 0.5f,  { 1.55f, 0.0f, 0.0f },   "Dragon15_r_wing_12" });
+    RegisterAttackDetectionData({ "KnockBack_13", 0.6f,  { 0.8f, 0.0f, 0.0f },    "Dragon15_r_wing_12" }); // 29
 
 #pragma endregion ---------- çUåÇîªíËìoò^ ----------
 

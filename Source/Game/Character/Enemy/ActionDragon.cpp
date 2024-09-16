@@ -597,7 +597,7 @@ namespace ActionDragon
     }
 }
 
-// ----- 空中からたたきつけ攻撃 -----
+// ----- FlyAttackAction -----
 namespace ActionDragon
 {
     const ActionBase::State FlyAttackAction::Run(const float& elapsedTime)
@@ -614,6 +614,9 @@ namespace ActionDragon
 
             // ダメージ設定
             owner_->SetAttackDamage(50.0f);
+
+            // カウンター有効範囲を設定する
+            PlayerManager::Instance().GetPlayer()->SetCounterActiveRadius(6.0f);
 
             // 変数初期化
             {
@@ -786,11 +789,12 @@ namespace ActionDragon
             // ダメージ設定
             owner_->SetAttackDamage(50.0f);
 
+            // カウンター有効範囲を設定する
+            PlayerManager::Instance().GetPlayer()->SetCounterActiveRadius(8.0f);
+
             // 変数初期化
-            {
-                loopMax_ = rand() % 3;
-                loopCounter_ = 0;
-            }
+            loopMax_ = 2;
+            loopCounter_ = 0;
 
             // ステート変更
             SetState(STATE::Guard);
@@ -909,7 +913,7 @@ namespace ActionDragon
     }
 }
 
-// ----- ブレス -----
+// ----- FireBreath -----
 namespace ActionDragon
 {
     const ActionBase::State FireBreath::Run(const float& elapsedTime)
@@ -926,12 +930,20 @@ namespace ActionDragon
             owner_->SetAttackDamage(50.0f);
             
             // 変数初期化
+            targetPosition_ = PlayerManager::Instance().GetTransform()->GetPosition();
             isCreateFireball_ = false;
 
             owner_->SetStep(1);
 
             break;
         case 1:
+
+            // 回転処理
+            if (owner_->GetAnimationSeconds() > 0.25f)
+            {
+                owner_->Turn(elapsedTime, targetPosition_);
+            }
+
 
             if (owner_->GetAnimationSeconds() > 0.95 && isCreateFireball_ == false)
             {
@@ -974,6 +986,7 @@ namespace ActionDragon
             owner_->SetAttackDamage(50.0f);
 
             // 変数初期化
+            targetPosition_ = PlayerManager::Instance().GetTransform()->GetPosition();
             isCreateFireball_ = false;
 
             // ステート変更
@@ -982,6 +995,12 @@ namespace ActionDragon
             break;
         case STATE::FirstAttack:
         {
+            // 回転処理
+            if (owner_->GetAnimationSeconds() > 0.25f)
+            {
+                owner_->Turn(elapsedTime, targetPosition_);
+            }
+
             // 火球発射
             Launch(0.95f);
 
@@ -1057,7 +1076,7 @@ namespace ActionDragon
     }
 }
 
-// ----- コンボたたきつけ攻撃 -----
+// ----- ComboSlamAction -----
 namespace ActionDragon
 {
     const ActionBase::State ComboSlamAction::Run(const float& elapsedTime)
@@ -1076,6 +1095,9 @@ namespace ActionDragon
 
             // ルートモーションを使用する
             owner_->SetUseRootMotion(true);
+
+            // カウンター有効範囲を設定する
+            PlayerManager::Instance().GetPlayer()->SetCounterActiveRadius(6.0f);
 
             // 変数初期化
             addForceData_.Initialize(1.0f, 0.4f, 1.0f);
@@ -1306,7 +1328,7 @@ namespace ActionDragon
     }
 }
 
-// ----- 回転攻撃 -----
+// ----- TurnAttackAction -----
 namespace ActionDragon
 {
     const ActionBase::State TurnAttackAction::Run(const float& elapsedTime)
@@ -1326,7 +1348,7 @@ namespace ActionDragon
 
             // ルートモーションを使用する
             owner_->SetUseRootMotion(true);
-
+             
             // カウンター有効範囲を設定する
             PlayerManager::Instance().GetPlayer()->SetCounterActiveRadius(6.0f);
 

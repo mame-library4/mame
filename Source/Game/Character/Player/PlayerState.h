@@ -195,7 +195,6 @@ namespace PlayerState
 
     private:
         void SetAnimation();
-        [[nodiscard]] const bool CheckNextInput();
 
         void Move();                            // à⁄ìÆ
         void Turn(const float& elapsedTime);    // ê˘âÒ
@@ -239,9 +238,6 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
-
-    private:
-        [[nodiscard]] const bool CheckNextInput();
 
     private:
         AddForceData        addForceData_;

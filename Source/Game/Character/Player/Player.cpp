@@ -186,7 +186,7 @@ void Player::DebugRender(DebugRenderer* debugRenderer)
     {
         for (auto& data : GetAttackDetectionData())
         {
-            const DirectX::XMFLOAT4 color = isAbleAttack_ ? data.GetColor() : DirectX::XMFLOAT4(1, 0, 1, 1);
+            const DirectX::XMFLOAT4 color = isAttackValid_ ? data.GetColor() : DirectX::XMFLOAT4(1, 0, 1, 1);
 
             debugRenderer->DrawSphere(data.GetPosition(), data.GetRadius(), color);
         }

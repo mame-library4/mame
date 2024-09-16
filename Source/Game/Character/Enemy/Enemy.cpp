@@ -25,7 +25,7 @@ void Enemy::Turn(const float& elapsedTime, const DirectX::XMFLOAT3& targetPos)
     float dot = XMFloat2Dot(vec, ownerFront) - 1.0f;
 
     // ‰ñ“]—Ê‚ª­‚È‚¯‚ê‚Î‚±‚±‚ÅI—¹
-    if (dot > -0.01f) return;
+    if (dot > -0.005f) return;
 
     // ‰ñ“]‘¬“xİ’è
     float rotateSpeed = GetRotateSpeed() * elapsedTime;

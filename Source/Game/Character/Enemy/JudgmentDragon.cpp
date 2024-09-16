@@ -39,6 +39,11 @@ const bool NonBattleJudgment::Judgment()
         ++num_;
         return true;
     }
+    else if (num_ < 3)
+    {
+        ++num_;
+        return false;
+    }
     else
     {
         num_ = 0;
@@ -70,8 +75,6 @@ const bool ShoutJudgment::Judgment()
 
 const bool NearJudgment::Judgment()
 {
-    return true;
-
     const DirectX::XMFLOAT3 ownerPos = owner_->GetTransform()->GetPosition();
     const DirectX::XMFLOAT3 playerPos = PlayerManager::Instance().GetTransform()->GetPosition();
     const float length = XMFloat3Length(ownerPos - playerPos);
@@ -88,8 +91,6 @@ const bool NearJudgment::Judgment()
 
 const bool ComboFlySlamJudgment::Judgment()
 {
-    return false;
-
     const float distance = owner_->CalcDistanceToPlayer();
 
     if (distance > owner_->GetComboFlyAttackRadius()) return true;

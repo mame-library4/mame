@@ -67,7 +67,7 @@ private:
         ComboSlamAttackStart    = 13,
         ComboSlamAttackEnd      = 15,
         KnockBackAttackStart    = 16,
-        KnockBackAttackEnd      = 34,
+        KnockBackAttackEnd      = 29,
     };
 };
 

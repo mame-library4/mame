@@ -1262,9 +1262,7 @@ namespace PlayerState
         // •Ï”‰Šú‰»
         addForceBack_.Initialize(0.16f, 0.2f, 0.5f);
         addForceFront_.Initialize(0.66f, 0.30f, 1.0f);
-        //gamePadVibration_.Initialize(0.3f, 0.3f, 1.0f);
         gamePadVibration_.Initialize(0.3f, 0.2f, 0.5f);
-
         attackData_.Initialize(0.75f, 1.0f);
 
         isNextInput_ = false;
@@ -1634,13 +1632,6 @@ namespace PlayerState
             // RootMotion‚ðŽg—p‚·‚é
             owner_->SetUseRootMotion(true);
         }
-
-#if 0
-        if (addForceData_.Update(owner_->GetAnimationSeconds()))
-        {
-            owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
-        }
-#endif
 
         // UŒ‚”»’èˆ—
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());

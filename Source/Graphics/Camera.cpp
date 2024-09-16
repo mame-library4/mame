@@ -176,33 +176,20 @@ void Camera::Rotate(const float& elapsedTime)
     float aRy = gamePad.GetAxisRY();
     DirectX::XMFLOAT3 rotate = GetTransform()->GetRotation();
 
-    const float invertVertical = invertVertical_ ? -1 : 1;
-
-    // ÉRÉìÉgÉçÅ[ÉâÅ[ÇÃåXÇ´Ç™àÍíËà»è„Ç∂Ç·Ç»Ç¢Ç∆îªíËÇéÊÇÁÇ»Ç¢
-    // ( ëÄçÏÉXÉgÉåÉXåyå∏ÇÃÇΩÇﬂêßå¿Çê›ÇØÇÈ )
-    // â°à⁄ìÆÇµÇΩÇ¢ÇÃÇ…è„â∫à⁄ìÆÇµÇƒÇµÇ‹ÇÌÇ»Ç¢ÇÊÇ§Ç…...
-    //if (fabs(aRy) >= inputThreshold_)
-    //{
-    //    rotate.x -= aRy * invertVertical * verticalRotationSpeed_ * elapsedTime;
-    //}
     // â°à⁄ìÆÇÕêßå¿Ç»Çµ
     rotate.y += aRx * horizontalRotationSpeed_ * elapsedTime;
 
     // lengthêßå‰
     float deltaLength = maxLength_ - minLength_;
     float deltaRotate = fabs(maxXRotation_) + fabs(minXRotation_);
-    float addLength = deltaLength / deltaRotate;
-    //length_ += addLength * aRy * elapsedTime;
-    //if (length_ < minLength_) length_ = minLength_;
-    if (length_ > maxLength_) length_ = maxLength_;
+    float addLength = deltaLength / deltaRotate;    
 
-    // Xé≤(è„â∫)ÇÃâÒì]êßå‰
-    if (rotate.x < minXRotation_) rotate.x = minXRotation_;
-    //if (rotate.x > maxXRotation_) rotate.x = maxXRotation_;
-
-    
+    // óùïsêsÇ»ècâÒì]Çì¸ÇÍÇ»Ç¢ÇÊÇ§Ç…Ëáílà»è„Ç»ÇÁì¸óÕÇéÊìæÇ∑ÇÈ
     if (fabs(aRy) >= inputThreshold_)
     {
+        // è„â∫ì¸óÕîΩì]ÇîªíË
+        const float aRyValue = invertVertical_ ? aRy * -1 * elapsedTime : aRy * elapsedTime;
+
         if (rotate.x > maxXRotation_)
         {
             isAdjustCameraLength_ = true;
@@ -212,23 +199,27 @@ void Camera::Rotate(const float& elapsedTime)
             const float rotateAmount = (maxRotate - maxXRotation_) * addAmountSpeed;
             const float lengthAmount = (minLength_ - 2.5f) * addAmountSpeed;
 
-            rotate.x -= aRy * invertVertical * rotateAmount * elapsedTime;
+            rotate.x -= rotateAmount * aRyValue;
 
             if (rotate.x > maxRotate) rotate.x = maxRotate;
 
-            length_ += aRy * lengthAmount * elapsedTime;
+            length_ += lengthAmount * aRyValue;
             if (length_ < 2.5f) length_ = 2.5f;
         }
         else
         {
             isAdjustCameraLength_ = false;
 
-            rotate.x -= aRy * invertVertical * verticalRotationSpeed_ * elapsedTime;
+            rotate.x -= verticalRotationSpeed_ * aRyValue;
 
-            length_ += addLength * aRy * elapsedTime;
+            length_ += addLength * aRyValue;
         }
     }
 
+    if (length_ > maxLength_) length_ = maxLength_;
+
+    // Xé≤(è„â∫)ÇÃâÒì]êßå‰
+    if (rotate.x < minXRotation_) rotate.x = minXRotation_;
 
     // Yé≤âÒì]ílÇ-3.14~3.14Ç…é˚Ç‹ÇÈÇÊÇ§Ç…Ç∑ÇÈ
     if (rotate.y < -DirectX::XM_PI) rotate.y += DirectX::XM_2PI;

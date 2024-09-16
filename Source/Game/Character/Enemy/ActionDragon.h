@@ -249,6 +249,7 @@ namespace ActionDragon
         const ActionBase::State Run(const float& elapsedTime) override;
 
     private:
+        DirectX::XMFLOAT3 targetPosition_ = {};
         bool isCreateFireball_ = false;
     };
 
@@ -272,6 +273,7 @@ namespace ActionDragon
         void Launch(const float& launchFrame);
 
     private:
+        DirectX::XMFLOAT3 targetPosition_ = {};
         bool isCreateFireball_ = false;
     };
 
