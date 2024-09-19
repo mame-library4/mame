@@ -12,20 +12,20 @@ public:
 
 public:
     // インスタンス取得
-    static Input& Instance() { return *instance; }
+    static Input& Instance() { return *instance_; }
 
     // 更新処理
     void Update(const float& elapsedTime);
 
-    // ゲームパッド取得
-    GamePad& GetGamePad() { return gamePad; }
 
-    // マウス取得
-    Mouse& GetMouse() { return mouse; }
+    GamePad& GetGamePad() { return gamePad_; }
+    Mouse& GetMouse() { return mouse_; }
+
+    [[nodiscard]] const bool IsAnyInputDown();
 
 private:
-    static Input* instance;
-    GamePad gamePad;
-    Mouse mouse;
+    static Input* instance_;
+    GamePad gamePad_;
+    Mouse mouse_;
 };
 

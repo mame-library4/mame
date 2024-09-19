@@ -473,10 +473,9 @@ namespace PlayerState
 
         // 吹き飛ばされアニメーション処理
         if (owner_->GetAnimationSeconds() > 1.2f && isFirstAnimation_ == true)
-        {// 入力があれば倒れてる状態を終了する
-            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
-            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
-            if (fabsf(aLx) != 0.0f || fabsf(aLy) != 0.0f)
+        {            
+            // 入力があれば倒れてる状態を終了する
+            if (Input::Instance().IsAnyInputDown())
             {
                 owner_->PlayBlendAnimation(Player::Animation::GetUp, false);
                 owner_->SetTransitionTime(0.1f);
