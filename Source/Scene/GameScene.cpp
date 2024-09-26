@@ -138,7 +138,7 @@ void GameScene::Update(const float& elapsedTime)
 
 void GameScene::ShadowRender()
 {
-    //PlayerManager::Instance().CastShadow();
+    PlayerManager::Instance().CastShadow();
     //EnemyManager::Instance().CastShadow();
 }
 

@@ -280,6 +280,10 @@ namespace PlayerState
 
     private:
         AttackData      attackData_;
+
+        float startAngle_ = 0.0f;
+        float endAngle_ = 0.0f;
+        float timer_ = 0.0f;
     };
 
     // ----- ƒRƒ“ƒ{0_1 -----

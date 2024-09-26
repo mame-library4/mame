@@ -14,7 +14,7 @@ public:// ----- íËêî -----
     enum class SAMPLER_STATE 
     {
         POINT, LINEAR, ANISOTROPIC, LINEAR_BORDER_BLACK, LINEAR_BORDER_WHITE, COMPARISON_LINEAR_BORDER_WHITE/*SHADOW*/,
-        LINEAR_BORDER_OPAQUE_BLACK, POINT_CLAMP, MAX,
+        LINEAR_BORDER_OPAQUE_BLACK, POINT_CLAMP, COMPARISON_DEPTH,  MAX,
     };
     enum class GBufferId { BaseColor, Emissive, Normal, Parameters, Depth, Max };
 

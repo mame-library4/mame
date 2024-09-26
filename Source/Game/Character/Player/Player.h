@@ -130,6 +130,9 @@ public:
     void Turn(const float& elapsedTime); // 旋回処理
     void Move(const float& elapsedTime); // 移動処理
 
+    void CalculateRotationAdjustment(); // 回転補正量設定
+    void UpdateRotationAdjustment(const float& elapsedTime);    // 回転補正
+
     // ---------- Collision ----------
     void UpdateCollisions(const float& elapsedTime) override;
     void UpdateCollisionDetectionData();    // 押し出し判定位置更新
@@ -219,6 +222,15 @@ private:
 
     // ---------- 移動 ----------
     DirectX::XMFLOAT3 moveDirection_ = {};
+    
+    // ---------- 回転 ----------
+    float startAngle_               = 0.0f;     // 補間開始地点
+    float endAngle_                 = 0.0f;     // 補間終了地点
+    float rotationTimer_            = 0.0f;     // 補間制御用
+    float rotateAngleThreshold_     = 0.52f;    // 回転角閾値
+    float rotationAmount_           = 0.52f;    // 回転量
+    float rotationSpeed_            = 3.0f;     // 回転速度
+    bool  useRotationAdjustment_    = false;    // 更新処理をするか
 
     // ---------- 行動 ------------------------------
     NextInput   nextInput_                  = NextInput::None;  // 先行入力保存用

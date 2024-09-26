@@ -320,3 +320,11 @@ inline const float XMFloat2Cross(
 }
 
 #pragma endregion XMFLOAT2
+
+inline const float XMFloatLerp(
+    const float& start,
+    const float& end,
+    const float& time)
+{
+    return start + time * (end - start);
+}

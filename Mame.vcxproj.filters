@@ -609,6 +609,9 @@
     <Filter Include="Mame\Graphics\Shadow">
       <UniqueIdentifier>{45bf14d4-c871-4d80-81eb-9db7464a4469}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mame\Shader\Core">
+      <UniqueIdentifier>{15301855-37b3-4365-adad-9f276497abea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -663,6 +666,12 @@
     </None>
     <None Include="Source\Shader\CsmOpaque.hlsli">
       <Filter>Mame\Shader\GltfModel</Filter>
+    </None>
+    <None Include="Source\Shader\Common.hlsli">
+      <Filter>Mame\Shader\Core</Filter>
+    </None>
+    <None Include="Source\Shader\Constants.hlsli">
+      <Filter>Mame\Shader\Core</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

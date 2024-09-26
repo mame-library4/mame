@@ -155,14 +155,14 @@ GltfModel::GltfModel(const std::string& filename)
         meshes_.at(0).primitives_.at(0).vertexBufferViews_ };
     D3D11_INPUT_ELEMENT_DESC inputElementDesc[]
     {
-        { "POSITION", 0, vertexBufferViews.at("POSITION").format_, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "NORMAL", 0, vertexBufferViews.at("NORMAL").format_, 1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TANGENT", 0, vertexBufferViews.at("TANGENT").format_, 2, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "POSITION", 0, vertexBufferViews.at("POSITION").format_,   0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "NORMAL",   0, vertexBufferViews.at("NORMAL").format_,     1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TANGENT",  0, vertexBufferViews.at("TANGENT").format_,    2, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 0, vertexBufferViews.at("TEXCOORD_0").format_, 3, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "JOINTS", 0, vertexBufferViews.at("JOINTS_0").format_, 4, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "WEIGHTS", 0, vertexBufferViews.at("WEIGHTS_0").format_, 5, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "JOINTS", 1, vertexBufferViews.at("JOINTS_1").format_, 6, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "WEIGHTS", 1, vertexBufferViews.at("WEIGHTS_1").format_, 7, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "JOINTS",   0, vertexBufferViews.at("JOINTS_0").format_,   4, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "WEIGHTS",  0, vertexBufferViews.at("WEIGHTS_0").format_,  5, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "JOINTS",   1, vertexBufferViews.at("JOINTS_1").format_,   6, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "WEIGHTS",  1, vertexBufferViews.at("WEIGHTS_1").format_,  7, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
     };
     Graphics::Instance().CreateVsFromCso("./Resources/Shader/gltfModelVs.cso", vertexShader_.ReleaseAndGetAddressOf(),
         inputLayout_.ReleaseAndGetAddressOf(), inputElementDesc, _countof(inputElementDesc));
@@ -173,6 +173,8 @@ GltfModel::GltfModel(const std::string& filename)
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "JOINTS",   0, DXGI_FORMAT_R16G16B16A16_UINT,  1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "WEIGHTS",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 2, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "JOINTS",   1, DXGI_FORMAT_R16G16B16A16_UINT,  3, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "WEIGHTS",  1, DXGI_FORMAT_R32G32B32A32_FLOAT, 4, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
     };
     Graphics::Instance().CreateVsFromCso("./Resources/Shader/GltfModelShadowVS.cso", shadowVertexShader_.ReleaseAndGetAddressOf(),
         shadowInputLayout_.ReleaseAndGetAddressOf(), shadowInputElementDesc, _countof(shadowInputElementDesc));
@@ -571,6 +573,8 @@ void GltfModel::CastShadow(const float& scaleFactor)
                     primitiveConstants_->GetData()->startInstanceLocation_ = 0;
                     primitiveConstants_->Activate(0);
 
+                    //deviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_UNDEFINED);
+
                     deviceContext->DrawIndexed(static_cast<UINT>(primitive.indexBufferView_.count()), 0, 0);
                 }
             }
@@ -584,6 +588,11 @@ void GltfModel::CastShadow(const float& scaleFactor)
     {
         traverse(nodeIndex);
     }
+
+    deviceContext->VSSetShader(NULL, NULL, 0);
+    deviceContext->PSSetShader(NULL, NULL, 0);
+    deviceContext->GSSetShader(NULL, NULL, 0);
+    deviceContext->IASetInputLayout(NULL);
 }
 
 void GltfModel::DrawDebug()

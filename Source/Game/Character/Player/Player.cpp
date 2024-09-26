@@ -105,6 +105,9 @@ void Player::Update(const float& elapsedTime)
         return;
     }
 
+    // 回転補正
+    UpdateRotationAdjustment(elapsedTime);
+
     // 移動処理
     Move(elapsedTime);    
 
@@ -149,6 +152,18 @@ void Player::DrawDebug()
             ImGui::DragFloat3("weaponRotation", &socketRotation_.x);
             ImGui::DragFloat3("socketScale", &socketScale_.x);
 
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("RotationAdjustment"))
+        {
+            ImGui::DragFloat("StartAngle", &startAngle_);
+            ImGui::DragFloat("EndAngle", &endAngle_);
+            ImGui::DragFloat("RotationTimer", &rotationTimer_);
+            ImGui::DragFloat("RotateAngleThreshold", &rotateAngleThreshold_);            
+            ImGui::DragFloat("RotationAmount", &rotationAmount_, 0.1f);
+            ImGui::DragFloat("RotationSpeed", &rotationSpeed_, 0.1f);
+            ImGui::Checkbox("UseRotationAdjustment", &useRotationAdjustment_);
             ImGui::TreePop();
         }
 
@@ -289,6 +304,77 @@ void Player::Move(const float& elapsedTime)
 
     SetVelocity(velocity);
     GetTransform()->AddPosition(velocity * elapsedTime);
+}
+
+// ----- 回転補正をするか、回転量を求める -----
+void Player::CalculateRotationAdjustment()
+{
+    GamePad& gamePad = Input::Instance().GetGamePad();
+    const float aLx = gamePad.GetAxisLX();
+    const float aLy = gamePad.GetAxisLY();
+
+    DirectX::XMFLOAT2 input = { fabsf(gamePad.GetAxisLX()), fabsf(gamePad.GetAxisLY()) };
+    
+    // スティックの入力がない場合は回転補正を行わない
+    if (input.x == 0.0f && input.y == 0.0f)
+    {
+        useRotationAdjustment_ = false;
+        return;
+    }
+    
+    // スティックの傾きをカメラから見た方向に変換
+    DirectX::XMFLOAT3 cameraFront = Camera::Instance().CalcForward();
+    DirectX::XMFLOAT3 cameraRight = Camera::Instance().CalcRight();
+    DirectX::XMFLOAT2 stickDirection =
+    {
+        aLy * cameraFront.x + aLx * cameraRight.x,
+        aLy * cameraFront.z + aLx * cameraRight.z,
+    };
+    stickDirection = XMFloat2Normalize(stickDirection);
+
+    DirectX::XMFLOAT3 forward = GetTransform()->CalcForward();
+    DirectX::XMFLOAT2 playerForward = XMFloat2Normalize({forward.x, forward.z });
+
+    // 回転角を算出
+    float angle = acosf(XMFloat2Dot(stickDirection, playerForward));
+
+    // 回転角が大きくないので回転補正を行わない
+    if (fabsf(angle) < rotateAngleThreshold_)
+    {
+        useRotationAdjustment_ = false;
+        return;
+    }
+
+    float cross = XMFloat2Cross(stickDirection, playerForward);
+
+    if (cross > 0)
+    {
+        startAngle_ = GetTransform()->GetRotationY();
+        endAngle_ = startAngle_ - rotationAmount_;
+        rotationTimer_ = 0.0f;
+    }
+    else
+    {
+        startAngle_ = GetTransform()->GetRotationY();
+        endAngle_ = startAngle_ + rotationAmount_;
+        rotationTimer_ = 0.0f;
+    }
+
+    useRotationAdjustment_ = true;
+}
+
+// ----- 回転補正 -----
+void Player::UpdateRotationAdjustment(const float& elapsedTime)
+{
+    if (useRotationAdjustment_ == false) return;
+
+    const float angle = XMFloatLerp(startAngle_, endAngle_, rotationTimer_);
+
+    GetTransform()->SetRotationY(angle);
+
+    rotationTimer_ += rotationSpeed_ * elapsedTime;
+
+    if (rotationTimer_ > 1.0f) useRotationAdjustment_ = false;
 }
 
 void Player::ResetFlags()

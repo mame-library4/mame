@@ -26,7 +26,7 @@ public:
 
     void Activate();
     void Deactivate();
-    void Draw();
+    void Draw(ID3D11ShaderResourceView* cascadeShadowMap);
 
     void DrawDebug();
 

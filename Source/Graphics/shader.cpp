@@ -233,6 +233,8 @@ void Shader::SetSamplerState()
 
     deviceContext->PSSetSamplers(6, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::LINEAR_BORDER_OPAQUE_BLACK)].GetAddressOf());
     deviceContext->PSSetSamplers(7, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::POINT_CLAMP)].GetAddressOf());
+    
+    deviceContext->PSSetSamplers(8, 1, samplerState[static_cast<size_t>(SAMPLER_STATE::COMPARISON_DEPTH)].GetAddressOf());
 }
 
 // ----- G-Buffer‚ð—LŒø‰»‚·‚é -----
@@ -524,6 +526,23 @@ void Shader::CreateSamplerStates()
     samplerDesc.MinLOD = 0.0f;
     samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
     result = device->CreateSamplerState(&samplerDesc, samplerState[static_cast<size_t>(SAMPLER_STATE::POINT_CLAMP)].GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+
+    samplerDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.MipLODBias = 0.0f;
+    samplerDesc.MaxAnisotropy = 16;
+    samplerDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL; // D3D11_COMPARISON_LESS_EQUAL
+    samplerDesc.BorderColor[0] = 1;
+    samplerDesc.BorderColor[1] = 1;
+    samplerDesc.BorderColor[2] = 1;
+    samplerDesc.BorderColor[3] = 1;
+    samplerDesc.MinLOD = 0.0f;
+    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+    result = device->CreateSamplerState(&samplerDesc, samplerState[static_cast<size_t>(SAMPLER_STATE::COMPARISON_DEPTH)].GetAddressOf());
     _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
 }
 

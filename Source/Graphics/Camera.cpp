@@ -75,20 +75,33 @@ void Camera::SetPerspectiveFov()
 
     // ----- カメラをステージ内に収める -----
     {
-        //const float radius = 29.8f;
-        //DirectX::XMFLOAT3 stageCenter = GameScene::stageCenter_;
-        //DirectX::XMFLOAT3 cameraPosition = view_.eye_;
-        //stageCenter.y = cameraPosition.y;
-        //
-        //DirectX::XMFLOAT3 vec = cameraPosition - stageCenter;
-        //float length = XMFloat3Length(vec);
+#if 1 
+        const float radius = 29.8f;
+        DirectX::XMFLOAT3 cameraPosition = GetTransform()->GetPosition();
+        DirectX::XMFLOAT3 playerPosition = PlayerManager::Instance().GetTransform()->GetPosition();
+        playerPosition.y = cameraPosition.y;
+        DirectX::XMFLOAT3 direction = XMFloat3Normalize(playerPosition - cameraPosition);
 
-        //if (length > radius)
-        //{
-        //    // カメラからプレイヤーに向かうベクトルを作る
+        DirectX::XMFLOAT3 stageCenter = GameScene::stageCenter_;
+        stageCenter.y = cameraPosition.y;
+        DirectX::XMFLOAT3 stageToCamera = stageCenter - cameraPosition;
 
-        //    // cameraPosition + cameraToPlayer * length
-        //}
+        float length = XMFloat3Length(stageToCamera);
+        if (length > radius)
+        {
+
+            float a = XMFloat3Dot(direction, direction);
+            float b = -2 * XMFloat3Dot(stageToCamera, direction);
+            float c = XMFloat3Dot(stageToCamera, stageToCamera) - radius * radius;
+
+            float root = b * b - 4 * a * c;
+
+            float root0 = (-b - sqrt(root)) / (2 * a);
+
+            DirectX::XMFLOAT3 d = direction * root0;
+            view_.eye_ = cameraPosition + d;
+        }
+#endif
 
 #if 0
         const float radius = 29.8f;

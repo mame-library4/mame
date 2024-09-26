@@ -78,6 +78,7 @@ CascadedShadowMap::CascadedShadowMap()
     viewPort_.TopLeftY = 0.0f;
     
     constants_ = std::make_unique<ConstantBuffer<Constats>>();
+    shadowConstants_ = std::make_unique<ConstantBuffer<ShadowConstants>>();
 }
 
 void CascadedShadowMap::Make(const DirectX::XMFLOAT4& lightDirection, std::function<void()> drawcallback)
@@ -215,4 +216,8 @@ void CascadedShadowMap::Make(const DirectX::XMFLOAT4& lightDirection, std::funct
 
     deviceContext->RSSetViewports(viewportCount, cachedViewports);
     deviceContext->OMSetRenderTargets(1, cachedRenderTargetView.GetAddressOf(), cachedDepthStencilView.Get());
+}
+
+void CascadedShadowMap::DrawDebug()
+{
 }

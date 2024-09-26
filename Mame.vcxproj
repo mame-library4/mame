@@ -366,6 +366,8 @@
   <ItemGroup>
     <None Include="Source\Shader\bidirectionalReflectanceDistributionFunction.hlsli" />
     <None Include="Source\Shader\Bloom.hlsli" />
+    <None Include="Source\Shader\Common.hlsli" />
+    <None Include="Source\Shader\Constants.hlsli" />
     <None Include="Source\Shader\CsmOpaque.hlsli" />
     <None Include="Source\Shader\DeferredRendering.hlsli" />
     <None Include="Source\Shader\FullScreenQuad.hlsli" />

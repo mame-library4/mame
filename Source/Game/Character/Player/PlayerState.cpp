@@ -1798,18 +1798,31 @@ namespace PlayerState
         // 攻撃可能にする
         owner_->SetIsAbleAttack(true);
 
+        // 回転補正量を求める
+        owner_->CalculateRotationAdjustment();
+
         // 先行入力設定
         owner_->SetNextInputStartFrame(0.13f, 0.13f, 0.13f, 0.6f);
         owner_->SetNextInputEndFrame(1.583f, 0.75f, 1.5f);
         owner_->SetNextInputTransitionFrame(0.4f, 0.3f, 0.3f);
 
         // 変数初期化
-        attackData_.Initialize(0.1f, 0.35f);
+        attackData_.Initialize(0.1f, 0.35f);      
+
     }
 
     // ----- 更新 -----
     void ComboAttack0_0::Update(const float& elapsedTime)
     {
+        if (timer_ < 1.0f)
+        {
+            const float angle = XMFloatLerp(startAngle_, endAngle_, timer_);
+
+            owner_->GetTransform()->SetRotationY(angle);
+
+            timer_ += elapsedTime * 3.0f;
+        }
+
         // 先行入力判定
         if (CheckNextInput()) return;
 
@@ -1826,6 +1839,8 @@ namespace PlayerState
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
         owner_->SetIsAttackValid(attackFlag);
+        
+        
 
         if (owner_->IsPlayAnimation() == false)
         {
@@ -1981,6 +1996,9 @@ namespace PlayerState
 
         // 攻撃可能にする
         owner_->SetIsAbleAttack(true);
+
+        // 回転補正量を求める
+        owner_->CalculateRotationAdjustment();
 
         // 先行入力設定
         owner_->SetNextInputStartFrame(0.13f, 0.13f, 0.13f, 0.5f);
@@ -2149,6 +2167,9 @@ namespace PlayerState
         // 攻撃可能にする
         owner_->SetIsAbleAttack(true);
 
+        // 回転補正量を求める
+        owner_->CalculateRotationAdjustment();
+
         // 先行入力設定
         owner_->SetNextInputStartFrame(0.7f, 0.7f, 0.7f, 1.4f);
         owner_->SetNextInputEndFrame(1.9f, 1.3f, 1.3f);
@@ -2156,6 +2177,7 @@ namespace PlayerState
         
         // 変数初期化
         attackData_.Initialize(0.7f, 0.9f);
+
     }
 
     // ----- 更新 -----
@@ -2177,6 +2199,8 @@ namespace PlayerState
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
         owner_->SetIsAttackValid(attackFlag);
+
+
 
 
         if (owner_->IsPlayAnimation() == false)
@@ -2301,6 +2325,9 @@ namespace PlayerState
         // 攻撃可能にする
         owner_->SetIsAbleAttack(true);
 
+        // 回転補正量を求める
+        owner_->CalculateRotationAdjustment();
+
         // 先行入力設定
         owner_->SetNextInputStartFrame(0.7f, 3.0f, 3.0f, 3.0f);
         owner_->SetNextInputEndFrame(2.0f, 3.0f, 3.0f);
@@ -2309,6 +2336,8 @@ namespace PlayerState
         // 変数初期化
         attackData_.Initialize(0.65f, 0.8f);
         isVibration_ = false;
+
+ 
     }
 
     // ----- 更新 -----
@@ -2330,6 +2359,7 @@ namespace PlayerState
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
         owner_->SetIsAttackValid(attackFlag);
+
 
         // コントローラー＆カメラ 振動
         if (owner_->GetAnimationSeconds() > 0.8f && isVibration_ == false)

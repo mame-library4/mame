@@ -14,10 +14,6 @@
 #include "Effect/EffectManager.h"
 #include "UI/UIManager.h"
 
-#include "mmdeviceapi.h"
-#pragma comment(lib, "ole32.lib")
-//#pragma comment(lib, "Mmdevapi.lib");   
-
 // ----- コンストラクタ -----
 Application::Application(HWND hwnd)
     : hwnd_(hwnd),
@@ -117,6 +113,7 @@ void Application::Render()
     // --- サンプラーステート設定 ---
     graphics_.GetShader()->SetSamplerState();
 
+#if 0
     const float aspectRatio = shadowMap_.viewport.Width / shadowMap_.viewport.Height;
     sceneConstants_.GetData()->viewProjection_ = shadowMap_.CalcViewProjection(aspectRatio);
     sceneConstants_.GetData()->lightViewProjection_ = sceneConstants_.GetData()->viewProjection_;
@@ -133,19 +130,24 @@ void Application::Render()
     ////SceneManager::Instance().ShadowRender();
     //shadowMap_.Deactivete();
 
+#else
+#endif
 
     camera.SetPerspectiveFov();
     DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->viewProjection_, camera.GetViewMatrix() * camera.GetProjectionMatrix());
+
     sceneConstants_.GetData()->lightDirection_ = Graphics::Instance().GetShader()->GetViewPosition();
     sceneConstants_.GetData()->cameraPosition_ = { camera.GetEye().x, camera.GetEye().y, camera.GetEye().z, 0 };
+
+    DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->inverseProjection_, DirectX::XMMatrixInverse(NULL, camera.GetProjectionMatrix()));
     DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->inverseViewProjection_, DirectX::XMMatrixInverse(NULL, camera.GetViewMatrix() * camera.GetProjectionMatrix()));
     sceneConstants_.Activate(1, true, true, true, true);
 
-    //cascadedShadowMap_.Make(sceneConstants_.GetData()->lightDirection_, []() { SceneManager::Instance().ShadowRender(); });
+    cascadedShadowMap_.Make(sceneConstants_.GetData()->lightDirection_, []() { SceneManager::Instance().ShadowRender(); });
 
 
     // ShadowMap Set 9
-    deviceContext->PSSetShaderResources(9, 1, shadowMap_.shaderResourceView.GetAddressOf());
+    //deviceContext->PSSetShaderResources(9, 1, shadowMap_.shaderResourceView.GetAddressOf());
     
 #if 1
     // --- deferred rendering ---
@@ -181,7 +183,10 @@ void Application::Render()
         EffectManager::Instance().Render();
 
         PostProcess::Instance().Deactivate();
-        PostProcess::Instance().Draw();
+
+        cascadedShadowMap_.SetShadowConstants(11);
+
+        PostProcess::Instance().Draw(cascadedShadowMap_.GetDepthMap().Get());
     }
     // --- forward rendering ---
     else
@@ -213,7 +218,10 @@ void Application::Render()
         Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_OFF_ZW_OFF);
         
         PostProcess::Instance().Deactivate();
-        PostProcess::Instance().Draw();
+        
+        cascadedShadowMap_.SetShadowConstants(11);
+
+        PostProcess::Instance().Draw(cascadedShadowMap_.GetDepthMap().Get());
     }
 #else
 
@@ -268,7 +276,7 @@ void Application::Render()
     IMGUI_CTRL_DISPLAY();
 
     // --- 実行 ---
-    UINT syncInterval = 1;
+    UINT syncInterval = 0;
     graphics_.GetSwapChain()->Present(syncInterval, 0);
 }
 

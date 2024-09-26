@@ -35,10 +35,22 @@ void PostProcess::Deactivate()
 }
 
 // ----- ポストプロセス描画 -----
-void PostProcess::Draw()
+void PostProcess::Draw(ID3D11ShaderResourceView* cascadeShadowMap)
 {
     constant_->Activate(0);
+ 
     
+
+    ID3D11ShaderResourceView* postEffectViews[] =
+    {
+        postProcess_->shaderResourceViews_[0].Get(),
+        postProcess_->shaderResourceViews_[1].Get(),
+        cascadeShadowMap,
+    };
+
+    renderer_->Draw(postEffectViews, 0, _countof(postEffectViews), postProcessPS_.Get());
+
+#if 0
     if (useRadialBlur_)
     {
         renderer_->Draw(bloom_.GetShaderResourceView(), 0, 1, roarPS_.Get());
@@ -47,6 +59,7 @@ void PostProcess::Draw()
     {
         renderer_->Draw(bloom_.GetShaderResourceView(), 0, 1, postProcessPS_.Get());
     }
+#endif
 }
 
 // ----- ImGui用 -----
