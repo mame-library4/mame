@@ -885,7 +885,8 @@ namespace ActionDragon
 
             break;
         case STATE::Failed:// 攻撃失敗
-            if (owner_->IsPlayAnimation() == false)
+
+            if (owner_->GetAnimationSeconds() > 1.15f)
             {
                 // ステートリセット
                 owner_->SetStep(0);
@@ -1340,14 +1341,13 @@ namespace ActionDragon
         {
         case STATE::Initialize:// 初期化
             // アニメーション設定
-            //owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurnStart, false);
-            owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurn0, false);
+            SetAnimation();
 
             // ダメージ設定
             owner_->SetAttackDamage(50.0f);
 
-            // ルートモーションを使用する
-            owner_->SetUseRootMotion(true);
+            // ルートモーションを使用するが初期化時点では使用しない
+            owner_->SetUseRootMotion(false);
              
             // カウンター有効範囲を設定する
             PlayerManager::Instance().GetPlayer()->SetCounterActiveRadius(6.0f);
@@ -1361,6 +1361,12 @@ namespace ActionDragon
 
             break;
         case STATE::PreAction:// 予備動作
+
+            // ルートモーションを使用する
+            if (owner_->GetUseRootMotionMovement() == false)
+            {
+                if (owner_->GetIsBlendAnimation() == false) owner_->SetUseRootMotion(true);
+            }
 
             if (owner_->IsPlayAnimation() == false)
             {
@@ -1389,7 +1395,7 @@ namespace ActionDragon
                     owner_->SetTurnAttackActiveFlag();
             }
 
-            if (owner_->IsPlayAnimation() == false)
+            if(owner_->GetAnimationSeconds() > 3.25f)
             {
                 owner_->SetStep(0);
                 return ActionBase::State::Complete;
@@ -1398,6 +1404,20 @@ namespace ActionDragon
         }
 
         return ActionBase::State::Run;
+    }
+
+    // ----- アニメーションを設定する -----
+    void TurnAttackAction::SetAnimation()
+    {
+        if (owner_->GetAnimationIndex() == static_cast<int>(Enemy::DragonAnimation::AttackTurn0))
+        {
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurn0, false, 1.0f, 0.3f);
+        }
+        else
+        {
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurn0, false);
+
+        }
     }
 }
 

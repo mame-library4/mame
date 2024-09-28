@@ -181,4 +181,5 @@ private:
     std::vector<std::string>    targetJointName_;
     int                         currentTargetJointIndex_    = 0;
     bool                        useLockonCamera_            = false; // ロックオンカメラ使用フラグ
+    bool                        isNextJointAccessible       = true;  
 };

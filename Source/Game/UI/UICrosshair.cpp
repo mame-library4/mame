@@ -2,6 +2,7 @@
 #include "Character/Enemy/EnemyManager.h"
 #include "Camera.h"
 #include "Easing.h"
+#include "AudioManager.h"
 
 // ----- コンストラクタ -----
 UICrosshair::UICrosshair()
@@ -105,6 +106,8 @@ void UICrosshair::UpdateSpriteSizeAndColor(const float& elapsedTime)
     {
         centerDot_->GetTransform()->SetSize(128.0f);
         centerDot_->GetTransform()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+
+        AudioManager::Instance().PlaySE(SE::Lockon);
 
         isSpriteSizeUpdated_ = true;
     }

@@ -346,6 +346,7 @@ namespace ActionDragon
             Attack,     // UŒ‚
         };
 
+        void SetAnimation();
         void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
 
     private:

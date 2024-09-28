@@ -25,7 +25,7 @@ void AudioManager::LoadAudio()
 
         // SEì«Ç›çûÇ›
         {
-            //se_[static_cast<int>(SE::GolemEntry)    ] = std::make_unique<Audio>(xAudio2_.Get(), L"./resources/audio/SE/GolemEntry.wav");
+            se_[static_cast<int>(SE::Lockon)    ] = std::make_unique<Audio>(xAudio2_.Get(), L"./Resources/Audio/SE/Lockon.wav");
         }
     }
 

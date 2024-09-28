@@ -150,10 +150,15 @@ void Camera::Update(const float& elapsedTime)
     {
         if (useLockonCamera_ == false)
         {
+            // UIを生成する
             UICrosshair* uiCrosshair = new UICrosshair();
+            
+            // ロックオンするジョイントを変更可能にする
+            isNextJointAccessible = true;
         }
         else
         {
+            // 現在使用しているUIを削除する
             UIManager::Instance().Remove(UIManager::UIType::UICrosshair);
         }
 
@@ -206,37 +211,33 @@ void Camera::Update(const float& elapsedTime)
             //}
         }
 
-
-#if 0
-        DirectX::XMFLOAT3 playerJointPosition_float3 = PlayerManager::Instance().GetPlayer()->GetJointPosition("head");
-        DirectX::XMFLOAT2 playerJointPosition_float2 = { playerJointPosition_float3.x, playerJointPosition_float3.y };
-
-        std::string jointName[3] =
+        // Joint切り替え
+        GamePad& gamePad = Input::Instance().GetGamePad();
+        const float aRx = gamePad.GetAxisRX();
+        if (isNextJointAccessible)
         {
-            "Dragon15_jill_a_1_r",
-            "Dragon15_spine2",
-            "Dragon15_tail_05",
-        };
-        const int jointIndex = 1;
-#endif
+            if (aRx > 0.3f)
+            {
+                if (currentTargetJointIndex_ > 0) --currentTargetJointIndex_;
+                else currentTargetJointIndex_ = 2;
 
+                isNextJointAccessible = false;
+            }
+            else if (aRx < -0.3f)
+            {
+                if (currentTargetJointIndex_ < 2) ++currentTargetJointIndex_;
+                else currentTargetJointIndex_ = 0;
 
-#if 0
-        DirectX::XMFLOAT3 enemyJointPosition_float3 = EnemyManager::Instance().GetEnemy(0)->GetJointPosition(jointName[jointIndex]);
-        DirectX::XMFLOAT2 enemyJointPosition_float2 = { enemyJointPosition_float3.x, enemyJointPosition_float3.y };
-
-        DirectX::XMFLOAT2 vec = enemyJointPosition_float2 - playerJointPosition_float2;
-
-        float length = XMFloat2Length(vec);        
+                isNextJointAccessible = false;
+            }
+        }
+        else
+        {
+            // 入力がなくなったら他のジョイントへアクセスできるようになる
+            if (aRx == 0.0f) isNextJointAccessible = true;
+        }
         
-        vec = XMFloat2Normalize(vec);
 
-        DirectX::XMFLOAT2 result = playerJointPosition_float2 + vec * (length * 0.5f);
-
-        target_ = { result.x, result.y, PlayerManager::Instance().GetTransform()->GetPositionZ() };
-
-        //target_ = playerJointPosition_float3 + XMFloat3Normalize({vec.x, vec.y, 0.0f}) * (length * 0.5f);
-#endif
     }
 
 

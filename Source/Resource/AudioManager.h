@@ -17,7 +17,7 @@ enum class BGM
 
 enum class SE
 {
-    Dummy,
+    Lockon,
 
     Max,
 };

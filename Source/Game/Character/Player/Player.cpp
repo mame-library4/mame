@@ -54,7 +54,7 @@ void Player::Initialize()
     SetUseRootMotionMovement(false);
 
     // 生成位置設定
-    GetTransform()->SetPositionZ(60);
+    GetTransform()->SetPositionZ(20);
 
     // サイズ設定
     GetTransform()->SetScaleFactor(0.8f);
