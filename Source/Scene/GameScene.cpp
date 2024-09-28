@@ -86,6 +86,9 @@ void GameScene::Initialize()
     ProjectileManager::Instance().Initialize();
 
     //particles_->Initialize(0);
+
+    // ÉJÉÅÉâèâä˙âª
+    Camera::Instance().SetTarget({ PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() });
 }
 
 // ----- èIóπâª -----

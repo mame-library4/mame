@@ -15,6 +15,8 @@ public:
     virtual void DrawDebug();
 
 public:
+    void SetSpriteName(const std::string& name);
+
     [[nodiscard]] const UIManager::UIType GetType() const { return type_; }
     [[nodiscard]] const std::string GetName() const { return name_; }
 

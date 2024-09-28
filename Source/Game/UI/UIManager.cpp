@@ -76,10 +76,21 @@ void UIManager::Register(UI* ui)
     generates_.insert(ui);
 }
 
-// ----- リムーブ -----
+// ----- 削除 指定のUI -----
 void UIManager::Remove(UI* ui)
 {
     removes_.insert(ui);
+}
+
+// ----- 削除 指定の種類のUI全て -----
+void UIManager::Remove(const UIType& type)
+{
+    for (UI*& ui : userInterface_)
+    {
+        if (ui->GetType() != type) continue;
+
+        removes_.insert(ui);
+    }
 }
 
 void UIManager::Clear()

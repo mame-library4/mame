@@ -10,6 +10,9 @@
 #include "Character/Enemy/EnemyManager.h"
 #include "Character/Player/PlayerManager.h"
 
+#include "UI/UIManager.h"
+#include "UI/UICrosshair.h"
+
 #include "GameScene.h"
 
 // ----- 初期化 -----
@@ -32,6 +35,15 @@ void Camera::Initialize()
     length_ = 6.0f;
     verticalRotationSpeed_ = 1.0f;
     horizontalRotationSpeed_ = 4.0f;
+
+    lerpTimer_ = 0.0f;
+
+    // ----- ロックオンカメラ -----
+    targetJointName_.emplace_back("Dragon15_head");
+    targetJointName_.emplace_back("Dragon15_spine2");
+    targetJointName_.emplace_back("Dragon15_tail_02");
+    currentTargetJointIndex_ = 0;
+    useLockonCamera_ = false;
 }
 
 // ----- 更新 -----
@@ -45,7 +57,29 @@ void Camera::Update(const float& elapsedTime)
     if (UpdateEnemyDeathCamera(elapsedTime))  return; // Enemy死亡カメラ
 
     const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
-    Camera::Instance().SetTarget(cameraTargetPosition);
+    
+    if (lerpTimer_ >= 1.0f)
+    {
+        target_ = cameraTargetPosition;
+    }
+    else
+    {
+        target_ = XMFloat3Lerp(target_, cameraTargetPosition, lerpTimer_);
+    }
+
+    GamePad& gamePad = Input::Instance().GetGamePad();
+    const float aLx = gamePad.GetAxisLX();
+    const float aLy = gamePad.GetAxisLY();
+    if (aLx == 0.0f && aLy == 0.0f)
+    {
+        lerpTimer_ += elapsedTime * 0.05;
+    
+        lerpTimer_ = min(lerpTimer_, 1.0f);
+    }
+    else
+    {
+        lerpTimer_ = 0.05f;
+    }
 
     // ドラゴンの上昇攻撃のカメラ更新
     //if (UpdateRiseAttackCamera(elapsedTime)) return;
@@ -55,6 +89,155 @@ void Camera::Update(const float& elapsedTime)
 
     // --- カメラ回転処理 ---
     Rotate(elapsedTime);
+
+    // カメラリセットする
+    if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_LEFT_SHOULDER)
+    {
+        if (true)
+        {
+            // プレイヤーの向きに合わせる
+            const float playerRotateY = PlayerManager::Instance().GetTransform()->GetRotationY();
+
+            GetTransform()->SetRotationY(playerRotateY);
+        }
+        else
+        {
+            // スティックの向きに回転させる
+            GamePad& gamePad = Input::Instance().GetGamePad();
+            const float aLx = gamePad.GetAxisLX();
+            const float aLy = gamePad.GetAxisLY();
+
+            DirectX::XMFLOAT2 input = { fabsf(aLx), fabsf(aLy) };
+
+            //if (input.x != 0.0f || input.y != 0.0f)
+            {
+                // スティックの傾きをカメラから見た方向に変換
+                //DirectX::XMFLOAT3 cameraFront = CalcForward();
+                //DirectX::XMFLOAT3 cameraRight = CalcRight();
+                DirectX::XMFLOAT3 cameraFront = GetTransform()->CalcForward();
+                DirectX::XMFLOAT3 cameraRight = GetTransform()->CalcRight();
+                DirectX::XMFLOAT2 stickDirection =
+                {
+                    aLy * cameraFront.x + aLx * cameraRight.x,
+                    aLy * cameraFront.z + aLx * cameraRight.z,
+                };
+                stickDirection = XMFloat2Normalize(stickDirection);
+
+                DirectX::XMFLOAT3 forward = GetTransform()->CalcForward();
+                DirectX::XMFLOAT2 cameraFroward = XMFloat2Normalize({ forward.x, forward.z });
+
+                float dot = XMFloat2Dot(stickDirection, cameraFroward) - 1.0f;
+                float angle = acosf(dot);
+                float a = DirectX::XMConvertToDegrees(angle);
+
+                float cross = XMFloat2Cross(stickDirection, cameraFroward);
+
+                if (cross > 0)
+                {
+                    //GetTransform()->SetRotationY(dot);
+                    GetTransform()->AddRotationY(DirectX::XM_PI);
+                }
+                else
+                {
+                    GetTransform()->AddRotationY(DirectX::XM_PI);
+                    //GetTransform()->SetRotationY(-dot);
+                }
+            }
+        }
+    }
+
+    if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_THUMB)
+    {
+        if (useLockonCamera_ == false)
+        {
+            UICrosshair* uiCrosshair = new UICrosshair();
+        }
+        else
+        {
+            UIManager::Instance().Remove(UIManager::UIType::UICrosshair);
+        }
+
+        useLockonCamera_ = !useLockonCamera_;
+    }
+    if (useLockonCamera_)
+    {
+        // プレイヤーと敵のジョイントの間をtargetに設定する
+
+        DirectX::XMFLOAT3 cameraPosition = GetTransform()->GetPosition();
+        DirectX::XMFLOAT3 playerPosition = PlayerManager::Instance().GetTransform()->GetPosition();
+        DirectX::XMFLOAT3 targetPosition = EnemyManager::Instance().GetEnemy(0)->GetJointPosition(GetCurrentTargetJointName());
+
+        // XZ平面での処理
+        {
+            DirectX::XMFLOAT3 cameraToEnemy = targetPosition - cameraPosition;
+            DirectX::XMFLOAT3 playerToEnemy = targetPosition - playerPosition;
+
+            DirectX::XMFLOAT2 vec0 = XMFloat2Normalize({ cameraToEnemy.x, cameraToEnemy.z });
+            DirectX::XMFLOAT2 vec1 = XMFloat2Normalize({ playerToEnemy.x, playerToEnemy.z });
+
+            float dot = XMFloat2Dot(vec0, vec1) - 1.0f;
+
+            float cross = XMFloat2Cross(vec0, vec1);
+
+            if (cross < 0)
+            {
+                GetTransform()->AddRotationY(dot);
+            }
+            else
+            {
+                GetTransform()->AddRotationY(-dot);
+            }
+
+            // YZ平面での処理
+            //vec0 = XMFloat2Normalize({ cameraToEnemy.y, cameraToEnemy.z });
+            //vec1 = XMFloat2Normalize({ playerToEnemy.y, playerToEnemy.z });
+
+            //dot = XMFloat2Dot(vec0, vec1) - 1.0f;
+
+            //cross = XMFloat2Cross(vec0, vec1);
+
+            //if (cross < 0)
+            //{
+            //    GetTransform()->SetRotationX(dot);
+            //}
+            //else
+            //{
+            //    GetTransform()->SetRotationX(-dot);
+            //}
+        }
+
+
+#if 0
+        DirectX::XMFLOAT3 playerJointPosition_float3 = PlayerManager::Instance().GetPlayer()->GetJointPosition("head");
+        DirectX::XMFLOAT2 playerJointPosition_float2 = { playerJointPosition_float3.x, playerJointPosition_float3.y };
+
+        std::string jointName[3] =
+        {
+            "Dragon15_jill_a_1_r",
+            "Dragon15_spine2",
+            "Dragon15_tail_05",
+        };
+        const int jointIndex = 1;
+#endif
+
+
+#if 0
+        DirectX::XMFLOAT3 enemyJointPosition_float3 = EnemyManager::Instance().GetEnemy(0)->GetJointPosition(jointName[jointIndex]);
+        DirectX::XMFLOAT2 enemyJointPosition_float2 = { enemyJointPosition_float3.x, enemyJointPosition_float3.y };
+
+        DirectX::XMFLOAT2 vec = enemyJointPosition_float2 - playerJointPosition_float2;
+
+        float length = XMFloat2Length(vec);        
+        
+        vec = XMFloat2Normalize(vec);
+
+        DirectX::XMFLOAT2 result = playerJointPosition_float2 + vec * (length * 0.5f);
+
+        target_ = { result.x, result.y, PlayerManager::Instance().GetTransform()->GetPositionZ() };
+
+        //target_ = playerJointPosition_float3 + XMFloat3Normalize({vec.x, vec.y, 0.0f}) * (length * 0.5f);
+#endif
+    }
 
 
     // --- 画面振動 ---
@@ -102,35 +285,6 @@ void Camera::SetPerspectiveFov()
             view_.eye_ = cameraPosition + d;
         }
 #endif
-
-#if 0
-        const float radius = 29.8f;
-        DirectX::XMFLOAT3 stageCenter = GameScene::stageCenter_;
-        DirectX::XMFLOAT3 cameraPosition = view_.eye_;
-        stageCenter.y = cameraPosition.y;
-
-        DirectX::XMFLOAT3 vec = cameraPosition - stageCenter;
-        float length = XMFloat3Length(vec);
-
-        if (length > radius)
-        {
-            vec = stageCenter + XMFloat3Normalize(vec) * radius;
-            view_.eye_ = vec;
-
-            // 押し出し差分
-            float collisionOffset = length - radius;
-            //view_.focus_ = view_.focus_ - XMFloat3Normalize(vec) * (collisionOffset * 0.5f);
-
-            // 壁に近くなるほど回転速度を遅くする
-            horizontalRotationSpeed_ = (collisionOffset > 4) ? 1.5f : 2.0f;
-            verticalRotationSpeed_ = 0.5f;
-        }
-        else
-        {
-            horizontalRotationSpeed_ = 2.5f;
-            verticalRotationSpeed_ = 1.0f;
-        }
-#endif
     }
 
     // --- projectionMatrix 設定 ---
@@ -153,7 +307,17 @@ void Camera::DrawDebug()
 {
     if (ImGui::BeginMenu("Camera"))
     {
+        if (ImGui::TreeNode("LockonCamera"))
+        {
+            ImGui::DragInt("TargetJointIndex", &currentTargetJointIndex_, 1, 0, 2);
+            ImGui::BulletText(targetJointName_.at(currentTargetJointIndex_).c_str());
+
+            ImGui::TreePop();
+        }
+
         ImGui::Checkbox("InvertVertical", &invertVertical_);
+
+        ImGui::DragFloat("LerpTimer", &lerpTimer_);
 
         ImGui::DragFloat("Length", &length_, 0.01f);
         ImGui::DragFloat("MinLength", &minLength_, 0.01f);

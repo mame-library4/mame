@@ -1,6 +1,7 @@
 #pragma once
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include <vector>
 #include "../Other/Transform.h"
 
 class Camera
@@ -74,6 +75,9 @@ public:// --- 取得・設定 ---
     void SetUsePlayerDeathCmaera(const float& flag = true);
     void SetUseEnemyDeathCamera();
     void SetUseCounterCamera();
+
+    // ---------- ロックオンカメラ ----------
+    [[nodiscard]] const std::string GetCurrentTargetJointName() const { return targetJointName_.at(currentTargetJointIndex_); }
 
 private:
 #pragma region---------- 各種カメラの定数 ----------
@@ -169,4 +173,12 @@ private:
     float               oldCameraOffsetY_ = 0.0f;
 
     bool isAdjustCameraLength_ = false; // 地面に埋まらないように
+
+    float lerpTimer_ = 0.0f;
+
+
+    // ---------- ロックオンカメラ ----------
+    std::vector<std::string>    targetJointName_;
+    int                         currentTargetJointIndex_    = 0;
+    bool                        useLockonCamera_            = false; // ロックオンカメラ使用フラグ
 };

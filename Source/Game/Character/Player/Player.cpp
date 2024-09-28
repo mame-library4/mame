@@ -313,7 +313,7 @@ void Player::CalculateRotationAdjustment()
     const float aLx = gamePad.GetAxisLX();
     const float aLy = gamePad.GetAxisLY();
 
-    DirectX::XMFLOAT2 input = { fabsf(gamePad.GetAxisLX()), fabsf(gamePad.GetAxisLY()) };
+    DirectX::XMFLOAT2 input = { fabsf(aLx), fabsf(aLy) };
     
     // スティックの入力がない場合は回転補正を行わない
     if (input.x == 0.0f && input.y == 0.0f)

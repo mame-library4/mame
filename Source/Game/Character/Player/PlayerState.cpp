@@ -1814,15 +1814,6 @@ namespace PlayerState
     // ----- çXêV -----
     void ComboAttack0_0::Update(const float& elapsedTime)
     {
-        if (timer_ < 1.0f)
-        {
-            const float angle = XMFloatLerp(startAngle_, endAngle_, timer_);
-
-            owner_->GetTransform()->SetRotationY(angle);
-
-            timer_ += elapsedTime * 3.0f;
-        }
-
         // êÊçsì¸óÕîªíË
         if (CheckNextInput()) return;
 
@@ -1838,8 +1829,7 @@ namespace PlayerState
 
         // çUåÇîªíËèàóù
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
-        owner_->SetIsAttackValid(attackFlag);
-        
+        owner_->SetIsAttackValid(attackFlag);        
         
 
         if (owner_->IsPlayAnimation() == false)

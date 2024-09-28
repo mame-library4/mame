@@ -231,6 +231,7 @@
     <ClCompile Include="Source\Game\Stone\Stone.cpp" />
     <ClCompile Include="Source\Game\Stone\StoneManager.cpp" />
     <ClCompile Include="Source\Game\UI\UI.cpp" />
+    <ClCompile Include="Source\Game\UI\UICrosshair.cpp" />
     <ClCompile Include="Source\Game\UI\UIFader.cpp" />
     <ClCompile Include="Source\Game\UI\UIManager.cpp" />
     <ClCompile Include="Source\Game\UI\UINumber.cpp" />
@@ -311,6 +312,7 @@
     <ClInclude Include="Source\Game\Stone\Stone.h" />
     <ClInclude Include="Source\Game\Stone\StoneManager.h" />
     <ClInclude Include="Source\Game\UI\UI.h" />
+    <ClInclude Include="Source\Game\UI\UICrosshair.h" />
     <ClInclude Include="Source\Game\UI\UIFader.h" />
     <ClInclude Include="Source\Game\UI\UIManager.h" />
     <ClInclude Include="Source\Game\UI\UINumber.h" />

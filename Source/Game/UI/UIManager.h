@@ -25,6 +25,7 @@ public:
     {
         // ----- •`‰æ‡ -----
         UINumber,       // |
+        UICrosshair,    // |
         UIFader,        // |
         Max,            // «
     };
@@ -34,9 +35,10 @@ public:
     void Render();
     void DrawDebug();
 
-    void Register(UI* ui);
-    void Remove(UI* ui);
-    void Clear();
+    void Register(UI* ui);              // “o˜^
+    void Remove(UI* ui);                // íœ w’è‚ÌUI
+    void Remove(const UIType& type);    // íœ w’è‚Ìí—Ş‚ÌUI‘S‚Ä
+    void Clear();                       // ‘Síœ
 
 public:// [Get, Set] Function
     [[nodiscard]] const int GetImGuiNameNum() { return imguiNameNum_++; }

@@ -28,7 +28,7 @@ UINumber::UINumber(const int& num, const DirectX::XMFLOAT3& hitPos) :
     // ‚Ç‚Ì”š‚ğg—p‚·‚é‚©İ’è
     SetNumSproteNumbers();
 
-    // •Ï”‰Šú‰»
+    // •Ï”‰Šú‰»    
     lifeTimer_ = 0.5f;
     easingTimer_ = 0.0f;
 }

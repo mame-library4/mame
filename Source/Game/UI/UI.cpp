@@ -28,3 +28,12 @@ void UI::DrawDebug()
 {
     if (sprite_ != nullptr) sprite_->DrawDebug();
 }
+
+// ----- Ž©g‚ªŽ‚Âsprite‚Ì–¼‘OÝ’è -----
+void UI::SetSpriteName(const std::string& name)
+{
+    if (sprite_ != nullptr)
+    {
+        sprite_->SetName(name.c_str());
+    }
+}

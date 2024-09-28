@@ -184,15 +184,6 @@
     <ClCompile Include="Source\Scene\DemoScene.cpp">
       <Filter>Mame\Scene\DemoScene</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Game\UI\UI.cpp">
-      <Filter>Mame\Game\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Game\UI\UIManager.cpp">
-      <Filter>Mame\Game\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Game\UI\UINumber.cpp">
-      <Filter>Mame\Game\UI</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Game\Stone\Stone.cpp">
       <Filter>Mame\Game\Object\Stone</Filter>
     </ClCompile>
@@ -211,15 +202,25 @@
     <ClCompile Include="Source\Game\Collision\CollisionManager.cpp">
       <Filter>Mame\Game\Collision</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Game\UI\UIFader.cpp">
-      <Filter>Mame\Game\UI</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Graphics\ShadowMap.cpp">
       <Filter>Mame\Graphics\Shadow</Filter>
     </ClCompile>
     <ClCompile Include="Source\Graphics\CascadedShadowMap.cpp">
       <Filter>Mame\Graphics\Shadow</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\UI\UI.cpp">
+      <Filter>Mame\Game\UI\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\UI\UIManager.cpp">
+      <Filter>Mame\Game\UI\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\UI\UINumber.cpp">
+      <Filter>Mame\Game\UI\UINumber</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\UI\UIFader.cpp">
+      <Filter>Mame\Game\UI\UIFader</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\UI\UICrosshair.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -433,15 +434,6 @@
     <ClInclude Include="Source\Scene\DemoScene.h">
       <Filter>Mame\Scene\DemoScene</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\UI\UI.h">
-      <Filter>Mame\Game\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Game\UI\UIManager.h">
-      <Filter>Mame\Game\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Game\UI\UINumber.h">
-      <Filter>Mame\Game\UI</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Game\Stone\Stone.h">
       <Filter>Mame\Game\Object\Stone</Filter>
     </ClInclude>
@@ -460,15 +452,25 @@
     <ClInclude Include="Source\Game\Collision\CollisionManager.h">
       <Filter>Mame\Game\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\UI\UIFader.h">
-      <Filter>Mame\Game\UI</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Graphics\ShadowMap.h">
       <Filter>Mame\Graphics\Shadow</Filter>
     </ClInclude>
     <ClInclude Include="Source\Graphics\CascadedShadowMap.h">
       <Filter>Mame\Graphics\Shadow</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\UI\UI.h">
+      <Filter>Mame\Game\UI\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\UI\UIManager.h">
+      <Filter>Mame\Game\UI\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\UI\UINumber.h">
+      <Filter>Mame\Game\UI\UINumber</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\UI\UIFader.h">
+      <Filter>Mame\Game\UI\UIFader</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\UI\UICrosshair.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -611,6 +613,18 @@
     </Filter>
     <Filter Include="Mame\Shader\Core">
       <UniqueIdentifier>{15301855-37b3-4365-adad-9f276497abea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\UI\Core">
+      <UniqueIdentifier>{125c244e-ffc6-4336-b1e7-6ad1ee8207dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\UI\UINumber">
+      <UniqueIdentifier>{84d8450b-6bf8-4792-9c47-f6ba693dd38e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\UI\UIFader">
+      <UniqueIdentifier>{0ef397fa-2bd5-474f-b209-6f24bb3bfb4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\UI\UICrosshair">
+      <UniqueIdentifier>{da3ce419-deed-42c1-9196-485900643a61}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
