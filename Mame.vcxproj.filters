@@ -220,7 +220,12 @@
     <ClCompile Include="Source\Game\UI\UIFader.cpp">
       <Filter>Mame\Game\UI\UIFader</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Game\UI\UICrosshair.cpp" />
+    <ClCompile Include="Source\Game\UI\UIPartDestruction.cpp">
+      <Filter>Mame\Game\UI\UIPartDestruction</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\UI\UICrosshair.cpp">
+      <Filter>Mame\Game\UI\UICrosshair</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -470,7 +475,12 @@
     <ClInclude Include="Source\Game\UI\UIFader.h">
       <Filter>Mame\Game\UI\UIFader</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\UI\UICrosshair.h" />
+    <ClInclude Include="Source\Game\UI\UIPartDestruction.h">
+      <Filter>Mame\Game\UI\UIPartDestruction</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\UI\UICrosshair.h">
+      <Filter>Mame\Game\UI\UICrosshair</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -625,6 +635,9 @@
     </Filter>
     <Filter Include="Mame\Game\UI\UICrosshair">
       <UniqueIdentifier>{da3ce419-deed-42c1-9196-485900643a61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\UI\UIPartDestruction">
+      <UniqueIdentifier>{8743c3f6-0c04-4152-9b6d-f744a0cd4157}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

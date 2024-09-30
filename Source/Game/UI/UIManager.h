@@ -23,11 +23,12 @@ public:
     // ------------------------------
     enum class UIType
     {
-        // ----- •`‰æ‡ -----
-        UINumber,       // |
-        UICrosshair,    // |
-        UIFader,        // |
-        Max,            // «
+        // ------- •`‰æ‡ -------
+        UINumber,           // |
+        UICrosshair,        // |
+        UIPartDestruction,  // |
+        UIFader,            // |
+        Max,                // «
     };
 
 public:

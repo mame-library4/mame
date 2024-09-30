@@ -119,6 +119,7 @@ void Camera::SetPerspectiveFov()
     GetTransform()->SetPosition(view_.eye_);
 
     // ----- カメラをステージ内に収める -----
+    if(SceneManager::Instance().GetCurrentSceneName() == SceneManager::SceneName::Game)
     {
 #if 1 
         const float radius = 29.8f;
@@ -1032,14 +1033,21 @@ const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
         if (counterDelayTimer_ > 0.5f)
         {
 
-            counterLerpTimer_ += elapsedTime * 3.0f;
+            
+            counterLerpTimer_ += counterLerpSpeed_ * elapsedTime;
             counterLerpTimer_ = min(counterLerpTimer_, 1.0f);
+
             if (isCounterDelay_)
             {
                 const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
                 DirectX::XMVECTOR vec = DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&counterDelay_), DirectX::XMLoadFloat3(&cameraTargetPosition), counterLerpTimer_);
                 DirectX::XMFLOAT3 pos = {};
                 DirectX::XMStoreFloat3(&pos, vec);
+
+                // length設定
+                length_ = XMFloatLerp(9.0f, 6.5f, counterLerpTimer_);
+
+                // rotationX設定
 
                 target_ = pos;
             }

@@ -158,8 +158,7 @@ private:
     float               vibrationTimer_         = 0.0f; // 振動時間を測るタイマー
 
     // ---------- 特殊な動き制御用 ----------    
-    int     playerDeathState_       = 0;
-    
+    int     playerDeathState_       = 0;    
     int     enemyDeathstate_        = 0;
 
     float counterDelayTimer_ = 0.0f;
@@ -188,7 +187,9 @@ private:
 
     DirectX::XMFLOAT3 counterDelay_ = {};
     bool isCounterDelay_ = false;
-    float counterLerpTimer_ = 0.0f;
+    
+    float counterLerpTimer_ = 0.0f; // lerpに使用
+    float counterLerpSpeed_ = 3.0f; // lerpの速度
 
     // ---------- ロックオンカメラ ----------
     std::vector<std::string>    targetJointName_;                    // ターゲットにするジョイントの名前

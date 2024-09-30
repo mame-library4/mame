@@ -235,6 +235,7 @@
     <ClCompile Include="Source\Game\UI\UIFader.cpp" />
     <ClCompile Include="Source\Game\UI\UIManager.cpp" />
     <ClCompile Include="Source\Game\UI\UINumber.cpp" />
+    <ClCompile Include="Source\Game\UI\UIPartDestruction.cpp" />
     <ClCompile Include="Source\Graphics\Camera.cpp" />
     <ClCompile Include="Source\Graphics\CascadedShadowMap.cpp" />
     <ClCompile Include="Source\Graphics\ConstantBuffer.cpp" />
@@ -316,6 +317,7 @@
     <ClInclude Include="Source\Game\UI\UIFader.h" />
     <ClInclude Include="Source\Game\UI\UIManager.h" />
     <ClInclude Include="Source\Game\UI\UINumber.h" />
+    <ClInclude Include="Source\Game\UI\UIPartDestruction.h" />
     <ClInclude Include="Source\Graphics\Camera.h" />
     <ClInclude Include="Source\Graphics\CascadedShadowMap.h" />
     <ClInclude Include="Source\Graphics\ConstantBuffer.h" />

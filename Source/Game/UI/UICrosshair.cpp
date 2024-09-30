@@ -141,7 +141,8 @@ const bool UICrosshair::JudgementDraw()
     DirectX::XMFLOAT2 targetVec = XMFloat2Normalize({cameraPosition.x - targetJointPosition_.x, cameraPosition.z - targetJointPosition_.z});
     const float dot = XMFloat2Dot(targetVec, XMFloat2Normalize({ cameraForward.x, cameraForward.z }));
 
-    if (dot > DirectX::XM_PIDIV2) return false;
+    if (dot > 0) return false;
+    //if (dot > DirectX::XM_PIDIV2) return false;
 
     // •`‰æ‚·‚é
     isDraw_ = true;

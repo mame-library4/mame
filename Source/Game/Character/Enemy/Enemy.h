@@ -135,6 +135,8 @@ public:
     // ---------- 自分自身からプレイヤーへのベクトル ----------
     [[nodiscard]] const DirectX::XMFLOAT3 CalcDirectionToPlayer();
 
+    virtual void AddDamage(const float& damage, const int& dataIndex) = 0;
+
 public:// --- 取得・設定 ---
 #pragma region [Get, Set] Function
     // ----- BehaviorTree用 -----

@@ -14,6 +14,9 @@ public:
     void DrawDebug()                                    override;
     void DebugRender(DebugRenderer* debugRenderer);
 
+public:
+    enum class PartName { Head, Chest, Body, Leg, Tail, Wings, Max };
+
 private:
     // ---------- BehaviorTree ----------
     void RegisterBehaviorNode();    // behavior登録
@@ -32,10 +35,18 @@ private:
     void SetKnockBackAttackActiveFalg(const bool& flag = true)  override;
 
     // ---------- 押し出し判定 ----------
-    void SetDownCollisionActiveFlag(const bool& flag = true) override;
+    void SetDownCollisionActiveFlag(const bool& flag = true) override;    
+
+    // ---------- ダメージ ----------
+    void AddDamage(const float& damage, const int& dataIndex) override;
+    void AddDamagePart(const float& damage, const int& dataIndex);
 
 private:
     Object circle_;
+
+    float partHealth_[static_cast<int>(PartName::Max)]; // 部位ごとの体力
+    int partIndex_ = 0;
+
 
     // ----- DebugRenderer表示用フラグ -----
     bool isCollisionSphere_ = true;
@@ -68,6 +79,20 @@ private:
         ComboSlamAttackEnd      = 15,
         KnockBackAttackStart    = 16,
         KnockBackAttackEnd      = 29,
+    };
+    enum class DamageData
+    {
+        Head    = 0,  // 頭
+        Chest   = 1,  // 胸
+        Body    = 2,  // 体
+        FrontLeg     = 3,  // 前脚
+        FrontLegEnd  = 6,  // 前脚の最後
+        BackLeg      = 7,  // 後ろ脚
+        BackLegEnd   = 16, // 後ろ脚の最後
+        Tail = 17,
+        TailEnd = 21,
+        Wings = 22,
+        WingsEnd = 47,
     };
 };
 
