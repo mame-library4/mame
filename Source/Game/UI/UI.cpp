@@ -17,6 +17,26 @@ UI::UI(const UIManager::UIType& type, const wchar_t* filename, const std::string
     UIManager::Instance().Register(this);
 }
 
+// ----- 更新 -----
+void UI::Update(const float& elapsedTime)
+{
+    if (sprite_ != nullptr)
+    {
+        // 移動処理
+        if(isMovingToTarget_)
+        {
+            moveTimer_ += moveSpeed_ * elapsedTime;
+            moveTimer_ = min(moveTimer_, 1.0f);
+
+            const DirectX::XMFLOAT2 position = XMFloat2Lerp(oldPosition_, moveTargetPosition_, moveTimer_);
+
+            GetTransform()->SetPosition(position);
+
+            if (moveTimer_ == 1.0f) isMovingToTarget_ = false;
+        }
+    }
+}
+
 // ----- 描画 -----
 void UI::Render()
 {
@@ -36,4 +56,20 @@ void UI::SetSpriteName(const std::string& name)
     {
         sprite_->SetName(name.c_str());
     }
+}
+
+// ----- 移動関連の変数設定 -----
+void UI::SetMoveTarget(const DirectX::XMFLOAT2& moveValue)
+{
+    oldPosition_ = GetTransform()->GetPosition();
+    moveTargetPosition_ = oldPosition_ + moveValue;
+    moveTimer_ = 0.0f;
+    isMovingToTarget_ = true;
+}
+
+// ----- 他の処理で移動させたときに適応するため -----
+void UI::AddMoveTargetPosition(const DirectX::XMFLOAT2& position)
+{
+    oldPosition_ += position;
+    moveTargetPosition_ += position;
 }

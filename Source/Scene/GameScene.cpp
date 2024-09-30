@@ -11,7 +11,7 @@
 #include "UI/UINumber.h"
 
 #include "Projectile/ProjectileManager.h"
-
+#include "UI/UIPartDestruction.h"
 
 // ----- ステージの真ん中位置 -----
 DirectX::XMFLOAT3 GameScene::stageCenter_ = {};
@@ -22,7 +22,6 @@ void GameScene::CreateResource()
     // プレイヤー生成
     PlayerManager::Instance().GetPlayer() = std::make_unique<Player>();
 
-       
     stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/OnlyStage/stageOneMesh.gltf");
     //stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/stageAndFlag/stage.gltf");
 
@@ -107,6 +106,11 @@ void GameScene::Finalize()
 // ----- 更新 -----
 void GameScene::Update(const float& elapsedTime)
 {
+    if (Input::Instance().GetMouse().GetButtonDown() & Mouse::BTN_RIGHT)
+    {
+        UIPartDestruction* data = new UIPartDestruction();
+    }
+
     // プレイヤー更新
     PlayerManager::Instance().Update(elapsedTime);
 

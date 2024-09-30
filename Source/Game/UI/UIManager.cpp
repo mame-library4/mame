@@ -74,6 +74,19 @@ void UIManager::DrawDebug()
 void UIManager::Register(UI* ui)
 {
     generates_.insert(ui);
+
+    // •”ˆÊ”j‰óUI‚Ìê‡UI“¯m‚ª”í‚ç‚È‚¢‚æ‚¤‚É
+    // æ‚É¶¬‚³‚ê‚Ä‚¢‚é•”ˆÊ”j‰óUI‚ÌˆÊ’u‚ğ‚¸‚ç‚·
+    if (ui->GetType() == UIType::UIPartDestruction)
+    {
+        for (UI*& userInterface : userInterface_)
+        {
+            if (userInterface->GetType() != UIType::UIPartDestruction) continue;
+
+            // ˆÚ“®—Ê‚ğİ’è‚·‚é
+            userInterface->SetMoveTarget({0.0f, -100.0f});
+        }
+    }
 }
 
 // ----- íœ w’è‚ÌUI -----

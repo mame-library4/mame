@@ -336,6 +336,20 @@ inline const DirectX::XMFLOAT3 XMFloat3Lerp(
     return result;
 }
 
+inline const DirectX::XMFLOAT2 XMFloat2Lerp(
+    const DirectX::XMFLOAT2& start,
+    const DirectX::XMFLOAT2& end,
+    const float& timer)
+{
+    DirectX::XMFLOAT2 result =
+    {
+        start.x + timer * (end.x - start.x),
+        start.y + timer * (end.y - start.y),
+    };
+
+    return result;
+}
+
 inline const float XMFloatLerp(
     const float& start,
     const float& end,

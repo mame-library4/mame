@@ -12,5 +12,17 @@ public:
     void DrawDebug()                        override; // ImGui用
 
 private:
+    float lifeTimer_    = 2.0f; // 生存時間
+    //float lifeTimer_    = 10.0f; // 生存時間
+    
+    float fadeInTimer_ = 0.0f;   // フェイドインタイマー
+    float fadeInSpeed_ = 10.0f;  // フェイドイン速度
+    bool  isFadingIn_  = true;   // フェイドインする
+    
+    float fadeOutTimer_ = 0.0f;  // フェイドアウトタイマー
+    float fadeOutSpeed_ = 5.0f;  // フェイドアウト速度
+    bool  isFadingOut_  = false; // フェイドアウトする
+
+    DirectX::XMFLOAT2 oldPostiion_ = {};
 };
 
