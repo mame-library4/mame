@@ -22,7 +22,7 @@ void Camera::Initialize()
 
     enemyDeathstate_ = 0;
     playerDeathState_ = 0;
-    playerCounterStae_ = 0;
+    counterState_ = 0;
 
 
     GetTransform()->SetRotationY(DirectX::XMConvertToRadians(180));
@@ -58,6 +58,10 @@ void Camera::Update(const float& elapsedTime)
 
     const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
     
+#if 1
+    if (isCounterDelay_ == false) target_ = cameraTargetPosition;
+
+#else
     if (lerpTimer_ >= 1.0f)
     {
         target_ = cameraTargetPosition;
@@ -80,6 +84,7 @@ void Camera::Update(const float& elapsedTime)
     {
         lerpTimer_ = 0.05f;
     }
+#endif
 
     // ドラゴンの上昇攻撃のカメラ更新
     //if (UpdateRiseAttackCamera(elapsedTime)) return;
@@ -87,159 +92,15 @@ void Camera::Update(const float& elapsedTime)
     // カウンター攻撃のカメラ更新
     if (UpdateCounterAttackCamera(elapsedTime)) return;
 
-    // --- カメラ回転処理 ---
+
+    // ロックオンカメラ
+    UpdateLockonCamera(elapsedTime);
+
+    // カメラリセット
+    UpdateCameraReset(elapsedTime);
+
+    // カメラ回転処理
     Rotate(elapsedTime);
-
-    // カメラリセットする
-    if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_LEFT_SHOULDER)
-    {
-        if (true)
-        {
-            // プレイヤーの向きに合わせる
-            const float playerRotateY = PlayerManager::Instance().GetTransform()->GetRotationY();
-
-            GetTransform()->SetRotationY(playerRotateY);
-        }
-        else
-        {
-            // スティックの向きに回転させる
-            GamePad& gamePad = Input::Instance().GetGamePad();
-            const float aLx = gamePad.GetAxisLX();
-            const float aLy = gamePad.GetAxisLY();
-
-            DirectX::XMFLOAT2 input = { fabsf(aLx), fabsf(aLy) };
-
-            //if (input.x != 0.0f || input.y != 0.0f)
-            {
-                // スティックの傾きをカメラから見た方向に変換
-                //DirectX::XMFLOAT3 cameraFront = CalcForward();
-                //DirectX::XMFLOAT3 cameraRight = CalcRight();
-                DirectX::XMFLOAT3 cameraFront = GetTransform()->CalcForward();
-                DirectX::XMFLOAT3 cameraRight = GetTransform()->CalcRight();
-                DirectX::XMFLOAT2 stickDirection =
-                {
-                    aLy * cameraFront.x + aLx * cameraRight.x,
-                    aLy * cameraFront.z + aLx * cameraRight.z,
-                };
-                stickDirection = XMFloat2Normalize(stickDirection);
-
-                DirectX::XMFLOAT3 forward = GetTransform()->CalcForward();
-                DirectX::XMFLOAT2 cameraFroward = XMFloat2Normalize({ forward.x, forward.z });
-
-                float dot = XMFloat2Dot(stickDirection, cameraFroward) - 1.0f;
-                float angle = acosf(dot);
-                float a = DirectX::XMConvertToDegrees(angle);
-
-                float cross = XMFloat2Cross(stickDirection, cameraFroward);
-
-                if (cross > 0)
-                {
-                    //GetTransform()->SetRotationY(dot);
-                    GetTransform()->AddRotationY(DirectX::XM_PI);
-                }
-                else
-                {
-                    GetTransform()->AddRotationY(DirectX::XM_PI);
-                    //GetTransform()->SetRotationY(-dot);
-                }
-            }
-        }
-    }
-
-    if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_THUMB)
-    {
-        if (useLockonCamera_ == false)
-        {
-            // UIを生成する
-            UICrosshair* uiCrosshair = new UICrosshair();
-            
-            // ロックオンするジョイントを変更可能にする
-            isNextJointAccessible = true;
-        }
-        else
-        {
-            // 現在使用しているUIを削除する
-            UIManager::Instance().Remove(UIManager::UIType::UICrosshair);
-        }
-
-        useLockonCamera_ = !useLockonCamera_;
-    }
-    if (useLockonCamera_)
-    {
-        // プレイヤーと敵のジョイントの間をtargetに設定する
-
-        DirectX::XMFLOAT3 cameraPosition = GetTransform()->GetPosition();
-        DirectX::XMFLOAT3 playerPosition = PlayerManager::Instance().GetTransform()->GetPosition();
-        DirectX::XMFLOAT3 targetPosition = EnemyManager::Instance().GetEnemy(0)->GetJointPosition(GetCurrentTargetJointName());
-
-        // XZ平面での処理
-        {
-            DirectX::XMFLOAT3 cameraToEnemy = targetPosition - cameraPosition;
-            DirectX::XMFLOAT3 playerToEnemy = targetPosition - playerPosition;
-
-            DirectX::XMFLOAT2 vec0 = XMFloat2Normalize({ cameraToEnemy.x, cameraToEnemy.z });
-            DirectX::XMFLOAT2 vec1 = XMFloat2Normalize({ playerToEnemy.x, playerToEnemy.z });
-
-            float dot = XMFloat2Dot(vec0, vec1) - 1.0f;
-
-            float cross = XMFloat2Cross(vec0, vec1);
-
-            if (cross < 0)
-            {
-                GetTransform()->AddRotationY(dot);
-            }
-            else
-            {
-                GetTransform()->AddRotationY(-dot);
-            }
-
-            // YZ平面での処理
-            //vec0 = XMFloat2Normalize({ cameraToEnemy.y, cameraToEnemy.z });
-            //vec1 = XMFloat2Normalize({ playerToEnemy.y, playerToEnemy.z });
-
-            //dot = XMFloat2Dot(vec0, vec1) - 1.0f;
-
-            //cross = XMFloat2Cross(vec0, vec1);
-
-            //if (cross < 0)
-            //{
-            //    GetTransform()->SetRotationX(dot);
-            //}
-            //else
-            //{
-            //    GetTransform()->SetRotationX(-dot);
-            //}
-        }
-
-        // Joint切り替え
-        GamePad& gamePad = Input::Instance().GetGamePad();
-        const float aRx = gamePad.GetAxisRX();
-        if (isNextJointAccessible)
-        {
-            if (aRx > 0.3f)
-            {
-                if (currentTargetJointIndex_ > 0) --currentTargetJointIndex_;
-                else currentTargetJointIndex_ = 2;
-
-                isNextJointAccessible = false;
-            }
-            else if (aRx < -0.3f)
-            {
-                if (currentTargetJointIndex_ < 2) ++currentTargetJointIndex_;
-                else currentTargetJointIndex_ = 0;
-
-                isNextJointAccessible = false;
-            }
-        }
-        else
-        {
-            // 入力がなくなったら他のジョイントへアクセスできるようになる
-            if (aRx == 0.0f) isNextJointAccessible = true;
-        }
-        
-
-    }
-
 
     // --- 画面振動 ---
     ScreenVibrationUpdate(elapsedTime);
@@ -310,8 +171,32 @@ void Camera::DrawDebug()
     {
         if (ImGui::TreeNode("LockonCamera"))
         {
-            ImGui::DragInt("TargetJointIndex", &currentTargetJointIndex_, 1, 0, 2);
             ImGui::BulletText(targetJointName_.at(currentTargetJointIndex_).c_str());
+            ImGui::DragInt("TargetJointIndex", &currentTargetJointIndex_, 1, 0, 2);
+            ImGui::DragFloat("LockonInputThreshold", &lockonInputThreshold_, 0.1f, 0.1f, 1.0f);
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("ResetCamera"))
+        {
+            DirectX::XMFLOAT2 oldRotation = {};
+            oldRotation.x = DirectX::XMConvertToDegrees(resetOldRotation_.x);
+            oldRotation.y = DirectX::XMConvertToDegrees(resetOldRotation_.y);
+            ImGui::DragFloat2("OldRotation", &oldRotation.x);
+            resetOldRotation_.x = DirectX::XMConvertToRadians(oldRotation.x);
+            resetOldRotation_.y = DirectX::XMConvertToRadians(oldRotation.y);
+            
+            DirectX::XMFLOAT2 targetRotation = {};
+            targetRotation.x = DirectX::XMConvertToDegrees(resetTargetRotation_.x);
+            targetRotation.y = DirectX::XMConvertToDegrees(resetTargetRotation_.y);
+            ImGui::DragFloat2("TargetRotation", &targetRotation.x);
+            resetTargetRotation_.x = DirectX::XMConvertToRadians(targetRotation.x);
+            resetTargetRotation_.y = DirectX::XMConvertToRadians(targetRotation.y);
+            
+            
+            ImGui::DragFloat("ResetLerpTimer", &resetLerpTimer_);
+            ImGui::DragFloat("ResetLerpSpeed", &resetLerpSpeed_);
 
             ImGui::TreePop();
         }
@@ -349,6 +234,8 @@ void Camera::DrawDebug()
 // ----- 回転処理 -----
 void Camera::Rotate(const float& elapsedTime)
 {
+    if (useLockonCamera_) return;
+
     GamePad& gamePad = Input::Instance().GetGamePad();
     float aRx = gamePad.GetAxisRX();
     float aRy = gamePad.GetAxisRY();
@@ -399,9 +286,10 @@ void Camera::Rotate(const float& elapsedTime)
     // X軸(上下)の回転制御
     if (rotate.x < minXRotation_) rotate.x = minXRotation_;
 
-    // Y軸回転値を-3.14~3.14に収まるようにする
-    if (rotate.y < -DirectX::XM_PI) rotate.y += DirectX::XM_2PI;
-    if (rotate.y >  DirectX::XM_PI) rotate.y -= DirectX::XM_2PI;
+    // Y軸回転値を 0.0f ~ XM_2PI に収まるようにする
+    if (rotate.y > DirectX::XM_2PI) rotate.y -= DirectX::XM_2PI;
+    if (rotate.y < 0.0f)            rotate.y += DirectX::XM_2PI;
+
 
     GetTransform()->SetRotation(rotate);
 }
@@ -475,7 +363,165 @@ void Camera::SetUseEnemyDeathCamera()
 void Camera::SetUseCounterCamera()
 {
     useCounterCamera_ = true;
-    playerCounterStae_ = 0;
+    counterState_ = 0;
+}
+
+// ----- ロックオンカメラ更新 -----
+void Camera::UpdateLockonCamera(const float& elapsedTime)
+{
+    // ロックオン入力判定
+    if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_THUMB)
+    {
+        // 現在ロックオンしていない場合
+        if (useLockonCamera_ == false)
+        {
+            // クロスヘアUIを生成する
+            UICrosshair* uiCrosshair = new UICrosshair();
+
+            // ロックオンするジョイントを変更可能にする
+            isNextJointAccessible = true;
+        }
+        // 現在ロックオンしている場合
+        else
+        {
+            // 現在使用しているクロスヘアUIを削除する
+            UIManager::Instance().Remove(UIManager::UIType::UICrosshair);
+        }
+
+        useLockonCamera_ = !useLockonCamera_;
+    }
+
+    // ロックオンしていないのでここで終了
+    if (useLockonCamera_ == false) return;
+
+    // ロックオンするジョイントの切り替え判定
+    const float aRx = Input::Instance().GetGamePad().GetAxisRX();
+    // ジョイントを切り替えれる場合
+    if (isNextJointAccessible)
+    {
+        if (aRx > lockonInputThreshold_)
+        {
+            if (currentTargetJointIndex_ > 0) --currentTargetJointIndex_;
+            else currentTargetJointIndex_ = 2;
+
+            isNextJointAccessible = false;
+        }
+        else if (aRx < -lockonInputThreshold_)
+        {
+            if (currentTargetJointIndex_ < 2) ++currentTargetJointIndex_;
+            else currentTargetJointIndex_ = 0;
+
+            isNextJointAccessible = false;
+        }
+    }
+    // ジョイントを切り替えれない場合
+    else
+    {
+        // 入力がなくなったら他のジョイントへアクセスできるようになる
+        if (aRx == 0.0f) isNextJointAccessible = true;
+    }
+
+
+    // プレイヤーと敵のジョイントの間をtargetに設定する
+    // TODO: ↑現在できていない
+
+    DirectX::XMFLOAT3 cameraPosition = GetTransform()->GetPosition();
+    DirectX::XMFLOAT3 playerPosition = PlayerManager::Instance().GetTransform()->GetPosition();
+    DirectX::XMFLOAT3 targetPosition = EnemyManager::Instance().GetEnemy(0)->GetJointPosition(GetCurrentTargetJointName());
+
+    {
+        // XZ平面での処理
+        DirectX::XMFLOAT3 cameraToEnemy = targetPosition - cameraPosition;
+        DirectX::XMFLOAT3 playerToEnemy = targetPosition - playerPosition;
+
+        DirectX::XMFLOAT2 vec0 = XMFloat2Normalize({ cameraToEnemy.x, cameraToEnemy.z });
+        DirectX::XMFLOAT2 vec1 = XMFloat2Normalize({ playerToEnemy.x, playerToEnemy.z });
+
+        const float angle = DirectX::XMVectorGetX(DirectX::XMVector2AngleBetweenVectors(DirectX::XMLoadFloat2(&vec0), DirectX::XMLoadFloat2(&vec1)));
+
+        float dot = XMFloat2Dot(vec0, vec1) - 1.0f;
+
+        float cross = XMFloat2Cross(vec0, vec1);
+
+        if (cross < 0)
+        {
+            GetTransform()->AddRotationY(-angle);
+            
+            //GetTransform()->AddRotationY(dot);
+        }
+        else
+        {
+            GetTransform()->AddRotationY(angle);
+            
+            //GetTransform()->AddRotationY(-dot);
+        }
+    }
+
+    {
+        GetTransform()->SetRotationX(DirectX::XMConvertToRadians(10.0f));
+
+        // YZ平面での処理
+        //vec0 = XMFloat2Normalize({ cameraToEnemy.y, cameraToEnemy.z });
+        //vec1 = XMFloat2Normalize({ playerToEnemy.y, playerToEnemy.z });
+
+        //dot = XMFloat2Dot(vec0, vec1) - 1.0f;
+
+        //cross = XMFloat2Cross(vec0, vec1);
+
+        //if (cross < 0)
+        //{
+        //    GetTransform()->SetRotationX(dot);
+        //}
+        //else
+        //{
+        //    GetTransform()->SetRotationX(-dot);
+        //}
+    }
+}
+
+// ----- カメラリセット更新 -----
+void Camera::UpdateCameraReset(const float& elapsedTime)
+{
+    // ロックオンカメラを使用しているのでカメラリセットは使えない
+    if (useLockonCamera_) return;
+
+    // カメラリセット入力判定
+    if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_LEFT_SHOULDER)
+    {
+        // ----- プレイヤーの向きにリセットする -----
+        
+        // 現在の回転値を保存 & 回転の目的地を設定
+        resetOldRotation_ = { GetTransform()->GetRotationX(), GetTransform()->GetRotationY() };
+        resetTargetRotation_ = { DirectX::XMConvertToRadians(10.0f), PlayerManager::Instance().GetTransform()->GetRotationY() };
+
+        // 回転角がある場合は処理をする
+        const float rotationDeltaY = resetTargetRotation_.y - resetOldRotation_.y;
+        if (rotationDeltaY != 0.0f)
+        {
+            // 回転角が180度以上の場合は 180度に収まるようにする
+            if (rotationDeltaY > DirectX::XM_PI)  resetTargetRotation_.y -= DirectX::XM_2PI;
+            if (rotationDeltaY < -DirectX::XM_PI) resetTargetRotation_.y += DirectX::XM_2PI;
+
+            resetLerpTimer_ = 0.0f;
+            cameraResetFlag_ = true;
+        }
+    }
+
+    // フラグが立っていないのでここで終了
+    if (cameraResetFlag_ == false) return;
+
+    // Lerpをつかっていい感じに回転させる
+    resetLerpTimer_ += resetLerpSpeed_ * elapsedTime;
+    resetLerpTimer_ = min(resetLerpTimer_, 1.0f);
+
+    const float rotationX = XMFloatLerp(resetOldRotation_.x, resetTargetRotation_.x, resetLerpTimer_);
+    const float rotationY = XMFloatLerp(resetOldRotation_.y, resetTargetRotation_.y, resetLerpTimer_);
+
+    GetTransform()->SetRotationX(rotationX);
+    GetTransform()->SetRotationY(rotationY);
+
+    // 終了確認
+    if (resetLerpTimer_ == 1.0f) cameraResetFlag_ = false;
 }
 
 // ----- 自機死亡カメラ -----
@@ -810,7 +856,7 @@ const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
 
     Player* player = PlayerManager::Instance().GetPlayer().get();
 
-    switch (static_cast<CounterAttackCamera>(playerCounterStae_))
+    switch (static_cast<CounterAttackCamera>(counterState_))
     {
     case CounterAttackCamera::CounterInitialize:// カウンター初期化
         // 現在のカメラ項目を保存する
@@ -853,12 +899,15 @@ const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
         break;
     case CounterAttackCamera::CounterIdle:// 次の行動待機
     {
-        if (player->GetCurrentState() == Player::STATE::Idle)
+        const Player::STATE currentState = player->GetCurrentState();
+
+        if (currentState == Player::STATE::Idle ||
+            currentState == Player::STATE::Damage)
         {
             // ステート変更
             SetState(CounterAttackCamera::CounterFinalize);
         }
-        if (player->GetCurrentState() == Player::STATE::CounterCombo)
+        if (currentState == Player::STATE::CounterCombo)
         {
             // ステート変更
             SetState(CounterAttackCamera::CounterComboInitialize);
@@ -899,13 +948,16 @@ const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
         // 変数初期化
         easingTimer_ = 0.0f;
 
+        counterDelayTimer_ = 0.0f;
+
         // ステート変更
         SetState(CounterAttackCamera::CounterComboZoomIn);
 
         break;  
     case CounterAttackCamera::CounterComboZoomIn:
     {
-        const float totalFrame = 0.17f;
+        const float totalFrame = 0.2f;
+        //const float totalFrame = 0.17f;
         easingTimer_ += elapsedTime;
         easingTimer_ = min(easingTimer_, totalFrame);
 
@@ -925,16 +977,29 @@ const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
 
         if (easingTimer_ == totalFrame)
         {
-            easingTimer_ = 0.0f;
+            counterDelayTimer_ += elapsedTime;
+
+            if (counterDelayTimer_ >= 0.1f)
+            {
+                easingTimer_ = 0.0f;
+
+                counterDelay_ = target_;
+                isCounterDelay_ = true;
+
+
+                SetState(CounterAttackCamera::CounterComboZoomOut);
+            }
+
+            //easingTimer_ = 0.0f;
 
             // ステート変更
-            SetState(CounterAttackCamera::CounterComboZoomOut);
+            //SetState(CounterAttackCamera::CounterComboZoomOut);
         }
     }
         break;
     case CounterAttackCamera::CounterComboZoomOut:
     {
-        const float totalFrame = 0.4f;
+        const float totalFrame = 0.2f;
         easingTimer_ += elapsedTime;
         easingTimer_ = min(easingTimer_, totalFrame);
 
@@ -952,6 +1017,9 @@ const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
         if (easingTimer_ == totalFrame)
         {
             easingTimer_ = 0.0f;
+            counterDelayTimer_ = 0.0f;
+
+            counterLerpTimer_ = 0.0f;
 
             // ステート変更
             SetState(CounterAttackCamera::Finalize);
@@ -960,6 +1028,34 @@ const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
         break;
     case CounterAttackCamera::Finalize:
     {
+        counterDelayTimer_ += elapsedTime;
+        if (counterDelayTimer_ > 0.5f)
+        {
+
+            counterLerpTimer_ += elapsedTime * 3.0f;
+            counterLerpTimer_ = min(counterLerpTimer_, 1.0f);
+            if (isCounterDelay_)
+            {
+                const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
+                DirectX::XMVECTOR vec = DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&counterDelay_), DirectX::XMLoadFloat3(&cameraTargetPosition), counterLerpTimer_);
+                DirectX::XMFLOAT3 pos = {};
+                DirectX::XMStoreFloat3(&pos, vec);
+
+                target_ = pos;
+            }
+            if (counterLerpTimer_ == 1.0f)
+            {
+                isCounterDelay_ = false;
+                useCounterCamera_ = false;
+            }
+        }
+
+#if 0
+        counterDelayTimer_ += elapsedTime;
+        if (counterDelayTimer_ > 0.5f)
+        {
+
+
         const float totalFrame = 0.6f;
 
         easingTimer_ += elapsedTime;
@@ -976,6 +1072,8 @@ const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
             useCounterCamera_ = false;
         }
 
+        }
+#endif
 
     }
         break;

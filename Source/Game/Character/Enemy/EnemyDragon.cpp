@@ -59,10 +59,10 @@ void EnemyDragon::Finalize()
 // ----- 更新 -----
 void EnemyDragon::Update(const float& elapsedTime)
 {
-    if(isUpdateAnimation_) Character::Update(elapsedTime);
-
     // behaviorTree更新
     UpdateNode(elapsedTime);
+
+    if(isUpdateAnimation_) Character::Update(elapsedTime);
 
     // RootMotion
     RootMotion();
@@ -205,17 +205,25 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Near", "ComboFlySlam",  0, BehaviorTree::SelectRule::None, new ComboFlySlamJudgment(this), new ActionDragon::ComboFlySlamAction(this));    
     
 
-    behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::SequentialLooping, nullptr, nullptr);
+    //behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::SequentialLooping, nullptr, nullptr);
     //behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
-    //behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
+    behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
 
     
     behaviorTree_->AddNode("MostNear", "TurnAttack",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
+    behaviorTree_->AddNode("MostNear", "ComboSlam",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));    
     behaviorTree_->AddNode("MostNear", "KnockBack",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::KnockBackAction(this));
-    //behaviorTree_->AddNode("MostNear", "FlyAttack",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));    
-    //behaviorTree_->AddNode("MostNear", "ComboSlam",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));    
+    behaviorTree_->AddNode("MostNear", "FlyAttack",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));    
 
+#if 1
+    behaviorTree_->AddNode("MostNear", "ComboFlySlam", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboFlySlamAction(this));
+    behaviorTree_->AddNode("MostNear", "FireBreath", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireBreath(this));
+    behaviorTree_->AddNode("MostNear", "FireBreathCombo", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireBreathCombo(this));
     
+    behaviorTree_->AddNode("MostNear", "Tackle", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
+#endif
+
+
     //behaviorTree_->AddNode("Near", "BackStep",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::BackStepAction(this));
     //behaviorTree_->AddNode("Near", "Slam",        1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAction(this));
     //behaviorTree_->AddNode("Near", "ComboCharge", 1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboChargeAction(this));

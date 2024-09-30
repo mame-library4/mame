@@ -21,8 +21,6 @@ public:
     GamePad& GetGamePad() { return gamePad_; }
     Mouse& GetMouse() { return mouse_; }
 
-    [[nodiscard]] const bool IsAnyInputDown();
-
 private:
     static Input* instance_;
     GamePad gamePad_;

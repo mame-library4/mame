@@ -189,10 +189,10 @@ public:// --- éÊìæÅEê›íË ---
     void SetCounterActiveRadius(const float& range) { counterActiveRadius_ = range; }
 
     // ---------- ÉLÅ[ì¸óÕ ----------
-    [[nodiscard]] bool GetComboAttack0KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
-    [[nodiscard]] bool GetComboAttack1KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y; }
-    [[nodiscard]] bool GetAvoidanceKeyDown()    const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_A; }
-    [[nodiscard]] bool GetCounterStanceKey()    const;
+    [[nodiscard]] bool IsComboAttack0KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
+    [[nodiscard]] bool IsAvoidanceKeyDown()    const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_A; }
+    [[nodiscard]] bool IsCounterStanceKey()    const;
+    [[nodiscard]] bool IsGetUpKeyDown()        const;
 
 #pragma endregion [Get, Set] Function
 

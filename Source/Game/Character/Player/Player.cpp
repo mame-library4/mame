@@ -415,10 +415,40 @@ void Player::SetNextInputTransitionFrame(const float& avoidance, const float& at
     counterTransitionFrame_     = counter;
 }
 
-bool Player::GetCounterStanceKey() const
+bool Player::IsCounterStanceKey() const
 {
     if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B && Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_TRIGGER) return true;
     if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_B && Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER) return true;
+
+    return false;
+}
+
+// ----- ãNÇ´è„Ç™ÇËÇÃì¸óÕîªíË -----
+bool Player::IsGetUpKeyDown() const
+{
+    // ---------- Mouse ----------
+    Mouse& mouse = Input::Instance().GetMouse();
+    if (mouse.GetButtonDown() & Mouse::BTN_RIGHT ||
+        mouse.GetButtonDown() & Mouse::BTN_LEFT  ||
+        mouse.GetButtonDown() & Mouse::BTN_MIDDLE)
+    {
+        return true;
+    }
+
+    // ---------- GamePad ----------
+    GamePad& gamePad = Input::Instance().GetGamePad();
+    const float aLx = gamePad.GetAxisLX();
+    const float aLy = gamePad.GetAxisLY();
+    if (gamePad.GetButtonDown() & GamePad::BTN_A ||
+        gamePad.GetButtonDown() & GamePad::BTN_B ||
+        gamePad.GetButtonDown() & GamePad::BTN_X ||
+        gamePad.GetButtonDown() & GamePad::BTN_Y ||
+        gamePad.GetButtonDown() & GamePad::BTN_RIGHT_SHOULDER ||
+        gamePad.GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER ||
+        fabsf(aLx) != 0.0f || fabsf(aLy) != 0.0f)
+    {
+        return true;
+    }
 
     return false;
 }

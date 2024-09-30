@@ -19,8 +19,6 @@ void Character::Update(const float& elapsedTime)
 
     // LookAtçXêV
     LookAtUpdate();
-
-    
 }
 
 // ----- ImGuióp -----

@@ -823,10 +823,10 @@ const int GltfModel::GetNodeIndex(const std::string& nodeName)
 // ----- RootMotion -----
 void GltfModel::RootMotion(const float& scaleFacter)
 {
-    if (isBlendAnimation_) return; // BlendAnimationしている
+    //if (isBlendAnimation_) return; // BlendAnimationしている
     if (animationEndFlag_) return; // Animationが再生されていない
 
-    // ルートモーションを使用しない
+    // Rootの移動値がないので処理をしない
     if (useRootMotionMovement_ == false) return;
 
     // 初回時はnodes_を計算しなおしてあげる

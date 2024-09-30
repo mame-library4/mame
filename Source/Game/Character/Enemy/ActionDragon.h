@@ -190,6 +190,7 @@ namespace ActionDragon
             FlyAttack,  // UŒ‚
         };
         
+        void SetAnimation();
         void SetStep(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
 
     private:
@@ -293,6 +294,7 @@ namespace ActionDragon
             Recovery,   // ŒãŒ„
         };
 
+        void SetAnimation();
         void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
 
     private:
@@ -342,7 +344,6 @@ namespace ActionDragon
         enum class STATE
         {
             Initialize, // ‰Šú‰»
-            PreAction,  // —\”õ“®ì
             Attack,     // UŒ‚
         };
 

@@ -143,7 +143,7 @@ void Application::Render()
     DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->inverseViewProjection_, DirectX::XMMatrixInverse(NULL, camera.GetViewMatrix() * camera.GetProjectionMatrix()));
     sceneConstants_.Activate(1, true, true, true, true);
 
-    cascadedShadowMap_.Make(sceneConstants_.GetData()->lightDirection_, []() { SceneManager::Instance().ShadowRender(); });
+    //cascadedShadowMap_.Make(sceneConstants_.GetData()->lightDirection_, []() { SceneManager::Instance().ShadowRender(); });
 
 
     // ShadowMap Set 9
@@ -259,8 +259,8 @@ void Application::Render()
 
 #endif
 
-    ID3D11ShaderResourceView* nullShaderResourceViews[]{ nullptr };
-    deviceContext->PSSetShaderResources(9, 1, nullShaderResourceViews);
+    //ID3D11ShaderResourceView* nullShaderResourceViews[]{ nullptr };
+    //deviceContext->PSSetShaderResources(9, 1, nullShaderResourceViews);
 
     Graphics::Instance().SetBlendState(Shader::BLEND_STATE::ALPHA);
     Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
@@ -276,7 +276,7 @@ void Application::Render()
     IMGUI_CTRL_DISPLAY();
 
     // --- 実行 ---
-    UINT syncInterval = 0;
+    UINT syncInterval = 1;
     graphics_.GetSwapChain()->Present(syncInterval, 0);
 }
 

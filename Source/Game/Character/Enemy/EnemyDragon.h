@@ -44,8 +44,8 @@ private:
     //bool isDamageSphere_    = true;
     bool isDamageSphere_    = false;
 
-    //bool isUpdateAnimation_ = false;
-    bool isUpdateAnimation_ = true;
+    bool isUpdateAnimation_ = false;
+    //bool isUpdateAnimation_ = true;
     
 
     float oldHealth_ = 0.0f;

@@ -106,6 +106,10 @@ private:
 
 
 private:
+    void UpdateLockonCamera(const float& elapsedTime); // ロックオンカメラ更新
+    void UpdateCameraReset(const float& elapsedTime);  // カメラリセット更新
+
+
     // ---------- 自機死亡カメラ ----------
     [[nodiscard]] const bool UpdatePlayerDeathCamera(const float& elapsedTime);
     // ---------- 敵死亡カメラ ----------
@@ -116,7 +120,7 @@ private:
     [[nodiscard]] const bool UpdateCounterAttackCamera(const float& elapsedTime);
 
     void SetState(const EnemyDeathCamera& state)    { enemyDeathstate_ = static_cast<int>(state); }
-    void SetState(const CounterAttackCamera& state) { playerCounterStae_ = static_cast<int>(state); }
+    void SetState(const CounterAttackCamera& state) { counterState_ = static_cast<int>(state); }
 
 private:
     Transform           transform_          = {};
@@ -155,14 +159,16 @@ private:
 
     // ---------- 特殊な動き制御用 ----------    
     int     playerDeathState_       = 0;
-    int     playerCounterStae_      = 0;
+    
     int     enemyDeathstate_        = 0;
+
+    float counterDelayTimer_ = 0.0f;
 
     float   easingTimer_            = 0.0f;
     bool    useEnemyDeathCamera_    = false; // 敵死亡カメラ
     bool    usePlayerDeathCamera_   = false; // 自機死亡カメラ
     bool    useRiseAttackCamera_    = false; // 上昇攻撃カメラ
-    bool    useCounterCamera_       = false; // カウンターカメラ
+    
 
     float   deathTimer_             = 0.0f;  // 死亡時タイマー
     bool    useDeathTimer_          = false; // 死亡時タイマーを使うか
@@ -176,10 +182,25 @@ private:
 
     float lerpTimer_ = 0.0f;
 
+    // ---------- カウンターカメラ ----------
+    int     counterState_       = 0;
+    bool    useCounterCamera_   = false; // カウンターカメラ
+
+    DirectX::XMFLOAT3 counterDelay_ = {};
+    bool isCounterDelay_ = false;
+    float counterLerpTimer_ = 0.0f;
 
     // ---------- ロックオンカメラ ----------
-    std::vector<std::string>    targetJointName_;
-    int                         currentTargetJointIndex_    = 0;
+    std::vector<std::string>    targetJointName_;                    // ターゲットにするジョイントの名前
+    int                         currentTargetJointIndex_    = 0;     // 現在選択中のジョイント番号
+    float                       lockonInputThreshold_       = 0.3f;  // ジョイント変更の入力閾値
     bool                        useLockonCamera_            = false; // ロックオンカメラ使用フラグ
-    bool                        isNextJointAccessible       = true;  
+    bool                        isNextJointAccessible       = true;  // 次のターゲットを選択できるか
+
+    // ---------- カメラリセット ----------
+    DirectX::XMFLOAT2   resetOldRotation_       = {};    // 処理開始時の角度
+    DirectX::XMFLOAT2   resetTargetRotation_    = {};    // 目標地点の角度
+    float               resetLerpTimer_         = 0.0f;  // lerpに使用
+    float               resetLerpSpeed_         = 15.0f; // lerpの速度
+    bool                cameraResetFlag_        = false; // カメラリセットをするかのフラグ
 };

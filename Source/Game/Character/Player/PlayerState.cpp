@@ -159,13 +159,13 @@ namespace PlayerState
         if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
             animationSeconds <= owner_->GetAvoidanceInputEndFrame())
         {
-            if (owner_->GetAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+            if (owner_->IsAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
         }
         // 攻撃先行入力受付
         if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
             animationSeconds <= owner_->GetAttackInputEndFrame())
         {
-            if (owner_->GetComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
+            if (owner_->IsComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
         }
 
 #pragma endregion ----- 先行入力受付 -----
@@ -291,13 +291,13 @@ namespace PlayerState
         if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
             animationSeconds <= owner_->GetAvoidanceInputEndFrame())
         {
-            if (owner_->GetAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+            if (owner_->IsAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
         }
         // 攻撃先行入力受付
         if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
             animationSeconds <= owner_->GetAttackInputEndFrame())
         {
-            if (owner_->GetComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
+            if (owner_->IsComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
         }
 
 #pragma endregion ----- 先行入力受付 -----
@@ -475,7 +475,7 @@ namespace PlayerState
         if (owner_->GetAnimationSeconds() > 1.2f && isFirstAnimation_ == true)
         {            
             // 入力があれば倒れてる状態を終了する
-            if (Input::Instance().IsAnyInputDown())
+            if (owner_->IsGetUpKeyDown())
             {
                 owner_->PlayBlendAnimation(Player::Animation::GetUp, false);
                 owner_->SetTransitionTime(0.1f);
@@ -501,7 +501,7 @@ namespace PlayerState
         {
             if (owner_->GetAnimationSeconds() > 1.25f)
             {
-                if (owner_->GetAvoidanceKeyDown())
+                if (owner_->IsAvoidanceKeyDown())
                 {
                     owner_->ChangeState(Player::STATE::Avoidance);
                     return;
@@ -759,13 +759,13 @@ namespace PlayerState
 
         if (animationSeconds > nextInputStartFrame)
         {
-            if (owner_->GetComboAttack0KeyDown())
+            if (owner_->IsComboAttack0KeyDown())
             {
                 owner_->SetNextInput(Player::NextInput::ComboAttack0);
             }
 
             // 回避
-            if (owner_->GetAvoidanceKeyDown() &&
+            if (owner_->IsAvoidanceKeyDown() &&
                 owner_->GetAnimationIndex() != static_cast<int>(Player::Animation::RollBack))
             {
                 owner_->SetNextInput(Player::NextInput::Avoidance);
@@ -806,12 +806,12 @@ namespace PlayerState
             if (animationSeconds > nextInputStartFrame)
             {
                 // コンボ攻撃
-                if (owner_->GetComboAttack0KeyDown())
+                if (owner_->IsComboAttack0KeyDown())
                 {
                     owner_->SetNextInput(Player::NextInput::ComboAttack0);
                 }
                 // 回避
-                if (owner_->GetAvoidanceKeyDown())
+                if (owner_->IsAvoidanceKeyDown())
                 {
                     owner_->SetNextInput(Player::NextInput::Avoidance);
                 }
@@ -824,7 +824,7 @@ namespace PlayerState
             if (animationSeconds > nextInputStartFrame)
             {
                 // コンボ攻撃
-                if (owner_->GetComboAttack0KeyDown())
+                if (owner_->IsComboAttack0KeyDown())
                 {
                     owner_->SetNextInput(Player::NextInput::ComboAttack0);
                 }
@@ -837,12 +837,12 @@ namespace PlayerState
             if (animationSeconds > nextInputStartFrame)
             {
                 // コンボ攻撃
-                if (owner_->GetComboAttack0KeyDown())
+                if (owner_->IsComboAttack0KeyDown())
                 {
                     owner_->SetNextInput(Player::NextInput::ComboAttack0);
                 }
                 // 回避
-                if (owner_->GetAvoidanceKeyDown())
+                if (owner_->IsAvoidanceKeyDown())
                 {
                     owner_->SetNextInput(Player::NextInput::Avoidance);
                 }
@@ -855,12 +855,12 @@ namespace PlayerState
             if (animationSeconds > nextInputStartFrame)
             {
                 // コンボ攻撃
-                if (owner_->GetComboAttack0KeyDown())
+                if (owner_->IsComboAttack0KeyDown())
                 {
                     owner_->SetNextInput(Player::NextInput::ComboAttack0);
                 }
                 // 回避
-                if (owner_->GetAvoidanceKeyDown())
+                if (owner_->IsAvoidanceKeyDown())
                 {
                     owner_->SetNextInput(Player::NextInput::Avoidance);
                 }
@@ -1718,19 +1718,19 @@ namespace PlayerState
         if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
             animationSeconds <= owner_->GetAvoidanceInputEndFrame())
         {
-            if (owner_->GetAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+            if (owner_->IsAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
         }
         // 攻撃先行入力受付
         if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
             animationSeconds <= owner_->GetAttackInputEndFrame())
         {
-            if (owner_->GetComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
+            if (owner_->IsComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
         }
         // カウンター先行入力受付
         if (animationSeconds >= owner_->GetCounterInputStartFrame() &&
             animationSeconds <= owner_->GetCounterInputEndFrame())
         {
-            if (owner_->GetCounterStanceKey()) owner_->SetNextInput(Player::NextInput::Counter);
+            if (owner_->IsCounterStanceKey()) owner_->SetNextInput(Player::NextInput::Counter);
         }
 
 #pragma endregion ----- 先行入力受付 -----
@@ -1908,19 +1908,19 @@ namespace PlayerState
         if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
             animationSeconds <= owner_->GetAvoidanceInputEndFrame())
         {
-            if (owner_->GetAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+            if (owner_->IsAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
         }
         // 攻撃先行入力受付
         if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
             animationSeconds <= owner_->GetAttackInputEndFrame())
         {
-            if (owner_->GetComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
+            if (owner_->IsComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
         }
         // カウンター先行入力受付
         if (animationSeconds >= owner_->GetCounterInputStartFrame() &&
             animationSeconds <= owner_->GetCounterInputEndFrame())
         {
-            if (owner_->GetCounterStanceKey()) owner_->SetNextInput(Player::NextInput::Counter);
+            if (owner_->IsCounterStanceKey()) owner_->SetNextInput(Player::NextInput::Counter);
         }
 
 #pragma endregion ----- 先行入力受付 -----
@@ -2077,19 +2077,19 @@ namespace PlayerState
         if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
             animationSeconds <= owner_->GetAvoidanceInputEndFrame())
         {
-            if (owner_->GetAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+            if (owner_->IsAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
         }
         // 攻撃先行入力受付
         if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
             animationSeconds <= owner_->GetAttackInputEndFrame())
         {
-            if (owner_->GetComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
+            if (owner_->IsComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
         }
         // カウンター先行入力受付
         if (animationSeconds >= owner_->GetCounterInputStartFrame() &&
             animationSeconds <= owner_->GetCounterInputEndFrame())
         {
-            if (owner_->GetCounterStanceKey()) owner_->SetNextInput(Player::NextInput::Counter);
+            if (owner_->IsCounterStanceKey()) owner_->SetNextInput(Player::NextInput::Counter);
         }
 
 #pragma endregion ----- 先行入力受付 -----
@@ -2235,19 +2235,19 @@ namespace PlayerState
         if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
             animationSeconds <= owner_->GetAvoidanceInputEndFrame())
         {
-            if (owner_->GetAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+            if (owner_->IsAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
         }
         // 攻撃先行入力受付
         if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
             animationSeconds <= owner_->GetAttackInputEndFrame())
         {
-            if (owner_->GetComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
+            if (owner_->IsComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
         }
         // カウンター先行入力受付
         if (animationSeconds >= owner_->GetCounterInputStartFrame() &&
             animationSeconds <= owner_->GetCounterInputEndFrame())
         {
-            if (owner_->GetCounterStanceKey()) owner_->SetNextInput(Player::NextInput::Counter);
+            if (owner_->IsCounterStanceKey()) owner_->SetNextInput(Player::NextInput::Counter);
         }
 
 #pragma endregion ----- 先行入力受付 -----
@@ -2390,7 +2390,7 @@ namespace PlayerState
         if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
             animationSeconds <= owner_->GetAvoidanceInputEndFrame())
         {
-            if (owner_->GetAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+            if (owner_->IsAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
         }
 
         // 回避遷移チェック

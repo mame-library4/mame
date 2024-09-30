@@ -17,6 +17,18 @@ Object::~Object()
 void Object::Update(const float& elapsedTime)
 {
     gltfModel_.UpdateAnimation(elapsedTime);
+
+    DirectX::XMFLOAT3 rotation = GetTransform()->GetRotation();
+    //if (rotation.x > DirectX::XM_2PI)  rotation.x -= DirectX::XM_2PI;
+    //if (rotation.z > DirectX::XM_2PI)  rotation.z -= DirectX::XM_2PI;
+    if (rotation.y > DirectX::XM_2PI)   rotation.y -= DirectX::XM_2PI;
+    if (rotation.y < 0.0f)              rotation.y += DirectX::XM_2PI;
+    
+    //if (rotation.x < -DirectX::XM_2PI) rotation.x += DirectX::XM_2PI;
+    //if (rotation.y < -DirectX::XM_2PI) rotation.y += DirectX::XM_2PI;
+    //if (rotation.z < -DirectX::XM_2PI) rotation.z += DirectX::XM_2PI;
+
+    GetTransform()->SetRotation(rotation);
 }
 
 // ----- •`‰æ -----
