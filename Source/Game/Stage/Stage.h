@@ -12,6 +12,8 @@ public:
     virtual void Render(const float& scaleFacter, ID3D11PixelShader* psShader = nullptr);
     virtual void DrawDebug();
 
+    void CastShadow(const float& scaleFacter);
+
     Transform* GetTransform() { return model_.GetTransform(); }
 
 protected:

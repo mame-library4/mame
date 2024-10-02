@@ -4,14 +4,17 @@
 #include "../FrameBuffer.h"
 #include "../FullscreenQuad.h"
 #include "Bloom.h"
+#include "CascadedShadowMap.h"
 
 class PostProcess
 {
 private:
     struct Constants
     {
+        float shadowColor_ = 0.2f;
+        float shadowDepthBias_ = 0.0001f;
+        bool colorizeCascadedLayer_ = true;
         float blurPower_ = 0.0f;
-        DirectX::XMFLOAT3 dummy_;
     };
 
     PostProcess();
@@ -26,9 +29,11 @@ public:
 
     void Activate();
     void Deactivate();
-    void Draw(ID3D11ShaderResourceView* cascadeShadowMap);
+    void Draw();
 
     void DrawDebug();
+
+    void MakeCascadedShadowMap(const DirectX::XMFLOAT4& lightDirection, UINT cbSlot, std::function<void()> drawcallback);
 
     ConstantBuffer<Constants>* GetConstants() { return constant_.get(); }
 
@@ -45,5 +50,8 @@ private:
 
     bool useRadialBlur_ = false;
 
+    float criticalDepthValue_ = 0.0f;
+
     Bloom   bloom_;
+    CascadedShadowMap cascadedShadowMap_;
 };

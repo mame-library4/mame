@@ -19,8 +19,6 @@ Application::Application(HWND hwnd)
     : hwnd_(hwnd),
     graphics_(hwnd, FALSE),
     input_(hwnd),
-    shadowMap_(SCREEN_WIDTH, SCREEN_HEIGHT),
-    cascadedShadowMap_(),
     deferredRendering_(),
     sceneConstants_()
 {
@@ -113,26 +111,6 @@ void Application::Render()
     // --- サンプラーステート設定 ---
     graphics_.GetShader()->SetSamplerState();
 
-#if 0
-    const float aspectRatio = shadowMap_.viewport.Width / shadowMap_.viewport.Height;
-    sceneConstants_.GetData()->viewProjection_ = shadowMap_.CalcViewProjection(aspectRatio);
-    sceneConstants_.GetData()->lightViewProjection_ = sceneConstants_.GetData()->viewProjection_;
-
-    Graphics::Instance().SetBlendState(Shader::BLEND_STATE::NONE);
-    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::SOLID);
-    Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_ON_ZW_ON);
-
-    sceneConstants_.Activate(1, true, true, true, true);
-
-    // --- ShadowMap作成 ---
-    //shadowMap_.Clear();
-    //shadowMap_.Activate();
-    ////SceneManager::Instance().ShadowRender();
-    //shadowMap_.Deactivete();
-
-#else
-#endif
-
     camera.SetPerspectiveFov();
     DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->viewProjection_, camera.GetViewMatrix() * camera.GetProjectionMatrix());
 
@@ -143,11 +121,9 @@ void Application::Render()
     DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->inverseViewProjection_, DirectX::XMMatrixInverse(NULL, camera.GetViewMatrix() * camera.GetProjectionMatrix()));
     sceneConstants_.Activate(1, true, true, true, true);
 
-    //cascadedShadowMap_.Make(sceneConstants_.GetData()->lightDirection_, []() { SceneManager::Instance().ShadowRender(); });
-
-
-    // ShadowMap Set 9
-    //deviceContext->PSSetShaderResources(9, 1, shadowMap_.shaderResourceView.GetAddressOf());
+    // Make cascade shadow map
+    PostProcess::Instance().MakeCascadedShadowMap(sceneConstants_.GetData()->lightDirection_, 
+        3, [&]() { SceneManager::Instance().ShadowRender(); });
     
 #if 1
     // --- deferred rendering ---
@@ -184,9 +160,7 @@ void Application::Render()
 
         PostProcess::Instance().Deactivate();
 
-        cascadedShadowMap_.SetShadowConstants(11);
-
-        PostProcess::Instance().Draw(cascadedShadowMap_.GetDepthMap().Get());
+        PostProcess::Instance().Draw();
     }
     // --- forward rendering ---
     else
@@ -218,10 +192,8 @@ void Application::Render()
         Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_OFF_ZW_OFF);
         
         PostProcess::Instance().Deactivate();
-        
-        cascadedShadowMap_.SetShadowConstants(11);
 
-        PostProcess::Instance().Draw(cascadedShadowMap_.GetDepthMap().Get());
+        PostProcess::Instance().Draw();
     }
 #else
 
@@ -283,8 +255,6 @@ void Application::Render()
 void Application::DrawDebug()
 {
 #ifdef USE_IMGUI
-    shadowMap_.DrawDebug();
-
     PostProcess::Instance().DrawDebug();
 
     Camera::Instance().DrawDebug();

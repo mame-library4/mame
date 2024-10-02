@@ -6,6 +6,9 @@ struct PSIn
 
 cbuffer PostProcessConstants
 {
+    float shadowColor_;
+    float shadowDepthBias_;
+    bool colorizeCascadedLayer_;
+
     float blurPower;
-    float3 dummy_;
 };

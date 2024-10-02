@@ -97,8 +97,7 @@ namespace ActionDragon
         {
         case STATE::Initialize:// 初期化
             // アニメーション設定
-            owner_->PlayBlendAnimation(Enemy::DragonAnimation::CriticalStart, false);
-            owner_->SetTransitionTime(0.1f);
+            SetAnimation();
 
             // 怯み時押し出し判定設定
             owner_->SetDownCollisionActiveFlag();
@@ -173,6 +172,26 @@ namespace ActionDragon
         }
 
         return ActionBase::State::Run;
+    }
+
+    // ----- アニメーション設定 -----
+    void FlinchAction::SetAnimation()
+    {
+#if 0
+        const Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(owner_->GetAnimationIndex());
+
+        if (animationIndex == Enemy::DragonAnimation::AttackTackle3)
+        {
+            owner_->SetTransitionTime(0.2f);
+        }
+        else
+        {
+            owner_->SetTransitionTime(0.1f);
+        }
+#endif
+        owner_->SetTransitionTime(0.1f);
+
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::CriticalStart, false);
     }
 
     // ----- アニメーション速度設定 -----
@@ -287,6 +306,60 @@ namespace ActionDragon
         {
             owner_->SetAnimationSpeed(1.0f);
         }
+    }
+}
+
+namespace ActionDragon
+{
+    const ActionBase::State PartDestructionFlinchAction::Run(const float& elapsedTime)
+    {
+        switch (owner_->GetStep())
+        {
+        case 0:// 初期設定
+            // アニメーション設定
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::GetHitStart, false, 1.0f, 0.1f);
+            owner_->SetTransitionTime(0.15f);
+
+            owner_->SetUseRootMotion(false);
+
+            owner_->SetStep(1);
+
+            break;
+        case 1:
+            if (owner_->GetUseRootMotionMovement() == false)
+            {
+                if (owner_->GetIsBlendAnimation() == false) owner_->SetUseRootMotion(true);
+            }
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->PlayAnimation(Enemy::DragonAnimation::GetHitLoop, false);
+
+                owner_->SetUseRootMotion(false);
+
+                owner_->SetStep(2);
+            }
+
+            break;
+        case 2:
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->PlayAnimation(Enemy::DragonAnimation::GetHitEnd, false);
+
+                owner_->SetStep(3);
+            }
+
+            break;
+        case 3:
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+            break;
+        }
+
+        return ActionBase::State::Run;
     }
 }
 
@@ -1577,6 +1650,22 @@ namespace ActionDragon
             break;
         case STATE::Recovery:// 後隙 ( 途中まで攻撃判定ある )
         {
+            // 脚が部位破壊されている場合は途中で終了し、怯みに移行する
+            if (owner_->GetIsPartDestruction(Enemy::PartName::Leg))
+            {
+                if (owner_->GetAnimationSeconds() >= 0.35f)
+                {
+                    // 攻撃判定無効化
+                    owner_->SetTackleAttackActiveFlag(false);
+
+                    // 位置Yを０にしてあげる
+                    owner_->GetTransform()->SetPositionY(0.0f);
+
+                    owner_->SetStep(0);
+                    return ActionBase::State::Complete;
+                }
+            }
+
             // 攻撃判定無効化
             if (owner_->GetIsAttackActive())
             {

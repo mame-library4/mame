@@ -15,3 +15,8 @@ void Stage::DrawDebug()
 {
     GetTransform()->DrawDebug();
 }
+
+void Stage::CastShadow(const float& scaleFacter)
+{
+    model_.CastShadow(scaleFacter);
+}

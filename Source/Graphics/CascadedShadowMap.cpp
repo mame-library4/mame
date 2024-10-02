@@ -1,45 +1,46 @@
+#define NOMINMAX
 #include "CascadedShadowMap.h"
 #include <array>
 #include "Graphics.h"
 #include "Camera.h"
 #include "Common.h"
+#include "misc.h"
 
-std::array<DirectX::XMFLOAT4, 8> MakeFrustumCornersWorldSpace(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& projection)
+// Calculate the 8 vertices of the view frustum based on the provided view and projection matrices.
+std::array<DirectX::XMFLOAT4, 8> ExtractFrustumCorners(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& projection)
 {
-    const DirectX::XMMATRIX ViewProjection = DirectX::XMMatrixInverse(NULL, DirectX::XMLoadFloat4x4(&view) * DirectX::XMLoadFloat4x4(&projection));
-
-    std::array<DirectX::XMFLOAT4, 8> frustumCorners;
-    size_t index = 0;
-    for (size_t x = 0; x < 2; ++x)
+    // Define the NDC space corners
+    std::array<DirectX::XMFLOAT4, 8> frustumCorners =
     {
-        for (size_t y = 0; y < 2; ++y)
-        {
-            for (size_t z = 0; z < 2; ++z)
-            {
-                DirectX::XMFLOAT4 pt = { 2.0f * x - 1.0f, 2.0f * y - 1.0f, 2.0f * z - 1.0f, 1.0f };
-                DirectX::XMStoreFloat4(&pt, DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat4(&pt), ViewProjection));
-                frustumCorners.at(index++) = pt;
-            }
-        }
+        DirectX::XMFLOAT4{-1.0f, -1.0f, -1.0f, 1.0f},
+        DirectX::XMFLOAT4{-1.0f, -1.0f,  1.0f, 1.0f},
+        DirectX::XMFLOAT4{-1.0f,  1.0f, -1.0f, 1.0f},
+        DirectX::XMFLOAT4{-1.0f,  1.0f,  1.0f, 1.0f},
+        DirectX::XMFLOAT4{ 1.0f, -1.0f, -1.0f, 1.0f},
+        DirectX::XMFLOAT4{ 1.0f, -1.0f,  1.0f, 1.0f},
+        DirectX::XMFLOAT4{ 1.0f,  1.0f, -1.0f, 1.0f},
+        DirectX::XMFLOAT4{ 1.0f,  1.0f,  1.0f, 1.0f}
+    };
+    const DirectX::XMMATRIX inverseViewProjection = DirectX::XMMatrixInverse(NULL, DirectX::XMLoadFloat4x4(&view) * DirectX::XMLoadFloat4x4(&projection));
+    for (std::array<DirectX::XMFLOAT4, 8>::reference frustumCorner : frustumCorners)
+    {
+        DirectX::XMStoreFloat4(&frustumCorner, DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat4(&frustumCorner), inverseViewProjection));
     }
+    // Return a array of 8 vertices representing the corners of the view frustum in world space.
     return frustumCorners;
 }
 
 // ----- コンストラクタ -----
-CascadedShadowMap::CascadedShadowMap()
-    : cascadeCount_(4)
+CascadedShadowMap::CascadedShadowMap(UINT width, UINT height, UINT cascadeCount)
+    : cascadeCount_(cascadeCount), cascadedMatrices_(cascadeCount), cascadedPlaneDistances_(cascadeCount + 1)
 {
     HRESULT result = S_OK;
-    ID3D11Device* device = Graphics::Instance().GetDevice();
-
-    const UINT width  = 4096;
-    const UINT height = 4096;
 
     D3D11_TEXTURE2D_DESC texture2dDesc = {};
     texture2dDesc.Width = width;
     texture2dDesc.Height = height;
     texture2dDesc.MipLevels = 1;
-    texture2dDesc.ArraySize = cascadeCount_;
+    texture2dDesc.ArraySize = cascadeCount;
     texture2dDesc.Format = DXGI_FORMAT_R32_TYPELESS;
     texture2dDesc.SampleDesc.Count = 1;
     texture2dDesc.SampleDesc.Quality = 0;
@@ -47,177 +48,187 @@ CascadedShadowMap::CascadedShadowMap()
     texture2dDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
     texture2dDesc.CPUAccessFlags = 0;
     texture2dDesc.MiscFlags = 0;
-    result = device->CreateTexture2D(&texture2dDesc, 0, depthStencilBuffer_.GetAddressOf());
+    result = Graphics::Instance().GetDevice()->CreateTexture2D(&texture2dDesc, 0, depthStencilBuffer_.GetAddressOf());
     _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
 
     D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
     depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
     depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
     depthStencilViewDesc.Texture2DArray.FirstArraySlice = 0;
-    depthStencilViewDesc.Texture2DArray.ArraySize = static_cast<UINT>(cascadeCount_);
+    depthStencilViewDesc.Texture2DArray.ArraySize = static_cast<UINT>(cascadeCount);
     depthStencilViewDesc.Texture2DArray.MipSlice = 0;
     depthStencilViewDesc.Flags = 0;
-    result = device->CreateDepthStencilView(depthStencilBuffer_.Get(), &depthStencilViewDesc, depthStencilView_.GetAddressOf());
+    result = Graphics::Instance().GetDevice()->CreateDepthStencilView(depthStencilBuffer_.Get(), &depthStencilViewDesc, depthStencilView_.GetAddressOf());
     _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
 
     D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
-    shaderResourceViewDesc.Format = DXGI_FORMAT_R32_FLOAT;
+    shaderResourceViewDesc.Format = DXGI_FORMAT_R32_FLOAT; // DXGI_FORMAT_R24_UNORM_X8_TYPELESS : DXGI_FORMAT_R32_FLOAT : DXGI_FORMAT_R16_UNORM
     shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
-    shaderResourceViewDesc.Texture2DArray.ArraySize = static_cast<UINT>(cascadeCount_);
+    shaderResourceViewDesc.Texture2DArray.ArraySize = static_cast<UINT>(cascadeCount);
     shaderResourceViewDesc.Texture2DArray.MipLevels = 1;
     shaderResourceViewDesc.Texture2DArray.FirstArraySlice = 0;
     shaderResourceViewDesc.Texture2DArray.MostDetailedMip = 0;
-    result = device->CreateShaderResourceView(depthStencilBuffer_.Get(), &shaderResourceViewDesc, shaderResourceView_.GetAddressOf());
+    result = Graphics::Instance().GetDevice()->CreateShaderResourceView(depthStencilBuffer_.Get(), &shaderResourceViewDesc, shaderResourceView_.GetAddressOf());
     _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
 
-    viewPort_.Width = static_cast<float>(width);
-    viewPort_.Height = static_cast<float>(height);
-    viewPort_.MinDepth = 0.0f;
-    viewPort_.MaxDepth = 1.0f;
-    viewPort_.TopLeftX = 0.0f;
-    viewPort_.TopLeftY = 0.0f;
-    
-    constants_ = std::make_unique<ConstantBuffer<Constats>>();
-    shadowConstants_ = std::make_unique<ConstantBuffer<ShadowConstants>>();
+    viewport_.Width = static_cast<float>(width);
+    viewport_.Height = static_cast<float>(height);
+    viewport_.MinDepth = 0.0f;
+    viewport_.MaxDepth = 1.0f;
+    viewport_.TopLeftX = 0.0f;
+    viewport_.TopLeftY = 0.0f;
+
+    D3D11_BUFFER_DESC bufferDesc = {};
+    bufferDesc.ByteWidth = (sizeof(constants) + 0x0f) & ~0x0f;
+    bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    bufferDesc.MiscFlags = 0;
+    bufferDesc.StructureByteStride = 0;
+    bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+    bufferDesc.CPUAccessFlags = 0;
+    result = Graphics::Instance().GetDevice()->CreateBuffer(&bufferDesc, NULL, constantBuffer_.GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
 }
 
-void CascadedShadowMap::Make(const DirectX::XMFLOAT4& lightDirection, std::function<void()> drawcallback)
+// ----- ImGui用 -----
+void CascadedShadowMap::DrawDebug()
+{
+    if (ImGui::TreeNode("CascadedShadowMaps"))
+    {
+        ImGui::DragFloat("SplitSchemeWeight", &splitSchemeWeight_);
+        ImGui::DragFloat("ZMult", &zMult_);
+        ImGui::Checkbox("fit_to_cascade", &fitToCascade_);
+
+        ImGui::TreePop();
+    }
+}
+
+void CascadedShadowMap::Activate(const DirectX::XMFLOAT4& lightDirection, float criticalDepthValue, UINT cbSlot)
 {
     ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
 
-    deviceContext->ClearDepthStencilView(depthStencilView_.Get(), D3D11_CLEAR_DEPTH, 1, 0);
-
-    Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_ON_ZW_ON);
-    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
-    Graphics::Instance().SetBlendState(Shader::BLEND_STATE::NONE);
-
-    D3D11_VIEWPORT cachedViewports[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
-    UINT viewportCount = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
-
-    deviceContext->RSGetViewports(&viewportCount, cachedViewports);
-
-    Microsoft::WRL::ComPtr<ID3D11RenderTargetView> cachedRenderTargetView;
-    Microsoft::WRL::ComPtr<ID3D11DepthStencilView> cachedDepthStencilView;
-
-    deviceContext->OMGetRenderTargets(1, cachedRenderTargetView.ReleaseAndGetAddressOf(), cachedDepthStencilView.ReleaseAndGetAddressOf());
+    deviceContext->RSGetViewports(&viewportCount_, cachedViewports_);
+    deviceContext->OMGetRenderTargets(1, cachedRenderTargetView_.ReleaseAndGetAddressOf(), cachedDepthStencilView_.ReleaseAndGetAddressOf());
 
     DirectX::XMFLOAT4X4 cameraView, cameraProjection = {};
     DirectX::XMStoreFloat4x4(&cameraView, Camera::Instance().GetViewMatrix());
     DirectX::XMStoreFloat4x4(&cameraProjection, Camera::Instance().GetProjectionMatrix());
 
-    // 投影行列からの near / far の値
+    // near/far value from perspective projection matrix
     float m33 = cameraProjection._33;
     float m43 = cameraProjection._43;
-    float zNear = -m43 / m33;
-    float zFar = (m33 * zNear) / (m33 - 1);
-    zFar = criticalDepthValue_ > 0 ? min(zFar, criticalDepthValue_) : zFar;
+    float zn = -m43 / m33;
+    float zf = (m33 * zn) / (m33 - 1);
+    zf = criticalDepthValue > 0 ? std::min(zf, criticalDepthValue) : zf;
 
-    // view空間内の分割面の距離を計算する
-    distances_.resize(static_cast<size_t>(cascadeCount_) + 1);
+    // calculates split plane distances in view space
     for (size_t cascadeIndex = 0; cascadeIndex < cascadeCount_; ++cascadeIndex)
     {
         float idc = cascadeIndex / static_cast<float>(cascadeCount_);
-        float logarithmicSplitScheme = zNear * pow(zFar / zNear, idc);
-        float uniformSplitScheme = zNear + (zFar - zNear) * idc;
-        distances_.at(cascadeIndex) = logarithmicSplitScheme * splitSchemeWeight_ + uniformSplitScheme * (1 - splitSchemeWeight_);
+        float logarithmicSplitScheme = zn * pow(zf / zn, idc);
+        float uniformSplitScheme = zn + (zf - zn) * idc;
+        cascadedPlaneDistances_ .at(cascadeIndex) = logarithmicSplitScheme * splitSchemeWeight_ + uniformSplitScheme * (1 - splitSchemeWeight_);
     }
-    distances_.at(0) = zNear;
-    distances_.at(cascadeCount_) = zFar;
+    // make sure border values are accurate
+    cascadedPlaneDistances_.at(0) = zn;
+    cascadedPlaneDistances_.at(cascadeCount_) = zf;
 
-    const bool fitToCascade = true;
-    viewProjection_.resize(cascadeCount_);
     for (size_t cascadeIndex = 0; cascadeIndex < cascadeCount_; ++cascadeIndex)
     {
-        float zn = fitToCascade ? distances_.at(cascadeIndex) : zNear;
-        float zf = distances_.at(cascadeIndex + 1);
+        float nearPlane = fitToCascade_ ? cascadedPlaneDistances_.at(cascadeIndex) : zn;
+        float farPlane = cascadedPlaneDistances_.at(cascadeIndex + 1);
 
         DirectX::XMFLOAT4X4 cascadedProjection = cameraProjection;
-        cascadedProjection._33 = zf / (zf / zn);
-        cascadedProjection._43 = -zn * zf / (zf - zn);
+        cascadedProjection._33 = farPlane / (farPlane - nearPlane);
+        cascadedProjection._43 = -nearPlane * farPlane / (farPlane - nearPlane);
 
-        std::array<DirectX::XMFLOAT4, 8> corners = MakeFrustumCornersWorldSpace(cameraView, cascadedProjection);
+        std::array<DirectX::XMFLOAT4, 8> corners = ExtractFrustumCorners(cameraView, cascadedProjection);
 
         DirectX::XMFLOAT4 center = { 0, 0, 0, 1 };
-        for (DirectX::XMFLOAT4 v : corners)
+        for (DirectX::XMFLOAT4 corner : corners)
         {
-            center.x += v.x;
-            center.y += v.y;
-            center.z += v.z;
+            center.x += corner.x;
+            center.y += corner.y;
+            center.z += corner.z;
         }
         center.x /= corners.size();
         center.y /= corners.size();
         center.z /= corners.size();
 
-        DirectX::XMMATRIX V;
-        V = DirectX::XMMatrixLookAtLH(
+        DirectX::XMMATRIX V = DirectX::XMMatrixLookAtLH(
             DirectX::XMVectorSet(center.x - lightDirection.x, center.y - lightDirection.y, center.z - lightDirection.z, 1.0f),
             DirectX::XMVectorSet(center.x, center.y, center.z, 1.0f),
             DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 
-        float minX = FLT_MAX;
-        float maxX = -FLT_MAX;
-        float minY = FLT_MAX;
-        float maxY = -FLT_MAX;
-        float minZ = FLT_MAX;
-        float maxZ = -FLT_MAX;
-        for (DirectX::XMFLOAT4 v : corners)
+        float minX = std::numeric_limits<float>::max();
+        float maxX = std::numeric_limits<float>::lowest();
+        float minY = std::numeric_limits<float>::max();
+        float maxY = std::numeric_limits<float>::lowest();
+        float minZ = std::numeric_limits<float>::max();
+        float maxZ = std::numeric_limits<float>::lowest();
+        for (DirectX::XMFLOAT4 corner : corners)
         {
-            DirectX::XMFLOAT4 v2;
-            DirectX::XMStoreFloat4(&v2, DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat4(&v), V));
-            minX = min(minX, v2.x);
-            maxX = max(maxX, v2.x);
-            minY = min(minY, v2.y);
-            maxY = max(maxY, v2.y);
-            minZ = min(minZ, v2.z);
-            maxZ = max(maxZ, v2.z);
+            DirectX::XMStoreFloat4(&corner, DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat4(&corner), V));
+            minX = std::min(minX, corner.x);
+            maxX = std::max(maxX, corner.x);
+            minY = std::min(minY, corner.y);
+            maxY = std::max(maxY, corner.y);
+            minZ = std::min(minZ, corner.z);
+            maxZ = std::max(maxZ, corner.z);
         }
 
-        constexpr float zMult = 50.0f;
+#if 1
+        zMult_ = std::max<float>(1.0f, zMult_);
         if (minZ < 0)
         {
-            minZ *= zMult;
+            minZ *= zMult_;
         }
         else
         {
-            minZ /= zMult;
+            minZ /= zMult_;
         }
         if (maxZ < 0)
         {
-            maxZ /= zMult;
+            maxZ /= zMult_;
         }
         else
         {
-            maxZ *= zMult;
+            maxZ *= zMult_;
         }
+#endif
 
         DirectX::XMMATRIX P = DirectX::XMMatrixOrthographicOffCenterLH(minX, maxX, minY, maxY, minZ, maxZ);
-        DirectX::XMStoreFloat4x4(&viewProjection_.at(cascadeIndex), V * P);
+        DirectX::XMStoreFloat4x4(&cascadedMatrices_.at(cascadeIndex), V * P);
     }
 
-    constants_->GetData()->viewProjectionMatrices_[0] = viewProjection_.at(0);
-    constants_->GetData()->viewProjectionMatrices_[1] = viewProjection_.at(1);
-    constants_->GetData()->viewProjectionMatrices_[2] = viewProjection_.at(2);
-    constants_->GetData()->viewProjectionMatrices_[3] = viewProjection_.at(3);
+    constants data;
+    data.cascadedMatrices_[0] = cascadedMatrices_.at(0);
+    data.cascadedMatrices_[1] = cascadedMatrices_.at(1);
+    data.cascadedMatrices_[2] = cascadedMatrices_.at(2);
+    data.cascadedMatrices_[3] = cascadedMatrices_.at(3);
 
-    constants_->GetData()->cascadePlaneDistances_[0] = distances_.at(1);
-    constants_->GetData()->cascadePlaneDistances_[1] = distances_.at(2);
-    constants_->GetData()->cascadePlaneDistances_[2] = distances_.at(3);
-    constants_->GetData()->cascadePlaneDistances_[3] = distances_.at(4);
+    data.cascadedPlaneDistances_[0] = cascadedPlaneDistances_.at(1);
+    data.cascadedPlaneDistances_[1] = cascadedPlaneDistances_.at(2);
+    data.cascadedPlaneDistances_[2] = cascadedPlaneDistances_.at(3);
+    data.cascadedPlaneDistances_[3] = cascadedPlaneDistances_.at(4);
 
-    constants_->Activate(12);
+    deviceContext->UpdateSubresource(constantBuffer_.Get(), 0, 0, &data, 0, 0);
+    deviceContext->VSSetConstantBuffers(cbSlot, 1, constantBuffer_.GetAddressOf());
+    deviceContext->PSSetConstantBuffers(cbSlot, 1, constantBuffer_.GetAddressOf());
 
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> nullRenderTargetView;
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> nullDepthStencilView;
     deviceContext->ClearDepthStencilView(depthStencilView_.Get(), D3D11_CLEAR_DEPTH, 1, 0);
     deviceContext->OMSetRenderTargets(1, nullRenderTargetView.GetAddressOf(), depthStencilView_.Get());
-    deviceContext->RSSetViewports(1, &viewPort_);
-
-    drawcallback();
-
-    deviceContext->RSSetViewports(viewportCount, cachedViewports);
-    deviceContext->OMSetRenderTargets(1, cachedRenderTargetView.GetAddressOf(), cachedDepthStencilView.Get());
+    deviceContext->RSSetViewports(1, &viewport_);
 }
 
-void CascadedShadowMap::DrawDebug()
+void CascadedShadowMap::Deactivate()
 {
+    Graphics::Instance().GetDeviceContext()->RSSetViewports(viewportCount_, cachedViewports_);
+    Graphics::Instance().GetDeviceContext()->OMSetRenderTargets(1, cachedRenderTargetView_.GetAddressOf(), depthStencilView_.Get());
+}
+
+void CascadedShadowMap::Clear()
+{
+   Graphics::Instance().GetDeviceContext()->ClearDepthStencilView(depthStencilView_.Get(), D3D11_CLEAR_DEPTH, 1, 0);
 }

@@ -1,6 +1,7 @@
 #include "Enemy.h"
 #include "../Other/MathHelper.h"
 #include "../Player/PlayerManager.h"
+#include "UI/UIPartDestruction.h"
 
 // ----- コンストラクタ -----
 Enemy::Enemy(const std::string& filename, const float& scaleFactor)
@@ -109,3 +110,35 @@ const DirectX::XMFLOAT3 Enemy::CalcDirectionToPlayer()
     return playerPos - ownerPos;
 }
 
+// ----- ダメージ処理 -----
+void Enemy::AddDamage(const float& damage, const int& dataIndex)
+{
+    // ダメージ処理 ( 体力をダメージ分を引く )
+    Character::AddDamage(damage);
+
+    // 部位の体力をダメージ分引く
+    AddDamagePart(damage, dataIndex);
+
+    // 部位破壊判定
+    CheckPartDestruction();
+}
+
+// ----- 部位破壊判定 -----
+void Enemy::CheckPartDestruction()
+{
+    for (int partIndex = 0; partIndex < static_cast<int>(PartName::Max); ++partIndex)
+    {
+        // 部位破壊がされていない
+        if (isPartDestruction_[partIndex] == false)
+        {
+            // 部位の体力がなくなったらUIを生成してフラグを立てる
+            if (partHealth_[partIndex] <= 0.0f)
+            {
+                // 部位破壊UI生成
+                UIPartDestruction* ui = new UIPartDestruction();
+
+                isPartDestruction_[partIndex] = true;
+            }
+        }
+    }
+}

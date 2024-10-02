@@ -57,6 +57,12 @@ void EnemyDragon::Initialize()
     partHealth_[static_cast<int>(PartName::Leg)]   = 50.0f;
     partHealth_[static_cast<int>(PartName::Tail)]  = 50.0f;
     partHealth_[static_cast<int>(PartName::Wings)] = 50.0f;
+
+    // 部位破壊フラグを設定
+    for (int partIndex = 0; partIndex < static_cast<int>(PartName::Max); ++partIndex)
+    {
+        isPartDestruction_[partIndex] = false;
+    }
 }
 
 // ----- 終了化 -----
@@ -102,8 +108,6 @@ void EnemyDragon::DrawDebug()
     {
         if (ImGui::TreeNode("PartDestruction"))
         {
-            ImGui::DragInt("PartIndex", &partIndex_);
-
             ImGui::DragFloat("Head", &partHealth_[static_cast<int>(PartName::Head)]);
             ImGui::DragFloat("Chest", &partHealth_[static_cast<int>(PartName::Chest)]);
             ImGui::DragFloat("Body", &partHealth_[static_cast<int>(PartName::Body)]);
@@ -199,8 +203,9 @@ void EnemyDragon::RegisterBehaviorNode()
 
     // --------------- 怯み ---------------
     behaviorTree_->AddNode("Root",   "Flinch",       1, BehaviorTree::SelectRule::Priority, new FlinchJudgment(this), nullptr);
-    behaviorTree_->AddNode("Flinch", "NormalFlinch", 0, BehaviorTree::SelectRule::None, new NormalFlinchJudgment(this), new ActionDragon::FlinchAction(this));
-    behaviorTree_->AddNode("Flinch", "FlyFlinch",    1, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyFlinchAction(this));
+    behaviorTree_->AddNode("Flinch", "PartDestructionFlinch", 0, BehaviorTree::SelectRule::None, new PartDestructionFlinchJudgment(this), new ActionDragon::PartDestructionFlinchAction(this));
+    behaviorTree_->AddNode("Flinch", "NormalFlinch",          1, BehaviorTree::SelectRule::None, new NormalFlinchJudgment(this), new ActionDragon::FlinchAction(this));
+    behaviorTree_->AddNode("Flinch", "FlyFlinch",             2, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyFlinchAction(this));
 
     // --------------- 非戦闘 ---------------
     behaviorTree_->AddNode("Root", "NonBattle", 2, BehaviorTree::SelectRule::Priority, new NonBattleJudgment(this), nullptr);
@@ -409,7 +414,6 @@ void EnemyDragon::RegisterCollisionData()
     RegisterDamageDetectionData({ "Dragon15_tail_03", 0.90f, 45.0f, {} });
     RegisterDamageDetectionData({ "Dragon15_tail_04", 0.80f, 45.0f, { 0.07f, 0.0f, 0.0f } });
     RegisterDamageDetectionData({ "Dragon15_tail_05", 0.75f, 45.0f, { 0.30f, 0.0f, 0.0f } }); // 21
-
     
     // ---------- 翼 ----------
     RegisterDamageDetectionData({ "Dragon15_l_wing_01", 1.0f,  50.0f, {} });                    // 22
@@ -658,23 +662,10 @@ void EnemyDragon::SetDownCollisionActiveFlag(const bool& flag)
     }
 }
 
-// ----- ダメージ処理 -----
-void EnemyDragon::AddDamage(const float& damage, const int& dataIndex)
-{
-    // ダメージ処理 ( 体力をダメージ分を引く )
-    Character::AddDamage(damage);
-
-    // 部位の体力をダメージ分引く
-    AddDamagePart(damage, dataIndex);
-
-    // TODO:部位破壊の判定をする
-}
-
 // ----- 部位ダメージ処理 -----
 void EnemyDragon::AddDamagePart(const float& damage, const int& dataIndex)
 {
     const DamageData partIndex = static_cast<DamageData>(dataIndex);
-    partIndex_ = dataIndex;
 
     // 頭
     if (partIndex == DamageData::Head)

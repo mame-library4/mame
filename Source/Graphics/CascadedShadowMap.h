@@ -5,53 +5,47 @@
 #include <vector>
 #include <functional>
 
-#include "ConstantBuffer.h"
-
 class CascadedShadowMap
 {
 public:
-    CascadedShadowMap();
-    ~CascadedShadowMap() {}
-
-    void Make(const DirectX::XMFLOAT4& lightDirection, std::function<void()> drawcallback);
+    CascadedShadowMap(UINT width, UINT height, UINT cascadeCount = 4);
+    virtual ~CascadedShadowMap() = default;
 
     void DrawDebug();
 
-    void SetShadowConstants(const int& slot) { shadowConstants_->Activate(slot); }
-
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& GetDepthMap() { return shaderResourceView_; }
-
 private:
-    Microsoft::WRL::ComPtr<ID3D11Texture2D>         depthStencilBuffer_;
-    Microsoft::WRL::ComPtr<ID3D11DepthStencilView>  depthStencilView_;
-    D3D11_VIEWPORT viewPort_;
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> depthStencilBuffer_;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView_;
+    D3D11_VIEWPORT viewport_;
 
-    std::vector<DirectX::XMFLOAT4X4> viewProjection_;
-    std::vector<float> distances_;
+    std::vector<DirectX::XMFLOAT4X4> cascadedMatrices_;
+    std::vector<float> cascadedPlaneDistances_;
 
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView_;
 
-    struct Constats
+    struct constants
     {
-        DirectX::XMFLOAT4X4 viewProjectionMatrices_[16] = {};
-        float cascadePlaneDistances_[16] = {};
+        DirectX::XMFLOAT4X4 cascadedMatrices_[4];
+        float cascadedPlaneDistances_[4];
     };
-    std::unique_ptr<ConstantBuffer<Constats>> constants_;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer_;
 
-    float criticalDepthValue_ = 200.0f;
+public:
+    void Activate(const DirectX::XMFLOAT4& lightDirection, float criticalDepthValue, UINT cbSlot);
+    void Deactivate();
+    void Clear();
 
-    const UINT cascadeCount_;
-    float splitSchemeWeight_ = 0.7f;
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& GetDepthMap() { return shaderResourceView_; }
 
-    struct ShadowConstants
-    {
-        float   shadowDepthBias_        = 0.00002f;
-        float   shadowColor_            = 0.25f;
-        float   shadowFilterRadius_     = 4.0f;
-        int     shadowSampleCount_      = 16;
-        int     colorizeCascadedLayer_  = false;
-    };
-    std::unique_ptr<ConstantBuffer<ShadowConstants>> shadowConstants_;
+public:
+    const UINT  cascadeCount_;
+    float       splitSchemeWeight_  = 0.7f;
+    float       zMult_              = 10.0f;
+    bool        fitToCascade_       = true;
 
+private:
+    D3D11_VIEWPORT cachedViewports_[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
+    UINT viewportCount_ = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
+    Microsoft::WRL::ComPtr<ID3D11RenderTargetView> cachedRenderTargetView_;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView> cachedDepthStencilView_;
 };
-

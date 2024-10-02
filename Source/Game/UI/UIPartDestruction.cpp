@@ -2,11 +2,8 @@
 
 // ----- コンストラクタ -----
 UIPartDestruction::UIPartDestruction()
-    : UI(UIManager::UIType::UIPartDestruction, L"./Resources/Image/White.png", "UIPartDestruction")
+    : UI(UIManager::UIType::UIPartDestruction, L"./Resources/Image/PartDestruction/PartDestruction.png", "UIPartDestruction")
 {
-    // TODO:部位破壊UI
-    // とりあえずUIを書くまでWhiteSpriteで代用するので
-    // サイズと位置を設定する
     GetTransform()->SetPosition(970.0f, 420.0f);
     GetTransform()->SetSize(290.0f, 70.0f);
 }

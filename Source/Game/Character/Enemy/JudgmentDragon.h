@@ -26,6 +26,13 @@ public:
     const bool Judgment() override;
 };
 
+class PartDestructionFlinchJudgment : public JudgmentBase
+{
+public:
+    PartDestructionFlinchJudgment(Enemy* owner) : JudgmentBase(owner) {}
+    const bool Judgment() override;
+};
+
 // ”ñí“¬”»’è
 class NonBattleJudgment : public JudgmentBase
 {

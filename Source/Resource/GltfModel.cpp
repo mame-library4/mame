@@ -168,16 +168,7 @@ GltfModel::GltfModel(const std::string& filename)
         inputLayout_.ReleaseAndGetAddressOf(), inputElementDesc, _countof(inputElementDesc));
     Graphics::Instance().CreatePsFromCso("./Resources/Shader/gltfModelPs.cso", pixelShader_.ReleaseAndGetAddressOf());
 
-    D3D11_INPUT_ELEMENT_DESC shadowInputElementDesc[] =
-    {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "JOINTS",   0, DXGI_FORMAT_R16G16B16A16_UINT,  1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "WEIGHTS",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 2, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "JOINTS",   1, DXGI_FORMAT_R16G16B16A16_UINT,  3, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "WEIGHTS",  1, DXGI_FORMAT_R32G32B32A32_FLOAT, 4, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-    };
-    Graphics::Instance().CreateVsFromCso("./Resources/Shader/GltfModelShadowVS.cso", shadowVertexShader_.ReleaseAndGetAddressOf(),
-        shadowInputLayout_.ReleaseAndGetAddressOf(), shadowInputElementDesc, _countof(shadowInputElementDesc));
+    Graphics::Instance().CreateVsFromCso("./Resources/Shader/GltfModelShadowVS.cso", shadowVertexShader_.ReleaseAndGetAddressOf(), NULL, NULL, 0);
     Graphics::Instance().CreateGsFromCso("./Resources/Shader/GltfModelShadowGS.cso", shadowGeometryShader_.ReleaseAndGetAddressOf());
 
 
@@ -521,7 +512,7 @@ void GltfModel::CastShadow(const float& scaleFactor)
     deviceContext->VSSetShader(shadowVertexShader_.Get(), NULL, 0);
     deviceContext->GSSetShader(shadowGeometryShader_.Get(), NULL, 0);
     deviceContext->PSSetShader(NULL, NULL, 0);
-    deviceContext->IASetInputLayout(shadowInputLayout_.Get());    
+    deviceContext->IASetInputLayout(inputLayout_.Get());    
 
     std::function<void(int)> traverse = [&](int nodeIndex)
     {
@@ -547,6 +538,7 @@ void GltfModel::CastShadow(const float& scaleFactor)
 
                 for (std::vector<Mesh::Primitive>::const_reference primitive : mesh.primitives_)
                 {
+#if 0
                     ID3D11Buffer* vertexBuffers[]
                     {
                         primitive.vertexBufferViews_.at("POSITION").buffer_.Get(),
@@ -563,6 +555,30 @@ void GltfModel::CastShadow(const float& scaleFactor)
                         static_cast<UINT>(primitive.vertexBufferViews_.at("JOINTS_1").strideInBytes_),
                         static_cast<UINT>(primitive.vertexBufferViews_.at("WEIGHTS_1").strideInBytes_),
                     };
+#else
+                    ID3D11Buffer* vertexBuffers[]
+                    {
+                        primitive.vertexBufferViews_.at("POSITION").buffer_.Get(),
+                        primitive.vertexBufferViews_.at("NORMAL").buffer_.Get(),
+                        primitive.vertexBufferViews_.at("TANGENT").buffer_.Get(),
+                        primitive.vertexBufferViews_.at("TEXCOORD_0").buffer_.Get(),
+                        primitive.vertexBufferViews_.at("JOINTS_0").buffer_.Get(),
+                        primitive.vertexBufferViews_.at("WEIGHTS_0").buffer_.Get(),
+                        primitive.vertexBufferViews_.at("JOINTS_1").buffer_.Get(),
+                        primitive.vertexBufferViews_.at("WEIGHTS_1").buffer_.Get(),
+                    };
+                    UINT strides[]
+                    {
+                        static_cast<UINT>(primitive.vertexBufferViews_.at("POSITION").strideInBytes_),
+                        static_cast<UINT>(primitive.vertexBufferViews_.at("NORMAL").strideInBytes_),
+                        static_cast<UINT>(primitive.vertexBufferViews_.at("TANGENT").strideInBytes_),
+                        static_cast<UINT>(primitive.vertexBufferViews_.at("TEXCOORD_0").strideInBytes_),
+                        static_cast<UINT>(primitive.vertexBufferViews_.at("JOINTS_0").strideInBytes_),
+                        static_cast<UINT>(primitive.vertexBufferViews_.at("WEIGHTS_0").strideInBytes_),
+                        static_cast<UINT>(primitive.vertexBufferViews_.at("JOINTS_1").strideInBytes_),
+                        static_cast<UINT>(primitive.vertexBufferViews_.at("WEIGHTS_1").strideInBytes_),
+                    };
+#endif
                     UINT offsets[_countof(vertexBuffers)]{ 0 };
                     deviceContext->IASetVertexBuffers(0, _countof(vertexBuffers), vertexBuffers, strides, offsets);
                     deviceContext->IASetIndexBuffer(primitive.indexBufferView_.buffer_.Get(),
@@ -573,7 +589,7 @@ void GltfModel::CastShadow(const float& scaleFactor)
                     primitiveConstants_->GetData()->startInstanceLocation_ = 0;
                     primitiveConstants_->Activate(0);
 
-                    //deviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_UNDEFINED);
+                    deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
                     deviceContext->DrawIndexed(static_cast<UINT>(primitive.indexBufferView_.count()), 0, 0);
                 }

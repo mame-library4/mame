@@ -12,8 +12,7 @@ public:
     void DrawDebug()                        override; // ImGui用
 
 private:
-    float lifeTimer_    = 2.0f; // 生存時間
-    //float lifeTimer_    = 10.0f; // 生存時間
+    float lifeTimer_    = 10.0f; // 生存時間
     
     float fadeInTimer_ = 0.0f;   // フェイドインタイマー
     float fadeInSpeed_ = 10.0f;  // フェイドイン速度

@@ -62,9 +62,6 @@ private:
 	Graphics graphics_;
 	Input input_;
 
-	ShadowMap shadowMap_;
-	CascadedShadowMap cascadedShadowMap_;
-
 	DeferredRendering	deferredRendering_;
 
 	SkyMap skymap_;

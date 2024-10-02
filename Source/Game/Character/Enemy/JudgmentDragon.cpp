@@ -14,18 +14,44 @@ const bool DeathJudgment::Judgment()
 // ----- ‚Ð‚é‚Ý”»’è -----
 const bool FlinchJudgment::Judgment()
 {
-    //return true;
-    return owner_->GetIsFlinch();
+    bool flinch = false;
+
+    if (owner_->GetIsFlinch()) flinch = true;
+
+    // ‹r‚ª•”ˆÊ”j‰ó‚³‚ê‚Ä‚¢‚ÄA“ËiUŒ‚‚ð‚µ‚½ê‡‚Ð‚é‚Þ
+    if (owner_->GetIsPartDestruction(Enemy::PartName::Leg))
+    {
+        if (owner_->GetAnimationIndex() == static_cast<int>(Enemy::DragonAnimation::AttackTackle3))
+        {
+            flinch = true;
+        }
+    }
+
+    return flinch;
 }
 
 // ----- ’Êí‚Ð‚é‚Ý”»’è -----
 const bool NormalFlinchJudgment::Judgment()
 {
     // ƒhƒ‰ƒSƒ“‚ÌY’l‚ª‚O‚Å‚È‚¢ê‡‹ó’†‚É‚¢‚é‚Ì‚Å false
-    if (owner_->GetTransform()->GetPositionY() != 0.0f) return false;
+    if (owner_->GetTransform()->GetPositionY() > 0.0f) return false;
 
     // ’n–Ê‚É‚¢‚é true
     return true;
+}
+
+const bool PartDestructionFlinchJudgment::Judgment()
+{
+    // ‹r‚ª•”ˆÊ”j‰ó‚³‚ê‚Ä‚¢‚ÄA“ËiUŒ‚‚ð‚µ‚½ê‡‚Ð‚é‚Þ
+    if (owner_->GetIsPartDestruction(Enemy::PartName::Leg))
+    {
+        if (owner_->GetAnimationIndex() == static_cast<int>(Enemy::DragonAnimation::AttackTackle3))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 // ----- ”ñí“¬”»’è -----
@@ -68,6 +94,8 @@ const bool RoarJudgment::Judgment()
 // ----- ‹©‚Ô”»’è -----
 const bool ShoutJudgment::Judgment()
 {
+    //return true;
+
     //return true;
     return false;
     return owner_->GetIsRoar() == false;

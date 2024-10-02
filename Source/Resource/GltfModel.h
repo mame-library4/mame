@@ -430,7 +430,6 @@ private:
 
     Microsoft::WRL::ComPtr<ID3D11VertexShader>   shadowVertexShader_;
     Microsoft::WRL::ComPtr<ID3D11GeometryShader> shadowGeometryShader_;
-    Microsoft::WRL::ComPtr<ID3D11InputLayout>    shadowInputLayout_;
 
     // ---------- Animation ----------
     int     animationIndex_         = -1;       // アニメーション番号

@@ -61,6 +61,7 @@ namespace ActionDragon
             FlinchEnd,
         };
 
+        void SetAnimation();
         void SetAnimationSpeed();
         void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
 
@@ -96,6 +97,13 @@ namespace ActionDragon
 
         int loopCounter_    = 0; // ループした回数を数える
         int maxLoopNum_     = 0; // 最大ループ数
+    };
+
+    class PartDestructionFlinchAction : public ActionBase
+    {
+    public:
+        PartDestructionFlinchAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
     };
 
     // 非戦闘待機行動

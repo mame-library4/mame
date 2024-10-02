@@ -14,9 +14,6 @@ public:
     void DrawDebug()                                    override;
     void DebugRender(DebugRenderer* debugRenderer);
 
-public:
-    enum class PartName { Head, Chest, Body, Leg, Tail, Wings, Max };
-
 private:
     // ---------- BehaviorTree ----------
     void RegisterBehaviorNode();    // behavior登録
@@ -37,16 +34,11 @@ private:
     // ---------- 押し出し判定 ----------
     void SetDownCollisionActiveFlag(const bool& flag = true) override;    
 
-    // ---------- ダメージ ----------
-    void AddDamage(const float& damage, const int& dataIndex) override;
-    void AddDamagePart(const float& damage, const int& dataIndex);
+    // ---------- 部位ごとのダメージ処理 ----------
+    void AddDamagePart(const float& damage, const int& dataIndex) override;
 
 private:
     Object circle_;
-
-    float partHealth_[static_cast<int>(PartName::Max)]; // 部位ごとの体力
-    int partIndex_ = 0;
-
 
     // ----- DebugRenderer表示用フラグ -----
     bool isCollisionSphere_ = true;

@@ -18,8 +18,7 @@ public:
     // ----- ImGui—p -----
     void DrawDebug();
 
-    // ----- bloom ShaderResourceView -----
-    ID3D11ShaderResourceView** GetShaderResourceView() { return bloom_->shaderResourceViews_[0].GetAddressOf(); }
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& GetColorMap() { return bloom_->shaderResourceViews_[0]; }
 
 private:
     // ---------- ‘‚«o‚µ—p -----------------------------------

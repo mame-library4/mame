@@ -440,21 +440,15 @@ void Camera::UpdateLockonCamera(const float& elapsedTime)
 
         const float angle = DirectX::XMVectorGetX(DirectX::XMVector2AngleBetweenVectors(DirectX::XMLoadFloat2(&vec0), DirectX::XMLoadFloat2(&vec1)));
 
-        float dot = XMFloat2Dot(vec0, vec1) - 1.0f;
-
         float cross = XMFloat2Cross(vec0, vec1);
 
         if (cross < 0)
         {
             GetTransform()->AddRotationY(-angle);
-            
-            //GetTransform()->AddRotationY(dot);
         }
         else
         {
             GetTransform()->AddRotationY(angle);
-            
-            //GetTransform()->AddRotationY(-dot);
         }
     }
 

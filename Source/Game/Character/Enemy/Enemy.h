@@ -106,6 +106,8 @@ public:
         TurnRight,
     };
 
+    enum class PartName { Head, Chest, Body, Leg, Tail, Wings, Max };
+
 public:
     Enemy(const std::string& filename, const float& scaleFactor);
     ~Enemy() override {}
@@ -135,7 +137,8 @@ public:
     // ---------- 自分自身からプレイヤーへのベクトル ----------
     [[nodiscard]] const DirectX::XMFLOAT3 CalcDirectionToPlayer();
 
-    virtual void AddDamage(const float& damage, const int& dataIndex) = 0;
+    // ---------- ダメージ ----------
+    void AddDamage(const float& damage, const int& dataIndex);
 
 public:// --- 取得・設定 ---
 #pragma region [Get, Set] Function
@@ -205,6 +208,14 @@ public:// --- 取得・設定 ---
     std::vector<AttackDetectionData> GetFlinchDetectionData() { return flinchDetectionData_; }
     AttackDetectionData& GetFlinchDetectionData(const int& index) { return flinchDetectionData_.at(index); }
 
+    [[nodiscard]] const bool GetIsPartDestruction(const PartName& partName) const { return isPartDestruction_[static_cast<int>(partName)]; }
+
+private:
+    // ---------- 部位破壊 ----------
+    virtual void AddDamagePart(const float& damage, const int& dataIndex) = 0;
+    void CheckPartDestruction(); // 部位破壊判定
+
+
 protected:
     std::unique_ptr<BehaviorTree>   behaviorTree_;
     std::unique_ptr<BehaviorData>   behaviorData_;
@@ -234,5 +245,10 @@ protected:
     bool isRoar_            = false; // 咆哮したか
 
     bool isStageCollisionJudgement_ = false; // ステージとの判定をするか
+
+    // ---------- 部位破壊 ----------
+    float partHealth_[static_cast<int>(PartName::Max)]        = {}; // 部位ごとの体力
+    bool  isPartDestruction_[static_cast<int>(PartName::Max)] = {}; // 部位破壊判定フラグ
+
 };
 
