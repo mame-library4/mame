@@ -225,7 +225,7 @@ void CascadedShadowMap::Activate(const DirectX::XMFLOAT4& lightDirection, float 
 void CascadedShadowMap::Deactivate()
 {
     Graphics::Instance().GetDeviceContext()->RSSetViewports(viewportCount_, cachedViewports_);
-    Graphics::Instance().GetDeviceContext()->OMSetRenderTargets(1, cachedRenderTargetView_.GetAddressOf(), depthStencilView_.Get());
+    Graphics::Instance().GetDeviceContext()->OMSetRenderTargets(1, cachedRenderTargetView_.GetAddressOf(), cachedDepthStencilView_.Get());
 }
 
 void CascadedShadowMap::Clear()

@@ -51,15 +51,15 @@ void GameScene::CreateResource()
         iblTextures_[3].GetAddressOf(), &textureDesc);
 #endif
 
-    particles_ = std::make_unique<decltype(particles_)::element_type>(100);
+    particles_ = std::make_unique<decltype(particles_)::element_type>();
 
     stone_ = std::make_unique<Stone>();
 
 
     Effect* effect0 = new Effect("./Resources/Effect/Counter.efk", "Counter");
     
-    Effect* effect1 = new Effect("./Resources/Effect/Attack.efk", "Mikiri");
-    //Effect* effect1 = new Effect("./Resources/Effect/Mikiri.efk", "Mikiri");
+    //Effect* effect1 = new Effect("./Resources/Effect/Attack.efk", "Mikiri");
+    Effect* effect1 = new Effect("./Resources/Effect/Mikiri.efk", "Mikiri");
     
     Effect* effect2 = new Effect("./Resources/Effect/Fire.efk", "Fire");
 }
@@ -74,6 +74,8 @@ void GameScene::Initialize()
     //stage_->GetTransform()->SetScaleFactor(1.5f);
     //stage_->GetTransform()->SetScaleFactor(6000.0f);
 
+    particles_->Initialize(0);
+
     stageCenter_ = stage_->GetTransform()->GetPosition();
 
     // プレイヤー初期化
@@ -84,8 +86,6 @@ void GameScene::Initialize()
 
     // 発射物
     ProjectileManager::Instance().Initialize();
-
-    //particles_->Initialize(0);
 
     // カメラ初期化
     Camera::Instance().SetTarget({ PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() });
@@ -141,7 +141,7 @@ void GameScene::Update(const float& elapsedTime)
     {
         particles_->Initialize(0);
     }
-    particles_->Integrate(elapsedTime);
+    particles_->Update(elapsedTime);
 }
 
 void GameScene::ShadowRender()

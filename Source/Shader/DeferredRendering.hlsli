@@ -7,7 +7,7 @@ struct VS_OUT
 struct PS_OUT
 {
     float4 color : SV_TARGET;
-    float depth : SV_DEPTH;
+    //float depth : SV_DEPTH;
 };
 
 cbuffer SCENE_CONSTANT_BUFFER : register(b1)

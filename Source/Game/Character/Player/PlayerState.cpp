@@ -1272,8 +1272,8 @@ namespace PlayerState
 
         const DirectX::XMFLOAT3 pos = owner_->GetJointPosition("spine_02");
         Effect* counterEffect = EffectManager::Instance().GetEffect("Mikiri");
-        mikiriEffectHandle_ = counterEffect->Play(pos, 0.3f, 2.0f);
-        //mikiriEffectHandle_ = counterEffect->Play(pos, 0.05f, 2.0f);
+        //mikiriEffectHandle_ = counterEffect->Play(pos, 0.3f, 2.0f);
+        mikiriEffectHandle_ = counterEffect->Play(pos, 0.05f, 2.0f);
     }
 
     // ----- XV -----

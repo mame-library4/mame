@@ -3,7 +3,7 @@
 #include <memory>
 #include "../Game/Stage/StageNormal.h"
 
-#include "../Graphics/Particle.h"
+#include "Particle/SnowParticle.h"
 
 #include "Stone/Stone.h"
 
@@ -45,7 +45,7 @@ private:
     bool isDebugRenderer_ = false;
     //bool isDebugRenderer_ = true;
 
-    std::unique_ptr<Particles> particles_;
+    std::unique_ptr<SnowParticle> particles_;
 
     std::unique_ptr<Stone> stone_;
 

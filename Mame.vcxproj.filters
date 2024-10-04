@@ -55,9 +55,6 @@
     <ClCompile Include="Source\Graphics\Graphics.cpp">
       <Filter>Mame\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graphics\Particle.cpp">
-      <Filter>Mame\Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Graphics\Shader.cpp">
       <Filter>Mame\Graphics</Filter>
     </ClCompile>
@@ -226,6 +223,12 @@
     <ClCompile Include="Source\Game\UI\UICrosshair.cpp">
       <Filter>Mame\Game\UI\UICrosshair</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Particle\ParticleSystem.cpp">
+      <Filter>Mame\Graphics\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Particle\SnowParticle.cpp">
+      <Filter>Mame\Graphics\Particle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -287,9 +290,6 @@
       <Filter>Mame\Scene\LoadScene</Filter>
     </ClInclude>
     <ClInclude Include="Source\Graphics\Graphics.h">
-      <Filter>Mame\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Graphics\Particle.h">
       <Filter>Mame\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Source\Graphics\Shader.h">
@@ -481,6 +481,12 @@
     <ClInclude Include="Source\Game\UI\UICrosshair.h">
       <Filter>Mame\Game\UI\UICrosshair</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Graphics\Particle\ParticleSystem.h">
+      <Filter>Mame\Graphics\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Particle\SnowParticle.h">
+      <Filter>Mame\Graphics\Particle</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -639,6 +645,15 @@
     <Filter Include="Mame\Game\UI\UIPartDestruction">
       <UniqueIdentifier>{8743c3f6-0c04-4152-9b6d-f744a0cd4157}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mame\Graphics\Particle">
+      <UniqueIdentifier>{2168c236-3026-4715-a271-7a041b4e295c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Shader\Particle\SnowParticle">
+      <UniqueIdentifier>{e2a7352c-6f26-402c-83ea-4f7cf75825a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Shader\Particle\SuperNova">
+      <UniqueIdentifier>{67935c86-27e3-4e24-970b-4fbc2f937081}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -699,6 +714,9 @@
     </None>
     <None Include="Source\Shader\Constants.hlsli">
       <Filter>Mame\Shader\Core</Filter>
+    </None>
+    <None Include="Source\Shader\SnowParticle.hlsli">
+      <Filter>Mame\Shader\Particle\SnowParticle</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -762,13 +780,7 @@
     <FxCompile Include="Source\Shader\GltfModelStaticBatchingVS.hlsl">
       <Filter>Mame\Shader\GltfModel</Filter>
     </FxCompile>
-    <FxCompile Include="Source\Shader\ParticleCS.hlsl">
-      <Filter>Mame\Shader\Particle</Filter>
-    </FxCompile>
     <FxCompile Include="Source\Shader\ParticleGS.hlsl">
-      <Filter>Mame\Shader\Particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\ParticleInitializerCS.hlsl">
       <Filter>Mame\Shader\Particle</Filter>
     </FxCompile>
     <FxCompile Include="Source\Shader\ParticlePS.hlsl">
@@ -782,6 +794,12 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\GltfModelShadowVS.hlsl">
       <Filter>Mame\Shader\GltfModel</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SnowParticleCS.hlsl">
+      <Filter>Mame\Shader\Particle\SnowParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SnowParticleInitCS.hlsl">
+      <Filter>Mame\Shader\Particle\SnowParticle</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

@@ -204,6 +204,8 @@ void Application::Render()
     
     UIManager::Instance().Render();
     
+    ID3D11ShaderResourceView* views[10]{ nullptr };
+    deviceContext->PSSetShaderResources(0, 10, views);
 
     DrawDebug();
 

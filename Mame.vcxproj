@@ -247,7 +247,8 @@
     <ClCompile Include="Source\Graphics\FrameBuffer.cpp" />
     <ClCompile Include="Source\Graphics\FullscreenQuad.cpp" />
     <ClCompile Include="Source\Graphics\Graphics.cpp" />
-    <ClCompile Include="Source\Graphics\Particle.cpp" />
+    <ClCompile Include="Source\Graphics\Particle\ParticleSystem.cpp" />
+    <ClCompile Include="Source\Graphics\Particle\SnowParticle.cpp" />
     <ClCompile Include="Source\Graphics\PostProcess\Bloom.cpp" />
     <ClCompile Include="Source\Graphics\PostProcess\PostProcess.cpp" />
     <ClCompile Include="Source\Graphics\Shader.cpp" />
@@ -329,7 +330,8 @@
     <ClInclude Include="Source\Graphics\FrameBuffer.h" />
     <ClInclude Include="Source\Graphics\FullscreenQuad.h" />
     <ClInclude Include="Source\Graphics\Graphics.h" />
-    <ClInclude Include="Source\Graphics\Particle.h" />
+    <ClInclude Include="Source\Graphics\Particle\ParticleSystem.h" />
+    <ClInclude Include="Source\Graphics\Particle\SnowParticle.h" />
     <ClInclude Include="Source\Graphics\PostProcess\Bloom.h" />
     <ClInclude Include="Source\Graphics\PostProcess\PostProcess.h" />
     <ClInclude Include="Source\Graphics\Shader.h" />
@@ -384,6 +386,7 @@
     <None Include="Source\Shader\PostProcess.hlsli" />
     <None Include="Source\Shader\PrimitiveRenderer.hlsli" />
     <None Include="Source\Shader\ShadingFunctions.hlsli" />
+    <None Include="Source\Shader\SnowParticle.hlsli" />
     <None Include="Source\Shader\sprite.hlsli" />
   </ItemGroup>
   <ItemGroup>
@@ -469,7 +472,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="Source\Shader\ParticleCS.hlsl">
+    <FxCompile Include="Source\Shader\SnowParticleCS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
     </FxCompile>
@@ -477,7 +480,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry</ShaderType>
     </FxCompile>
-    <FxCompile Include="Source\Shader\ParticleInitializerCS.hlsl">
+    <FxCompile Include="Source\Shader\SnowParticleInitCS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
     </FxCompile>
