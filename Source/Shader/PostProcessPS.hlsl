@@ -110,7 +110,7 @@ float4 main(PSIn pin) : SV_TARGET
         color *= lerp(shadowColor_, 1.0, shadowFactor) * layerColor;
     }
     
-    //color += bloomMap.Sample(samplerStates[LINEAR], pin.texcoord).rgb;
+    color += bloomMap.Sample(samplerStates[LINEAR], pin.texcoord).rgb;
     
     // Tone mapping : HDR -> SDR
     const float exposure = 1.2;

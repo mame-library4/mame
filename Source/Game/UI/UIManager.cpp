@@ -84,7 +84,7 @@ void UIManager::Register(UI* ui)
             if (userInterface->GetType() != UIType::UIPartDestruction) continue;
 
             // ˆÚ“®—Ê‚ğİ’è‚·‚é
-            userInterface->SetMoveTarget({0.0f, -100.0f});
+            userInterface->SetMoveTarget({0.0f, -60.0f});
         }
     }
 }

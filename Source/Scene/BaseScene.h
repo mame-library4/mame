@@ -17,7 +17,6 @@ public:
     virtual void ShadowRender()                     = 0; 
     virtual void DeferredRender()                   = 0;
     virtual void ForwardRender()                    = 0;
-    virtual void UserInterfaceRender()              = 0;
 
     // テスト用
     virtual void Render() = 0;

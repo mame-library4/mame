@@ -2,10 +2,12 @@
 
 // ----- コンストラクタ -----
 UIPartDestruction::UIPartDestruction()
-    : UI(UIManager::UIType::UIPartDestruction, L"./Resources/Image/PartDestruction/PartDestruction.png", "UIPartDestruction")
+    : UI(UIManager::UIType::UIPartDestruction, L"./Resources/Image/PartDestruction/PartDestruction2.png", "UIPartDestruction")
+    //: UI(UIManager::UIType::UIPartDestruction, L"./Resources/Image/PartDestruction/PartDestruction.png", "UIPartDestruction")
 {
     GetTransform()->SetPosition(970.0f, 420.0f);
-    GetTransform()->SetSize(290.0f, 70.0f);
+    
+    GetTransform()->SetSize(230.0f, 40.0f);
 }
 
 // ----- 更新 -----
@@ -19,7 +21,7 @@ void UIPartDestruction::Update(const float& elapsedTime)
         fadeInTimer_ += fadeInSpeed_ * elapsedTime;
         fadeInTimer_ = min(fadeInTimer_, 1.0f);
 
-        const float posX = XMFloatLerp(1280.0f, 970.0f, fadeInTimer_);
+        const float posX = XMFloatLerp(fadeInStartPositionX_, fadeInEndPositionX_, fadeInTimer_);
 
         GetTransform()->SetPositionX(posX);
 

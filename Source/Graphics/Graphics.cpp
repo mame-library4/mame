@@ -114,6 +114,20 @@ Graphics::Graphics(HWND hWnd, BOOL fullscreen)
 #if 1
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> depthStencilBuffer{};
 		D3D11_TEXTURE2D_DESC texture2dDesc{};
+
+#if 1
+		texture2dDesc.Width = SCREEN_WIDTH;
+		texture2dDesc.Height = SCREEN_HEIGHT;
+		texture2dDesc.MipLevels = 1;
+		texture2dDesc.ArraySize = 1;
+		texture2dDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+		texture2dDesc.SampleDesc.Count = 1;
+		texture2dDesc.SampleDesc.Quality = 0;
+		texture2dDesc.Usage = D3D11_USAGE_DEFAULT;
+		texture2dDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+		texture2dDesc.CPUAccessFlags = 0;
+		texture2dDesc.MiscFlags = 0;
+#else
 		texture2dDesc.Width = SCREEN_WIDTH;
 		texture2dDesc.Height = SCREEN_HEIGHT;
 		texture2dDesc.MipLevels = 1;
@@ -125,15 +139,27 @@ Graphics::Graphics(HWND hWnd, BOOL fullscreen)
 		texture2dDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 		texture2dDesc.CPUAccessFlags = 0;
 		texture2dDesc.MiscFlags = 0;
+#endif
+
 		hr = device_->CreateTexture2D(&texture2dDesc, NULL, depthStencilBuffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
 		D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc{};
-		depthStencilViewDesc.Format = texture2dDesc.Format;
+		depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		//depthStencilViewDesc.Format = texture2dDesc.Format;
 		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-		depthStencilViewDesc.Texture2D.MipSlice = 0;
+		depthStencilViewDesc.Flags = 0;
+		//depthStencilViewDesc.Texture2D.MipSlice = 0;
 		hr = device_->CreateDepthStencilView(depthStencilBuffer.Get(), &depthStencilViewDesc, depthStencilView_.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
+		shaderResourceViewDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		shaderResourceViewDesc.Texture2D.MipLevels = 1;
+		hr = device_->CreateShaderResourceView(depthStencilBuffer.Get(), &shaderResourceViewDesc, depthShaderResourceView_.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+
 #endif
 
 		// ビューポートの設定

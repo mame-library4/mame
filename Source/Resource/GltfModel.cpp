@@ -532,67 +532,49 @@ void GltfModel::CastShadow(const float& scaleFactor)
                 );
                 jointConstants_->Activate(2);
             }
-            if (node.mesh_ > -1)
+        }
+        if (node.mesh_ > -1)
+        {
+            const Mesh& mesh = meshes_.at(node.mesh_);
+
+            for (std::vector<Mesh::Primitive>::const_reference primitive : mesh.primitives_)
             {
-                const Mesh& mesh = meshes_.at(node.mesh_);
-
-                for (std::vector<Mesh::Primitive>::const_reference primitive : mesh.primitives_)
+                ID3D11Buffer* vertexBuffers[]
                 {
-#if 0
-                    ID3D11Buffer* vertexBuffers[]
-                    {
-                        primitive.vertexBufferViews_.at("POSITION").buffer_.Get(),
-                        primitive.vertexBufferViews_.at("JOINTS_0").buffer_.Get(),
-                        primitive.vertexBufferViews_.at("WEIGHTS_0").buffer_.Get(),
-                        primitive.vertexBufferViews_.at("JOINTS_1").buffer_.Get(),
-                        primitive.vertexBufferViews_.at("WEIGHTS_1").buffer_.Get(),
-                    };
-                    UINT strides[]
-                    {
-                        static_cast<UINT>(primitive.vertexBufferViews_.at("POSITION").strideInBytes_),
-                        static_cast<UINT>(primitive.vertexBufferViews_.at("JOINTS_0").strideInBytes_),
-                        static_cast<UINT>(primitive.vertexBufferViews_.at("WEIGHTS_0").strideInBytes_),
-                        static_cast<UINT>(primitive.vertexBufferViews_.at("JOINTS_1").strideInBytes_),
-                        static_cast<UINT>(primitive.vertexBufferViews_.at("WEIGHTS_1").strideInBytes_),
-                    };
-#else
-                    ID3D11Buffer* vertexBuffers[]
-                    {
-                        primitive.vertexBufferViews_.at("POSITION").buffer_.Get(),
-                        primitive.vertexBufferViews_.at("NORMAL").buffer_.Get(),
-                        primitive.vertexBufferViews_.at("TANGENT").buffer_.Get(),
-                        primitive.vertexBufferViews_.at("TEXCOORD_0").buffer_.Get(),
-                        primitive.vertexBufferViews_.at("JOINTS_0").buffer_.Get(),
-                        primitive.vertexBufferViews_.at("WEIGHTS_0").buffer_.Get(),
-                        primitive.vertexBufferViews_.at("JOINTS_1").buffer_.Get(),
-                        primitive.vertexBufferViews_.at("WEIGHTS_1").buffer_.Get(),
-                    };
-                    UINT strides[]
-                    {
-                        static_cast<UINT>(primitive.vertexBufferViews_.at("POSITION").strideInBytes_),
-                        static_cast<UINT>(primitive.vertexBufferViews_.at("NORMAL").strideInBytes_),
-                        static_cast<UINT>(primitive.vertexBufferViews_.at("TANGENT").strideInBytes_),
-                        static_cast<UINT>(primitive.vertexBufferViews_.at("TEXCOORD_0").strideInBytes_),
-                        static_cast<UINT>(primitive.vertexBufferViews_.at("JOINTS_0").strideInBytes_),
-                        static_cast<UINT>(primitive.vertexBufferViews_.at("WEIGHTS_0").strideInBytes_),
-                        static_cast<UINT>(primitive.vertexBufferViews_.at("JOINTS_1").strideInBytes_),
-                        static_cast<UINT>(primitive.vertexBufferViews_.at("WEIGHTS_1").strideInBytes_),
-                    };
-#endif
-                    UINT offsets[_countof(vertexBuffers)]{ 0 };
-                    deviceContext->IASetVertexBuffers(0, _countof(vertexBuffers), vertexBuffers, strides, offsets);
-                    deviceContext->IASetIndexBuffer(primitive.indexBufferView_.buffer_.Get(),
-                        primitive.indexBufferView_.format_, 0);
+                    primitive.vertexBufferViews_.at("POSITION").buffer_.Get(),
+                    primitive.vertexBufferViews_.at("NORMAL").buffer_.Get(),
+                    primitive.vertexBufferViews_.at("TANGENT").buffer_.Get(),
+                    primitive.vertexBufferViews_.at("TEXCOORD_0").buffer_.Get(),
+                    primitive.vertexBufferViews_.at("JOINTS_0").buffer_.Get(),
+                    primitive.vertexBufferViews_.at("WEIGHTS_0").buffer_.Get(),
+                    primitive.vertexBufferViews_.at("JOINTS_1").buffer_.Get(),
+                    primitive.vertexBufferViews_.at("WEIGHTS_1").buffer_.Get(),
+                };
+                UINT strides[]
+                {
+                    static_cast<UINT>(primitive.vertexBufferViews_.at("POSITION").strideInBytes_),
+                    static_cast<UINT>(primitive.vertexBufferViews_.at("NORMAL").strideInBytes_),
+                    static_cast<UINT>(primitive.vertexBufferViews_.at("TANGENT").strideInBytes_),
+                    static_cast<UINT>(primitive.vertexBufferViews_.at("TEXCOORD_0").strideInBytes_),
+                    static_cast<UINT>(primitive.vertexBufferViews_.at("JOINTS_0").strideInBytes_),
+                    static_cast<UINT>(primitive.vertexBufferViews_.at("WEIGHTS_0").strideInBytes_),
+                    static_cast<UINT>(primitive.vertexBufferViews_.at("JOINTS_1").strideInBytes_),
+                    static_cast<UINT>(primitive.vertexBufferViews_.at("WEIGHTS_1").strideInBytes_),
+                };
 
-                    DirectX::XMStoreFloat4x4(&primitiveConstants_->GetData()->world_, globalTransform * W);
-                    primitiveConstants_->GetData()->skin_ = node.skin_;
-                    primitiveConstants_->GetData()->startInstanceLocation_ = 0;
-                    primitiveConstants_->Activate(0);
+                UINT offsets[_countof(vertexBuffers)]{ 0 };
+                deviceContext->IASetVertexBuffers(0, _countof(vertexBuffers), vertexBuffers, strides, offsets);
+                deviceContext->IASetIndexBuffer(primitive.indexBufferView_.buffer_.Get(),
+                    primitive.indexBufferView_.format_, 0);
 
-                    deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+                DirectX::XMStoreFloat4x4(&primitiveConstants_->GetData()->world_, globalTransform * W);
+                primitiveConstants_->GetData()->skin_ = node.skin_;
+                primitiveConstants_->GetData()->startInstanceLocation_ = 0;
+                primitiveConstants_->Activate(0);
 
-                    deviceContext->DrawIndexed(static_cast<UINT>(primitive.indexBufferView_.count()), 0, 0);
-                }
+                deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+                deviceContext->DrawIndexedInstanced(static_cast<UINT>(primitive.indexBufferView_.count()), 4, 0, 0, 0);
             }
         }
         for (std::vector<int>::value_type childIndex : node.children_)

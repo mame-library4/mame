@@ -50,11 +50,6 @@ void TitleScene::ForwardRender()
 {
 }
 
-void TitleScene::UserInterfaceRender()
-{
-    sprite_->Render();
-}
-
 // ----- ImGui—p -----
 void TitleScene::DrawDebug()
 {

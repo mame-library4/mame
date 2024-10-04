@@ -44,9 +44,9 @@ bool Application::Initialize()
     Camera::Instance().Initialize();
 
     // --- シーン初期化 ---
-    //SceneManager::Instance().ChangeScene(new DemoScene);
     //SceneManager::Instance().ChangeScene(new TitleScene);
     SceneManager::Instance().ChangeScene(new GameScene);
+    //SceneManager::Instance().ChangeScene(new DemoScene);
 
     // エフェクト初期化
     EffectManager::Instance().Initialize();
@@ -54,6 +54,8 @@ bool Application::Initialize()
 //#ifndef _DEBUG
 //    ShowCursor(!FULLSCREEN);	// フルスクリーン時はカーソルを消す
 //#endif
+
+    sceneConstants_.GetData()->lightDirection_ = { 0, -1, -1, 0 };
 
     return true;
 }
@@ -75,16 +77,16 @@ bool Application::Finalize()
 // ----- 更新 -----
 void Application::Update(const float& elapsedTime)
 {
-    // --- ImGui更新 ---
+    // ImGui更新
     IMGUI_CTRL_CLEAR_FRAME();
 
-    // --- 入力更新処理 ---
+    // 入力更新処理
     input_.Update(elapsedTime);
 
-    // --- カメラ更新 ---
+    // カメラ更新
     Camera::Instance().Update(elapsedTime);
 
-    // --- シーン更新処理 ---
+    // シーン更新処理
     SceneManager::Instance().Update(elapsedTime);
 
     // エフェクト更新
@@ -114,7 +116,7 @@ void Application::Render()
     camera.SetPerspectiveFov();
     DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->viewProjection_, camera.GetViewMatrix() * camera.GetProjectionMatrix());
 
-    sceneConstants_.GetData()->lightDirection_ = Graphics::Instance().GetShader()->GetViewPosition();
+    //sceneConstants_.GetData()->lightDirection_ = Graphics::Instance().GetShader()->GetViewPosition();
     sceneConstants_.GetData()->cameraPosition_ = { camera.GetEye().x, camera.GetEye().y, camera.GetEye().z, 0 };
 
     DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->inverseProjection_, DirectX::XMMatrixInverse(NULL, camera.GetProjectionMatrix()));
@@ -122,10 +124,8 @@ void Application::Render()
     sceneConstants_.Activate(1, true, true, true, true);
 
     // Make cascade shadow map
-    PostProcess::Instance().MakeCascadedShadowMap(sceneConstants_.GetData()->lightDirection_, 
-        3, [&]() { SceneManager::Instance().ShadowRender(); });
+    PostProcess::Instance().MakeCascadedShadowMap(sceneConstants_.GetData()->lightDirection_, 3, [&]() { SceneManager::Instance().ShadowRender(); });
     
-#if 1
     // --- deferred rendering ---
     if (isDeferred_)
     {
@@ -195,50 +195,13 @@ void Application::Render()
 
         PostProcess::Instance().Draw();
     }
-#else
-
-    Graphics::Instance().GetShader()->SetGBuffer();
-    Graphics::Instance().SetBlendState(Shader::BLEND_STATE::MRT);
-    SceneManager::Instance().DeferredRender();
-
-    deviceContext->ClearRenderTargetView(renderTargetView, color);
-    deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-    deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
 
 
-    // ポストプロセス開始
-    postProcess_.Activate();
-
-    // シーン
-    SceneManager::Instance().ForwardRender();
-
-    // デバッグレンダラ
-#if _DEBUG
-    DirectX::XMFLOAT4X4 view, projection;
-    DirectX::XMStoreFloat4x4(&view, Camera::Instance().GetViewMatrix());
-    DirectX::XMStoreFloat4x4(&projection, Camera::Instance().GetProjectionMatrix());
-    Graphics::Instance().GetDebugRenderer()->Render(deviceContext, view, projection);
-#endif
-
+    // --------------- UI 描画 ---------------
     Graphics::Instance().SetBlendState(Shader::BLEND_STATE::ALPHA);
     Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
     Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_OFF_ZW_OFF);
-
-    deferredRendering_.Draw();
-
-    postProcess_.Deactivate();
-    postProcess_.Draw();
-
-#endif
-
-    //ID3D11ShaderResourceView* nullShaderResourceViews[]{ nullptr };
-    //deviceContext->PSSetShaderResources(9, 1, nullShaderResourceViews);
-
-    Graphics::Instance().SetBlendState(Shader::BLEND_STATE::ALPHA);
-    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
-    Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_OFF_ZW_OFF);
-    SceneManager::Instance().UserInterfaceRender();
-
+    
     UIManager::Instance().Render();
     
 
@@ -248,7 +211,7 @@ void Application::Render()
     IMGUI_CTRL_DISPLAY();
 
     // --- 実行 ---
-    UINT syncInterval = 1;
+    UINT syncInterval = 0;
     graphics_.GetSwapChain()->Present(syncInterval, 0);
 }
 
@@ -260,6 +223,8 @@ void Application::DrawDebug()
     Camera::Instance().DrawDebug();
 
     ImGui::Checkbox("isDeferred_", &isDeferred_);
+
+    ImGui::DragFloat3("LightDirection", &sceneConstants_.GetData()->lightDirection_.x);
 
     graphics_.GetShader()->DrawDebug();
 

@@ -19,5 +19,5 @@ float4 main(PSIn psIn) : SV_TARGET
         color.rgb += downSampleTextures[downSampledIndex].Sample(samplerStates[LINEAR_BORDER_BLACK], psIn.texcoord).rgb;
     }
     
-    return float4(baseColor.rgb + color.rgb * bloomIntencity_, 1.0f);
+    return float4(color.rgb * bloomIntencity_, 1.0f);
 }

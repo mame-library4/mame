@@ -11,9 +11,9 @@ class PostProcess
 private:
     struct Constants
     {
-        float shadowColor_ = 0.2f;
+        float shadowColor_ = 0.55f;
         float shadowDepthBias_ = 0.0001f;
-        bool colorizeCascadedLayer_ = true;
+        bool colorizeCascadedLayer_ = false;
         float blurPower_ = 0.0f;
     };
 

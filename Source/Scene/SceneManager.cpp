@@ -56,13 +56,6 @@ void SceneManager::ForwardRender()
     currentScene->ForwardRender();
 }
 
-void SceneManager::UserInterfaceRender()
-{
-    if (!currentScene) return;
-
-    currentScene->UserInterfaceRender();
-}
-
 void SceneManager::Render()
 {
     if (!currentScene) return;

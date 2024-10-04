@@ -58,6 +58,8 @@ public:
     const DirectX::XMFLOAT4 GetViewPosition() { return view.position; }
     const DirectX::XMFLOAT4 GetViewCamera() { return view.camera; }
 
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& GetDepthMap() { return gBufferDepthShaderResourceView_; }
+
 private:
     void CreateBlendStates();           // ブレンドステート作成
     void CreateRasterizerStates();      // ラスタライザステート作成
@@ -75,6 +77,12 @@ private:
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView>      gBufferRenderTargetView_[static_cast<int>(GBufferId::Max)];
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>    gBufferShaderResourceView_[static_cast<int>(GBufferId::Max)];
     Microsoft::WRL::ComPtr<ID3D11PixelShader>           gBufferPixelShader_;
+
+
+    Microsoft::WRL::ComPtr<ID3D11Texture2D>             gBufferDepthStencilBuffer_;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView>      gBufferDepthStencilView_;
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>    gBufferDepthShaderResourceView_;
+
 };
 
 

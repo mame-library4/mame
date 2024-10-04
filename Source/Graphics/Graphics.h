@@ -21,6 +21,8 @@ public:
     ID3D11DeviceContext*    GetDeviceContext()      const { return deviceContext_.Get(); }
     ID3D11RenderTargetView* GetRenderTargetView()   const { return renderTargetView_.Get(); }
     ID3D11DepthStencilView* GetDepthStencilView()   const { return depthStencilView_.Get(); }
+    
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& GetDepthMap() { return depthShaderResourceView_; }
 
 
 
@@ -52,8 +54,10 @@ private:
     Microsoft::WRL::ComPtr<IDXGISwapChain>          swapchain_;
 
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView>  renderTargetView_;
-    Microsoft::WRL::ComPtr<ID3D11Texture2D>         depthStencilBuffer_;
-    Microsoft::WRL::ComPtr<ID3D11DepthStencilView>  depthStencilView_;
+    
+    Microsoft::WRL::ComPtr<ID3D11Texture2D>             depthStencilBuffer_;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView>      depthStencilView_;
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>    depthShaderResourceView_;
 
     std::unique_ptr<Shader> shader_;
 

@@ -37,8 +37,6 @@ Bloom::Bloom()
 void Bloom::Execute(ID3D11ShaderResourceView* colorMap)
 {
     // 定数バッファー更新
-    constantBuffer_->GetData()->bloomExtractionThreshold_ = bloomConstants_.bloomExtractionThreshold_;
-    constantBuffer_->GetData()->bloomIntensity_ = bloomConstants_.bloomIntensity_;
     constantBuffer_->Activate(0);
 
     // 輝度を抽出
@@ -83,8 +81,8 @@ void Bloom::DrawDebug()
 {
     if (ImGui::TreeNode("Bloom"))
     {
-        ImGui::DragFloat("ExtractionThreshold", &bloomConstants_.bloomExtractionThreshold_, 0.01f, 0.0f, 1.0f);
-        ImGui::DragFloat("Intencity", &bloomConstants_.bloomIntensity_, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("ExtractionThreshold", &constantBuffer_->GetData()->bloomExtractionThreshold_, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("Intencity", &constantBuffer_->GetData()->bloomIntensity_, 0.01f, 0.0f, 1.0f);
 
         if (ImGui::TreeNode("Textures"))
         {

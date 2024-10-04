@@ -30,12 +30,12 @@ void DemoChara::DrawDebug()
 
 void DemoScene::CreateResource()
 {
-    demoChara_ = std::make_unique<DemoChara>();
+    //demoChara_ = std::make_unique<DemoChara>();
 }
 
 void DemoScene::Initialize()
 {
-    demoChara_->PlayAnimation(0, true, 1.0f);
+    //demoChara_->PlayAnimation(0, true, 1.0f);
 }
 
 void DemoScene::Finalize()
@@ -46,7 +46,7 @@ void DemoScene::Update(const float& elapsedTime)
 {
     Camera::Instance().SetTarget({});
 
-    demoChara_->Update(elapsedTime);
+    //demoChara_->Update(elapsedTime);
 }
 
 void DemoScene::ShadowRender()
@@ -57,7 +57,7 @@ void DemoScene::DeferredRender()
 {
     ID3D11PixelShader* gBufferPixelShader = Graphics::Instance().GetShader()->GetGBufferPixelShader();
     
-    demoChara_->Render(gBufferPixelShader);
+    //demoChara_->Render(gBufferPixelShader);
 }
 
 void DemoScene::ForwardRender()
@@ -65,10 +65,6 @@ void DemoScene::ForwardRender()
  
 }
 
-void DemoScene::UserInterfaceRender()
-{
- 
-}
 
 void DemoScene::Render()
 {
@@ -76,7 +72,7 @@ void DemoScene::Render()
 
 void DemoScene::DrawDebug()
 {
-    demoChara_->DrawDebug();
+    //demoChara_->DrawDebug();
 }
 
 

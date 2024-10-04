@@ -227,11 +227,6 @@ void GameScene::ForwardRender()
 #endif
 }
 
-void GameScene::UserInterfaceRender()
-{
-    Graphics::Instance().GetShader()->SetBlendState(Shader::BLEND_STATE::ALPHA);
-}
-
 void GameScene::Render()
 {
     Graphics::Instance().SetBlendState(Shader::BLEND_STATE::ALPHA);

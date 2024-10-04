@@ -132,7 +132,7 @@ private:
     DirectX::XMFLOAT3   targetOffset_       = {};       // ターゲット(注視点)に対するオフセット
     DirectX::XMFLOAT3   cameraOffset_       = {};       // カメラの位置に対するオフセット
     float               nearZ_              = 0.1f;
-    float               farZ_               = 1000.0f;
+    float               farZ_               = 150.0f;
     float               fov_                = 45.0f;    // 視野角
     float               length_             = 10.0f;    // focusとeyeまでの距離
     float               inputThreshold_     = 0.3f;     // 入力判定値

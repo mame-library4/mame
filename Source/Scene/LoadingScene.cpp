@@ -61,11 +61,6 @@ void LoadingScene::ForwardRender()
 {
 }
 
-void LoadingScene::UserInterfaceRender()
-{
-}
-
-
 // ----- ImGui—p -----
 void LoadingScene::DrawDebug()
 {

@@ -47,7 +47,7 @@ void PostProcess::Draw()
     ID3D11ShaderResourceView* shaderResourceViews[] =
     {
         postProcess_->shaderResourceViews_[0].Get(),
-        postProcess_->shaderResourceViews_[1].Get(),
+        Graphics::Instance().GetShader()->GetDepthMap().Get(),
         bloom_.GetColorMap().Get(),
         cascadedShadowMap_.GetDepthMap().Get()
     };
@@ -75,7 +75,7 @@ void PostProcess::DrawDebug()
         ImGui::DragFloat("CriticalDepthValue", &criticalDepthValue_);
 
         ImGui::SliderFloat("ShadowColor", &constant_->GetData()->shadowColor_, 0.0f, 1.0f);
-        ImGui::DragFloat("ShadowDepthBias", &constant_->GetData()->shadowDepthBias_, 0.00001f, 0.0f, 0.01f);
+        ImGui::DragFloat("ShadowDepthBias", &constant_->GetData()->shadowDepthBias_, 0.00001f, 0.0f, 0.01f, "%.8f");
         ImGui::Checkbox("ColorizeCascadedLayer", &constant_->GetData()->colorizeCascadedLayer_);
 
         cascadedShadowMap_.DrawDebug();

@@ -23,7 +23,6 @@ public:
     void ShadowRender()                     override;
     void DeferredRender()                   override;
     void ForwardRender()                    override;
-    void UserInterfaceRender()              override;
 
     void Render() override;
 

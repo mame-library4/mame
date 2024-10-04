@@ -14,6 +14,9 @@ public:
 private:
     float lifeTimer_    = 10.0f; // 生存時間
     
+    float fadeInStartPositionX_ = 1280.0f;
+    float fadeInEndPositionX_   = 1030.0f;
+
     float fadeInTimer_ = 0.0f;   // フェイドインタイマー
     float fadeInSpeed_ = 10.0f;  // フェイドイン速度
     bool  isFadingIn_  = true;   // フェイドインする

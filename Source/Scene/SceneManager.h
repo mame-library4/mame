@@ -27,7 +27,6 @@ public:
     void ShadowRender();
     void DeferredRender();
     void ForwardRender();
-    void UserInterfaceRender();
 
     void Render();
 

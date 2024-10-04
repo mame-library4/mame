@@ -39,7 +39,7 @@ public:
 
 public:
     const UINT  cascadeCount_;
-    float       splitSchemeWeight_  = 0.7f;
+    float       splitSchemeWeight_  = 1.0f;
     float       zMult_              = 10.0f;
     bool        fitToCascade_       = true;
 

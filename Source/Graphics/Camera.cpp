@@ -170,6 +170,9 @@ void Camera::DrawDebug()
 {
     if (ImGui::BeginMenu("Camera"))
     {
+        ImGui::DragFloat("NearZ", &nearZ_);
+        ImGui::DragFloat("FarZ", &farZ_);
+
         if (ImGui::TreeNode("LockonCamera"))
         {
             ImGui::BulletText(targetJointName_.at(currentTargetJointIndex_).c_str());

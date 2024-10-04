@@ -82,7 +82,6 @@ void FrameBuffer::Activate()
 
     deviceContext->RSSetViewports(1, &viewport_);
     deviceContext->OMSetRenderTargets(1, renderTargetView_.GetAddressOf(), depthStencilView_.Get());
-    //deviceContext->OMSetRenderTargets(1, renderTargetView_.GetAddressOf(), Graphics::Instance().GetDepthStencilView());
 }
 
 void FrameBuffer::Deactivate()
