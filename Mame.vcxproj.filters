@@ -229,6 +229,9 @@
     <ClCompile Include="Source\Graphics\Particle\SnowParticle.cpp">
       <Filter>Mame\Graphics\Particle</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Particle\SuperNovaParticle.cpp">
+      <Filter>Mame\Graphics\Particle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -487,6 +490,9 @@
     <ClInclude Include="Source\Graphics\Particle\SnowParticle.h">
       <Filter>Mame\Graphics\Particle</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Graphics\Particle\SuperNovaParticle.h">
+      <Filter>Mame\Graphics\Particle</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -718,6 +724,9 @@
     <None Include="Source\Shader\SnowParticle.hlsli">
       <Filter>Mame\Shader\Particle\SnowParticle</Filter>
     </None>
+    <None Include="Source\Shader\SuperNovaParticle.hlsli">
+      <Filter>Mame\Shader\Particle\SuperNova</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shader\blur_ps.hlsl">
@@ -800,6 +809,15 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\SnowParticleInitCS.hlsl">
       <Filter>Mame\Shader\Particle\SnowParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SuperNovaParticleGS.hlsl">
+      <Filter>Mame\Shader\Particle\SuperNova</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SuperNovaInitializeCS.hlsl">
+      <Filter>Mame\Shader\Particle\SuperNova</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SuperNovaCS.hlsl">
+      <Filter>Mame\Shader\Particle\SuperNova</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

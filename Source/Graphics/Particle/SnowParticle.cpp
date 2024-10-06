@@ -62,7 +62,7 @@ void SnowParticle::Initialize(const float& deltaTime)
     constants_.deltaTime_ = deltaTime;
 
     deviceContext->UpdateSubresource(constantBuffer_.Get(), 0, 0, &constants_, 0, 0);
-    //deviceContext->CSSetConstantBuffers(9, 1, constantBuffer_.GetAddressOf());
+    deviceContext->CSSetConstantBuffers(9, 1, constantBuffer_.GetAddressOf());
 
     deviceContext->CSSetShader(particleInitializeCS_.Get(), NULL, 0);
 
@@ -83,7 +83,7 @@ void SnowParticle::Update(const float& deltaTime)
     constants_.deltaTime_ = deltaTime;
 
     deviceContext->UpdateSubresource(constantBuffer_.Get(), 0, 0, &constants_, 0, 0);
-    //deviceContext->CSSetConstantBuffers(9, 1, constantBuffer_.GetAddressOf());
+    deviceContext->CSSetConstantBuffers(9, 1, constantBuffer_.GetAddressOf());
 
     deviceContext->CSSetShader(particleUpdateCS_.Get(), NULL, 0);
 

@@ -15,26 +15,20 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     
     ParticleData particle = particleBuffer[id];
     
+    const float noise_scale = 1.0;
+    float f0 = rand(id * noise_scale);
+    float f1 = rand(f0 * noise_scale);
+    float f2 = rand(f1 * noise_scale);
     
-    //float3 pos = float3((rand(deltaTime) % 30 - 15) * 0.1f, rand(deltaTime) % 30 * 0.1f + 1, (rand(deltaTime) % 30 - 15) * 0.1f + 3);
-    //int max = 100;
-       
-    //particle.position_.x = pos.x + (rand(deltaTime) % 10001 - 5000) * 0.01f;
-    //particle.position_.y = pos.y;
-    //particle.position_.z = pos.z + (rand(deltaTime) % 10001 - 5000) * 0.01f;
+    particle.position_ = emitterPosition;
     
-    //particle.velocity_.y = -(rand(deltaTime) % 10001) * 0.0002f - 0.002f;
-    
-    //particle.acceleration_.x = (rand(deltaTime) % 10001) * 0.00001f + 0.1f;
-    //particle.acceleration_.z = (rand(deltaTime) % 10001 - 5000) * 0.00001f;
-    
-    
-    //particle.color_.xyz = particleColor.rgb;
-    //particle.color_.w = 1.0f;
-    
-    //particle.age_ = 100.0;
+    particle.velocity_.x = 0.5 * sin(2 * 3.14 * f0);
+    particle.velocity_.y = 2.0 * f1;
+    particle.velocity_.z = 0.5 * cos(2 * 3.14 * f0);
     
     particle.color_ = float4(1, 0, 0, 1);
+    
+    particle.size_.xy = 0.2f;
     
     particleBuffer[id] = particle;
 }

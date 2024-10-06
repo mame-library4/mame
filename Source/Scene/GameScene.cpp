@@ -234,7 +234,7 @@ void GameScene::Render()
     Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_ON_ZW_ON);
 
     PlayerManager::Instance().RenderTrail();
-    //particles_->Render();
+    particles_->Render();
 
     DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
 //#ifdef _DEBUG

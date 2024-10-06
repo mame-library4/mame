@@ -4,6 +4,7 @@
 #include "../Game/Stage/StageNormal.h"
 
 #include "Particle/SnowParticle.h"
+#include "Particle/SuperNovaParticle.h"
 
 #include "Stone/Stone.h"
 
@@ -45,7 +46,8 @@ private:
     bool isDebugRenderer_ = false;
     //bool isDebugRenderer_ = true;
 
-    std::unique_ptr<SnowParticle> particles_;
+    std::unique_ptr<SuperNovaParticle> particles_;
+    //std::unique_ptr<SnowParticle> particles_;
 
     std::unique_ptr<Stone> stone_;
 

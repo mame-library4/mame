@@ -27,10 +27,10 @@ private:
     struct Constants
     {
         DirectX::XMFLOAT3 emitterPosition_ = {}; // î≠ê∂à íu
-
         DirectX::XMFLOAT4 color_ = {};
-
         float deltaTime_ = 0.0f;
+
+        DirectX::XMFLOAT4 dummy_ = {};
     };
     Constants constants_;
 };

@@ -1,9 +1,4 @@
-cbuffer PARTICLE_CONSTANTS : register(b9)
-{
-    float3 emitterPosition;
-    float4 particleColor;    
-    float deltaTime;    
-};
+
 
 cbuffer SCENE_CONSTANT_BUFFER : register(b1)
 {

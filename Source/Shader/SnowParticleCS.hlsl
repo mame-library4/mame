@@ -10,12 +10,10 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     
     ParticleData particle = particleBuffer[id];
     
-    //particle.position_ = particle.velocity_ * particle.age_ * 1.0f;
-    particle.age_ -= deltaTime;
+    const float g = -0.5f;
     
-    //particle.size_ = float2(100, 100);
-    //particle.color_ = float4(1, 0, 0, 1);
-    //particle.color_ = particleColor;
+    particle.velocity_.y += g * deltaTime;
+    particle.position_ += particle.velocity_ * deltaTime;
     
     particleBuffer[id] = particle;
 }
