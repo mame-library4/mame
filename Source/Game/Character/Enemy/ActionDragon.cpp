@@ -10,6 +10,7 @@
 #include "Projectile/ProjectileManager.h"
 #include "Projectile/Fireball.h"
 
+#include "Particle/SuperNovaParticle.h"
 
 // ----- GamePadVibration -----
 namespace ActionDragon
@@ -38,6 +39,7 @@ namespace ActionDragon
     }
 }
 
+
 // ----- AddForceData -----
 namespace ActionDragon
 {
@@ -61,6 +63,49 @@ namespace ActionDragon
 
         isAddforce_ = true;
         return true;
+    }
+}
+
+namespace ActionDragon
+{
+    const ActionBase::State SuperNovaAction::Run(const float& elapsedTime)
+    {
+        switch (owner_->GetStep())
+        {
+        case 0:
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::Nova1, false);
+
+            // •Ï”‰Šú‰»
+            isCreateSphereNova_ = false;
+
+            owner_->SetStep(1);
+
+            break;
+        case 1:
+
+            if (owner_->GetAnimationSeconds() > 3.9f && isCreateSphereNova_ == false)
+            {
+                const DirectX::XMFLOAT3 emitterPosition = owner_->GetJointPosition("Dragon15_neck_1");
+
+                SuperNovaParticle* particle = new SuperNovaParticle(emitterPosition, 20.0f, 0.25f);
+
+                isCreateSphereNova_ = true;
+            }
+
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetStep(0);
+
+                return ActionBase::State::Complete;
+            }
+
+            break;
+        case 2:
+            break;
+        }
+
+        return ActionBase::State::Run;
     }
 }
 
@@ -417,7 +462,7 @@ namespace ActionDragon
         }
 
         // ‰ñ“]UŒ‚
-        if (animationIndex == Enemy::DragonAnimation::AttackTurn0)
+        if (animationIndex == Enemy::DragonAnimation::AttackTurn)
         {
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, true, 1.0f, 0.2f);
             owner_->SetTransitionTime(0.2f);
@@ -1509,9 +1554,9 @@ namespace ActionDragon
     {
         const Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(owner_->GetAnimationIndex());
 
-        if(animationIndex == Enemy::DragonAnimation::AttackTurn0)
+        if(animationIndex == Enemy::DragonAnimation::AttackTurn)
         {
-            owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurn0, false, 1.0f, 0.3f);
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurn, false, 1.0f, 0.3f);
             return;
         }
         
@@ -1524,7 +1569,7 @@ namespace ActionDragon
             owner_->SetTransitionTime(0.1f);
         }
         
-        owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurn0, false);
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurn, false);
     }
 }
 

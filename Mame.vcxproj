@@ -233,9 +233,11 @@
     <ClCompile Include="Source\Game\UI\UI.cpp" />
     <ClCompile Include="Source\Game\UI\UICrosshair.cpp" />
     <ClCompile Include="Source\Game\UI\UIFader.cpp" />
+    <ClCompile Include="Source\Game\UI\UIHealth.cpp" />
     <ClCompile Include="Source\Game\UI\UIManager.cpp" />
     <ClCompile Include="Source\Game\UI\UINumber.cpp" />
     <ClCompile Include="Source\Game\UI\UIPartDestruction.cpp" />
+    <ClCompile Include="Source\Game\UI\UIStamina.cpp" />
     <ClCompile Include="Source\Graphics\Camera.cpp" />
     <ClCompile Include="Source\Graphics\CascadedShadowMap.cpp" />
     <ClCompile Include="Source\Graphics\ConstantBuffer.cpp" />
@@ -247,6 +249,7 @@
     <ClCompile Include="Source\Graphics\FrameBuffer.cpp" />
     <ClCompile Include="Source\Graphics\FullscreenQuad.cpp" />
     <ClCompile Include="Source\Graphics\Graphics.cpp" />
+    <ClCompile Include="Source\Graphics\Particle\ParticleManager.cpp" />
     <ClCompile Include="Source\Graphics\Particle\ParticleSystem.cpp" />
     <ClCompile Include="Source\Graphics\Particle\SnowParticle.cpp" />
     <ClCompile Include="Source\Graphics\Particle\SuperNovaParticle.cpp" />
@@ -317,9 +320,11 @@
     <ClInclude Include="Source\Game\UI\UI.h" />
     <ClInclude Include="Source\Game\UI\UICrosshair.h" />
     <ClInclude Include="Source\Game\UI\UIFader.h" />
+    <ClInclude Include="Source\Game\UI\UIHealth.h" />
     <ClInclude Include="Source\Game\UI\UIManager.h" />
     <ClInclude Include="Source\Game\UI\UINumber.h" />
     <ClInclude Include="Source\Game\UI\UIPartDestruction.h" />
+    <ClInclude Include="Source\Game\UI\UIStamina.h" />
     <ClInclude Include="Source\Graphics\Camera.h" />
     <ClInclude Include="Source\Graphics\CascadedShadowMap.h" />
     <ClInclude Include="Source\Graphics\ConstantBuffer.h" />
@@ -331,6 +336,7 @@
     <ClInclude Include="Source\Graphics\FrameBuffer.h" />
     <ClInclude Include="Source\Graphics\FullscreenQuad.h" />
     <ClInclude Include="Source\Graphics\Graphics.h" />
+    <ClInclude Include="Source\Graphics\Particle\ParticleManager.h" />
     <ClInclude Include="Source\Graphics\Particle\ParticleSystem.h" />
     <ClInclude Include="Source\Graphics\Particle\SnowParticle.h" />
     <ClInclude Include="Source\Graphics\Particle\SuperNovaParticle.h" />
@@ -560,6 +566,12 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SuperNovaParticlePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

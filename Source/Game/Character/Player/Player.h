@@ -151,6 +151,11 @@ public:// --- 取得・設定 ---
     // ---------- 移動 ------------------------------
     void SetMoveDirection(const DirectX::XMFLOAT3 direction) { moveDirection_ = direction; } // 移動方向
 
+    // ---------- スタミナ ----------
+    [[nodiscard]] const float GetStamina() const { return stamina_; }
+    [[nodiscard]] const float GetMaxStamina() const { return maxStamina_; }
+    void UseStamina(const float& stamina) { stamina_ -= stamina; }
+
     // ---------- 行動 -------------------------------------------------------
     // ----- フラグをリセット -----
     void ResetFlags();    
@@ -263,6 +268,9 @@ private:
     bool isDamageSphere_ = true;
     bool isAttackSphere_ = true;
 
+    // ---------- スタミナ ----------
+    float stamina_      = 1.0f;
+    float maxStamina_   = 1.0f;
 
     SwordTrail swordTrail_;
 

@@ -37,6 +37,16 @@ namespace ActionDragon
 
 namespace ActionDragon
 {
+    class SuperNovaAction : public ActionBase
+    {
+    public:
+        SuperNovaAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+        
+    private:
+        bool isCreateSphereNova_ = false;
+    };
+
     // éÄñSçsìÆ
     class DeathAction : public ActionBase
     {

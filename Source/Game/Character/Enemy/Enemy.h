@@ -91,8 +91,7 @@ public:
 
         // ----- ‰ñ“]UŒ‚ -----
         AttackTurnStart,
-        AttackTurn0,
-        AttackTurn1,
+        AttackTurn,
         AttackTurnEnd,
 
         AttackMove0,
@@ -102,8 +101,13 @@ public:
         FireBreathLeft,
         FireBreathRight,
 
-        TurnLeft,
-        TurnRight,
+        Idle2,
+        Damage,
+        Fly,
+
+        Nova1,
+        FlyTurn,
+        Nova2,
     };
 
     enum class PartName { Head, Chest, Body, Leg, Tail, Wings, Max };

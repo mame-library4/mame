@@ -9,9 +9,13 @@
 #include "Collision/CollisionManager.h"
 
 #include "UI/UINumber.h"
+#include "UI/UIHealth.h"
+#include "UI/UIStamina.h"
 
 #include "Projectile/ProjectileManager.h"
 #include "UI/UIPartDestruction.h"
+
+#include "Particle/ParticleManager.h"
 
 // ----- ステージの真ん中位置 -----
 DirectX::XMFLOAT3 GameScene::stageCenter_ = {};
@@ -24,7 +28,9 @@ void GameScene::CreateResource()
 
     stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/OnlyStage/stageOneMesh.gltf");
     //stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/stageAndFlag/stage.gltf");
-
+    
+    UIHealth* uIHealth = new UIHealth();
+    UIStamina* uIStamina = new UIStamina();
 
     EnemyManager::Instance().Register(new EnemyDragon);
 
@@ -49,9 +55,7 @@ void GameScene::CreateResource()
         iblTextures_[2].GetAddressOf(), &textureDesc); 
     Texture::Instance().LoadTexture(L"./Resources/SkyBox/RainSky/lut_ggx.dds",
         iblTextures_[3].GetAddressOf(), &textureDesc);
-#endif
-
-    particles_ = std::make_unique<decltype(particles_)::element_type>();
+#endif    
 
     stone_ = std::make_unique<Stone>();
 
@@ -73,8 +77,6 @@ void GameScene::Initialize()
     stage_->GetTransform()->SetScaleFactor(100.0f);
     //stage_->GetTransform()->SetScaleFactor(1.5f);
     //stage_->GetTransform()->SetScaleFactor(6000.0f);
-
-    particles_->Initialize(0);
 
     stageCenter_ = stage_->GetTransform()->GetPosition();
 
@@ -102,6 +104,9 @@ void GameScene::Finalize()
 
     // 発射物
     ProjectileManager::Instance().Finalize();
+
+    // パーティクル
+    ParticleManager::Instance().Finalize();
 }
 
 // ----- 更新 -----
@@ -137,11 +142,8 @@ void GameScene::Update(const float& elapsedTime)
     //const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
     //Camera::Instance().SetTarget(cameraTargetPosition);
 
-    if (GetAsyncKeyState('T') & 0x8000)
-    {
-        particles_->Initialize(0);
-    }
-    particles_->Update(elapsedTime);
+    // パーティクル
+    ParticleManager::Instance().Update(elapsedTime);
 }
 
 void GameScene::ShadowRender()
@@ -234,7 +236,8 @@ void GameScene::Render()
     Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_ON_ZW_ON);
 
     PlayerManager::Instance().RenderTrail();
-    particles_->Render();
+
+    ParticleManager::Instance().Render();
 
     DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
 //#ifdef _DEBUG
@@ -284,7 +287,7 @@ void GameScene::DrawDebug()
     ImGui::Checkbox("Debug", &isDebugRenderer_);
     ImGui::DragFloat("stageRadius", &stageRadius1_);
 
-    particles_->DrawDebug();
+    ParticleManager::Instance().DrawDebug();
 
     stone_->DrawDebug();
 

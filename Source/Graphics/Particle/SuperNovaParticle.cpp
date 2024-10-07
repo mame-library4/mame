@@ -1,9 +1,10 @@
 #include "SuperNovaParticle.h"
 #include "Graphics.h"
+#include "Texture.h"
 #include "Misc.h"
 
 // ----- コンストラクタ -----
-SuperNovaParticle::SuperNovaParticle()
+SuperNovaParticle::SuperNovaParticle(const DirectX::XMFLOAT3& emitterPosition, const float& speed, const float& size)
     : ParticleSystem(1000)
 {
     HRESULT result = S_OK;
@@ -44,15 +45,24 @@ SuperNovaParticle::SuperNovaParticle()
 	result = Graphics::Instance().GetDevice()->CreateBuffer(&bufferDesc, nullptr, constantBuffer_.GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
 
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	Texture::Instance().LoadTexture(L"./Resources/Image/Particle/Soft.png", shaderResourceView_.GetAddressOf(), &textureDesc);
+
 	Graphics::Instance().CreateVsFromCso("./Resources/Shader/ParticleVS.cso", particleVS_.ReleaseAndGetAddressOf(), NULL, NULL, 0);
-	Graphics::Instance().CreatePsFromCso("./Resources/Shader/ParticlePS.cso", particlePS_.ReleaseAndGetAddressOf());
+	Graphics::Instance().CreatePsFromCso("./Resources/Shader/SuperNovaParticlePS.cso", particlePS_.ReleaseAndGetAddressOf());
 	Graphics::Instance().CreateGsFromCso("./Resources/Shader/SuperNovaParticleGS.cso", particleGS_.ReleaseAndGetAddressOf());
 	Graphics::Instance().CreateCsFromCso("./Resources/Shader/SuperNovaCS.cso", particleUpdateCS_.ReleaseAndGetAddressOf());
 	Graphics::Instance().CreateCsFromCso("./Resources/Shader/SuperNovaInitializeCS.cso", particleInitializeCS_.ReleaseAndGetAddressOf());
+
+	constants_.emitterPosition_ = emitterPosition;
+	constants_.speed_ = speed;
+	constants_.particleSize_ = size;
 }
 
 void SuperNovaParticle::Initialize(const float& deltaTime)
 {
+	isParticleActive_ = true;
+
 	ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
 
 	deviceContext->CSSetUnorderedAccessViews(0, 1, particleBufferUAV_.GetAddressOf(), NULL);
@@ -73,6 +83,8 @@ void SuperNovaParticle::Initialize(const float& deltaTime)
 
 void SuperNovaParticle::Update(const float& deltaTime)
 {
+	if (isParticleActive_ == false) return;
+
 	ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
 
 	deviceContext->CSSetUnorderedAccessViews(0, 1, particleBufferUAV_.GetAddressOf(), NULL);
@@ -94,6 +106,8 @@ void SuperNovaParticle::Update(const float& deltaTime)
 
 void SuperNovaParticle::Render()
 {
+	if (isParticleActive_ == false) return;
+
 	ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
 
 	deviceContext->VSSetShader(particleVS_.Get(), NULL, 0);
@@ -105,6 +119,8 @@ void SuperNovaParticle::Render()
 	deviceContext->VSSetConstantBuffers(9, 1, constantBuffer_.GetAddressOf());
 	deviceContext->PSSetConstantBuffers(9, 1, constantBuffer_.GetAddressOf());
 	deviceContext->GSSetConstantBuffers(9, 1, constantBuffer_.GetAddressOf());
+
+	deviceContext->PSSetShaderResources(0, 1, shaderResourceView_.GetAddressOf());
 
 	deviceContext->IASetInputLayout(NULL);
 	deviceContext->IASetVertexBuffers(0, 0, NULL, NULL, NULL);

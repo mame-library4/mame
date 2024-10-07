@@ -63,8 +63,14 @@ void Player::Initialize()
     SetCollisionRadius(0.2f);
 
     // 体力設定
-    SetMaxHealth(100.0f);
+    //SetMaxHealth(100.0f);
+    //SetHealth(GetMaxHealth());
+    SetMaxHealth(300.0f);
     SetHealth(GetMaxHealth());
+
+    // スタミナ設定
+    maxStamina_ = 50.0f;
+    stamina_ = maxStamina_;
 
     // 速度設定
     SetAcceleration(50.0f);

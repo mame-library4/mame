@@ -4,7 +4,7 @@
 class SuperNovaParticle : public ParticleSystem
 {
 public:
-    SuperNovaParticle();
+    SuperNovaParticle(const DirectX::XMFLOAT3& emitterPosition, const float& speed = 1.0f, const float& size = 1.0f);
     ~SuperNovaParticle() override {}
 
     void Initialize(const float& deltaTime) override;
@@ -31,5 +31,7 @@ private:
         float dummy_ = 0.0f;
     };
     Constants constants_;
+
+    bool isParticleActive_ = false; // 使用フラグ
 };
 

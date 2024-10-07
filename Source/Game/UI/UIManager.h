@@ -27,6 +27,8 @@ public:
         UINumber,           // |
         UICrosshair,        // |
         UIPartDestruction,  // |
+        UIStamina,          // |
+        UIHealth,           // |
         UIFader,            // |
         Max,                // Å´
     };

@@ -232,6 +232,15 @@
     <ClCompile Include="Source\Graphics\Particle\SuperNovaParticle.cpp">
       <Filter>Mame\Graphics\Particle</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Particle\ParticleManager.cpp">
+      <Filter>Mame\Graphics\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\UI\UIHealth.cpp">
+      <Filter>Mame\Game\UI\UIHealth</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\UI\UIStamina.cpp">
+      <Filter>Mame\Game\UI\UIStamina</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -493,6 +502,15 @@
     <ClInclude Include="Source\Graphics\Particle\SuperNovaParticle.h">
       <Filter>Mame\Graphics\Particle</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Graphics\Particle\ParticleManager.h">
+      <Filter>Mame\Graphics\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\UI\UIHealth.h">
+      <Filter>Mame\Game\UI\UIHealth</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\UI\UIStamina.h">
+      <Filter>Mame\Game\UI\UIStamina</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -660,6 +678,12 @@
     <Filter Include="Mame\Shader\Particle\SuperNova">
       <UniqueIdentifier>{67935c86-27e3-4e24-970b-4fbc2f937081}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mame\Game\UI\UIHealth">
+      <UniqueIdentifier>{f906b2c1-3338-41af-8664-3b7cf2969aa0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\UI\UIStamina">
+      <UniqueIdentifier>{55bb59be-f90b-4377-a56d-a0af605feedb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -817,6 +841,9 @@
       <Filter>Mame\Shader\Particle\SuperNova</Filter>
     </FxCompile>
     <FxCompile Include="Source\Shader\SuperNovaCS.hlsl">
+      <Filter>Mame\Shader\Particle\SuperNova</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SuperNovaParticlePS.hlsl">
       <Filter>Mame\Shader\Particle\SuperNova</Filter>
     </FxCompile>
   </ItemGroup>

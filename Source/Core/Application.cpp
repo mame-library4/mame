@@ -55,7 +55,7 @@ bool Application::Initialize()
 //    ShowCursor(!FULLSCREEN);	// フルスクリーン時はカーソルを消す
 //#endif
 
-    sceneConstants_.GetData()->lightDirection_ = { 0, -1, -1, 0 };
+    sceneConstants_.GetData()->lightDirection_ = { 0, -1, -0.5, 0 };
 
     return true;
 }

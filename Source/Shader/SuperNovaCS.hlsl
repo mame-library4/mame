@@ -19,6 +19,8 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
         {
             p.velocity_ = 0;
             p.position_.y = 0;
+            
+            p.color_.a = 0;
         }
     }
     p.age_ += deltaTime_;
