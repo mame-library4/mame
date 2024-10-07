@@ -4,6 +4,7 @@
 #include "Character/Enemy/EnemyManager.h"
 #include "Projectile/ProjectileManager.h"
 #include "UI/UINumber.h"
+#include "Effect/EffectManager.h"
 
 void CollisionManager::Initialize()
 {
@@ -81,6 +82,10 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                 // 当たった場所に応じて部位にダメージを蓄積する
                 //enemyData.GetName()
                 
+
+                Effect* counterEffect = EffectManager::Instance().GetEffect("Attack");
+                counterEffect->Play(enemyData.GetPosition(), 0.3f, 1.0f);
+
                 // TODO:ダメージ処理
                 // ダメージ処理
                 enemy->AddDamage(enemyData.GetDamage(), enemyDataIndex);

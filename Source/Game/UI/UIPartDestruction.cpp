@@ -78,6 +78,7 @@ void UIPartDestruction::Render()
 // ----- ImGui -----
 void UIPartDestruction::DrawDebug()
 {
+#ifdef _DEBUG
     if (ImGui::TreeNode(GetName().c_str()))
     {
         ImGui::DragFloat("LifeTimer", &lifeTimer_);
@@ -88,4 +89,5 @@ void UIPartDestruction::DrawDebug()
 
         ImGui::TreePop();
     }
+#endif
 }

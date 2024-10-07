@@ -138,7 +138,7 @@ void Application::Render()
         deviceContext->ClearRenderTargetView(renderTargetView, color);
         //deviceContext->ClearDepthStencilView(Graphics::Instance().GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
         deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
-     
+        //deviceContext->OMSetRenderTargets(1, &renderTargetView, Graphics::Instance().GetShader()->gBufferDepthStencilView_.Get());     
 
         PostProcess::Instance().Activate();
 

@@ -36,10 +36,12 @@ void UIFader::Render()
 // ----- ImGui—p -----
 void UIFader::DrawDebug()
 {
+#ifdef _DEBUG
     if (ImGui::TreeNode(GetName().c_str()))
     {
         UI::DrawDebug();
 
         ImGui::TreePop();
     }
+#endif
 }

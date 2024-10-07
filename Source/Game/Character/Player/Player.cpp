@@ -142,7 +142,7 @@ void Player::Render(ID3D11PixelShader* psShader)
 
 void Player::RenderTrail()
 {
-    //swordTrail_.Render();
+    swordTrail_.Render();
 }
 
 // ----- ImGui—p -----

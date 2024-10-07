@@ -68,6 +68,7 @@ private:
     void CreateGBuffer();               // G-BufferçÏê¨
 
 private:
+//public:
     Microsoft::WRL::ComPtr<ID3D11BlendState>            blendStates_[static_cast<int>(BLEND_STATE::MAX)];
     Microsoft::WRL::ComPtr<ID3D11RasterizerState>       rasterizerStates_[static_cast<int>(RASTER_STATE::MAX)];
     Microsoft::WRL::ComPtr<ID3D11DepthStencilState>     depthStencilStates_[static_cast<int>(DEPTH_STATE::MAX)];

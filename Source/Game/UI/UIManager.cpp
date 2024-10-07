@@ -49,6 +49,7 @@ void UIManager::Render()
 // ----- ImGui—p -----
 void UIManager::DrawDebug()
 {
+#ifdef _DEBUG
     if (ImGui::BeginMainMenuBar())
     {
 
@@ -68,6 +69,7 @@ void UIManager::DrawDebug()
 
         ImGui::EndMainMenuBar();
     }
+#endif
 }
 
 // ----- “o˜^ -----

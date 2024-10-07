@@ -62,10 +62,12 @@ void GameScene::CreateResource()
 
     Effect* effect0 = new Effect("./Resources/Effect/Counter.efk", "Counter");
     
-    //Effect* effect1 = new Effect("./Resources/Effect/Attack.efk", "Mikiri");
     Effect* effect1 = new Effect("./Resources/Effect/Mikiri.efk", "Mikiri");
     
     Effect* effect2 = new Effect("./Resources/Effect/Fire.efk", "Fire");
+    
+    //Effect* effect3 = new Effect("./Resources/Effect/Attack1.efk", "Attack");
+    Effect* effect3 = new Effect("./Resources/Effect/Attack2.efk", "Attack");
 }
 
 // ----- èâä˙âª -----
@@ -235,7 +237,7 @@ void GameScene::Render()
     Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
     Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_ON_ZW_ON);
 
-    PlayerManager::Instance().RenderTrail();
+    //PlayerManager::Instance().RenderTrail();
 
     ParticleManager::Instance().Render();
 

@@ -70,12 +70,14 @@ void UINumber::Render()
 
 void UINumber::DrawDebug()
 {
+#ifdef _DEBUG
     if (ImGui::TreeNode(GetName().c_str()))
     {
         ImGui::DragFloat("LifeTimer", &lifeTimer_);
 
         ImGui::TreePop();
     }
+#endif
 }
 
 // ----- ”š‚ğİ’è‚·‚é -----
