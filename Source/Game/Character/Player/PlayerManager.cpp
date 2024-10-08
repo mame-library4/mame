@@ -15,19 +15,18 @@ void PlayerManager::Finalize()
 // ----- 更新 -----
 void PlayerManager::Update(const float& elapsedTime)
 {
-    if (isSkip_)
+    // ヒットストップ
+    if (isHitStopActive_)
     {
-        if (skipNum_ > 1)
-        {
-            isSkip_ = false;
-        }
-        ++skipNum_;
+        ++currentHitStopFrame_;
+
+        if (currentHitStopFrame_ >= hitStopFrame_) isHitStopActive_ = false;
+
+        // ヒットストップ中なのでここで終了
+        return;
     }
-    else
-    {
-        player_->Update(elapsedTime);
-        skipNum_ = 0;
-    }
+     
+    player_->Update(elapsedTime);
 }
 
 // ----- 描画 -----
@@ -56,4 +55,11 @@ void PlayerManager::DrawDebug()
 void PlayerManager::DebugRender(DebugRenderer* debugRenderer)
 {
     player_->DebugRender(debugRenderer);
+}
+
+void PlayerManager::SetHitStop(const float& hitStopFrame)
+{
+    hitStopFrame_ = hitStopFrame;
+    currentHitStopFrame_ = 0;
+    isHitStopActive_ = true;
 }

@@ -33,13 +33,18 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const bool GetUseCollisionDetection() const { return useCollisionDetection_; }
     void SetUseCollisionDetection(const bool& flag) { useCollisionDetection_ = flag; }
 
+    // ---------- ヒットストップ ----------
+    void SetHitStop(const float& hitStopFrame);
+
 private:
     std::unique_ptr<Player> player_;
 
     // ---------- 判定制御用フラグ ----------
     bool useCollisionDetection_ = true; // 押し出し判定用
 
-    bool isSkip_ = false;
-    int skipNum_ = 0;
+    // ---------- ヒットストップ ----------
+    int     hitStopFrame_           = 0;
+    int     currentHitStopFrame_    = 0;
+    bool    isHitStopActive_        = false;
 };
 

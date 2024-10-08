@@ -21,6 +21,9 @@ public:// --- 定数 ---
         Damage,         // ダメージ
         Death,          // 死亡
         Avoidance,      // 回避
+
+        Skill,
+
         Counter,        // カウンター
         CounterCombo,   // カウンターコンボ
 
@@ -95,6 +98,9 @@ public:// --- 定数 ---
         RunAttack1,
 
         Counter,
+
+        Skill0,
+        Skill1,
     };
 
     // 先行入力の種類

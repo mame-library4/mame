@@ -101,6 +101,7 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
 
                 // TODO:ヒットストップ処理
                 // ヒットストップ
+                PlayerManager::Instance().SetHitStop(7);
 
                 // カウンター攻撃時ならコントローラーを振動させる
                 if (player->GetCurrentState() == Player::STATE::CounterCombo)

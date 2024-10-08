@@ -108,6 +108,12 @@ namespace PlayerState
     // ----- 更新 -----
     void IdleState::Update(const float& elapsedTime)
     {
+        if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_LEFT_TRIGGER)
+        {
+            owner_->ChangeState(Player::STATE::Skill);
+            return;
+        }
+
         // 先行入力判定
         if (CheckNextInput()) return;
 
@@ -1237,6 +1243,58 @@ namespace PlayerState
         const int differenceNum = static_cast<int>(Player::Animation::RollForward);
 
         moveDirection_  = moveDirection[animationIndex - differenceNum];
+    }
+}
+
+// ----- スキル -----
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void SkillState::Initialize()
+    {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
+        //owner_->PlayBlendAnimation(Player::Animation::Skill1, false, 1.0f, 0.23f);
+        owner_->PlayBlendAnimation(Player::Animation::Skill0, false, 1.0f, 0.23f);
+        owner_->SetTransitionTime(0.1f);
+
+        //owner_->SetUseRootMotion(true);
+        //owner_->SetUseRootMotionMovement(true);
+    }
+
+    // ----- 更新 -----
+    void SkillState::Update(const float& elapsedTime)
+    {
+        SetAnimationSpeed();
+
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+    }
+
+    // ----- 終了化 -----
+    void SkillState::Finalize()
+    {
+    }
+
+    // ----- アニメーションの速度を設定 -----
+    void SkillState::SetAnimationSpeed()
+    {
+        const Player::Animation currentAnimation = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+        const float animationFrame = owner_->GetAnimationSeconds();
+
+        if (currentAnimation == Player::Animation::Skill0)
+        {
+
+
+        }
+        else
+        {
+
+        }
     }
 }
 

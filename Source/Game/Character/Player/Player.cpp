@@ -22,6 +22,7 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::DamageState(this));           // ダメージ
         GetStateMachine()->RegisterState(new PlayerState::DeathState(this));            // 死亡
         GetStateMachine()->RegisterState(new PlayerState::AvoidanceState(this));        // 回避
+        GetStateMachine()->RegisterState(new PlayerState::SkillState(this));        // スキル
         GetStateMachine()->RegisterState(new PlayerState::CounterState(this));          // カウンター
         GetStateMachine()->RegisterState(new PlayerState::CounterComboState(this));     // カウンターコンボ
         GetStateMachine()->RegisterState(new PlayerState::RunAttackState(this));        // コンボ0_3

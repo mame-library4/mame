@@ -61,6 +61,11 @@ void Camera::Update(const float& elapsedTime)
 #if 1
     if (isCounterDelay_ == false) target_ = cameraTargetPosition;
 
+    if (PlayerManager::Instance().GetPlayer()->GetCurrentState() == Player::STATE::Skill)
+    {
+        
+    }
+
 #else
     if (lerpTimer_ >= 1.0f)
     {
