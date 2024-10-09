@@ -81,6 +81,10 @@ public:// --- 取得・設定 ---
     // ---------- LookAt ----------
     void SetLookAtTargetPosition(const DirectX::XMFLOAT3& targetPosition) { lookAtTargetPosition_ = targetPosition; }
 
+    // ---------- 死亡フラグ ----------
+    [[nodiscard]] const bool GetIsDead()const { return isDead_; }
+    void SetIsDead(const bool& flag) { isDead_ = flag; }
+
 #pragma endregion [Get, Set] Function
 
 protected:
@@ -99,6 +103,8 @@ private:
 
     float               maxHealth_      = 1.0f;
     float               health_         = 1.0f; // 体力
+
+    bool isDead_ = false; // 死亡フラグ
 
 
     float collisionRadius_ = 0.0f;

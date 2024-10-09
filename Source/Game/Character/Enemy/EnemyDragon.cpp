@@ -2,6 +2,8 @@
 #include "JudgmentDragon.h"
 #include "ActionDragon.h"
 
+#include "Camera.h"
+
 // ----- コンストラクタ -----
 EnemyDragon::EnemyDragon()
     : Enemy("./Resources/Model/Character/Enemy/Dragon.gltf", 1.0f),
@@ -232,12 +234,12 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Near", "ComboFlySlam",  0, BehaviorTree::SelectRule::None, new ComboFlySlamJudgment(this), new ActionDragon::ComboFlySlamAction(this));    
     
 
-    //behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::SequentialLooping, nullptr, nullptr);
-    behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::SequentialLooping, nullptr, nullptr);
+    //behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
     //behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
 
     
-    //behaviorTree_->AddNode("MostNear", "SuperNova",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
+    behaviorTree_->AddNode("MostNear", "SuperNova",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
     behaviorTree_->AddNode("MostNear", "TurnAttack",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
     
     behaviorTree_->AddNode("MostNear", "ComboSlam",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));    
@@ -283,6 +285,12 @@ bool EnemyDragon::CheckStatusChange()
         ResetAllAttackActiveFlag();
 
         SetUseRootMotion(false);
+
+        // 死亡フラグを立てる
+        SetIsDead(true);
+
+        // 死亡時カメラを使用する
+        Camera::Instance().SetUseEnemyDeathCamera();
 
         return true;
     }

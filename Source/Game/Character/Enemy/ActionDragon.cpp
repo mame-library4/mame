@@ -70,6 +70,9 @@ namespace ActionDragon
 {
     const ActionBase::State SuperNovaAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         switch (owner_->GetStep())
         {
         case 0:
@@ -116,8 +119,6 @@ namespace ActionDragon
     {
         if (owner_->GetStep() == 0)
         {
-            // 死亡時カメラを使用する
-            Camera::Instance().SetUseEnemyDeathCamera();
 
             owner_->SetStep(1);
         }
@@ -358,6 +359,9 @@ namespace ActionDragon
 {
     const ActionBase::State PartDestructionFlinchAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+
         switch (owner_->GetStep())
         {
         case 0:// 初期設定

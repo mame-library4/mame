@@ -198,6 +198,8 @@ private:
     bool                        useLockonCamera_            = false; // ロックオンカメラ使用フラグ
     bool                        isNextJointAccessible       = true;  // 次のターゲットを選択できるか
 
+    float lockOnRotationSpeed_ = 0.5f; // カメラ回転速度
+
     // ---------- カメラリセット ----------
     DirectX::XMFLOAT2   resetOldRotation_       = {};    // 処理開始時の角度
     DirectX::XMFLOAT2   resetTargetRotation_    = {};    // 目標地点の角度

@@ -97,7 +97,6 @@ void Camera::Update(const float& elapsedTime)
     // カウンター攻撃のカメラ更新
     if (UpdateCounterAttackCamera(elapsedTime)) return;
 
-
     // ロックオンカメラ
     UpdateLockonCamera(elapsedTime);
 
@@ -109,7 +108,6 @@ void Camera::Update(const float& elapsedTime)
 
     // --- 画面振動 ---
     ScreenVibrationUpdate(elapsedTime);
-
 }
 
 void Camera::SetPerspectiveFov()
@@ -181,6 +179,7 @@ void Camera::DrawDebug()
         if (ImGui::TreeNode("LockonCamera"))
         {
             ImGui::BulletText(targetJointName_.at(currentTargetJointIndex_).c_str());
+            ImGui::DragFloat("LockOnRotationSpeed", &lockOnRotationSpeed_, 0.1f);
             ImGui::DragInt("TargetJointIndex", &currentTargetJointIndex_, 1, 0, 2);
             ImGui::DragFloat("LockonInputThreshold", &lockonInputThreshold_, 0.1f, 0.1f, 1.0f);
 
@@ -295,11 +294,6 @@ void Camera::Rotate(const float& elapsedTime)
     // X軸(上下)の回転制御
     if (rotate.x < minXRotation_) rotate.x = minXRotation_;
 
-    // Y軸回転値を 0.0f ~ XM_2PI に収まるようにする
-    if (rotate.y > DirectX::XM_2PI) rotate.y -= DirectX::XM_2PI;
-    if (rotate.y < 0.0f)            rotate.y += DirectX::XM_2PI;
-
-
     GetTransform()->SetRotation(rotate);
 }
 
@@ -364,8 +358,18 @@ void Camera::SetUsePlayerDeathCmaera(const float& flag)
 // ----- 敵死亡時カメラ使用する -----
 void Camera::SetUseEnemyDeathCamera()
 {
+    // 敵死亡カメラ変数を設定
     useEnemyDeathCamera_ = true;
     enemyDeathstate_ = 0;
+
+    // -------------------------------------
+    //  現在使用しているカメラをすべて解除する
+    // -------------------------------------
+
+    // ロックオンカメラを解除する。ロックオンUIも削除する
+    useLockonCamera_ = false;
+    UIManager::Instance().Remove(UIManager::UIType::UICrosshair);
+
 }
 
 // ----- カウンター時カメラを使用する -----
@@ -378,6 +382,11 @@ void Camera::SetUseCounterCamera()
 // ----- ロックオンカメラ更新 -----
 void Camera::UpdateLockonCamera(const float& elapsedTime)
 {
+    // ロックオンする敵が存在しない
+    if (EnemyManager::Instance().GetEnemyCount() == 0) return;
+    // ドラゴンが死んでいるためロックオンできない
+    if (EnemyManager::Instance().GetEnemy(0)->GetIsDead()) return;
+
     // ロックオン入力判定
     if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_THUMB)
     {
@@ -436,50 +445,131 @@ void Camera::UpdateLockonCamera(const float& elapsedTime)
 
     DirectX::XMFLOAT3 cameraPosition = GetTransform()->GetPosition();
     DirectX::XMFLOAT3 playerPosition = PlayerManager::Instance().GetTransform()->GetPosition();
+    DirectX::XMFLOAT3 playerHeadPosition = PlayerManager::Instance().GetPlayer()->GetJointPosition("head");
+    playerHeadPosition.y = 1.7f;
     DirectX::XMFLOAT3 targetPosition = EnemyManager::Instance().GetEnemy(0)->GetJointPosition(GetCurrentTargetJointName());
 
     {
         // XZ平面での処理
-        DirectX::XMFLOAT3 cameraToEnemy = targetPosition - cameraPosition;
+        DirectX::XMFLOAT3 cameraToPlayer = playerPosition - cameraPosition;
         DirectX::XMFLOAT3 playerToEnemy = targetPosition - playerPosition;
 
-        DirectX::XMFLOAT2 vec0 = XMFloat2Normalize({ cameraToEnemy.x, cameraToEnemy.z });
+        DirectX::XMFLOAT2 vec0 = XMFloat2Normalize({ cameraToPlayer.x, cameraToPlayer.z });
         DirectX::XMFLOAT2 vec1 = XMFloat2Normalize({ playerToEnemy.x, playerToEnemy.z });
 
-        const float angle = DirectX::XMVectorGetX(DirectX::XMVector2AngleBetweenVectors(DirectX::XMLoadFloat2(&vec0), DirectX::XMLoadFloat2(&vec1)));
+        const float angle = DirectX::XMVectorGetX(DirectX::XMVector2AngleBetweenNormals(DirectX::XMLoadFloat2(&vec0), DirectX::XMLoadFloat2(&vec1)));
 
         float cross = XMFloat2Cross(vec0, vec1);
 
         if (cross < 0)
         {
-            GetTransform()->AddRotationY(-angle);
+            GetTransform()->AddRotationY(-angle * lockOnRotationSpeed_);
         }
         else
         {
-            GetTransform()->AddRotationY(angle);
+            GetTransform()->AddRotationY(angle * lockOnRotationSpeed_);
         }
     }
 
     {
-        GetTransform()->SetRotationX(DirectX::XMConvertToRadians(10.0f));
+        DirectX::XMFLOAT3 cameraToPlayer = playerHeadPosition - cameraPosition;
+        DirectX::XMFLOAT3 playerToEnemy = targetPosition - playerHeadPosition;
+        DirectX::XMFLOAT2 vec0 = XMFloat2Normalize({ cameraToPlayer.y, XMFloat2Length({cameraToPlayer.x, cameraToPlayer.z}) });
+        DirectX::XMFLOAT2 vec1 = XMFloat2Normalize({ playerToEnemy.y, XMFloat2Length({playerToEnemy.x, playerToEnemy.z}) });
 
-        // YZ平面での処理
-        //vec0 = XMFloat2Normalize({ cameraToEnemy.y, cameraToEnemy.z });
-        //vec1 = XMFloat2Normalize({ playerToEnemy.y, playerToEnemy.z });
+        float angle = DirectX::XMVectorGetX(DirectX::XMVector2AngleBetweenNormals(DirectX::XMLoadFloat2(&vec0), DirectX::XMLoadFloat2(&vec1)));
 
-        //dot = XMFloat2Dot(vec0, vec1) - 1.0f;
 
-        //cross = XMFloat2Cross(vec0, vec1);
 
-        //if (cross < 0)
-        //{
-        //    GetTransform()->SetRotationX(dot);
-        //}
-        //else
-        //{
-        //    GetTransform()->SetRotationX(-dot);
-        //}
+        ////if (fabsf(angle) > DirectX::XM_PIDIV2)
+        ////{
+        ////    angle = (angle > 0.0f) ? angle - DirectX::XM_PI : angle + DirectX::XM_PI;
+        ////}
+
+        float cross = XMFloat2Cross(vec0, vec1);
+
+        if (cross < 0)
+        {
+            GetTransform()->AddRotationX(-angle * lockOnRotationSpeed_);
+        }
+        else
+        {
+            GetTransform()->AddRotationX(angle * lockOnRotationSpeed_);
+        }
     }
+
+    // length 6.05
+    {
+        //float rotationX = GetTransform()->GetRotationX();
+
+        //if (rotationX > maxXRotation_)
+        //{
+        //    float minRotation = maxXRotation_;
+        //    constexpr float maxRotate = DirectX::XMConvertToRadians(40);
+
+        //    //const float addAmountSpeed = 2.0f;
+        //    const float rotateAmount = (maxRotate - minRotation);
+        //    const float lengthAmount = (minLength_ - 2.5f);
+        //    
+        //    float value = (rotationX - minRotation) / rotateAmount;
+
+        //    float lenght = lengthAmount * value;
+
+        //    length_ = lenght;            
+        //}
+
+
+    }
+
+#if 0
+    // 横移動は制限なし
+    rotate.y += aRx * horizontalRotationSpeed_ * elapsedTime;
+
+    // length制御
+    float deltaLength = maxLength_ - minLength_;
+    float deltaRotate = fabs(maxXRotation_) + fabs(minXRotation_);
+    float addLength = deltaLength / deltaRotate;
+
+    // 理不尽な縦回転を入れないように閾値以上なら入力を取得する
+    if (fabs(aRy) >= inputThreshold_)
+    {
+        // 上下入力反転を判定
+        const float aRyValue = invertVertical_ ? aRy * -1 * elapsedTime : aRy * elapsedTime;
+
+        if (rotate.x > maxXRotation_)
+        {
+            isAdjustCameraLength_ = true;
+
+            constexpr float maxRotate = DirectX::XMConvertToRadians(40);
+            const float addAmountSpeed = 2.0f;
+            const float rotateAmount = (maxRotate - maxXRotation_) * addAmountSpeed;
+            const float lengthAmount = (minLength_ - 2.5f) * addAmountSpeed;
+
+            rotate.x -= rotateAmount * aRyValue;
+
+            if (rotate.x > maxRotate) rotate.x = maxRotate;
+
+            length_ += lengthAmount * aRyValue;
+            if (length_ < 2.5f) length_ = 2.5f;
+        }
+        else
+        {
+            isAdjustCameraLength_ = false;
+
+            rotate.x -= verticalRotationSpeed_ * aRyValue;
+
+            length_ += addLength * aRyValue;
+        }
+    }
+
+    if (length_ > maxLength_) length_ = maxLength_;
+#endif
+
+    // 角度調整
+    DirectX::XMFLOAT3 rotation = GetTransform()->GetRotation();
+    if (rotation.y > DirectX::XM_2PI) rotation.y -= DirectX::XM_2PI;
+    if (rotation.y < 0.0f)            rotation.y += DirectX::XM_2PI;
+    GetTransform()->SetRotation(rotation);
 }
 
 // ----- カメラリセット更新 -----
