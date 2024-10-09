@@ -234,7 +234,9 @@
     <ClCompile Include="Source\Game\UI\UICrosshair.cpp" />
     <ClCompile Include="Source\Game\UI\UIFader.cpp" />
     <ClCompile Include="Source\Game\UI\UIHealth.cpp" />
+    <ClCompile Include="Source\Game\UI\UIHuntComplete.cpp" />
     <ClCompile Include="Source\Game\UI\UIManager.cpp" />
+    <ClCompile Include="Source\Game\UI\UINotifications.cpp" />
     <ClCompile Include="Source\Game\UI\UINumber.cpp" />
     <ClCompile Include="Source\Game\UI\UIPartDestruction.cpp" />
     <ClCompile Include="Source\Game\UI\UIStamina.cpp" />
@@ -321,7 +323,9 @@
     <ClInclude Include="Source\Game\UI\UICrosshair.h" />
     <ClInclude Include="Source\Game\UI\UIFader.h" />
     <ClInclude Include="Source\Game\UI\UIHealth.h" />
+    <ClInclude Include="Source\Game\UI\UIHuntComplete.h" />
     <ClInclude Include="Source\Game\UI\UIManager.h" />
+    <ClInclude Include="Source\Game\UI\UINotifications.h" />
     <ClInclude Include="Source\Game\UI\UINumber.h" />
     <ClInclude Include="Source\Game\UI\UIPartDestruction.h" />
     <ClInclude Include="Source\Game\UI\UIStamina.h" />

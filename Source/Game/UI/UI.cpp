@@ -22,18 +22,6 @@ void UI::Update(const float& elapsedTime)
 {
     if (sprite_ != nullptr)
     {
-        // ˆÚ“®ˆ—
-        if(isMovingToTarget_)
-        {
-            moveTimer_ += moveSpeed_ * elapsedTime;
-            moveTimer_ = min(moveTimer_, 1.0f);
-
-            const DirectX::XMFLOAT2 position = XMFloat2Lerp(oldPosition_, moveTargetPosition_, moveTimer_);
-
-            GetTransform()->SetPosition(position);
-
-            if (moveTimer_ == 1.0f) isMovingToTarget_ = false;
-        }
     }
 }
 
@@ -56,20 +44,4 @@ void UI::SetSpriteName(const std::string& name)
     {
         sprite_->SetName(name.c_str());
     }
-}
-
-// ----- ˆÚ“®ŠÖ˜A‚Ì•Ï”İ’è -----
-void UI::SetMoveTarget(const DirectX::XMFLOAT2& moveValue)
-{
-    oldPosition_ = GetTransform()->GetPosition();
-    moveTargetPosition_ = oldPosition_ + moveValue;
-    moveTimer_ = 0.0f;
-    isMovingToTarget_ = true;
-}
-
-// ----- ‘¼‚Ìˆ—‚ÅˆÚ“®‚³‚¹‚½‚Æ‚«‚É“K‰‚·‚é‚½‚ß -----
-void UI::AddMoveTargetPosition(const DirectX::XMFLOAT2& position)
-{
-    oldPosition_ += position;
-    moveTargetPosition_ += position;
 }

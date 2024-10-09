@@ -6,13 +6,14 @@
 
 // ----- コンストラクタ -----
 UICrosshair::UICrosshair()
-    : UI(UIManager::UIType::UICrosshair, L"./Resources/Image/Crosshair/OuterLine.png", "UICrosshair")
+    //: UI(UIManager::UIType::UICrosshair, L"./Resources/Image/UI/waku.png", "UICrosshair")
+    : UI(UIManager::UIType::UICrosshair, L"./Resources/Image/UI/Crosshair/OuterLine.png", "UICrosshair")
 {
     // アウトライン命名
     SetSpriteName("OuterLine");
     
     // センタードットSprite生成 & 命名
-    centerDot_ = std::make_unique<Sprite>(L"./Resources/Image/Crosshair/CenterDot.png");
+    centerDot_ = std::make_unique<Sprite>(L"./Resources/Image/UI/Crosshair/CenterDot.png");
     centerDot_->SetName("CenterDot");
     centerDot_->GetTransform()->SetColorA(0.0f);
 }

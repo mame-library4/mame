@@ -218,7 +218,7 @@
       <Filter>Mame\Game\UI\UIFader</Filter>
     </ClCompile>
     <ClCompile Include="Source\Game\UI\UIPartDestruction.cpp">
-      <Filter>Mame\Game\UI\UIPartDestruction</Filter>
+      <Filter>Mame\Game\UI\UINotifications\UIPartDestruction</Filter>
     </ClCompile>
     <ClCompile Include="Source\Game\UI\UICrosshair.cpp">
       <Filter>Mame\Game\UI\UICrosshair</Filter>
@@ -240,6 +240,12 @@
     </ClCompile>
     <ClCompile Include="Source\Game\UI\UIStamina.cpp">
       <Filter>Mame\Game\UI\UIStamina</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\UI\UINotifications.cpp">
+      <Filter>Mame\Game\UI\UINotifications</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\UI\UIHuntComplete.cpp">
+      <Filter>Mame\Game\UI\UINotifications\UIHuntComplete</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -488,7 +494,7 @@
       <Filter>Mame\Game\UI\UIFader</Filter>
     </ClInclude>
     <ClInclude Include="Source\Game\UI\UIPartDestruction.h">
-      <Filter>Mame\Game\UI\UIPartDestruction</Filter>
+      <Filter>Mame\Game\UI\UINotifications\UIPartDestruction</Filter>
     </ClInclude>
     <ClInclude Include="Source\Game\UI\UICrosshair.h">
       <Filter>Mame\Game\UI\UICrosshair</Filter>
@@ -510,6 +516,12 @@
     </ClInclude>
     <ClInclude Include="Source\Game\UI\UIStamina.h">
       <Filter>Mame\Game\UI\UIStamina</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\UI\UINotifications.h">
+      <Filter>Mame\Game\UI\UINotifications</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\UI\UIHuntComplete.h">
+      <Filter>Mame\Game\UI\UINotifications\UIHuntComplete</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -666,9 +678,6 @@
     <Filter Include="Mame\Game\UI\UICrosshair">
       <UniqueIdentifier>{da3ce419-deed-42c1-9196-485900643a61}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Mame\Game\UI\UIPartDestruction">
-      <UniqueIdentifier>{8743c3f6-0c04-4152-9b6d-f744a0cd4157}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Mame\Graphics\Particle">
       <UniqueIdentifier>{2168c236-3026-4715-a271-7a041b4e295c}</UniqueIdentifier>
     </Filter>
@@ -683,6 +692,15 @@
     </Filter>
     <Filter Include="Mame\Game\UI\UIStamina">
       <UniqueIdentifier>{55bb59be-f90b-4377-a56d-a0af605feedb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\UI\UINotifications">
+      <UniqueIdentifier>{7347c224-34a3-4c17-b0ff-79da2f0f3db2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\UI\UINotifications\UIPartDestruction">
+      <UniqueIdentifier>{8743c3f6-0c04-4152-9b6d-f744a0cd4157}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\UI\UINotifications\UIHuntComplete">
+      <UniqueIdentifier>{be745af8-8272-49e1-a779-86ac7804ee9f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -20,7 +20,7 @@ UINumber::UINumber(const int& num, const DirectX::XMFLOAT3& hitPos) :
     // ‰Šúİ’è
     for (int spriteIndex = 0; spriteIndex < digit_; ++spriteIndex)
     {
-        numSprite_[spriteIndex] = std::make_unique<Sprite>(L"./Resources/Image/Number/numbers.png");
+        numSprite_[spriteIndex] = std::make_unique<Sprite>(L"./Resources/Image/UI/Number/numbers.png");
         numSprite_[spriteIndex]->GetTransform()->SetTexSize(256.0f);
         numSprite_[spriteIndex]->GetTransform()->SetSize(numSpriteSize_);
     }

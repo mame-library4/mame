@@ -76,19 +76,18 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
             {
                 // Hitフラグを立てる, このデータの無敵時間設定
                 enemyData.SetIsHit(true);
-                enemyData.SetHitTimer(0.01f);
-
-                // TODO:部位破壊
-                // 当たった場所に応じて部位にダメージを蓄積する
-                //enemyData.GetName()
-                
+                enemyData.SetHitTimer(0.01f);                
 
                 Effect* counterEffect = EffectManager::Instance().GetEffect("Attack");
                 counterEffect->Play(enemyData.GetPosition(), 0.3f, 1.0f);
 
-                // TODO:ダメージ処理
-                // ダメージ処理
-                enemy->AddDamage(enemyData.GetDamage(), enemyDataIndex);
+                // 敵が死んでいなかったらダメージ処理をする
+                if (enemy->GetIsDead() == false)
+                {
+                    // TODO:攻撃によってダメージ倍率を変える
+
+                    enemy->AddDamage(enemyData.GetDamage(), enemyDataIndex);
+                }
                 
                 // Playerの攻撃判定を無くす
                 player->SetIsAbleAttack(false);

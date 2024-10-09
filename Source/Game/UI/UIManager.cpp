@@ -75,20 +75,21 @@ void UIManager::DrawDebug()
 // ----- “o˜^ -----
 void UIManager::Register(UI* ui)
 {
-    generates_.insert(ui);
-
     // •”ˆÊ”j‰óUI‚Ìê‡UI“¯m‚ª”í‚ç‚È‚¢‚æ‚¤‚É
     // æ‚É¶¬‚³‚ê‚Ä‚¢‚é•”ˆÊ”j‰óUI‚ÌˆÊ’u‚ğ‚¸‚ç‚·
-    if (ui->GetType() == UIType::UIPartDestruction)
+    if (ui->GetType() == UIType::UINotifications)
     {
         for (UI*& userInterface : userInterface_)
         {
-            if (userInterface->GetType() != UIType::UIPartDestruction) continue;
+            if (userInterface->GetType() != UIType::UINotifications) continue;
 
             // ˆÚ“®—Ê‚ğİ’è‚·‚é
-            userInterface->SetMoveTarget({0.0f, -60.0f});
+            const float moveValue = -60.0f;
+            userInterface->GetTransform()->AddPositionY(moveValue);
         }
     }
+
+    generates_.insert(ui);
 }
 
 // ----- íœ w’è‚ÌUI -----

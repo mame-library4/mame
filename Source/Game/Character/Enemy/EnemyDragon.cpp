@@ -4,6 +4,8 @@
 
 #include "Camera.h"
 
+#include "UI/UIHuntComplete.h"
+
 // ----- コンストラクタ -----
 EnemyDragon::EnemyDragon()
     : Enemy("./Resources/Model/Character/Enemy/Dragon.gltf", 1.0f),
@@ -39,7 +41,7 @@ void EnemyDragon::Initialize()
     SetWalkSpeed(15.0f);
 
     // 体力設定
-    SetMaxHealth(600.0f);
+    SetMaxHealth(60.0f);
     //SetMaxHealth(3000.0f);
     SetHealth(GetMaxHealth());
 
@@ -291,6 +293,9 @@ bool EnemyDragon::CheckStatusChange()
 
         // 死亡時カメラを使用する
         Camera::Instance().SetUseEnemyDeathCamera();
+
+        // 討伐達成UIを出す
+        UIHuntComplete* uIHuntComplete = new UIHuntComplete();
 
         return true;
     }

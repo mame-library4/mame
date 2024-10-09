@@ -26,7 +26,7 @@ public:
         // ------- ï`âÊèá -------
         UINumber,           // |
         UICrosshair,        // |
-        UIPartDestruction,  // |
+        UINotifications,    // |
         UIStamina,          // |
         UIHealth,           // |
         UIFader,            // |
