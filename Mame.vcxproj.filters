@@ -247,6 +247,9 @@
     <ClCompile Include="Source\Game\UI\UIHuntComplete.cpp">
       <Filter>Mame\Game\UI\UINotifications\UIHuntComplete</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\UI\UIActionGuide.cpp">
+      <Filter>Mame\Game\UI\UIActionGuide</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -523,6 +526,9 @@
     <ClInclude Include="Source\Game\UI\UIHuntComplete.h">
       <Filter>Mame\Game\UI\UINotifications\UIHuntComplete</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\UI\UIActionGuide.h">
+      <Filter>Mame\Game\UI\UIActionGuide</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -701,6 +707,9 @@
     </Filter>
     <Filter Include="Mame\Game\UI\UINotifications\UIHuntComplete">
       <UniqueIdentifier>{be745af8-8272-49e1-a779-86ac7804ee9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\UI\UIActionGuide">
+      <UniqueIdentifier>{ce724b79-d179-45c8-b683-0c7e329b9621}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

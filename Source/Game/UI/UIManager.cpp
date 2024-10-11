@@ -118,3 +118,15 @@ void UIManager::Clear()
     userInterface_.clear();
     userInterface_.shrink_to_fit();
 }
+
+UI* UIManager::GetUI(const UIType& type)
+{
+    for (UI*& ui : userInterface_)
+    {
+        if (ui->GetType() != type) continue;
+
+        return ui;
+    }
+
+    return nullptr;
+}

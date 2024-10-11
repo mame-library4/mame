@@ -151,6 +151,8 @@ void Player::DrawDebug()
 {
     if (ImGui::BeginMenu("Player"))
     {
+        ImGui::DragFloat("StaminaRecoverySpeed", &staminaRecoverySpeed_);
+
         if (ImGui::TreeNode("Weapon"))
         {
             weapon_.DrawDebug();

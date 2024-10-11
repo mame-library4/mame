@@ -27,6 +27,7 @@ public:
         UINumber,           // |
         UICrosshair,        // |
         UINotifications,    // |
+        UIActionGuide,      // |
         UIStamina,          // |
         UIHealth,           // |
         UIFader,            // |
@@ -42,6 +43,9 @@ public:
     void Remove(UI* ui);                // 削除 指定のUI
     void Remove(const UIType& type);    // 削除 指定の種類のUI全て
     void Clear();                       // 全削除
+
+    // ひとつだけ存在するUIを取得する
+    UI* GetUI(const UIType& type);
 
 public:// [Get, Set] Function
     [[nodiscard]] const int GetImGuiNameNum() { return imguiNameNum_++; }

@@ -14,6 +14,7 @@
 
 #include "Projectile/ProjectileManager.h"
 #include "UI/UIPartDestruction.h"
+#include "UI/UIActionGuide.h"
 
 #include "Particle/ParticleManager.h"
 
@@ -68,6 +69,8 @@ void GameScene::CreateResource()
     
     //Effect* effect3 = new Effect("./Resources/Effect/Attack1.efk", "Attack");
     Effect* effect3 = new Effect("./Resources/Effect/Attack2.efk", "Attack");
+
+    UIActionGuide* uIActionGuide = new UIActionGuide();
 }
 
 // ----- èâä˙âª -----

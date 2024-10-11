@@ -100,6 +100,14 @@ void Camera::Update(const float& elapsedTime)
     // ロックオンカメラ
     UpdateLockonCamera(elapsedTime);
 
+    if(useLockonCamera_)
+    {
+        hitWallLerpTimer_ = isHitWall_ ? hitWallLerpTimer_ + elapsedTime * 2.0f : hitWallLerpTimer_ - elapsedTime * 2.0f;
+
+        hitWallLerpTimer_ = min(1.0f, hitWallLerpTimer_);
+        hitWallLerpTimer_ = max(0.0f, hitWallLerpTimer_);
+    }
+
     // カメラリセット
     UpdateCameraReset(elapsedTime);
 
@@ -120,6 +128,29 @@ void Camera::SetPerspectiveFov()
     view_.focus_ = target_ + cameraOffset_ + targetOffset_;
 
     GetTransform()->SetPosition(view_.eye_);
+
+    if (useLockonCamera_)
+    {
+        DirectX::XMFLOAT3 targetPosition = EnemyManager::Instance().GetEnemy(0)->GetJointPosition(GetCurrentTargetJointName());
+        const float targetLengthY = fabsf(groundNearest_ - targetPosition.y);
+        const float currentLengthY = fabsf(view_.eye_.y - targetPosition.y);
+
+        DirectX::XMFLOAT3 vec = XMFloat3Normalize(view_.eye_ - view_.focus_) * minLength_;
+        vec = view_.focus_ + vec;
+
+        if (vec.y < groundNearest_)
+        {
+            // 地面に埋まっているため
+            length_ = (length_ * targetLengthY) / currentLengthY;
+        }
+        else
+        {
+            if (length_ < minLength_)
+            {
+                length_ = XMFloatLerp(length_, maxLength_, 0.5f);
+            }
+        }
+    }
 
     // ----- カメラをステージ内に収める -----
     if(SceneManager::Instance().GetCurrentSceneName() == SceneManager::SceneName::Game)
@@ -149,6 +180,24 @@ void Camera::SetPerspectiveFov()
 
             DirectX::XMFLOAT3 d = direction * root0;
             view_.eye_ = cameraPosition + d;
+
+            if (useLockonCamera_)
+            {
+                DirectX::XMFLOAT3 targetPosition = EnemyManager::Instance().GetEnemy(0)->GetJointPosition(GetCurrentTargetJointName());
+                view_.focus_ = XMFloat3Lerp(view_.focus_, targetPosition, hitWallLerpTimer_);
+            }
+
+            isHitWall_ = true;
+        }
+        else
+        {
+            if (useLockonCamera_)
+            {
+                DirectX::XMFLOAT3 targetPosition = EnemyManager::Instance().GetEnemy(0)->GetJointPosition(GetCurrentTargetJointName());
+                view_.focus_ = XMFloat3Lerp(view_.focus_, targetPosition, hitWallLerpTimer_);
+            }
+
+            isHitWall_ = false;
         }
 #endif
     }
@@ -173,6 +222,8 @@ void Camera::DrawDebug()
 {
     if (ImGui::BeginMenu("Camera"))
     {
+        ImGui::DragFloat("GroundNearest", &groundNearest_, 0.01f);
+
         ImGui::DragFloat("NearZ", &nearZ_);
         ImGui::DragFloat("FarZ", &farZ_);
 
@@ -445,7 +496,8 @@ void Camera::UpdateLockonCamera(const float& elapsedTime)
 
     DirectX::XMFLOAT3 cameraPosition = GetTransform()->GetPosition();
     DirectX::XMFLOAT3 playerPosition = PlayerManager::Instance().GetTransform()->GetPosition();
-    DirectX::XMFLOAT3 playerHeadPosition = PlayerManager::Instance().GetPlayer()->GetJointPosition("head");
+    //DirectX::XMFLOAT3 playerHeadPosition = PlayerManager::Instance().GetPlayer()->GetJointPosition("head");
+    DirectX::XMFLOAT3 playerHeadPosition = playerPosition;
     playerHeadPosition.y = 1.7f;
     DirectX::XMFLOAT3 targetPosition = EnemyManager::Instance().GetEnemy(0)->GetJointPosition(GetCurrentTargetJointName());
 
@@ -500,6 +552,27 @@ void Camera::UpdateLockonCamera(const float& elapsedTime)
 
     // length 6.05
     {
+#if 0
+        const float targetLengthY = fabsf(groundNearest_ - targetPosition.y);
+        const float currentLengthY = fabsf(view_.eye_.y - targetPosition.y);
+
+        DirectX::XMFLOAT3 vec = XMFloat3Normalize(view_.eye_ - view_.focus_) * minLength_;
+        vec = view_.focus_ + vec;
+
+        if (vec.y < groundNearest_)
+        {
+            // 地面に埋まっているため
+            length_ = (length_ * targetLengthY) / currentLengthY;
+        }
+        else
+        {
+            if (length_ < minLength_)
+            {
+                length_ = XMFloatLerp(length_, maxLength_, 0.5f);
+            }
+        }
+#endif
+
         //float rotationX = GetTransform()->GetRotationX();
 
         //if (rotationX > maxXRotation_)

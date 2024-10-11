@@ -151,6 +151,8 @@ private:
     float               minLength_          = 6.0f;
     float               maxLength_          = 6.5f;
 
+    float groundNearest_ = 0.2f;
+
     // ---------- 画面振動 ----------
     DirectX::XMFLOAT3   screenVibrationOffset_  = {};   // 振動表現用の座標
     float               vibrationVolume_        = 0.0f; // 振動量
@@ -199,6 +201,9 @@ private:
     bool                        isNextJointAccessible       = true;  // 次のターゲットを選択できるか
 
     float lockOnRotationSpeed_ = 0.5f; // カメラ回転速度
+
+    float hitWallLerpTimer_ = 0.0f;
+    bool isHitWall_ = false;
 
     // ---------- カメラリセット ----------
     DirectX::XMFLOAT2   resetOldRotation_       = {};    // 処理開始時の角度

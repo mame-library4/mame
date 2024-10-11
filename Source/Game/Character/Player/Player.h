@@ -160,7 +160,10 @@ public:// --- 取得・設定 ---
     // ---------- スタミナ ----------
     [[nodiscard]] const float GetStamina() const { return stamina_; }
     [[nodiscard]] const float GetMaxStamina() const { return maxStamina_; }
+    void SetStanima(const float& stamina) { stamina_ = stamina; }
     void UseStamina(const float& stamina) { stamina_ -= stamina; }
+    [[nodiscard]] const float GetStaminaRecoverySpeed() const { return staminaRecoverySpeed_; }
+    void SetStaminaRecoverySpeed(const float& speed) { staminaRecoverySpeed_ = speed; }
 
     // ---------- 行動 -------------------------------------------------------
     // ----- フラグをリセット -----
@@ -277,6 +280,7 @@ private:
     // ---------- スタミナ ----------
     float stamina_      = 1.0f;
     float maxStamina_   = 1.0f;
+    float staminaRecoverySpeed_ = 1.0f;
 
     SwordTrail swordTrail_;
 

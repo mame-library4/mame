@@ -103,6 +103,10 @@ namespace PlayerState
         owner_->SetNextInputStartFrame();
         owner_->SetNextInputEndFrame();
         owner_->SetNextInputTransitionFrame();
+
+        // 操作UI設定
+        if(UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide) !=nullptr)
+            UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 0.0f);
     }
 
     // ----- 更新 -----
@@ -117,7 +121,15 @@ namespace PlayerState
         // 先行入力判定
         if (CheckNextInput()) return;
 
-        //if (owner_->GetOldState() == Player::STATE::Counter && owner_->GetIsBlendAnimation()) return;
+        // スタミナ回復
+        if (owner_->GetStamina() < owner_->GetStamina())
+        {
+            float stamina = owner_->GetStamina();
+
+            stamina += elapsedTime * owner_->GetStaminaRecoverySpeed();
+
+            owner_->SetStanima(stamina);
+        }
     }
 
     // ----- 終了化 -----
@@ -162,11 +174,15 @@ namespace PlayerState
 
 #pragma region ----- 先行入力受付 -----
         // 回避先行入力受付
-        if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
-            animationSeconds <= owner_->GetAvoidanceInputEndFrame())
+        if (owner_->GetStamina() > 20.0f)
         {
-            if (owner_->IsAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+            if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
+                animationSeconds <= owner_->GetAvoidanceInputEndFrame())
+            {
+                if (owner_->IsAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+            }
         }
+
         // 攻撃先行入力受付
         if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
             animationSeconds <= owner_->GetAttackInputEndFrame())
@@ -182,6 +198,9 @@ namespace PlayerState
         {
             if (animationSeconds >= owner_->GetAvoidanceTransitionFrame())
             {
+                // スタミナ使用
+                owner_->UseStamina(20.0f);
+
                 owner_->ChangeState(Player::STATE::Avoidance);
                 return true;
             }
@@ -233,6 +252,10 @@ namespace PlayerState
         owner_->SetNextInputStartFrame();
         owner_->SetNextInputEndFrame();
         owner_->SetNextInputTransitionFrame();
+
+        // 操作UI設定
+        if (UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide) != nullptr)
+            UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 0.0f);
 
         // 変数初期化
         changeStateTimer_ = 0.0f;
@@ -1316,6 +1339,9 @@ namespace PlayerState
         // カウンター時カメラを使用する
         Camera::Instance().SetUseCounterCamera();
 
+        // 操作UI設定
+        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(1400.0f, 550.0f);
+
         // 変数初期化
         addForceBack_.Initialize(0.16f, 0.2f, 0.5f);
         addForceFront_.Initialize(0.66f, 0.30f, 1.0f);
@@ -1865,6 +1891,9 @@ namespace PlayerState
         owner_->SetNextInputEndFrame(1.583f, 0.75f, 1.5f);
         owner_->SetNextInputTransitionFrame(0.4f, 0.3f, 0.3f);
 
+        // 操作UI設定
+        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(700.0f, 0.0f);
+
         // 変数初期化
         attackData_.Initialize(0.1f, 0.35f);      
 
@@ -2054,6 +2083,9 @@ namespace PlayerState
         owner_->SetNextInputEndFrame(1.583f, 0.75f, 1.5f);
         owner_->SetNextInputTransitionFrame(0.4f, 0.3f, 0.3f);
 
+        // 操作UI設定
+        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(1400.0f, 0.0f);
+
         // 変数初期化
         attackData_.Initialize(0.06f, 0.3f);
     }
@@ -2224,6 +2256,9 @@ namespace PlayerState
         owner_->SetNextInputEndFrame(1.9f, 1.3f, 1.3f);
         owner_->SetNextInputTransitionFrame(1.1f, 0.9f, 0.9f);
         
+        // 操作UI設定
+        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 550.0f);
+
         // 変数初期化
         attackData_.Initialize(0.7f, 0.9f);
 
@@ -2381,6 +2416,9 @@ namespace PlayerState
         owner_->SetNextInputStartFrame(0.7f, 3.0f, 3.0f, 3.0f);
         owner_->SetNextInputEndFrame(2.0f, 3.0f, 3.0f);
         owner_->SetNextInputTransitionFrame(1.3f, 3.0f, 3.0f);
+
+        // 操作UI設定
+        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(700.0f, 550.0f);
 
         // 変数初期化
         attackData_.Initialize(0.65f, 0.8f);

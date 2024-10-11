@@ -6,7 +6,6 @@
 
 // ----- コンストラクタ -----
 UICrosshair::UICrosshair()
-    //: UI(UIManager::UIType::UICrosshair, L"./Resources/Image/UI/waku.png", "UICrosshair")
     : UI(UIManager::UIType::UICrosshair, L"./Resources/Image/UI/Crosshair/OuterLine.png", "UICrosshair")
 {
     // アウトライン命名
