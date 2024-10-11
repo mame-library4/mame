@@ -20,7 +20,7 @@ public:// --- 定数 ---
         Flinch,
         Damage,         // ダメージ
         Death,          // 死亡
-        Avoidance,      // 回避
+        Dodge,      // 回避
 
         Skill,
 
@@ -108,7 +108,7 @@ public:// --- 定数 ---
     {
         None,           // 先行入力なし
         ComboAttack0,   // コンボ攻撃
-        Avoidance,      // 回避
+        Dodge,      // 回避
         Counter,        // カウンター
     };
 
@@ -139,6 +139,9 @@ public:
     void CalculateRotationAdjustment(); // 回転補正量設定
     void UpdateRotationAdjustment(const float& elapsedTime);    // 回転補正
 
+    // ---------- スタミナ ----------
+    void UpdateStaminaRecovery(const float& elapsedTime);
+
     // ---------- Collision ----------
     void UpdateCollisions(const float& elapsedTime) override;
     void UpdateCollisionDetectionData();    // 押し出し判定位置更新
@@ -161,7 +164,12 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const float GetStamina() const { return stamina_; }
     [[nodiscard]] const float GetMaxStamina() const { return maxStamina_; }
     void SetStanima(const float& stamina) { stamina_ = stamina; }
-    void UseStamina(const float& stamina) { stamina_ -= stamina; }
+    
+    [[nodiscard]] const float GetDodgeStaminaCost() const { return dodgeStaminaCost_; }
+    [[nodiscard]] const float GetDashStamiaCost() const { return dashStaminaCost_; }
+    void UseDodgeStamina() { stamina_ -= dodgeStaminaCost_; }
+    void UseDashStamina() { stamina_ -= dashStaminaCost_; }
+    
     [[nodiscard]] const float GetStaminaRecoverySpeed() const { return staminaRecoverySpeed_; }
     void SetStaminaRecoverySpeed(const float& speed) { staminaRecoverySpeed_ = speed; }
 
@@ -169,17 +177,17 @@ public:// --- 取得・設定 ---
     // ----- フラグをリセット -----
     void ResetFlags();    
     // ----- 先行入力 -----
-    void SetNextInputStartFrame(const float& avoidance = 0.0f, const float& attack = 0.0f, const float& counter = 0.0f, const float& move = 0.0f);
-    void SetNextInputEndFrame(const float& avoidance = 10.0f, const float& attack = 10.0f, const float& counter = 10.0f);
-    void SetNextInputTransitionFrame(const float& avoidance = 0.0f, const float& attack = 0.0f, const float& counter = 0.0f);
+    void SetNextInputStartFrame(const float& dodge = 0.0f, const float& attack = 0.0f, const float& counter = 0.0f, const float& move = 0.0f);
+    void SetNextInputEndFrame(const float& dodge = 10.0f, const float& attack = 10.0f, const float& counter = 10.0f);
+    void SetNextInputTransitionFrame(const float& dodge = 0.0f, const float& attack = 0.0f, const float& counter = 0.0f);
 
 
 
     [[nodiscard]] const NextInput GetNextInput() const { return nextInput_; }
     void SetNextInput(const NextInput& nextInput) { nextInput_ = nextInput; }
     // ----- 回避 -----
-    [[nodiscard]] const bool GetIsAvoidance() const { return isAvoidance_; }
-    void SetIsAvoidance(const bool& isAvoidance) { isAvoidance_ = isAvoidance; }
+    [[nodiscard]] const bool GetIsDodge() const { return isDodge_; }
+    void SetIsDodge(const bool& flag) { isDodge_ = flag; }
     // ----- カウンター状態か -----
     [[nodiscard]] const bool GetIsCounter() const { return isCounter_; }
     void SetIsCounter(const bool& flag) { isCounter_ = flag; }
@@ -204,16 +212,16 @@ public:// --- 取得・設定 ---
 
     // ---------- キー入力 ----------
     [[nodiscard]] bool IsComboAttack0KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
-    [[nodiscard]] bool IsAvoidanceKeyDown()    const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_A; }
+    [[nodiscard]] bool IsDodgeKeyDown()        const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_A; }
     [[nodiscard]] bool IsCounterStanceKey()    const;
     [[nodiscard]] bool IsGetUpKeyDown()        const;
 
 #pragma endregion [Get, Set] Function
 
     [[nodiscard]] const float GetMoveInputStartFrame()      const { return moveInputStartFrame_; }
-    [[nodiscard]] const float GetAvoidanceInputStartFrame() const { return avoidanceInputStartFrame_; }
-    [[nodiscard]] const float GetAvoidanceInputEndFrame()   const { return avoidanceInputEndFrame_; }
-    [[nodiscard]] const float GetAvoidanceTransitionFrame() const { return avoidanceTransitionFrame_; }
+    [[nodiscard]] const float GetDodgeInputStartFrame()     const { return dodgeInputStartFrame_; }
+    [[nodiscard]] const float GetDodgeInputEndFrame()       const { return dodgeInputEndFrame_; }
+    [[nodiscard]] const float GetDodgeTransitionFrame()     const { return dodgeTransitionFrame_; }
     [[nodiscard]] const float GetAttackInputStartFrame()    const { return attackInputStartFrame_; }
     [[nodiscard]] const float GetAttackInputEndFrame()      const { return attackInputEndFrame_; }
     [[nodiscard]] const float GetAttackTransitionFrame()    const { return attackTransitionFrame_; }
@@ -248,18 +256,18 @@ private:
 
     // ---------- 行動 ------------------------------
     NextInput   nextInput_                  = NextInput::None;  // 先行入力保存用
-    float       avoidanceInputStartFrame_   = 0.0f;             // 回避先行入力開始フレーム
+    float       dodgeInputStartFrame_       = 0.0f;             // 回避先行入力開始フレーム
     float       attackInputStartFrame_      = 0.0f;             // 攻撃先行入力開始フレーム
     float       counterInputStartFrame_     = 0.0f;             // カウンター先行入力開始フレーム
     float       moveInputStartFrame_        = 0.0f;
-    float       avoidanceInputEndFrame_     = 0.0f;
+    float       dodgeInputEndFrame_         = 0.0f;
     float       attackInputEndFrame_        = 0.0f;
     float       counterInputEndFrame_       = 0.0f;
-    float       avoidanceTransitionFrame_   = 0.0f;             // 回避へ遷移可能フレーム
+    float       dodgeTransitionFrame_       = 0.0f;             // 回避へ遷移可能フレーム
     float       attackTransitionFrame_      = 0.0f;             // 攻撃へ遷移可能フレーム
     float       counterTransitionFrame_     = 0.0f;             // カウンターへ遷移可能フレーム
 
-    bool isAvoidance_           = false;            // 回避
+    bool isDodge_           = false;            // 回避
     bool isCounter_             = false;            // カウンター状態か
     bool isAbleCounterAttack_   = false;            // カウンター攻撃が可能か( 追加の )
     
@@ -281,6 +289,9 @@ private:
     float stamina_      = 1.0f;
     float maxStamina_   = 1.0f;
     float staminaRecoverySpeed_ = 30.0f;
+
+    float dodgeStaminaCost_ = 20.0f; // 回避に使うスタミナ量
+    float dashStaminaCost_  = 1.0f; // ダッシュに使うスタミナ量
 
     SwordTrail swordTrail_;
 

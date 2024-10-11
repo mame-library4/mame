@@ -21,7 +21,7 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::FlinchState(this));
         GetStateMachine()->RegisterState(new PlayerState::DamageState(this));           // ダメージ
         GetStateMachine()->RegisterState(new PlayerState::DeathState(this));            // 死亡
-        GetStateMachine()->RegisterState(new PlayerState::AvoidanceState(this));        // 回避
+        GetStateMachine()->RegisterState(new PlayerState::DodgeState(this));        // 回避
         GetStateMachine()->RegisterState(new PlayerState::SkillState(this));        // スキル
         GetStateMachine()->RegisterState(new PlayerState::CounterState(this));          // カウンター
         GetStateMachine()->RegisterState(new PlayerState::CounterComboState(this));     // カウンターコンボ
@@ -152,7 +152,16 @@ void Player::DrawDebug()
 {
     if (ImGui::BeginMenu("Player"))
     {
-        ImGui::DragFloat("StaminaRecoverySpeed", &staminaRecoverySpeed_);
+        if (ImGui::TreeNode("Stamina"))
+        {
+            ImGui::DragFloat("Stamina", &stamina_);
+            ImGui::DragFloat("RecoverySpeed", &staminaRecoverySpeed_);
+            ImGui::DragFloat("DodgeCost", &dodgeStaminaCost_);
+            ImGui::DragFloat("DashCost", &dashStaminaCost_);
+
+            ImGui::TreePop();
+        }
+
 
         if (ImGui::TreeNode("Weapon"))
         {
@@ -389,40 +398,49 @@ void Player::UpdateRotationAdjustment(const float& elapsedTime)
     if (rotationTimer_ > 1.0f) useRotationAdjustment_ = false;
 }
 
+// ----- スタミナの回復更新 -----
+void Player::UpdateStaminaRecovery(const float& elapsedTime)
+{
+    // スタミナの回復量がない
+    if (stamina_ >= maxStamina_) return;
+
+    stamina_ += staminaRecoverySpeed_ * elapsedTime;
+}
+
 void Player::ResetFlags()
 {
     nextInput_              = NextInput::None;  // 先行入力管理フラグ
-    isAvoidance_            = false;            // 回避入力判定用フラグ
+    isDodge_            = false;            // 回避入力判定用フラグ
     isCounter_              = false;            // カウンター状態かフラグ
     isAbleCounterAttack_    = false;            // カウンター攻撃可能か
     isAbleAttack_           = false;            // 攻撃できるかのフラグ
 }
 
 // ----- 先行入力受付開始フレーム設定 -----
-void Player::SetNextInputStartFrame(const float& avoidance, const float& attack, const float& counter, const float& move)
+void Player::SetNextInputStartFrame(const float& dodge, const float& attack, const float& counter, const float& move)
 {
     // 先行入力をリセットする
     nextInput_ = NextInput::None;
 
     // 先行入力受付開始フレーム設定
-    avoidanceInputStartFrame_   = avoidance;
+    dodgeInputStartFrame_       = dodge;
     attackInputStartFrame_      = attack;
     counterInputStartFrame_     = counter;
     moveInputStartFrame_        = move;
 }
 
 // ----- 先行入力受付終了フレーム設定 -----
-void Player::SetNextInputEndFrame(const float& avoidance, const float& attack, const float& counter)
+void Player::SetNextInputEndFrame(const float& dodge, const float& attack, const float& counter)
 {
-    avoidanceInputEndFrame_ = avoidance;
+    dodgeInputEndFrame_     = dodge;
     attackInputEndFrame_    = attack;
     counterInputEndFrame_   = counter;
 }
 
 // ----- 先行入力での遷移フレーム設定 -----
-void Player::SetNextInputTransitionFrame(const float& avoidance, const float& attack, const float& counter)
+void Player::SetNextInputTransitionFrame(const float& dodge, const float& attack, const float& counter)
 {
-    avoidanceTransitionFrame_   = avoidance;
+    dodgeTransitionFrame_       = dodge;
     attackTransitionFrame_      = attack;
     counterTransitionFrame_     = counter;
 }

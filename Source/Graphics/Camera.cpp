@@ -496,7 +496,6 @@ void Camera::UpdateLockonCamera(const float& elapsedTime)
 
     DirectX::XMFLOAT3 cameraPosition = GetTransform()->GetPosition();
     DirectX::XMFLOAT3 playerPosition = PlayerManager::Instance().GetTransform()->GetPosition();
-    //DirectX::XMFLOAT3 playerHeadPosition = PlayerManager::Instance().GetPlayer()->GetJointPosition("head");
     DirectX::XMFLOAT3 playerHeadPosition = playerPosition;
     playerHeadPosition.y = 1.7f;
     DirectX::XMFLOAT3 targetPosition = EnemyManager::Instance().GetEnemy(0)->GetJointPosition(GetCurrentTargetJointName());

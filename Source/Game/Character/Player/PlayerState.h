@@ -149,11 +149,11 @@ namespace PlayerState
     };
 
     // ----- ‰ñ”ð -----
-    class AvoidanceState : public State<Player>
+    class DodgeState : public State<Player>
     {
     public:
-        AvoidanceState(Player* player) : State(player, "AvoidanceState") {}
-        ~AvoidanceState() {}
+        DodgeState(Player* player) : State(player, "DodgeState") {}
+        ~DodgeState() {}
 
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;

@@ -122,14 +122,7 @@ namespace PlayerState
         if (CheckNextInput()) return;
 
         // スタミナ回復
-        if (owner_->GetStamina() < owner_->GetMaxStamina())
-        {
-            float stamina = owner_->GetStamina();
-
-            stamina += elapsedTime * owner_->GetStaminaRecoverySpeed();
-
-            owner_->SetStanima(stamina);
-        }
+        owner_->UpdateStaminaRecovery(elapsedTime);
     }
 
     // ----- 終了化 -----
@@ -176,10 +169,10 @@ namespace PlayerState
         // 回避先行入力受付
         if (owner_->GetStamina() > 20.0f)
         {
-            if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
-                animationSeconds <= owner_->GetAvoidanceInputEndFrame())
+            if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
+                animationSeconds <= owner_->GetDodgeInputEndFrame())
             {
-                if (owner_->IsAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+                if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
             }
         }
 
@@ -194,14 +187,11 @@ namespace PlayerState
 
 #pragma region ----- 遷移チェック -----
         // 回避遷移チェック
-        if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+        if (owner_->GetNextInput() == Player::NextInput::Dodge)
         {
-            if (animationSeconds >= owner_->GetAvoidanceTransitionFrame())
+            if (animationSeconds >= owner_->GetDodgeTransitionFrame())
             {
-                // スタミナ使用
-                owner_->UseStamina(20.0f);
-
-                owner_->ChangeState(Player::STATE::Avoidance);
+                owner_->ChangeState(Player::STATE::Dodge);
                 return true;
             }
         }
@@ -272,6 +262,9 @@ namespace PlayerState
 
         // タイマー加算
         changeStateTimer_ += elapsedTime;
+
+        // スタミナ回復
+        owner_->UpdateStaminaRecovery(elapsedTime);
     }
     
     // ----- 終了化 -----
@@ -317,10 +310,10 @@ namespace PlayerState
 
 #pragma region ----- 先行入力受付 -----
         // 回避先行入力受付
-        if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
-            animationSeconds <= owner_->GetAvoidanceInputEndFrame())
+        if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
+            animationSeconds <= owner_->GetDodgeInputEndFrame())
         {
-            if (owner_->IsAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+            if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
         }
         // 攻撃先行入力受付
         if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
@@ -333,11 +326,11 @@ namespace PlayerState
 
 #pragma region ----- 遷移チェック -----
         // 回避遷移チェック
-        if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+        if (owner_->GetNextInput() == Player::NextInput::Dodge)
         {
-            if (animationSeconds >= owner_->GetAvoidanceTransitionFrame())
+            if (animationSeconds >= owner_->GetDodgeTransitionFrame())
             {
-                owner_->ChangeState(Player::STATE::Avoidance);
+                owner_->ChangeState(Player::STATE::Dodge);
                 return true;
             }
         }
@@ -530,9 +523,9 @@ namespace PlayerState
         {
             if (owner_->GetAnimationSeconds() > 1.25f)
             {
-                if (owner_->IsAvoidanceKeyDown())
+                if (owner_->IsDodgeKeyDown())
                 {
-                    owner_->ChangeState(Player::STATE::Avoidance);
+                    owner_->ChangeState(Player::STATE::Dodge);
                     return;
                 }
             }
@@ -656,7 +649,7 @@ namespace PlayerState
 namespace PlayerState
 {
     // ----- 初期化 -----
-    void AvoidanceState::Initialize()
+    void DodgeState::Initialize()
     {
         // フラグをリセットする
         owner_->ResetFlags();
@@ -670,6 +663,9 @@ namespace PlayerState
         // 無敵状態にする
         owner_->SetIsInvincible(true);
 
+        // スタミナ消費
+        owner_->UseDodgeStamina();
+
         // 変数初期化
         addForceData_.Initialize(0.15f, 0.27f, 0.4f);
         invincibleTimer_ = 0.0f;
@@ -679,7 +675,7 @@ namespace PlayerState
     }
 
     // ----- 更新 -----
-    void AvoidanceState::Update(const float& elapsedTime)
+    void DodgeState::Update(const float& elapsedTime)
     {
         // 先行入力処理
         if (CheckNextInput()) return;
@@ -710,14 +706,14 @@ namespace PlayerState
     }
 
     // ----- 終了化 -----
-    void AvoidanceState::Finalize()
+    void DodgeState::Finalize()
     {
         // 変数をリセットしておく
         isFirstTime_ = true;
     }
 
     // ----- 回転処理 -----
-    void AvoidanceState::Turn(const float& elapsedTime)
+    void DodgeState::Turn(const float& elapsedTime)
     {
         // 回転量がないためここで終了
         if (isRotating_ == false) return;
@@ -752,7 +748,7 @@ namespace PlayerState
     }
 
     // ----- このステートをリセット(初期化)する -----
-    void AvoidanceState::ResetState()
+    void DodgeState::ResetState()
     {
         // ------------------------------
         //  回避を連続して出している場合
@@ -772,13 +768,16 @@ namespace PlayerState
         // フラグをリセットする
         owner_->ResetFlags();
 
+        // スタミナ消費
+        owner_->UseDodgeStamina();
+
         // 変数初期化
         addForceData_.Initialize(0.15f, 0.27f, 0.4f);
         invincibleTimer_ = 0.0f;
     }
 
     // ----- 先行入力処理 -----
-    const bool AvoidanceState::CheckNextInput()
+    const bool DodgeState::CheckNextInput()
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
 
@@ -794,10 +793,10 @@ namespace PlayerState
             }
 
             // 回避
-            if (owner_->IsAvoidanceKeyDown() &&
+            if (owner_->IsDodgeKeyDown() &&
                 owner_->GetAnimationIndex() != static_cast<int>(Player::Animation::RollBack))
             {
-                owner_->SetNextInput(Player::NextInput::Avoidance);
+                owner_->SetNextInput(Player::NextInput::Dodge);
 
                 GamePad& gamePad = Input::Instance().GetGamePad();
                 const float aLx = gamePad.GetAxisLX();
@@ -907,7 +906,7 @@ namespace PlayerState
         case Player::Animation::RollForward:// 前
         {
             // 回避の先行入力がある場合
-            if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+            if (owner_->GetNextInput() == Player::NextInput::Dodge)
             {
                 const float avoidanceFrame = 0.92f; // 回避に遷移できるフレーム
                 if (animationSeconds > avoidanceFrame)
@@ -978,7 +977,7 @@ namespace PlayerState
         case Player::Animation::RollRight:
         {
             // 回避の先行入力がある場合
-            if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+            if (owner_->GetNextInput() == Player::NextInput::Dodge)
             {
                 const float avoidanceFrame = 0.92f; // 回避に遷移できるフレーム
                 if (animationSeconds > avoidanceFrame)
@@ -1019,7 +1018,7 @@ namespace PlayerState
         case Player::Animation::RollLeft:
         {
             // 回避の先行入力がある場合
-            if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+            if (owner_->GetNextInput() == Player::NextInput::Dodge)
             {
                 const float avoidanceFrame = 0.92f; // 回避に遷移できるフレーム
                 if (animationSeconds > avoidanceFrame)
@@ -1064,7 +1063,7 @@ namespace PlayerState
     }
 
     // ----- アニメーションの速度設定 -----
-    void AvoidanceState::SetAnimationSpeed()
+    void DodgeState::SetAnimationSpeed()
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
 
@@ -1118,7 +1117,7 @@ namespace PlayerState
     }
 
     // ----- アニメーション設定 -----
-    void AvoidanceState::SetAnimation()
+    void DodgeState::SetAnimation()
     {
         // --------------------------------------------------
         //  回避を連続して出している場合
@@ -1231,7 +1230,7 @@ namespace PlayerState
     }
 
     // ----- 移動方向算出 -----
-    void AvoidanceState::CalcMoveDirection()
+    void DodgeState::CalcMoveDirection()
     {
         if (isFirstTime_ == false)
         {
@@ -1800,10 +1799,10 @@ namespace PlayerState
 
 #pragma region ----- 先行入力受付 -----
         // 回避先行入力受付
-        if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
-            animationSeconds <= owner_->GetAvoidanceInputEndFrame())
+        if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
+            animationSeconds <= owner_->GetDodgeInputEndFrame())
         {
-            if (owner_->IsAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+            if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
         }
         // 攻撃先行入力受付
         if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
@@ -1822,11 +1821,11 @@ namespace PlayerState
 
 #pragma region ----- 遷移チェック -----
         // 回避遷移チェック
-        if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+        if (owner_->GetNextInput() == Player::NextInput::Dodge)
         {
-            if (animationSeconds >= owner_->GetAvoidanceTransitionFrame())
+            if (animationSeconds >= owner_->GetDodgeTransitionFrame())
             {
-                owner_->ChangeState(Player::STATE::Avoidance);
+                owner_->ChangeState(Player::STATE::Dodge);
                 return true;
             }
         }
@@ -1993,10 +1992,10 @@ namespace PlayerState
 
 #pragma region ----- 先行入力受付 -----
         // 回避先行入力受付
-        if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
-            animationSeconds <= owner_->GetAvoidanceInputEndFrame())
+        if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
+            animationSeconds <= owner_->GetDodgeInputEndFrame())
         {
-            if (owner_->IsAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+            if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
         }
         // 攻撃先行入力受付
         if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
@@ -2015,11 +2014,11 @@ namespace PlayerState
 
 #pragma region ----- 遷移チェック -----
         // 回避遷移チェック
-        if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+        if (owner_->GetNextInput() == Player::NextInput::Dodge)
         {
-            if (animationSeconds >= owner_->GetAvoidanceTransitionFrame())
+            if (animationSeconds >= owner_->GetDodgeTransitionFrame())
             {
-                owner_->ChangeState(Player::STATE::Avoidance);
+                owner_->ChangeState(Player::STATE::Dodge);
                 return true;
             }
         }
@@ -2165,10 +2164,10 @@ namespace PlayerState
 
 #pragma region ----- 先行入力受付 -----
         // 回避先行入力受付
-        if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
-            animationSeconds <= owner_->GetAvoidanceInputEndFrame())
+        if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
+            animationSeconds <= owner_->GetDodgeInputEndFrame())
         {
-            if (owner_->IsAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+            if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
         }
         // 攻撃先行入力受付
         if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
@@ -2187,11 +2186,11 @@ namespace PlayerState
 
 #pragma region ----- 遷移チェック -----
         // 回避遷移チェック
-        if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+        if (owner_->GetNextInput() == Player::NextInput::Dodge)
         {
-            if (animationSeconds >= owner_->GetAvoidanceTransitionFrame())
+            if (animationSeconds >= owner_->GetDodgeTransitionFrame())
             {
-                owner_->ChangeState(Player::STATE::Avoidance);
+                owner_->ChangeState(Player::STATE::Dodge);
                 return true;
             }
         }
@@ -2326,10 +2325,10 @@ namespace PlayerState
 
 #pragma region ----- 先行入力受付 -----
         // 回避先行入力受付
-        if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
-            animationSeconds <= owner_->GetAvoidanceInputEndFrame())
+        if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
+            animationSeconds <= owner_->GetDodgeInputEndFrame())
         {
-            if (owner_->IsAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+            if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
         }
         // 攻撃先行入力受付
         if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
@@ -2348,11 +2347,11 @@ namespace PlayerState
 
 #pragma region ----- 遷移チェック -----
         // 回避遷移チェック
-        if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+        if (owner_->GetNextInput() == Player::NextInput::Dodge)
         {
-            if (animationSeconds >= owner_->GetAvoidanceTransitionFrame())
+            if (animationSeconds >= owner_->GetDodgeTransitionFrame())
             {
-                owner_->ChangeState(Player::STATE::Avoidance);
+                owner_->ChangeState(Player::STATE::Dodge);
                 return true;
             }
         }
@@ -2484,18 +2483,18 @@ namespace PlayerState
         const float animationSeconds = owner_->GetAnimationSeconds();
 
         // 回避先行入力受付
-        if (animationSeconds >= owner_->GetAvoidanceInputStartFrame() &&
-            animationSeconds <= owner_->GetAvoidanceInputEndFrame())
+        if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
+            animationSeconds <= owner_->GetDodgeInputEndFrame())
         {
-            if (owner_->IsAvoidanceKeyDown()) owner_->SetNextInput(Player::NextInput::Avoidance);
+            if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
         }
 
         // 回避遷移チェック
-        if (owner_->GetNextInput() == Player::NextInput::Avoidance)
+        if (owner_->GetNextInput() == Player::NextInput::Dodge)
         {
-            if (animationSeconds >= owner_->GetAvoidanceTransitionFrame())
+            if (animationSeconds >= owner_->GetDodgeTransitionFrame())
             {
-                owner_->ChangeState(Player::STATE::Avoidance);
+                owner_->ChangeState(Player::STATE::Dodge);
                 return true;
             }
         }
