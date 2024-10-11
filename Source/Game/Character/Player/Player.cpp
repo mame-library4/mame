@@ -133,6 +133,9 @@ void Player::Update(const float& elapsedTime)
 
     // Collisionデータ更新
     UpdateCollisions(elapsedTime);
+
+    // スタミナ回復
+    UpdateStaminaRecovery(elapsedTime);
 }
 
 // ----- 描画 -----
@@ -152,6 +155,9 @@ void Player::DrawDebug()
 {
     if (ImGui::BeginMenu("Player"))
     {
+        ImGui::DragFloat("DashSpeed", &dashSpeed_);
+        ImGui::DragFloat("DashAnimationSpeed", &dashAnimationSpeed_);
+
         if (ImGui::TreeNode("Stamina"))
         {
             ImGui::DragFloat("Stamina", &stamina_);
@@ -404,6 +410,16 @@ void Player::UpdateStaminaRecovery(const float& elapsedTime)
     // スタミナの回復量がない
     if (stamina_ >= maxStamina_) return;
 
+    // 特定のステート時はスタミナを回復しない
+    const STATE currentState = GetCurrentState();
+    if (currentState == STATE::Dodge || currentState == STATE::Counter || currentState == STATE::CounterCombo)
+    {
+        return;
+    }
+
+    // ダッシュしているときはスタミナを回復しない
+    if (isDash_) return;
+
     stamina_ += staminaRecoverySpeed_ * elapsedTime;
 }
 
@@ -443,6 +459,15 @@ void Player::SetNextInputTransitionFrame(const float& dodge, const float& attack
     dodgeTransitionFrame_       = dodge;
     attackTransitionFrame_      = attack;
     counterTransitionFrame_     = counter;
+}
+
+// ----- ダッシュのスタミナ消費 -----
+void Player::UseDashStamina(const float& elapsedTime)
+{
+    stamina_ -= dashStaminaCost_ * elapsedTime;
+
+    // スタミナ値によってつかれさせるか
+    isStaminaDepleted = (stamina_ <= dodgeStaminaCost_) ? true : false;
 }
 
 // ----- 回避入力判定 -----
@@ -489,6 +514,14 @@ bool Player::IsGetUpKeyDown() const
     {
         return true;
     }
+
+    return false;
+}
+
+// ----- ダッシュボタンが押されているか -----
+bool Player::IsDashKey() const
+{
+    if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER) return true;
 
     return false;
 }

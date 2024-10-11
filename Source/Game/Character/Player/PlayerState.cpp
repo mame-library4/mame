@@ -120,9 +120,6 @@ namespace PlayerState
 
         // 先行入力判定
         if (CheckNextInput()) return;
-
-        // スタミナ回復
-        owner_->UpdateStaminaRecovery(elapsedTime);
     }
 
     // ----- 終了化 -----
@@ -260,8 +257,12 @@ namespace PlayerState
         // タイマー加算
         changeStateTimer_ += elapsedTime;
 
-        // スタミナ回復
-        owner_->UpdateStaminaRecovery(elapsedTime);
+        // ダッシュ処理
+        UpdateDash(elapsedTime);
+
+        // 操作UI設定
+        if(owner_->GetIsDash()) UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(750.0f, 0.0f);
+        else UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 0.0f);
     }
     
     // ----- 終了化 -----
@@ -269,6 +270,8 @@ namespace PlayerState
     {
         owner_->SetMoveDirection({});
         owner_->SetVelocity({});
+
+        owner_->SetIsDash(false);
     }
 
     // ----- アニメーション設定 -----
@@ -336,10 +339,10 @@ namespace PlayerState
         {
             if (animationSeconds >= owner_->GetAttackTransitionFrame())
             {
-                //if(owner_->GetIsBlendAnimation()) owner_->ChangeState(Player::STATE::ComboAttack0_0);
-                //else owner_->ChangeState(Player::STATE::RunAttack);
-
-                owner_->ChangeState(Player::STATE::ComboAttack0_0);
+                // ダッシュしているときは走り攻撃に遷移する
+                if (owner_->GetIsDash()) owner_->ChangeState(Player::STATE::RunAttack);
+                // 通常の走りの場合はコンボ攻撃０に遷移する
+                else owner_->ChangeState(Player::STATE::ComboAttack0_0);
 
                 return true;
             }
@@ -364,6 +367,51 @@ namespace PlayerState
         }
 
         return false;
+    }
+
+    // ----- ダッシュの処理 -----
+    void RunState::UpdateDash(const float& elapsedTime)
+    {
+        const bool isDashKey = owner_->IsDashKey();
+
+        // スタミナが底をついた場合速度を遅くする
+        if(owner_->GetIsStaminaDepleted())
+        {
+            owner_->SetAnimationSpeed(0.8f);
+
+            // 最大速度を設定
+            owner_->SetMaxSpeed(3.0f);
+
+            owner_->UseDashStamina(elapsedTime);
+
+            // ダッシュしているか設定
+            owner_->SetIsDash(isDashKey);
+
+            return;
+        }
+
+        // ダッシュの処理
+        if (isDashKey)
+        {
+            owner_->SetAnimationSpeed(owner_->GetDashAnimationSpeed());
+
+            // 最大速度を設定
+            owner_->SetMaxSpeed(owner_->GetDashSpeed());
+
+            owner_->SetIsDash(true);
+
+            owner_->UseDashStamina(elapsedTime);
+        }
+        else
+        {
+            owner_->SetAnimationSpeed(1.0f);
+
+            // 最大速度を設定
+            owner_->SetMaxSpeed(5.0f);
+
+            owner_->SetIsDash(false);
+        }
+
     }
 }
 
@@ -463,6 +511,9 @@ namespace PlayerState
 
         // 無敵状態にする
         owner_->SetIsInvincible(true);
+
+        // 操作UI設定
+        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(1500.0f, 700.0f);
 
         // 変数初期化
         addForceData_.Initialize(0.1f, 0.3f, 0.5f);
@@ -599,6 +650,9 @@ namespace PlayerState
         // 死亡カメラを使用する
         Camera::Instance().SetUsePlayerDeathCmaera();
 
+        // 操作UI設定
+        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(1500.0f, 700.0f);
+
         // 変数初期化
         deathTimer_ = 0.0f;
         isCreateFadeUi_ = false;
@@ -662,6 +716,10 @@ namespace PlayerState
 
         // スタミナ消費
         owner_->UseDodgeStamina();
+
+        // 操作UI設定
+        if (UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide) != nullptr)
+            UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 0.0f);
 
         // 変数初期化
         addForceData_.Initialize(0.15f, 0.27f, 0.4f);
@@ -1336,7 +1394,7 @@ namespace PlayerState
         Camera::Instance().SetUseCounterCamera();
 
         // 操作UI設定
-        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(1400.0f, 550.0f);
+        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(1500.0f, 0.0f);
 
         // 変数初期化
         addForceBack_.Initialize(0.16f, 0.2f, 0.5f);
@@ -1698,6 +1756,9 @@ namespace PlayerState
         // 無敵状態にする
         owner_->SetIsInvincible(true);
 
+        // 操作UI設定
+        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(1500.0f, 700.0f);
+
         // 変数初期化
         addForceData_.Initialize(0.35f, 0.3f, 1.0f);
         attackData_.Initialize(0.35f, 0.7f);
@@ -1755,6 +1816,9 @@ namespace PlayerState
         owner_->SetNextInputStartFrame(0.0f, 0.3f, 0.3f, 0.8f);
         owner_->SetNextInputEndFrame(1.8f, 1.8f, 1.8f);
         owner_->SetNextInputTransitionFrame(0.6f, 0.6f, 0.6f);
+
+        // 操作UI設定
+        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 350.0f);
 
         // 変数初期化
         addForceData_.Initialize(0.2f, 0.4f, 1.0f);
@@ -1888,7 +1952,8 @@ namespace PlayerState
         owner_->SetNextInputTransitionFrame(0.4f, 0.3f, 0.3f);
 
         // 操作UI設定
-        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(700.0f, 0.0f);
+        if (UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide) != nullptr)
+            UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 350.0f);
 
         // 変数初期化
         attackData_.Initialize(0.1f, 0.35f);      
@@ -2080,7 +2145,7 @@ namespace PlayerState
         owner_->SetNextInputTransitionFrame(0.4f, 0.3f, 0.3f);
 
         // 操作UI設定
-        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(1400.0f, 0.0f);
+        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(750.0f, 350.0f);
 
         // 変数初期化
         attackData_.Initialize(0.06f, 0.3f);
@@ -2253,7 +2318,7 @@ namespace PlayerState
         owner_->SetNextInputTransitionFrame(1.1f, 0.9f, 0.9f);
         
         // 操作UI設定
-        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 550.0f);
+        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(1500.0f, 350.0f);
 
         // 変数初期化
         attackData_.Initialize(0.7f, 0.9f);
@@ -2414,7 +2479,7 @@ namespace PlayerState
         owner_->SetNextInputTransitionFrame(1.3f, 3.0f, 3.0f);
 
         // 操作UI設定
-        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(700.0f, 550.0f);
+        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 700.0f);
 
         // 変数初期化
         attackData_.Initialize(0.65f, 0.8f);

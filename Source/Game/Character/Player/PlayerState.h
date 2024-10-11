@@ -80,6 +80,8 @@ namespace PlayerState
         void SetAnimation();
         [[nodiscard]] const bool CheckNextInput();
 
+        void UpdateDash(const float& elapsedTime);
+
     private:
         float changeStateTimer_ = 0.0f;
     };

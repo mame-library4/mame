@@ -160,6 +160,11 @@ public:// --- 取得・設定 ---
     // ---------- 移動 ------------------------------
     void SetMoveDirection(const DirectX::XMFLOAT3 direction) { moveDirection_ = direction; } // 移動方向
 
+    [[nodiscard]] const float GetDashSpeed() const { return dashSpeed_; }
+    [[nodiscard]] const float GetDashAnimationSpeed() const { return dashAnimationSpeed_; }
+    [[nodiscard]] const bool GetIsDash() const { return isDash_; }
+    void SetIsDash(const bool& flag) { isDash_ = flag; }
+
     // ---------- スタミナ ----------
     [[nodiscard]] const float GetStamina() const { return stamina_; }
     [[nodiscard]] const float GetMaxStamina() const { return maxStamina_; }
@@ -168,10 +173,12 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const float GetDodgeStaminaCost() const { return dodgeStaminaCost_; }
     [[nodiscard]] const float GetDashStamiaCost() const { return dashStaminaCost_; }
     void UseDodgeStamina() { stamina_ -= dodgeStaminaCost_; }
-    void UseDashStamina() { stamina_ -= dashStaminaCost_; }
+    void UseDashStamina(const float& elapsedTime);
     
     [[nodiscard]] const float GetStaminaRecoverySpeed() const { return staminaRecoverySpeed_; }
     void SetStaminaRecoverySpeed(const float& speed) { staminaRecoverySpeed_ = speed; }
+
+    [[nodiscard]] const bool GetIsStaminaDepleted() const { return isStaminaDepleted; }
 
     // ---------- 行動 -------------------------------------------------------
     // ----- フラグをリセット -----
@@ -215,6 +222,7 @@ public:// --- 取得・設定 ---
     [[nodiscard]] bool IsDodgeKeyDown()        const;
     [[nodiscard]] bool IsCounterStanceKey()    const;
     [[nodiscard]] bool IsGetUpKeyDown()        const;
+    [[nodiscard]] bool IsDashKey()             const;
 
 #pragma endregion [Get, Set] Function
 
@@ -243,8 +251,11 @@ private:
     STATE oldState_     = STATE::Idle;
 
     // ---------- 移動 ----------
-    DirectX::XMFLOAT3 moveDirection_ = {};
-    
+    DirectX::XMFLOAT3 moveDirection_        = {};
+    float             dashSpeed_            = 8.0f;  // ダッシュ時の速度
+    float             dashAnimationSpeed_   = 1.3f;  // ダッシュのアニメーション速度
+    bool              isDash_               = false; // 現在ダッシュしているか
+
     // ---------- 回転 ----------
     float startAngle_               = 0.0f;     // 補間開始地点
     float endAngle_                 = 0.0f;     // 補間終了地点
@@ -288,10 +299,13 @@ private:
     // ---------- スタミナ ----------
     float stamina_      = 1.0f;
     float maxStamina_   = 1.0f;
-    float staminaRecoverySpeed_ = 30.0f;
+    float staminaRecoverySpeed_ = 15.0f;
 
-    float dodgeStaminaCost_ = 20.0f; // 回避に使うスタミナ量
-    float dashStaminaCost_  = 1.0f; // ダッシュに使うスタミナ量
+    float dodgeStaminaCost_ = 10.0f; // 回避に使うスタミナ量
+    float dashStaminaCost_  = 3.0f; // ダッシュに使うスタミナ量
+
+    bool isStaminaDepleted = false;
+
 
     SwordTrail swordTrail_;
 
