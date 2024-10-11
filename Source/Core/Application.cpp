@@ -83,11 +83,11 @@ void Application::Update(const float& elapsedTime)
     // 入力更新処理
     input_.Update(elapsedTime);
 
-    // カメラ更新
-    Camera::Instance().Update(elapsedTime);
-
     // シーン更新処理
     SceneManager::Instance().Update(elapsedTime);
+
+    // カメラ更新
+    Camera::Instance().Update(elapsedTime);
 
     // エフェクト更新
     EffectManager::Instance().Update(elapsedTime);
@@ -213,7 +213,7 @@ void Application::Render()
     IMGUI_CTRL_DISPLAY();
 
     // --- 実行 ---
-    UINT syncInterval = 0;
+    UINT syncInterval = 1;
     graphics_.GetSwapChain()->Present(syncInterval, 0);
 }
 

@@ -280,18 +280,14 @@ private:
     // ---------- スタミナ ----------
     float stamina_      = 1.0f;
     float maxStamina_   = 1.0f;
-    float staminaRecoverySpeed_ = 1.0f;
+    float staminaRecoverySpeed_ = 30.0f;
 
     SwordTrail swordTrail_;
 
-#if 1
+
+    // ---------- 剣 ----------
     DirectX::XMFLOAT3 socketLocation_ = { 700, 10500, -7000 };
     DirectX::XMFLOAT3 socketRotation_ = { 145.0f, -16.0f, 0.0f };
     DirectX::XMFLOAT3 socketScale_ = { 1.0f, 1.0f, -1.0f };
-#else   
-    DirectX::XMFLOAT3 socketLocation_ = { 770, 12000, 2500 };
-    DirectX::XMFLOAT3 socketRotation_ = { -100.0f, 0.0f, 0.0f };
-    DirectX::XMFLOAT3 socketScale_ = { 1.0f, 1.0f, 1.0f };
-#endif  
     DirectX::XMFLOAT4X4 weaponWorld_;
 };

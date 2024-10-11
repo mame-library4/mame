@@ -122,7 +122,7 @@ namespace PlayerState
         if (CheckNextInput()) return;
 
         // スタミナ回復
-        if (owner_->GetStamina() < owner_->GetStamina())
+        if (owner_->GetStamina() < owner_->GetMaxStamina())
         {
             float stamina = owner_->GetStamina();
 

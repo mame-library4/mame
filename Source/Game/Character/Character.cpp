@@ -50,6 +50,9 @@ void Character::DrawDebug()
         ImGui::DragFloat("MaxSpeed", &maxSpeed_);
         ImGui::DragFloat3("Velocity", &velocity_.x);
 
+        float speed = XMFloat3Length(velocity_);
+        ImGui::DragFloat("Speed", &speed);
+
         ImGui::TreePop();
     }
     if (ImGui::TreeNode("Rotate"))

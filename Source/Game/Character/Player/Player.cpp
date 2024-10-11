@@ -115,6 +115,7 @@ void Player::Update(const float& elapsedTime)
     // ‰ñ“]•â³
     UpdateRotationAdjustment(elapsedTime);
 
+
     // ˆÚ“®ˆ—
     Move(elapsedTime);    
 
@@ -255,22 +256,22 @@ void Player::Turn(const float& elapsedTime)
         float forwardCross = XMFloat2Cross(cameraForward, playerForward);
 
         // “àÏ‚Å‰ñ“]•‚ğZo
-        float forwardDot = XMFloat2Dot(cameraForward, playerForward) - 1.0f;
+        float dot = XMFloat2Dot(cameraForward, playerForward);
+        dot = std::clamp(dot, -1.0f, 1.0f);
 
-        if (forwardDot > -0.01f) return;
+        float angle = acosf(dot);
+        if (angle < DirectX::XMConvertToRadians(1)) return;
 
-        // -2.0 ~ 0.0;
         const float speed = GetRotateSpeed() * elapsedTime;
-        float rotateY = forwardDot * speed;      
-        rotateY = std::min(rotateY, -0.7f * speed);
+        angle = angle * speed;
 
         if (forwardCross > 0)
         {
-            GetTransform()->AddRotationY(rotateY);
+            GetTransform()->AddRotationY(-angle);
         }
         else
         {
-            GetTransform()->AddRotationY(-rotateY);
+            GetTransform()->AddRotationY(angle);
         }
     }
 }
@@ -279,7 +280,7 @@ void Player::Turn(const float& elapsedTime)
 void Player::Move(const float& elapsedTime)
 {
     DirectX::XMFLOAT3 velocity = GetVelocity();
-    const float length = sqrtf(velocity.x * velocity.x + velocity.z * velocity.z);
+    float length = sqrtf(velocity.x * velocity.x + velocity.z * velocity.z);
 
     // ˆÚ“®“ü—Í‚ª‚È‚¢‚Ì‚ÅŒ¸‘¬ˆ—
     if (fabs(moveDirection_.x) + fabs(moveDirection_.z) <= 0.001f &&
@@ -304,6 +305,8 @@ void Player::Move(const float& elapsedTime)
 
         velocity.x += moveDirection_.x * accelaration * elapsedTime;
         velocity.z += moveDirection_.z * accelaration * elapsedTime;
+
+        length = sqrtf(velocity.x * velocity.x + velocity.z * velocity.z);
 
         if (length > maxSpeed)
         {
