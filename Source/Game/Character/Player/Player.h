@@ -212,7 +212,7 @@ public:// --- éÊìæÅEê›íË ---
 
     // ---------- ÉLÅ[ì¸óÕ ----------
     [[nodiscard]] bool IsComboAttack0KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
-    [[nodiscard]] bool IsDodgeKeyDown()        const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_A; }
+    [[nodiscard]] bool IsDodgeKeyDown()        const;
     [[nodiscard]] bool IsCounterStanceKey()    const;
     [[nodiscard]] bool IsGetUpKeyDown()        const;
 

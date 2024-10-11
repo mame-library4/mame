@@ -445,6 +445,16 @@ void Player::SetNextInputTransitionFrame(const float& dodge, const float& attack
     counterTransitionFrame_     = counter;
 }
 
+// ----- 回避入力判定 -----
+bool Player::IsDodgeKeyDown() const
+{
+    // スタミナがないので入力判定をしない
+    if (GetStamina() < GetDodgeStaminaCost()) return false;
+
+    return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_A;
+}
+
+// ----- カウンター受付入力判定 -----
 bool Player::IsCounterStanceKey() const
 {
     if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B && Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_TRIGGER) return true;

@@ -167,13 +167,10 @@ namespace PlayerState
 
 #pragma region ----- 先行入力受付 -----
         // 回避先行入力受付
-        if (owner_->GetStamina() > 20.0f)
+        if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
+            animationSeconds <= owner_->GetDodgeInputEndFrame())
         {
-            if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
-                animationSeconds <= owner_->GetDodgeInputEndFrame())
-            {
-                if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
-            }
+            if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
         }
 
         // 攻撃先行入力受付
