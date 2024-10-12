@@ -9,7 +9,7 @@ struct ParticleData
     int state_;
 };
 
-cbuffer ParticleConstants : register(b9)
+cbuffer ParticleConstants : register(b10)
 {
     float3 emitterPosition_;
     float particleSize_;

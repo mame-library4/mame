@@ -10,7 +10,8 @@
 #include "Projectile/ProjectileManager.h"
 #include "Projectile/Fireball.h"
 
-#include "Particle/SuperNovaParticle.h"
+#include "Particle/ParticleManager.h"
+#include "Common.h"
 
 // ----- GamePadVibration -----
 namespace ActionDragon
@@ -38,7 +39,6 @@ namespace ActionDragon
         isVibraion_ = true;
     }
 }
-
 
 // ----- AddForceData -----
 namespace ActionDragon
@@ -71,7 +71,12 @@ namespace ActionDragon
     const ActionBase::State SuperNovaAction::Run(const float& elapsedTime)
     {
         // 実行中ノードを中断するか
-        if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
+        if (owner_->CheckStatusChange())
+        {
+            Finalize();
+
+            return ActionBase::State::Failed;
+        }
 
         switch (owner_->GetStep())
         {
@@ -79,6 +84,8 @@ namespace ActionDragon
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::Nova1, false);
 
             // 変数初期化
+            superNovaParticle_ = new SuperNovaParticle(20.0f, 0.25f);
+            
             isCreateSphereNova_ = false;
 
             owner_->SetStep(1);
@@ -90,7 +97,11 @@ namespace ActionDragon
             {
                 const DirectX::XMFLOAT3 emitterPosition = owner_->GetJointPosition("Dragon15_neck_1");
 
-                SuperNovaParticle* particle = new SuperNovaParticle(emitterPosition, 20.0f, 0.25f);
+                // 爆発パーティクル再生
+                superNovaParticle_->PlayCoreBurstParticle(elapsedTime, emitterPosition);
+                // 爆発エフェクト再生
+                Effect* counterEffect = EffectManager::Instance().GetEffect("SuperNova");
+                counterEffect->Play(emitterPosition, 1.3f, 1.0f);
 
                 isCreateSphereNova_ = true;
             }
@@ -99,6 +110,8 @@ namespace ActionDragon
             if (owner_->IsPlayAnimation() == false)
             {
                 owner_->SetStep(0);
+
+                Finalize();
 
                 return ActionBase::State::Complete;
             }
@@ -109,6 +122,12 @@ namespace ActionDragon
         }
 
         return ActionBase::State::Run;
+    }
+
+    // ----- 終了処理 -----
+    void SuperNovaAction::Finalize()
+    {
+        ParticleManager::Instance().Remove(superNovaParticle_);
     }
 }
 

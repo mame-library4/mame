@@ -2,6 +2,8 @@
 #include "BehaviorTree/ActionBase.h"
 #include "Enemy.h"
 
+#include "Particle/SuperNovaParticle.h"
+
 namespace ActionDragon
 {
     struct GamePadVibration
@@ -44,6 +46,11 @@ namespace ActionDragon
         const ActionBase::State Run(const float& elapsedTime) override;
         
     private:
+        void Finalize();
+
+    private:
+        SuperNovaParticle* superNovaParticle_ = nullptr;
+
         bool isCreateSphereNova_ = false;
     };
 
