@@ -4,14 +4,17 @@
 #include "Misc.h"
 
 // ----- コンストラクタ -----
-SuperNovaParticle::SuperNovaParticle(const float& speed, const float& size)
+SuperNovaParticle::SuperNovaParticle()
 	: ParticleSystem(1000)
 {
 	CreateLavaCrawlerParticle(); // 地面を這うパーティクル生成
 	CreateCoreBurstParticle();	 // メインの爆発パーティクル生成
 
-	constants_.speed_ = speed;
-	constants_.particleSize_ = size;
+	constants_.speed_ = 20.0f;
+	constants_.particleSize_ = 0.25f;
+
+	lavaCrawlerParticleConstants_.speed_ = 10.0f;
+	lavaCrawlerParticleConstants_.particleSize_ = 0.05f;
 }
 
 // ----- 更新 -----
@@ -33,7 +36,21 @@ void SuperNovaParticle::DrawDebug()
 {
 	if (ImGui::TreeNode("SuperNovaParticle"))
 	{
-		ImGui::DragFloat("Speed", &constants_.speed_);
+		if (ImGui::TreeNode("LavaCrawlerParticle"))
+		{
+			ImGui::DragFloat("Speed", &lavaCrawlerParticleConstants_.speed_);
+			ImGui::DragFloat("Size", &lavaCrawlerParticleConstants_.particleSize_);
+
+			ImGui::TreePop();
+		}
+
+		if (ImGui::TreeNode("CoreBurstParticle"))
+		{
+			ImGui::DragFloat("Speed", &constants_.speed_);
+			ImGui::DragFloat("Size", &constants_.particleSize_);
+
+			ImGui::TreePop();
+		}
 
 		ImGui::TreePop();
 	}
@@ -83,12 +100,13 @@ void SuperNovaParticle::CreateLavaCrawlerParticle()
 	_ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
 
 	D3D11_TEXTURE2D_DESC textureDesc = {};
-	Texture::Instance().LoadTexture(L"./Resources/Image/Particle/Soft.png", lavaCrawlerParticleSRV_.GetAddressOf(), &textureDesc);
+	Texture::Instance().LoadTexture(L"./Resources/Image/White.png", lavaCrawlerParticleSRV_.GetAddressOf(), &textureDesc);
+	//Texture::Instance().LoadTexture(L"./Resources/Image/Particle/Soft.png", lavaCrawlerParticleSRV_.GetAddressOf(), &textureDesc);
 
 	// TODO : Shaderファイル名を変更
-	Graphics::Instance().CreateVsFromCso("./Resources/Shader/ParticleVS.cso",			 lavaCrawlerParticleVS_.ReleaseAndGetAddressOf(), NULL, NULL, 0);
-	Graphics::Instance().CreatePsFromCso("./Resources/Shader/SuperNovaParticlePS.cso",   lavaCrawlerParticlePS_.ReleaseAndGetAddressOf());
-	Graphics::Instance().CreateGsFromCso("./Resources/Shader/CoreBurstGS.cso",   lavaCrawlerParticleGS_.ReleaseAndGetAddressOf());
+	Graphics::Instance().CreateVsFromCso("./Resources/Shader/ParticleVS.cso",			   lavaCrawlerParticleVS_.ReleaseAndGetAddressOf(), NULL, NULL, 0);
+	Graphics::Instance().CreatePsFromCso("./Resources/Shader/LavaCrawlerPS.cso",		   lavaCrawlerParticlePS_.ReleaseAndGetAddressOf());
+	Graphics::Instance().CreateGsFromCso("./Resources/Shader/LavaCrawlerGS.cso",		   lavaCrawlerParticleGS_.ReleaseAndGetAddressOf());
 	Graphics::Instance().CreateCsFromCso("./Resources/Shader/LavaCrawlerUpdateCS.cso",	   lavaCrawlerParticleUpdateCS_.ReleaseAndGetAddressOf());
 	Graphics::Instance().CreateCsFromCso("./Resources/Shader/LavaCrawlerInitializeCS.cso", lavaCrawlerParticleInitializeCS_.ReleaseAndGetAddressOf());
 }
@@ -151,7 +169,7 @@ void SuperNovaParticle::RenderLavaCrawlerParticle()
 	deviceContext->VSSetShader(lavaCrawlerParticleVS_.Get(), NULL, 0);
 	deviceContext->PSSetShader(lavaCrawlerParticlePS_.Get(), NULL, 0);
 	deviceContext->GSSetShader(lavaCrawlerParticleGS_.Get(), NULL, 0);
-	deviceContext->GSSetShaderResources(9, 1, lavaCrawlerParticleBufferSRV_.GetAddressOf());
+	deviceContext->GSSetShaderResources(static_cast<int>(CBSlot::LavaCrawlerParticle), 1, lavaCrawlerParticleBufferSRV_.GetAddressOf());
 
 	deviceContext->UpdateSubresource(lavaCrawlerParticleConstantBuffer_.Get(), 0, 0, &lavaCrawlerParticleConstants_, 0, 0);
 	deviceContext->VSSetConstantBuffers(static_cast<int>(CBSlot::LavaCrawlerParticle), 1, lavaCrawlerParticleConstantBuffer_.GetAddressOf());
@@ -167,7 +185,7 @@ void SuperNovaParticle::RenderLavaCrawlerParticle()
 	deviceContext->Draw(static_cast<UINT>(maxLavaCrawlerParticleCount_), 0);
 
 	ID3D11ShaderResourceView* nullShaderResourceView{};
-	deviceContext->GSSetShaderResources(9, 1, &nullShaderResourceView);
+	deviceContext->GSSetShaderResources(static_cast<int>(CBSlot::LavaCrawlerParticle), 1, &nullShaderResourceView);
 	deviceContext->VSSetShader(NULL, NULL, 0);
 	deviceContext->PSSetShader(NULL, NULL, 0);
 	deviceContext->GSSetShader(NULL, NULL, 0);

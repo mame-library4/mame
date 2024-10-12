@@ -39,6 +39,20 @@ Effekseer::Handle Effect::Play(const DirectX::XMFLOAT3& position, const float& s
     return handle;
 }
 
+void Effect::Stop(const Effekseer::Handle& handle)
+{
+    Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
+
+    effekseerManager->StopEffect(handle);
+}
+
+void Effect::SetScale(const Effekseer::Handle& handle, const float& scale)
+{
+    Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
+
+    effekseerManager->SetScale(handle, scale, scale, scale);
+}
+
 void Effect::DrawDebug()
 {
     if (ImGui::TreeNode(name_.c_str()))

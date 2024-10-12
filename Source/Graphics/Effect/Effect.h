@@ -10,6 +10,9 @@ public:
     ~Effect() {};
 
     Effekseer::Handle Play(const DirectX::XMFLOAT3& position, const float& scale = 1.0f, const float& speed = 1.0f);
+    void Stop(const Effekseer::Handle& handle);
+
+    void SetScale(const Effekseer::Handle& handle, const float& scale);
 
     void DrawDebug();
 

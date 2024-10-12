@@ -5,8 +5,6 @@
 #include "Camera.h"
 #include "../Player/PlayerManager.h"
 
-#include "Effect/EffectManager.h"
-
 #include "Projectile/ProjectileManager.h"
 #include "Projectile/Fireball.h"
 
@@ -84,24 +82,52 @@ namespace ActionDragon
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::Nova1, false);
 
             // 変数初期化
-            superNovaParticle_ = new SuperNovaParticle(20.0f, 0.25f);
-            
+            superNovaParticle_ = new SuperNovaParticle();
+
+            isCreateLavaCrawlerParticle_ = false;
             isCreateSphereNova_ = false;
+
+            scaleLerpTimer_ = 0.0f;
 
             owner_->SetStep(1);
 
             break;
         case 1:
 
+            if (owner_->GetAnimationSeconds() > 0.65f && isCreateLavaCrawlerParticle_ == false)
+            {
+                DirectX::XMFLOAT3 emitterPosition = owner_->GetJointPosition("Dragon15_neck_1");
+                
+                Effect* powerEffect = EffectManager::Instance().GetEffect("Power");
+                powerEffectHandle_ = powerEffect->Play(emitterPosition, 0.1f, 1.0f);
+                
+                emitterPosition.y = 0.3f;
+                superNovaParticle_->PlayLavaCrawlerParticle(elapsedTime, emitterPosition);
+
+                isCreateLavaCrawlerParticle_ = true;
+            }
+
+            if (isCreateLavaCrawlerParticle_ && isCreateSphereNova_ == false)
+            {
+                scaleLerpTimer_ += 2.0f * elapsedTime;
+                scaleLerpTimer_ = std::min(scaleLerpTimer_, 1.0f);
+
+                const float scale = XMFloatLerp(0.1f, 7.0f, scaleLerpTimer_);
+
+                EffectManager::Instance().GetEffect("Power")->SetScale(powerEffectHandle_, scale);
+            }
+
             if (owner_->GetAnimationSeconds() > 3.9f && isCreateSphereNova_ == false)
             {
+                EffectManager::Instance().GetEffect("Power")->Stop(powerEffectHandle_);                
+
                 const DirectX::XMFLOAT3 emitterPosition = owner_->GetJointPosition("Dragon15_neck_1");
 
                 // 爆発パーティクル再生
                 superNovaParticle_->PlayCoreBurstParticle(elapsedTime, emitterPosition);
                 // 爆発エフェクト再生
-                Effect* counterEffect = EffectManager::Instance().GetEffect("SuperNova");
-                counterEffect->Play(emitterPosition, 1.3f, 1.0f);
+                Effect* superNovaEffect = EffectManager::Instance().GetEffect("SuperNova");
+                superNovaEffect->Play(emitterPosition, 1.3f, 1.0f);
 
                 isCreateSphereNova_ = true;
             }

@@ -3,6 +3,7 @@
 #include "Enemy.h"
 
 #include "Particle/SuperNovaParticle.h"
+#include "Effect/EffectManager.h"
 
 namespace ActionDragon
 {
@@ -51,7 +52,12 @@ namespace ActionDragon
     private:
         SuperNovaParticle* superNovaParticle_ = nullptr;
 
+        bool isCreateLavaCrawlerParticle_ = false;
         bool isCreateSphereNova_ = false;
+
+        Effekseer::Handle powerEffectHandle_ = {};
+
+        float scaleLerpTimer_ = 0.0f;
     };
 
     // éÄñSçsìÆ

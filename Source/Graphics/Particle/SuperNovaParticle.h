@@ -4,7 +4,7 @@
 class SuperNovaParticle : public ParticleSystem
 {
 public:
-    SuperNovaParticle(const float& speed = 1.0f, const float& size = 1.0f);
+    SuperNovaParticle();
     ~SuperNovaParticle() override {}
 
     void Initialize(const float& elapsedTime) override {}
@@ -70,7 +70,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D11GeometryShader>        lavaCrawlerParticleGS_;
     Microsoft::WRL::ComPtr<ID3D11ComputeShader>         lavaCrawlerParticleUpdateCS_;
     Microsoft::WRL::ComPtr<ID3D11ComputeShader>         lavaCrawlerParticleInitializeCS_;
-    const size_t    maxLavaCrawlerParticleCount_ = 100;
+    const size_t    maxLavaCrawlerParticleCount_ = 1000;
     bool            isCrawlerParticleActive_ = false;
     Constants lavaCrawlerParticleConstants_;
 

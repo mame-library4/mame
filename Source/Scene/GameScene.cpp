@@ -70,6 +70,8 @@ void GameScene::CreateResource()
     Effect* effect3 = new Effect("./Resources/Effect/Attack2.efk", "Attack");
     Effect* effect4 = new Effect("./Resources/Effect/SuperNova.efk", "SuperNova");
     
+    Effect* effect5 = new Effect("./Resources/Effect/Power.efk", "Power");
+    
     UIActionGuide* uIActionGuide = new UIActionGuide();
 }
 
