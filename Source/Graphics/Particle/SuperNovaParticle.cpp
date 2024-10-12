@@ -23,7 +23,7 @@ void SuperNovaParticle::Update(const float& elapsedTime)
 
 // ----- 描画 -----
 void SuperNovaParticle::Render()
-{
+{	
 	RenderLavaCrawlerParticle(); // 地面を這うパーティクル描画
 	RenderCoreBurstParticle();	 // メインの爆発パーティクル描画
 }
@@ -88,9 +88,9 @@ void SuperNovaParticle::CreateLavaCrawlerParticle()
 	// TODO : Shaderファイル名を変更
 	Graphics::Instance().CreateVsFromCso("./Resources/Shader/ParticleVS.cso",			 lavaCrawlerParticleVS_.ReleaseAndGetAddressOf(), NULL, NULL, 0);
 	Graphics::Instance().CreatePsFromCso("./Resources/Shader/SuperNovaParticlePS.cso",   lavaCrawlerParticlePS_.ReleaseAndGetAddressOf());
-	Graphics::Instance().CreateGsFromCso("./Resources/Shader/SuperNovaParticleGS.cso",   lavaCrawlerParticleGS_.ReleaseAndGetAddressOf());
-	Graphics::Instance().CreateCsFromCso("./Resources/Shader/SuperNovaCS.cso",			 lavaCrawlerParticleUpdateCS_.ReleaseAndGetAddressOf());
-	Graphics::Instance().CreateCsFromCso("./Resources/Shader/SuperNovaInitializeCS.cso", lavaCrawlerParticleInitializeCS_.ReleaseAndGetAddressOf());
+	Graphics::Instance().CreateGsFromCso("./Resources/Shader/CoreBurstGS.cso",   lavaCrawlerParticleGS_.ReleaseAndGetAddressOf());
+	Graphics::Instance().CreateCsFromCso("./Resources/Shader/LavaCrawlerUpdateCS.cso",	   lavaCrawlerParticleUpdateCS_.ReleaseAndGetAddressOf());
+	Graphics::Instance().CreateCsFromCso("./Resources/Shader/LavaCrawlerInitializeCS.cso", lavaCrawlerParticleInitializeCS_.ReleaseAndGetAddressOf());
 }
 
 // ----- 再生 -----
@@ -221,11 +221,11 @@ void SuperNovaParticle::CreateCoreBurstParticle()
 	D3D11_TEXTURE2D_DESC textureDesc = {};
 	Texture::Instance().LoadTexture(L"./Resources/Image/Particle/Soft.png", shaderResourceView_.GetAddressOf(), &textureDesc);
 
-	Graphics::Instance().CreateVsFromCso("./Resources/Shader/ParticleVS.cso", particleVS_.ReleaseAndGetAddressOf(), NULL, NULL, 0);
-	Graphics::Instance().CreatePsFromCso("./Resources/Shader/SuperNovaParticlePS.cso", particlePS_.ReleaseAndGetAddressOf());
-	Graphics::Instance().CreateGsFromCso("./Resources/Shader/SuperNovaParticleGS.cso", particleGS_.ReleaseAndGetAddressOf());
-	Graphics::Instance().CreateCsFromCso("./Resources/Shader/SuperNovaCS.cso", particleUpdateCS_.ReleaseAndGetAddressOf());
-	Graphics::Instance().CreateCsFromCso("./Resources/Shader/SuperNovaInitializeCS.cso", particleInitializeCS_.ReleaseAndGetAddressOf());
+	Graphics::Instance().CreateVsFromCso("./Resources/Shader/ParticleVS.cso",			 particleVS_.ReleaseAndGetAddressOf(), NULL, NULL, 0);
+	Graphics::Instance().CreatePsFromCso("./Resources/Shader/SuperNovaParticlePS.cso",   particlePS_.ReleaseAndGetAddressOf());
+	Graphics::Instance().CreateGsFromCso("./Resources/Shader/CoreBurstGS.cso",			 particleGS_.ReleaseAndGetAddressOf());
+	Graphics::Instance().CreateCsFromCso("./Resources/Shader/CoreBurstUpdateCS.cso",	 particleUpdateCS_.ReleaseAndGetAddressOf());
+	Graphics::Instance().CreateCsFromCso("./Resources/Shader/CoreBurstInitializeCS.cso", particleInitializeCS_.ReleaseAndGetAddressOf());
 }
 
 // ----- 再生 -----

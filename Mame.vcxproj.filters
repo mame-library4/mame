@@ -711,6 +711,12 @@
     <Filter Include="Mame\Game\UI\UIActionGuide">
       <UniqueIdentifier>{ce724b79-d179-45c8-b683-0c7e329b9621}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mame\Shader\Particle\SuperNova\CoreBurstParticle">
+      <UniqueIdentifier>{9d4cc15d-64f5-485a-ad64-48e60e6b6f8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Shader\Particle\SuperNova\LavaCrawlerParticle">
+      <UniqueIdentifier>{8936e72d-c640-43c8-9119-592d37d80712}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -777,6 +783,9 @@
     </None>
     <None Include="Source\Shader\SuperNovaParticle.hlsli">
       <Filter>Mame\Shader\Particle\SuperNova</Filter>
+    </None>
+    <None Include="Source\Shader\CoreBurstParticle.hlsli">
+      <Filter>Mame\Shader\Particle\SuperNova\CoreBurstParticle</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -861,17 +870,23 @@
     <FxCompile Include="Source\Shader\SnowParticleInitCS.hlsl">
       <Filter>Mame\Shader\Particle\SnowParticle</Filter>
     </FxCompile>
-    <FxCompile Include="Source\Shader\SuperNovaParticleGS.hlsl">
-      <Filter>Mame\Shader\Particle\SuperNova</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\SuperNovaInitializeCS.hlsl">
-      <Filter>Mame\Shader\Particle\SuperNova</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\SuperNovaCS.hlsl">
-      <Filter>Mame\Shader\Particle\SuperNova</Filter>
-    </FxCompile>
     <FxCompile Include="Source\Shader\SuperNovaParticlePS.hlsl">
       <Filter>Mame\Shader\Particle\SuperNova</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\CoreBurstInitializeCS.hlsl">
+      <Filter>Mame\Shader\Particle\SuperNova\CoreBurstParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\CoreBurstUpdateCS.hlsl">
+      <Filter>Mame\Shader\Particle\SuperNova\CoreBurstParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\LavaCrawlerUpdateCS.hlsl">
+      <Filter>Mame\Shader\Particle\SuperNova\LavaCrawlerParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\LavaCrawlerInitializeCS.hlsl">
+      <Filter>Mame\Shader\Particle\SuperNova\LavaCrawlerParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\CoreBurstGS.hlsl">
+      <Filter>Mame\Shader\Particle\SuperNova\CoreBurstParticle</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

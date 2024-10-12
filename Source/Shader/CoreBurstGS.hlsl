@@ -1,5 +1,6 @@
-#include "SuperNovaParticle.hlsli"
 #include "Particle.hlsli"
+#include "SuperNovaParticle.hlsli"
+#include "CoreBurstParticle.hlsli"
 
 StructuredBuffer<ParticleData> particleBuffer : register(t9);
 
