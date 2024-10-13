@@ -357,3 +357,11 @@ inline const float XMFloatLerp(
 {
     return start + timer * (end - start);
 }
+
+inline const int XMIntLerp(
+    const int& start,
+    const int& end,
+    const float& timer)
+{
+    return (int)(start + timer * (end - start));
+}

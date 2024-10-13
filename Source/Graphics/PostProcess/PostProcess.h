@@ -14,7 +14,14 @@ private:
         float shadowColor_ = 0.55f;
         float shadowDepthBias_ = 0.0001f;
         bool colorizeCascadedLayer_ = false;
-        float blurPower_ = 0.0f;
+        
+        float dummy_;
+    };
+    struct RadialBlurConstants
+    {
+        DirectX::XMFLOAT2 uvOffset_ = {};
+        float strength_ = 0.4f;
+        float sampleCount_ = 1.0f;
     };
 
     PostProcess();
@@ -36,17 +43,20 @@ public:
     void MakeCascadedShadowMap(const DirectX::XMFLOAT4& lightDirection, UINT cbSlot, std::function<void()> drawcallback);
 
     ConstantBuffer<Constants>* GetConstants() { return constant_.get(); }
+    ConstantBuffer<RadialBlurConstants>* GetRadialBlurConstants() { return radialBlurConstants_.get(); }
 
     void SetUseRadialBlur(const bool& flag = true) { useRadialBlur_ = flag; }
 
 private:
     std::unique_ptr<FullscreenQuad>             renderer_;
     std::unique_ptr<FrameBuffer>                postProcess_;
+    std::unique_ptr<FrameBuffer>                radialBlur_;
     
     Microsoft::WRL::ComPtr<ID3D11PixelShader>   postProcessPS_;
-    Microsoft::WRL::ComPtr<ID3D11PixelShader>   roarPS_;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader>   radialBlurPS_;
 
-    std::unique_ptr<ConstantBuffer<Constants>> constant_;
+    std::unique_ptr<ConstantBuffer<Constants>>              constant_;
+    std::unique_ptr<ConstantBuffer<RadialBlurConstants>>    radialBlurConstants_;
 
     bool useRadialBlur_ = false;
 

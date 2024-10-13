@@ -7,6 +7,7 @@ float4 main(PSIn psIn) : SV_TARGET
 {
     //return float4(psIn.texcoord, 1, 1);
 
+    return psIn.color;
     
     float4 color = textureMap.Sample(samplerStates[1], psIn.texcoord);
     

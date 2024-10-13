@@ -242,7 +242,7 @@ void GameScene::Render()
     Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
     Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_ON_ZW_ON);
 
-    //PlayerManager::Instance().RenderTrail();
+    PlayerManager::Instance().RenderTrail();
 
     ParticleManager::Instance().Render();
 

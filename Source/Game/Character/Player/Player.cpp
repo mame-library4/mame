@@ -136,6 +136,10 @@ void Player::Update(const float& elapsedTime)
 
     // スタミナ回復
     UpdateStaminaRecovery(elapsedTime);
+
+
+    sword_.Update(GetJointWorldTransform("hand_r"), GetJointWorldTransform("index_01_r"));
+    //sword_.Update(GetJointPosition("hand_r"));
 }
 
 // ----- 描画 -----
@@ -147,7 +151,9 @@ void Player::Render(ID3D11PixelShader* psShader)
 
 void Player::RenderTrail()
 {
-    swordTrail_.Render();
+    sword_.Render();
+
+    //swordTrail_.Render();
 }
 
 // ----- ImGui用 -----
@@ -155,6 +161,8 @@ void Player::DrawDebug()
 {
     if (ImGui::BeginMenu("Player"))
     {
+        sword_.DrawDebug();
+
         ImGui::DragFloat("DashSpeed", &dashSpeed_);
         ImGui::DragFloat("DashAnimationSpeed", &dashAnimationSpeed_);
 

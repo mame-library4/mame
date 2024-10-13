@@ -230,6 +230,7 @@
     <ClCompile Include="Source\Game\Stage\StageNormal.cpp" />
     <ClCompile Include="Source\Game\Stone\Stone.cpp" />
     <ClCompile Include="Source\Game\Stone\StoneManager.cpp" />
+    <ClCompile Include="Source\Game\Sword\Sword.cpp" />
     <ClCompile Include="Source\Game\UI\UI.cpp" />
     <ClCompile Include="Source\Game\UI\UIActionGuide.cpp" />
     <ClCompile Include="Source\Game\UI\UICrosshair.cpp" />
@@ -320,6 +321,7 @@
     <ClInclude Include="Source\Game\Stage\StageNormal.h" />
     <ClInclude Include="Source\Game\Stone\Stone.h" />
     <ClInclude Include="Source\Game\Stone\StoneManager.h" />
+    <ClInclude Include="Source\Game\Sword\Sword.h" />
     <ClInclude Include="Source\Game\UI\UI.h" />
     <ClInclude Include="Source\Game\UI\UIActionGuide.h" />
     <ClInclude Include="Source\Game\UI\UICrosshair.h" />
@@ -551,7 +553,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="Source\Shader\PostProcessRoarPS.hlsl">
+    <FxCompile Include="Source\Shader\RadialBlurPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>

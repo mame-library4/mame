@@ -250,6 +250,9 @@
     <ClCompile Include="Source\Game\UI\UIActionGuide.cpp">
       <Filter>Mame\Game\UI\UIActionGuide</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\Sword\Sword.cpp">
+      <Filter>Mame\Game\Object\Sword</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -529,6 +532,9 @@
     <ClInclude Include="Source\Game\UI\UIActionGuide.h">
       <Filter>Mame\Game\UI\UIActionGuide</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\Sword\Sword.h">
+      <Filter>Mame\Game\Object\Sword</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -717,6 +723,9 @@
     <Filter Include="Mame\Shader\Particle\SuperNova\LavaCrawlerParticle">
       <UniqueIdentifier>{8936e72d-c640-43c8-9119-592d37d80712}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mame\Game\Object\Sword">
+      <UniqueIdentifier>{99fb0c01-9b4b-49ba-97f9-1dabeb2b8192}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -846,7 +855,7 @@
     <FxCompile Include="Source\Shader\GltfModelGBufferPS.hlsl">
       <Filter>Mame\Shader\GltfModel</Filter>
     </FxCompile>
-    <FxCompile Include="Source\Shader\PostProcessRoarPS.hlsl">
+    <FxCompile Include="Source\Shader\RadialBlurPS.hlsl">
       <Filter>Mame\Shader\PostProcess</Filter>
     </FxCompile>
     <FxCompile Include="Source\Shader\GltfModelStaticBatchingVS.hlsl">

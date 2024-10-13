@@ -44,7 +44,7 @@ public:
     
     DirectX::XMMATRIX GetJointGlobalTransform(const size_t& nodeIndex) { return gltfModel_.GetJointGlobalTransform(nodeIndex); }
     DirectX::XMMATRIX GetJointGlobalTransform(const std::string& nodeName) { return gltfModel_.GetJointGlobalTransform(nodeName); }
-    DirectX::XMMATRIX GetJointWorldTransform(const std::string& nodeName, const float& scaleFacter) { return gltfModel_.GetJointWorldTransform(nodeName, scaleFacter); }
+    DirectX::XMMATRIX GetJointWorldTransform(const std::string& nodeName) { return gltfModel_.GetJointWorldTransform(nodeName, scaleFactor_); }
 
 
     // ---------- Node ----------

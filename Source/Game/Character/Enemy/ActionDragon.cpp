@@ -11,6 +11,9 @@
 #include "Particle/ParticleManager.h"
 #include "Common.h"
 
+#include "sprite.h"
+#include "Application.h"
+
 // ----- GamePadVibration -----
 namespace ActionDragon
 {
@@ -83,11 +86,13 @@ namespace ActionDragon
 
             // 変数初期化
             superNovaParticle_ = new SuperNovaParticle();
-
+            
             isCreateLavaCrawlerParticle_ = false;
-            isCreateSphereNova_ = false;
+            isCreateCoreBurst_           = false;
 
             scaleLerpTimer_ = 0.0f;
+            radialBlurTimer_ = 0.0f;
+            returnBlurTimer_ = 0.0f;
 
             owner_->SetStep(1);
 
@@ -107,9 +112,9 @@ namespace ActionDragon
                 isCreateLavaCrawlerParticle_ = true;
             }
 
-            if (isCreateLavaCrawlerParticle_ && isCreateSphereNova_ == false)
+            if (isCreateLavaCrawlerParticle_ && isCreateCoreBurst_ == false)
             {
-                scaleLerpTimer_ += 2.0f * elapsedTime;
+                scaleLerpTimer_ += elapsedTime * 0.4f;
                 scaleLerpTimer_ = std::min(scaleLerpTimer_, 1.0f);
 
                 const float scale = XMFloatLerp(0.1f, 7.0f, scaleLerpTimer_);
@@ -117,7 +122,7 @@ namespace ActionDragon
                 EffectManager::Instance().GetEffect("Power")->SetScale(powerEffectHandle_, scale);
             }
 
-            if (owner_->GetAnimationSeconds() > 3.9f && isCreateSphereNova_ == false)
+            if (owner_->GetAnimationSeconds() > 3.9f && isCreateCoreBurst_ == false)
             {
                 EffectManager::Instance().GetEffect("Power")->Stop(powerEffectHandle_);                
 
@@ -129,8 +134,11 @@ namespace ActionDragon
                 Effect* superNovaEffect = EffectManager::Instance().GetEffect("SuperNova");
                 superNovaEffect->Play(emitterPosition, 1.3f, 1.0f);
 
-                isCreateSphereNova_ = true;
+                isCreateCoreBurst_ = true;
             }
+
+            // ラジアルブラー更新
+            UpdateRadialBlur(elapsedTime);
 
 
             if (owner_->IsPlayAnimation() == false)
@@ -148,6 +156,44 @@ namespace ActionDragon
         }
 
         return ActionBase::State::Run;
+    }
+
+    // ----- ラジアルブラー更新 -----
+    void SuperNovaAction::UpdateRadialBlur(const float& elapsedTime)
+    {
+        // メインの爆発パーティクルが生成されていないので更新しない
+        if (isCreateCoreBurst_ == false) return;
+
+        // ラジアルブラーを徐々のサンプリング回数を徐々に増やしていく
+        if (radialBlurTimer_ < 2.0f)
+        {
+            // ブラーの開始中心点を決める
+            const DirectX::XMFLOAT3 dragonNeckPosition = owner_->GetJointPosition("Dragon15_neck_1");
+            DirectX::XMFLOAT2 centerPosition = Sprite::ConvertToScreenPos(dragonNeckPosition);
+            centerPosition.x /= SCREEN_WIDTH;
+            centerPosition.y /= SCREEN_HEIGHT;
+            PostProcess::Instance().GetRadialBlurConstants()->GetData()->uvOffset_ = centerPosition;
+
+            // サンプリング回数を求める
+            radialBlurTimer_ += 2.0f * elapsedTime;
+            int sampleCount = XMIntLerp(1, 7, radialBlurTimer_);
+            sampleCount = std::min(sampleCount, 7);
+            PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = sampleCount;
+
+            return;
+        }
+        
+        if (returnBlurTimer_ < 1.0f)
+        {
+            returnBlurTimer_ += 3.0f * elapsedTime;
+            int sampleCount = XMIntLerp(7, 1, returnBlurTimer_);
+            sampleCount = std::max(sampleCount, 1);
+            PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = sampleCount;
+
+            return;
+        }        
+
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 1;
     }
 
     // ----- 終了処理 -----
@@ -613,7 +659,7 @@ namespace ActionDragon
         // ブラー終了フレームを過ぎたら、ブラーを緩める
         if (animationSeconds > blurEndFrame)
         {
-            PostProcess::Instance().GetConstants()->GetData()->blurPower_ =
+            PostProcess::Instance().GetConstants()->GetData()->dummy_ =
                 Easing::InSine(blurTimer_, maxBlurTime, maxBlurPower, 0.0f);
 
             blurTimer_ -= elapsedTime;
@@ -622,7 +668,7 @@ namespace ActionDragon
         // ブラー開始フレームを過ぎたら、ブラーをかける
         else if (animationSeconds > blurStartFrame)
         {
-            PostProcess::Instance().GetConstants()->GetData()->blurPower_ =
+            PostProcess::Instance().GetConstants()->GetData()->dummy_ =
                 Easing::InQuint(blurTimer_, maxBlurTime, maxBlurPower, 0.0f);
 
             blurTimer_ += elapsedTime;
@@ -707,7 +753,7 @@ namespace ActionDragon
         // ブラー終了フレームを過ぎたら、ブラーを緩める
         if (animationSeconds > blurEndFrame_)
         {
-            PostProcess::Instance().GetConstants()->GetData()->blurPower_ =
+            PostProcess::Instance().GetConstants()->GetData()->dummy_ =
                 Easing::InSine(blurTimer_, maxBlurTime_, maxBlurPower_, 0.0f);
 
             blurTimer_ -= elapsedTime;
@@ -716,7 +762,7 @@ namespace ActionDragon
         // ブラー開始フレームを過ぎたら、ブラーをかける
         else if (animationSeconds > blurStartFrame_)
         {
-            PostProcess::Instance().GetConstants()->GetData()->blurPower_ =
+            PostProcess::Instance().GetConstants()->GetData()->dummy_ =
                 Easing::InQuint(blurTimer_, maxBlurTime_, maxBlurPower_, 0.0f);
 
             blurTimer_ += elapsedTime;

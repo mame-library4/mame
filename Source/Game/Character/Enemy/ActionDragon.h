@@ -47,17 +47,24 @@ namespace ActionDragon
         const ActionBase::State Run(const float& elapsedTime) override;
         
     private:
+        void UpdateRadialBlur(const float& elapsedTime);
+        
         void Finalize();
 
     private:
         SuperNovaParticle* superNovaParticle_ = nullptr;
 
         bool isCreateLavaCrawlerParticle_ = false;
-        bool isCreateSphereNova_ = false;
+        
+        bool isCreateCoreBurst_ = false; // メインの爆発
+
+        float scaleLerpTimer_ = 0.0f;
 
         Effekseer::Handle powerEffectHandle_ = {};
 
-        float scaleLerpTimer_ = 0.0f;
+        // ----- ラジアルブラー -----
+        float radialBlurTimer_ = 0.0f;
+        float returnBlurTimer_ = 0.0f;
     };
 
     // 死亡行動

@@ -10,7 +10,7 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
 
     ParticleData p = particleBuffer[id];
     
-    if (p.age_ > 3.0)
+    if (p.age_ > 3)
     {
         p.position_ += p.velocity_ * speed_ * deltaTime_;
     }

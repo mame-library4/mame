@@ -70,7 +70,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D11GeometryShader>        lavaCrawlerParticleGS_;
     Microsoft::WRL::ComPtr<ID3D11ComputeShader>         lavaCrawlerParticleUpdateCS_;
     Microsoft::WRL::ComPtr<ID3D11ComputeShader>         lavaCrawlerParticleInitializeCS_;
-    const size_t    maxLavaCrawlerParticleCount_ = 1000;
+    const size_t    maxLavaCrawlerParticleCount_ = 3000;
     bool            isCrawlerParticleActive_ = false;
     Constants lavaCrawlerParticleConstants_;
 

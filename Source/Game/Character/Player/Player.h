@@ -8,6 +8,8 @@
 
 #include "Effect/Effect.h"
 
+#include "Sword/Sword.h"
+
 class Player : public Character
 {
 public:// --- íËêî ---
@@ -308,7 +310,7 @@ private:
 
 
     SwordTrail swordTrail_;
-
+    Sword sword_;
 
     // ---------- åï ----------
     DirectX::XMFLOAT3 socketLocation_ = { 700, 10500, -7000 };

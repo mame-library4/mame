@@ -9,11 +9,13 @@ PostProcess::PostProcess()
     renderer_ = std::make_unique<FullscreenQuad>();
 
     Graphics::Instance().CreatePsFromCso("./Resources/Shader/PostProcessPS.cso", postProcessPS_.GetAddressOf());
-    Graphics::Instance().CreatePsFromCso("./Resources/Shader/PostProcessRoarPS.cso", roarPS_.GetAddressOf());
+    Graphics::Instance().CreatePsFromCso("./Resources/Shader/RadialBlurPS.cso", radialBlurPS_.GetAddressOf());
 
     postProcess_ = std::make_unique<FrameBuffer>(SCREEN_WIDTH, SCREEN_HEIGHT);
+    radialBlur_  = std::make_unique<FrameBuffer>(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    constant_ = std::make_unique<ConstantBuffer<Constants>>();
+    constant_            = std::make_unique<ConstantBuffer<Constants>>();
+    radialBlurConstants_ = std::make_unique<ConstantBuffer<RadialBlurConstants>>();
 }
 
 // ----- デストラクタ -----
@@ -52,19 +54,13 @@ void PostProcess::Draw()
         cascadedShadowMap_.GetDepthMap().Get()
     };
 
+    radialBlur_->Clear();
+    radialBlur_->Activate();
     renderer_->Draw(shaderResourceViews, 0, _countof(shaderResourceViews), postProcessPS_.Get());
+    radialBlur_->Deactivate();
 
-#if 0
-
-    if (useRadialBlur_)
-    {
-        renderer_->Draw(bloom_.GetShaderResourceView(), 0, 1, roarPS_.Get());
-    }
-    else
-    {
-        renderer_->Draw(bloom_.GetShaderResourceView(), 0, 1, postProcessPS_.Get());
-    }
-#endif
+    radialBlurConstants_->Activate(0);
+    renderer_->Draw(radialBlur_->shaderResourceViews_->GetAddressOf(), 0, 1, radialBlurPS_.Get());
 }
 
 // ----- ImGui用 -----
@@ -82,11 +78,18 @@ void PostProcess::DrawDebug()
 
         if (ImGui::TreeNode("Bloom_"))
         {
-            ImGui::DragFloat("blurPower", &constant_->GetData()->blurPower_, 0.01f);
-
             ImGui::Image(reinterpret_cast<ImTextureID>(postProcess_->shaderResourceViews_[0].Get()), ImVec2(256.0, 256.0));
 
             bloom_.DrawDebug();
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("RadialBlur"))
+        {
+            ImGui::DragFloat2("UVOffset", &radialBlurConstants_->GetData()->uvOffset_.x, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat("Strength", &radialBlurConstants_->GetData()->strength_, 0.1f, 0.0f, 2.0f);
+            ImGui::DragFloat("SampleCount", &radialBlurConstants_->GetData()->sampleCount_, 1.0f, 1.0f, 5.0f);
 
             ImGui::TreePop();
         }
