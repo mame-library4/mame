@@ -15,7 +15,7 @@ public:
     D3D11_VIEWPORT viewport_;
 
     void Clear(float r = 0, float g = 0, float b = 0, float a = 1, float depth = 1);
-    void Activate();
+    void Activate(ID3D11DepthStencilView* depthStencilVew = nullptr);
     void Deactivate();
 
 private:

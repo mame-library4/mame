@@ -98,7 +98,6 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                     UINumber* ui = new UINumber(enemyData.GetDamage(), enemyData.GetPosition());
                 }
 
-                // TODO:ヒットストップ処理
                 // ヒットストップ
                 PlayerManager::Instance().SetHitStop(7);
 

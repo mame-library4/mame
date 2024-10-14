@@ -200,6 +200,8 @@ namespace ActionDragon
     void SuperNovaAction::Finalize()
     {
         ParticleManager::Instance().Remove(superNovaParticle_);
+
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 1;
     }
 }
 

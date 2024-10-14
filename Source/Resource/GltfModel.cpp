@@ -150,7 +150,6 @@ GltfModel::GltfModel(const std::string& filename)
 
 #endif
 
-    // TODO: This is a force-brute programming, may cause bugs.
     const std::map<std::string, BufferView>& vertexBufferViews{
         meshes_.at(0).primitives_.at(0).vertexBufferViews_ };
     D3D11_INPUT_ELEMENT_DESC inputElementDesc[]
@@ -983,9 +982,6 @@ void GltfModel::FetchMeshes(ID3D11Device* device, const tinygltf::Model& gltfMod
             // Create vertex buffers
             for (std::map<std::string, int>::const_reference gltfAttribute : gltfPrimitive.attributes)
             {
-                // TODO:Ç±Ç±ÇÃèàóù
-                // if 1Ç0Ç…ÇµÇΩÇÁfbxÉrÉÖÉAÅ[Ç«Ç§ÇËÇ…Ç≈ÇÈ...
-                // Ç«Ç¡ÇøÇ™Ç¢Ç¢ÇÒÇ≈ÇµÇÂÇ§ÇÀ
 #if 0
                 const tinygltf::Accessor& gltfAccessor{ gltfModel.accessors.at(gltfAttribute.second) };
                 const tinygltf::BufferView& gltfBufferView{ gltfModel.bufferViews.at(gltfAccessor.bufferView) };

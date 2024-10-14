@@ -27,7 +27,7 @@ PostProcess::~PostProcess()
 void PostProcess::Activate()
 {
     postProcess_->Clear();
-    postProcess_->Activate();
+    postProcess_->Activate(Graphics::Instance().GetShader()->GetGBufferDepthStencilView());
 }
 
 // ----- ポストプロセス終了 -----

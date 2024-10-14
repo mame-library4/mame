@@ -15,6 +15,8 @@ UICrosshair::UICrosshair()
     centerDot_ = std::make_unique<Sprite>(L"./Resources/Image/UI/Crosshair/CenterDot.png");
     centerDot_->SetName("CenterDot");
     centerDot_->GetTransform()->SetColorA(0.0f);
+
+    AudioManager::Instance().PlaySE(SE::Lockon);
 }
 
 // ----- 更新 -----
@@ -107,7 +109,7 @@ void UICrosshair::UpdateSpriteSizeAndColor(const float& elapsedTime)
         centerDot_->GetTransform()->SetSize(128.0f);
         centerDot_->GetTransform()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
 
-        AudioManager::Instance().PlaySE(SE::Lockon);
+        
 
         isSpriteSizeUpdated_ = true;
     }
@@ -135,14 +137,12 @@ const bool UICrosshair::JudgementDraw()
 {
     isDraw_ = false;
 
-    // TODO:Y軸を考慮していないのでもしかしたらバグるかも
     DirectX::XMFLOAT3 cameraPosition = Camera::Instance().GetTransform()->GetPosition();
     DirectX::XMFLOAT3 cameraForward = Camera::Instance().CalcForward();
     DirectX::XMFLOAT2 targetVec = XMFloat2Normalize({cameraPosition.x - targetJointPosition_.x, cameraPosition.z - targetJointPosition_.z});
     const float dot = XMFloat2Dot(targetVec, XMFloat2Normalize({ cameraForward.x, cameraForward.z }));
 
     if (dot > 0) return false;
-    //if (dot > DirectX::XM_PIDIV2) return false;
 
     // 描画する
     isDraw_ = true;

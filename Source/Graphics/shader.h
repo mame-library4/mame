@@ -55,6 +55,8 @@ public:
     ID3D11ShaderResourceView** GetGBufferBaseColorShaderResourceView() { return gBufferShaderResourceView_[0].GetAddressOf(); }
     ID3D11PixelShader* GetGBufferPixelShader() { return gBufferPixelShader_.Get(); }
 
+    ID3D11DepthStencilView* GetGBufferDepthStencilView() { return gBufferDepthStencilView_.Get(); }
+
     const DirectX::XMFLOAT4 GetViewPosition() { return view.position; }
     const DirectX::XMFLOAT4 GetViewCamera() { return view.camera; }
 

@@ -492,7 +492,7 @@ void Camera::UpdateLockonCamera(const float& elapsedTime)
 
 
     // プレイヤーと敵のジョイントの間をtargetに設定する
-    // TODO: ↑現在できていない
+
 
     DirectX::XMFLOAT3 cameraPosition = GetTransform()->GetPosition();
     DirectX::XMFLOAT3 playerPosition = PlayerManager::Instance().GetTransform()->GetPosition();

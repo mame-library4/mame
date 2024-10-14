@@ -103,7 +103,6 @@ void SuperNovaParticle::CreateLavaCrawlerParticle()
 	Texture::Instance().LoadTexture(L"./Resources/Image/White.png", lavaCrawlerParticleSRV_.GetAddressOf(), &textureDesc);
 	//Texture::Instance().LoadTexture(L"./Resources/Image/Particle/Soft.png", lavaCrawlerParticleSRV_.GetAddressOf(), &textureDesc);
 
-	// TODO : Shaderファイル名を変更
 	Graphics::Instance().CreateVsFromCso("./Resources/Shader/ParticleVS.cso",			   lavaCrawlerParticleVS_.ReleaseAndGetAddressOf(), NULL, NULL, 0);
 	Graphics::Instance().CreatePsFromCso("./Resources/Shader/LavaCrawlerPS.cso",		   lavaCrawlerParticlePS_.ReleaseAndGetAddressOf());
 	Graphics::Instance().CreateGsFromCso("./Resources/Shader/LavaCrawlerGS.cso",		   lavaCrawlerParticleGS_.ReleaseAndGetAddressOf());

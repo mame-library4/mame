@@ -71,7 +71,7 @@ void FrameBuffer::Clear(float r, float g, float b, float a, float depth)
     deviceContext->ClearDepthStencilView(depthStencilView_.Get(), D3D11_CLEAR_DEPTH, depth, 0);
 }
 
-void FrameBuffer::Activate()
+void FrameBuffer::Activate(ID3D11DepthStencilView* depthStencilVew)
 {
     ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
 
@@ -81,7 +81,10 @@ void FrameBuffer::Activate()
         cachedDepthStencilView_.ReleaseAndGetAddressOf());
 
     deviceContext->RSSetViewports(1, &viewport_);
-    deviceContext->OMSetRenderTargets(1, renderTargetView_.GetAddressOf(), depthStencilView_.Get());
+
+    ID3D11DepthStencilView* dsv = (depthStencilVew != nullptr) ? depthStencilVew : depthStencilView_.Get();
+    deviceContext->OMSetRenderTargets(1, renderTargetView_.GetAddressOf(), dsv);
+    //deviceContext->OMSetRenderTargets(1, renderTargetView_.GetAddressOf(), depthStencilView_.Get());
 }
 
 void FrameBuffer::Deactivate()

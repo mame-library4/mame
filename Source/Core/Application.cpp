@@ -135,18 +135,22 @@ void Application::Render()
         Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_ON_ZW_ON);
         SceneManager::Instance().DeferredRender();
 
-        deviceContext->ClearRenderTargetView(renderTargetView, color);
+        //deviceContext->ClearRenderTargetView(renderTargetView, color);
+        //deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+
         //deviceContext->ClearDepthStencilView(Graphics::Instance().GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-        deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
         //deviceContext->OMSetRenderTargets(1, &renderTargetView, Graphics::Instance().GetShader()->gBufferDepthStencilView_.Get());     
 
+
         PostProcess::Instance().Activate();
+
 
         // SkyMap
         skymap_.Render();
 
         deferredRendering_.Draw();
                
+
         SceneManager::Instance().Render();
 
         // デバッグレンダラ
@@ -159,6 +163,10 @@ void Application::Render()
         EffectManager::Instance().Render();
 
         PostProcess::Instance().Deactivate();
+
+        deviceContext->ClearRenderTargetView(renderTargetView, color);
+        //deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+        deviceContext->OMSetRenderTargets(1, &renderTargetView, Graphics::Instance().GetShader()->GetGBufferDepthStencilView());     
 
         PostProcess::Instance().Draw();
     }
