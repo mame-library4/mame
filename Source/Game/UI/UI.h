@@ -20,10 +20,15 @@ public:
     [[nodiscard]] const UIManager::UIType GetType() const { return type_; }
     [[nodiscard]] const std::string GetName() const { return name_; }
 
+    [[nodiscard]] const bool GetIsDraw() const { return isDraw_; }
+    void SetIsDraw(const bool& flag = true) { isDraw_ = flag; }
+
     Sprite::Transform* GetTransform() { return sprite_->GetTransform(); }
 
 private:
     const UIManager::UIType type_;
     std::unique_ptr<Sprite> sprite_;
     std::string             name_;
+
+    bool isDraw_ = false;
 };

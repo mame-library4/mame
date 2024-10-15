@@ -243,6 +243,7 @@
     <ClCompile Include="Source\Game\UI\UINumber.cpp" />
     <ClCompile Include="Source\Game\UI\UIPartDestruction.cpp" />
     <ClCompile Include="Source\Game\UI\UIStamina.cpp" />
+    <ClCompile Include="Source\Game\UI\UITitle.cpp" />
     <ClCompile Include="Source\Graphics\Camera.cpp" />
     <ClCompile Include="Source\Graphics\CascadedShadowMap.cpp" />
     <ClCompile Include="Source\Graphics\ConstantBuffer.cpp" />
@@ -335,6 +336,7 @@
     <ClInclude Include="Source\Game\UI\UINumber.h" />
     <ClInclude Include="Source\Game\UI\UIPartDestruction.h" />
     <ClInclude Include="Source\Game\UI\UIStamina.h" />
+    <ClInclude Include="Source\Game\UI\UITitle.h" />
     <ClInclude Include="Source\Graphics\Camera.h" />
     <ClInclude Include="Source\Graphics\CascadedShadowMap.h" />
     <ClInclude Include="Source\Graphics\ConstantBuffer.h" />

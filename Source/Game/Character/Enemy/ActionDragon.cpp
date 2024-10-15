@@ -69,6 +69,7 @@ namespace ActionDragon
     }
 }
 
+// ----- SuperNova -----
 namespace ActionDragon
 {
     const ActionBase::State SuperNovaAction::Run(const float& elapsedTime)
@@ -174,6 +175,9 @@ namespace ActionDragon
 
         // カメラシェイク
         Camera::Instance().ScreenVibrate(0.3f, 1.5f);
+
+        // 地面を這うパーティクルの速度を上げる
+        superNovaParticle_->SetLavaCrawlerParticleSpeed(30.0f);
 
         isCreateCoreBurst_ = true;
     }

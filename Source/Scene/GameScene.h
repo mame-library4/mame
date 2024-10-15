@@ -45,6 +45,6 @@ private:
 
     std::unique_ptr<Stone> stone_;
 
-    //std::unique_ptr<Effect> effect_;
+    bool isDrawUI_ = false; // UI•`‰æ”»’è
 };
 

@@ -26,6 +26,7 @@ public:
 
 
 public:// --- æ“¾Eİ’è ---
+    [[nodiscard]] const bool IsCreatePlayer() const { return player_ != nullptr; }
     std::unique_ptr<Player>& GetPlayer() { return player_; }
     Transform* GetTransform() { return player_->GetTransform(); }
 

@@ -4,6 +4,8 @@
 UINotifications::UINotifications(const UIManager::UIType& type, const wchar_t* filename, const std::string& name)
     : UI(type, filename, name)
 {
+    // 描画フラグを立てる
+    SetIsDraw();
 }
 
 // ----- 更新 -----

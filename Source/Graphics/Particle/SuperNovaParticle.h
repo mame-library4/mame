@@ -3,30 +3,8 @@
 
 class SuperNovaParticle : public ParticleSystem
 {
-public:
-    SuperNovaParticle();
-    ~SuperNovaParticle() override {}
-
-    void Initialize(const float& elapsedTime) override {}
-    void Update(const float& elapsedTime)     override;
-    void Render()                             override;
-    void DrawDebug()                          override;
-
-
-    void PlayLavaCrawlerParticle(const float& elapsedTime, const DirectX::XMFLOAT3& emitterPosition); // 地面を這うパーティクル
-    void PlayCoreBurstParticle(const float& elapsedTime, const DirectX::XMFLOAT3& emitterPosition);   // メインの爆発パーティクル
-
 private:
-    void CreateLavaCrawlerParticle(); // 地面を這うパーティクル生成
-    void CreateCoreBurstParticle();   // メインの爆発パーティクル生成
-
-    void UpdateLavaCrawlerParticle(const float& elapsedTime); // 地面を這うパーティクル更新
-    void UpdateCoreBurstParticle(const float& elapsedTime);   // メインの爆発パーティクル更新
-
-    void RenderLavaCrawlerParticle(); // 地面を這うパーティクル描画
-    void RenderCoreBurstParticle();   // メインの爆発パーティクル描画
-
-private:
+#pragma region ----- 定数 -----
     struct ParticleData
     {
         DirectX::XMFLOAT4 color_ = { 1, 1, 1, 1 };
@@ -44,7 +22,6 @@ private:
         float speed_ = 1.0f;
         float dummy_ = 0.0f;
     };
-    Constants constants_;
 
     enum class CSShaderSlot
     {
@@ -53,9 +30,37 @@ private:
     };
     enum class CBSlot
     {
-        CoreBurstParticle   = 10, // メインの爆発パーティクル
+        CoreBurstParticle = 10, // メインの爆発パーティクル
         LavaCrawlerParticle = 11, // 地面を這うパーティクル
     };
+#pragma endregion ----- 定数 -----
+
+public:
+    SuperNovaParticle();
+    ~SuperNovaParticle() override {}
+
+    void Initialize(const float& elapsedTime) override {}
+    void Update(const float& elapsedTime)     override;
+    void Render()                             override;
+    void DrawDebug()                          override;
+
+
+    void PlayLavaCrawlerParticle(const float& elapsedTime, const DirectX::XMFLOAT3& emitterPosition); // 地面を這うパーティクル
+    void PlayCoreBurstParticle(const float& elapsedTime, const DirectX::XMFLOAT3& emitterPosition);   // メインの爆発パーティクル
+
+    void SetLavaCrawlerParticleSpeed(const float& speed) { lavaCrawlerParticleConstants_.speed_ = speed; }
+
+private:
+    void CreateLavaCrawlerParticle(); // 地面を這うパーティクル生成
+    void CreateCoreBurstParticle();   // メインの爆発パーティクル生成
+
+    void UpdateLavaCrawlerParticle(const float& elapsedTime); // 地面を這うパーティクル更新
+    void UpdateCoreBurstParticle(const float& elapsedTime);   // メインの爆発パーティクル更新
+
+    void RenderLavaCrawlerParticle(); // 地面を這うパーティクル描画
+    void RenderCoreBurstParticle();   // メインの爆発パーティクル描画
+
+
 
 private:
 
@@ -72,6 +77,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D11ComputeShader>         lavaCrawlerParticleInitializeCS_;
     const size_t    maxLavaCrawlerParticleCount_ = 3000;
     bool            isCrawlerParticleActive_ = false;
+    Constants constants_;
     Constants lavaCrawlerParticleConstants_;
 
     // ----- 爆発パーティクル -----

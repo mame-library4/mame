@@ -30,9 +30,6 @@ void GameScene::CreateResource()
     stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/OnlyStage/stageOneMesh.gltf");
     //stage_ = std::make_unique<StageNormal>("./Resources/Model/Stage/stageAndFlag/stage.gltf");
     
-    UIHealth* uIHealth = new UIHealth();
-    UIStamina* uIStamina = new UIStamina();
-
     EnemyManager::Instance().Register(new EnemyDragon);
 
     // IBLテクスチャ
@@ -72,6 +69,8 @@ void GameScene::CreateResource()
     
     Effect* effect5 = new Effect("./Resources/Effect/Power.efk", "Power");
     
+    UIHealth* uIHealth = new UIHealth();
+    UIStamina* uIStamina = new UIStamina();
     UIActionGuide* uIActionGuide = new UIActionGuide();
 }
 
@@ -98,6 +97,9 @@ void GameScene::Initialize()
 
     // カメラ初期化
     Camera::Instance().SetTarget({ PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() });
+
+    // 変数初期化
+    isDrawUI_ = false;
 }
 
 // ----- 終了化 -----
@@ -146,6 +148,16 @@ void GameScene::Update(const float& elapsedTime)
 
     // パーティクル
     ParticleManager::Instance().Update(elapsedTime);
+
+    // UI描画判定更新
+    if (isDrawUI_ == false)
+    {
+        UIManager::Instance().GetUI(UIManager::UIType::UIHealth)->SetIsDraw();
+        UIManager::Instance().GetUI(UIManager::UIType::UIStamina)->SetIsDraw();
+        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->SetIsDraw();
+
+        isDrawUI_ = true;
+    }
 }
 
 void GameScene::ShadowRender()

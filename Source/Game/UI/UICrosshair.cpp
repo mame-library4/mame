@@ -17,6 +17,9 @@ UICrosshair::UICrosshair()
     centerDot_->GetTransform()->SetColorA(0.0f);
 
     AudioManager::Instance().PlaySE(SE::Lockon);
+
+    // 描画フラグを立てる
+    SetIsDraw();
 }
 
 // ----- 更新 -----

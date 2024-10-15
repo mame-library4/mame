@@ -7,6 +7,9 @@ UIFader::UIFader()
     : UI(UIManager::UIType::UIFader, L"./Resources/Image/White.png", "UIFader")
 {
     GetTransform()->SetColorBlack();
+
+    // 描画フラグを立てる
+    SetIsDraw();
 }
 
 // ----- 更新 -----

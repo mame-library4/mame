@@ -24,11 +24,15 @@ UIStamina::UIStamina()
     GetTransform()->SetPosition(50.0f, 70.0f);
     GetTransform()->SetSize(maxStaminaSizeX_, 7.0f);
     GetTransform()->SetColor(1.0f, 1.0f, 0.0f);
+
+    isAllUICreated = true;
 }
 
 // ----- XV -----
 void UIStamina::Update(const float& elapsedTime)
 {
+    if (isAllUICreated == false) return;
+
     const float stamina = PlayerManager::Instance().GetPlayer()->GetStamina();
     const float maxStamina = PlayerManager::Instance().GetPlayer()->GetMaxStamina();
 
@@ -72,6 +76,11 @@ void UIStamina::Update(const float& elapsedTime)
 // ----- •`‰æ -----
 void UIStamina::Render()
 {
+    // ‘S‚Ä‚ÌUI‚ª¶¬‚³‚ê‚Ä‚¢‚È‚¢
+    if (isAllUICreated == false) return;
+    // •`‰æ‚µ‚È‚¢
+    if (GetIsDraw() == false) return;
+
     staminaFrame_->Render();
 
     staminaWarning_->Render();

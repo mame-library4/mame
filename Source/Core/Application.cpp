@@ -44,8 +44,8 @@ bool Application::Initialize()
     Camera::Instance().Initialize();
 
     // --- シーン初期化 ---
-    //SceneManager::Instance().ChangeScene(new TitleScene);
-    SceneManager::Instance().ChangeScene(new GameScene);
+    SceneManager::Instance().ChangeScene(new TitleScene);
+    //SceneManager::Instance().ChangeScene(new GameScene);
     //SceneManager::Instance().ChangeScene(new DemoScene);
 
     // エフェクト初期化
@@ -98,6 +98,8 @@ void Application::Update(const float& elapsedTime)
 // ----- 描画 -----
 void Application::Render()
 {
+    std::lock_guard<std::mutex>lock(graphics_.GetMutex());
+
     ID3D11DeviceContext* deviceContext = graphics_.GetDeviceContext();
 
     Camera& camera = Camera::Instance();

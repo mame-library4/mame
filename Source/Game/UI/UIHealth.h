@@ -20,9 +20,10 @@ private:
     void SetUIPosition(const DirectX::XMFLOAT2& position);
 
 private:
+    bool isAllUICreated = false;
+
     std::unique_ptr<Sprite> healthFrame_;
     std::unique_ptr<Sprite> autoRecoveryBar_;
-
 
     float oldHealth_        = 0.0f;
     float autoRecoveryHealth_ = 0.0f;

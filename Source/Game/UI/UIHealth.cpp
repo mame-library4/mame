@@ -25,11 +25,23 @@ UIHealth::UIHealth()
 
     oldHealth_ = 300.0f;
     autoRecoveryHealth_ = 300.0f;
+
+    isAllUICreated = true;
 }
 
 // ----- 更新 -----
 void UIHealth::Update(const float& elapsedTime)
 {
+    if (isAllUICreated == false) return;
+
+    // 表示していないときは更新しない
+    if (GetIsDraw() == false)
+    {
+        oldHealth_ = PlayerManager::Instance().GetPlayer()->GetHealth();
+
+        return;
+    }
+
     // ダメージ効果をUIに反映させる
     ApplyDamageEffect();
 
@@ -49,6 +61,11 @@ void UIHealth::Update(const float& elapsedTime)
 // ----- 描画 -----
 void UIHealth::Render()
 {
+    // 全てのUIが生成されていない
+    if (isAllUICreated == false) return;
+    // 描画しない
+    if (GetIsDraw() == false) return;
+
     healthFrame_->Render();
 
     autoRecoveryBar_->Render();

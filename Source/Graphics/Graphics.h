@@ -24,8 +24,6 @@ public:
     
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& GetDepthMap() { return depthShaderResourceView_; }
 
-
-
     // ミューテックス取得
     std::mutex& GetMutex() { return mutex; }
 

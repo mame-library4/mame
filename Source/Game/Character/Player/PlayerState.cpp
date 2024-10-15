@@ -112,12 +112,6 @@ namespace PlayerState
     // ----- XV -----
     void IdleState::Update(const float& elapsedTime)
     {
-        if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_LEFT_TRIGGER)
-        {
-            owner_->ChangeState(Player::STATE::Skill);
-            return;
-        }
-
         // æs“ü—Í”»’è
         if (CheckNextInput()) return;
     }

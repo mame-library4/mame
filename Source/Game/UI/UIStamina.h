@@ -12,6 +12,8 @@ public:
     void DrawDebug()                        override; // ImGui—p
 
 private:
+    bool isAllUICreated = false;
+
     std::unique_ptr<Sprite> staminaFrame_;
     std::unique_ptr<Sprite> staminaWarning_;
 

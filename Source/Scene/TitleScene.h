@@ -1,7 +1,5 @@
 #pragma once
 #include "BaseScene.h"
-#include <memory>
-#include "Sprite.h"
 
 class TitleScene : public BaseScene
 {
@@ -23,7 +21,5 @@ public:// Šî–{“I‚ÈŠÖ”
     void DrawDebug()                        override; // ImGui—p
 
 private:
-    std::unique_ptr<Sprite> sprite_;
-
-
+    bool isDrawUI_ = false; // UI•`‰æ”»’è
 };

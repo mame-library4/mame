@@ -28,6 +28,9 @@ UINumber::UINumber(const int& num, const DirectX::XMFLOAT3& hitPos) :
     // どの数字を使用するか設定
     SetNumSproteNumbers();
 
+    // 描画フラグを立てる
+    SetIsDraw();
+
     // 変数初期化    
     lifeTimer_ = 0.5f;
     easingTimer_ = 0.0f;

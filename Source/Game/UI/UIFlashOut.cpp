@@ -5,6 +5,8 @@
 UIFlashOut::UIFlashOut()
     : UI(UIManager::UIType::UIFlashOut, L"./Resources/Image/White.png", "UIFlashOut")
 {
+    // 描画フラグを立てる
+    SetIsDraw();
 }
 
 // ----- 更新 -----

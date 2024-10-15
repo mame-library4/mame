@@ -28,6 +28,8 @@ void UI::Update(const float& elapsedTime)
 // ----- •`‰æ -----
 void UI::Render()
 {
+    if (isDraw_ == false) return;
+
     if (sprite_ != nullptr) sprite_->Render();
 }
 

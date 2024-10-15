@@ -256,6 +256,9 @@
     <ClCompile Include="Source\Game\UI\UIFlashOut.cpp">
       <Filter>Mame\Game\UI\UIFlashOut</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\UI\UITitle.cpp">
+      <Filter>Mame\Game\UI\UITitle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -541,6 +544,9 @@
     <ClInclude Include="Source\Game\UI\UIFlashOut.h">
       <Filter>Mame\Game\UI\UIFlashOut</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\UI\UITitle.h">
+      <Filter>Mame\Game\UI\UITitle</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -734,6 +740,9 @@
     </Filter>
     <Filter Include="Mame\Game\UI\UIFlashOut">
       <UniqueIdentifier>{fd650672-bfe3-4b0c-9890-7549acecec57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\UI\UITitle">
+      <UniqueIdentifier>{65a76b76-d6cf-4e8d-ae31-b22dae13d24b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
