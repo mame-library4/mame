@@ -96,14 +96,13 @@ const bool ShoutJudgment::Judgment()
 {
     //return true;
 
-    //return true;
-    return false;
+    //return false;
     return owner_->GetIsRoar() == false;
 }
 
 const bool NearJudgment::Judgment()
 {
-    return true;
+    //return true;
 
     const DirectX::XMFLOAT3 ownerPos = owner_->GetTransform()->GetPosition();
     const DirectX::XMFLOAT3 playerPos = PlayerManager::Instance().GetTransform()->GetPosition();
@@ -121,7 +120,7 @@ const bool NearJudgment::Judgment()
 
 const bool ComboFlySlamJudgment::Judgment()
 {
-    return false;
+    //return false;
 
     const float distance = owner_->CalcDistanceToPlayer();
 

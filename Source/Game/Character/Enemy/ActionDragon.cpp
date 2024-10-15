@@ -777,6 +777,8 @@ namespace ActionDragon
 
             // ラジアルブラーのピクセルシェーダ使用
             PostProcess::Instance().SetUseRadialBlur();
+            PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 5;
+            PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = 0.0f;
 
             // 咆哮した。
             owner_->SetIsRoar(true);
@@ -818,6 +820,7 @@ namespace ActionDragon
             {
                 // フラグリセット
                 PostProcess::Instance().SetUseRadialBlur(false);
+                PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 1;
 
                 owner_->SetStep(0);
                 return ActionBase::State::Complete;
@@ -837,7 +840,7 @@ namespace ActionDragon
         // ブラー終了フレームを過ぎたら、ブラーを緩める
         if (animationSeconds > blurEndFrame_)
         {
-            PostProcess::Instance().GetConstants()->GetData()->dummy_ =
+            PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ =
                 Easing::InSine(blurTimer_, maxBlurTime_, maxBlurPower_, 0.0f);
 
             blurTimer_ -= elapsedTime;
@@ -846,7 +849,7 @@ namespace ActionDragon
         // ブラー開始フレームを過ぎたら、ブラーをかける
         else if (animationSeconds > blurStartFrame_)
         {
-            PostProcess::Instance().GetConstants()->GetData()->dummy_ =
+            PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ =
                 Easing::InQuint(blurTimer_, maxBlurTime_, maxBlurPower_, 0.0f);
 
             blurTimer_ += elapsedTime;

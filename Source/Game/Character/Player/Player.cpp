@@ -151,7 +151,7 @@ void Player::Render(ID3D11PixelShader* psShader)
 
 void Player::RenderTrail()
 {
-    sword_.Render();
+    if (isSwordPrimitiveDraw_) sword_.Render();
 
     //swordTrail_.Render();
 }
@@ -161,6 +161,7 @@ void Player::DrawDebug()
 {
     if (ImGui::BeginMenu("Player"))
     {
+        ImGui::Checkbox("IsSwordPrimitiveDraw", &isSwordPrimitiveDraw_);
         sword_.DrawDebug();
 
         ImGui::DragFloat("DashSpeed", &dashSpeed_);

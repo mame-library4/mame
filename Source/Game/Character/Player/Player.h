@@ -311,6 +311,7 @@ private:
 
     SwordTrail swordTrail_;
     Sword sword_;
+    bool isSwordPrimitiveDraw_ = true;
 
     // ---------- Œ• ----------
     DirectX::XMFLOAT3 socketLocation_ = { 700, 10500, -7000 };

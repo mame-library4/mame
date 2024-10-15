@@ -61,11 +61,6 @@ void Camera::Update(const float& elapsedTime)
 #if 1
     if (isCounterDelay_ == false) target_ = cameraTargetPosition;
 
-    if (PlayerManager::Instance().GetPlayer()->GetCurrentState() == Player::STATE::Skill)
-    {
-        
-    }
-
 #else
     if (lerpTimer_ >= 1.0f)
     {
@@ -1150,7 +1145,6 @@ const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
 
                 counterDelay_ = target_;
                 isCounterDelay_ = true;
-
 
                 SetState(CounterAttackCamera::CounterComboZoomOut);
             }
