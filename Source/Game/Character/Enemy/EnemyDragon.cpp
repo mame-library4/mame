@@ -41,8 +41,8 @@ void EnemyDragon::Initialize()
     SetWalkSpeed(15.0f);
 
     // ‘Ì—Íİ’è
-    SetMaxHealth(60.0f);
-    //SetMaxHealth(3000.0f);
+    //SetMaxHealth(60.0f);
+    SetMaxHealth(3000.0f);
     SetHealth(GetMaxHealth());
 
     PlayAnimation(Enemy::DragonAnimation::Idle0, true);

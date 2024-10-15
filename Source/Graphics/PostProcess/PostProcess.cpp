@@ -54,13 +54,22 @@ void PostProcess::Draw()
         cascadedShadowMap_.GetDepthMap().Get()
     };
 
-    radialBlur_->Clear();
-    radialBlur_->Activate();
-    renderer_->Draw(shaderResourceViews, 0, _countof(shaderResourceViews), postProcessPS_.Get());
-    radialBlur_->Deactivate();
+    // ラジアルブラーを使用する
+    if (useRadialBlur_)
+    {
+        radialBlur_->Clear();
+        radialBlur_->Activate();
+        renderer_->Draw(shaderResourceViews, 0, _countof(shaderResourceViews), postProcessPS_.Get());
+        radialBlur_->Deactivate();
 
-    radialBlurConstants_->Activate(0);
-    renderer_->Draw(radialBlur_->shaderResourceViews_->GetAddressOf(), 0, 1, radialBlurPS_.Get());
+        radialBlurConstants_->Activate(0);
+        renderer_->Draw(radialBlur_->shaderResourceViews_->GetAddressOf(), 0, 1, radialBlurPS_.Get());
+    }
+    // ラジアルブラーを使用しない
+    else
+    {
+        renderer_->Draw(shaderResourceViews, 0, _countof(shaderResourceViews), postProcessPS_.Get());
+    }
 }
 
 // ----- ImGui用 -----
@@ -89,7 +98,7 @@ void PostProcess::DrawDebug()
         {
             ImGui::DragFloat2("UVOffset", &radialBlurConstants_->GetData()->uvOffset_.x, 0.01f, 0.0f, 1.0f);
             ImGui::DragFloat("Strength", &radialBlurConstants_->GetData()->strength_, 0.1f, 0.0f, 2.0f);
-            ImGui::DragFloat("SampleCount", &radialBlurConstants_->GetData()->sampleCount_, 1.0f, 1.0f, 5.0f);
+            ImGui::DragInt("SampleCount", &radialBlurConstants_->GetData()->sampleCount_, 1, 1, 5);
 
             ImGui::TreePop();
         }

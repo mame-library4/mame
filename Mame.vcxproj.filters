@@ -253,6 +253,9 @@
     <ClCompile Include="Source\Game\Sword\Sword.cpp">
       <Filter>Mame\Game\Object\Sword</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\UI\UIFlashOut.cpp">
+      <Filter>Mame\Game\UI\UIFlashOut</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -535,6 +538,9 @@
     <ClInclude Include="Source\Game\Sword\Sword.h">
       <Filter>Mame\Game\Object\Sword</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\UI\UIFlashOut.h">
+      <Filter>Mame\Game\UI\UIFlashOut</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -725,6 +731,9 @@
     </Filter>
     <Filter Include="Mame\Game\Object\Sword">
       <UniqueIdentifier>{99fb0c01-9b4b-49ba-97f9-1dabeb2b8192}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\UI\UIFlashOut">
+      <UniqueIdentifier>{fd650672-bfe3-4b0c-9890-7549acecec57}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

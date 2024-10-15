@@ -14,6 +14,8 @@
 #include "sprite.h"
 #include "Application.h"
 
+#include "UI/UIFlashOut.h"
+
 // ----- GamePadVibration -----
 namespace ActionDragon
 {
@@ -91,51 +93,24 @@ namespace ActionDragon
             isCreateCoreBurst_           = false;
 
             scaleLerpTimer_ = 0.0f;
+
             radialBlurTimer_ = 0.0f;
-            returnBlurTimer_ = 0.0f;
+            preRadialBlurTimer_ = 0.0f;
+            intenseBlurFrameCount_ = 0;
 
             owner_->SetStep(1);
 
             break;
         case 1:
 
-            if (owner_->GetAnimationSeconds() > 0.65f && isCreateLavaCrawlerParticle_ == false)
-            {
-                DirectX::XMFLOAT3 emitterPosition = owner_->GetJointPosition("Dragon15_neck_1");
-                
-                Effect* powerEffect = EffectManager::Instance().GetEffect("Power");
-                powerEffectHandle_ = powerEffect->Play(emitterPosition, 0.1f, 1.0f);
-                
-                emitterPosition.y = 0.3f;
-                superNovaParticle_->PlayLavaCrawlerParticle(elapsedTime, emitterPosition);
+            // チャージエフェクト生成
+            GenerateChargeEffect(elapsedTime);
 
-                isCreateLavaCrawlerParticle_ = true;
-            }
+            // チャージエフェクト更新
+            UpdateChargeEffect(elapsedTime);
 
-            if (isCreateLavaCrawlerParticle_ && isCreateCoreBurst_ == false)
-            {
-                scaleLerpTimer_ += elapsedTime * 0.4f;
-                scaleLerpTimer_ = std::min(scaleLerpTimer_, 1.0f);
-
-                const float scale = XMFloatLerp(0.1f, 7.0f, scaleLerpTimer_);
-
-                EffectManager::Instance().GetEffect("Power")->SetScale(powerEffectHandle_, scale);
-            }
-
-            if (owner_->GetAnimationSeconds() > 3.9f && isCreateCoreBurst_ == false)
-            {
-                EffectManager::Instance().GetEffect("Power")->Stop(powerEffectHandle_);                
-
-                const DirectX::XMFLOAT3 emitterPosition = owner_->GetJointPosition("Dragon15_neck_1");
-
-                // 爆発パーティクル再生
-                superNovaParticle_->PlayCoreBurstParticle(elapsedTime, emitterPosition);
-                // 爆発エフェクト再生
-                Effect* superNovaEffect = EffectManager::Instance().GetEffect("SuperNova");
-                superNovaEffect->Play(emitterPosition, 1.3f, 1.0f);
-
-                isCreateCoreBurst_ = true;
-            }
+            // メインエフェクト生成
+            GenarateMainEffect(elapsedTime);
 
             // ラジアルブラー更新
             UpdateRadialBlur(elapsedTime);
@@ -151,11 +126,98 @@ namespace ActionDragon
             }
 
             break;
-        case 2:
-            break;
         }
 
         return ActionBase::State::Run;
+    }
+
+    // ----- チャージエフェクト生成 -----
+    void SuperNovaAction::GenerateChargeEffect(const float& elapsedTime)
+    {
+        // もう既に生成しているためここで終了
+        if (isCreateLavaCrawlerParticle_) return;
+
+        // 生成フレームに達していない
+        if (owner_->GetAnimationSeconds() <= 0.65f) return;
+
+        // チャージエフェクトとパーティクルを再生する
+        DirectX::XMFLOAT3 emitterPosition = owner_->GetJointPosition("Dragon15_neck_1");
+        powerEffectHandle_ = EffectManager::Instance().GetEffect("Power")->Play(emitterPosition, 0.1f, 1.0f);
+        
+        emitterPosition.y = 0.3f;
+        superNovaParticle_->PlayLavaCrawlerParticle(elapsedTime, emitterPosition);
+
+        isCreateLavaCrawlerParticle_ = true;
+    }
+
+    // ----- メインエフェクト生成 -----
+    void SuperNovaAction::GenarateMainEffect(const float& elapsedTime)
+    {
+        // もう既にメインエフェクトが生成されている
+        if (isCreateCoreBurst_) return;
+        // 生成フレームに達していない
+        if (owner_->GetAnimationSeconds() <= 3.9f) return;
+        
+        // チャージエフェクトを停止する
+        EffectManager::Instance().GetEffect("Power")->Stop(powerEffectHandle_);
+
+        const DirectX::XMFLOAT3 emitterPosition = owner_->GetJointPosition("Dragon15_neck_1");
+
+        // 爆発パーティクル再生
+        superNovaParticle_->PlayCoreBurstParticle(elapsedTime, emitterPosition);
+        // 爆発エフェクト再生
+        Effect* superNovaEffect = EffectManager::Instance().GetEffect("SuperNova");
+        superNovaEffect->Play(emitterPosition, 1.3f, 1.0f);
+
+        // 白飛び画像を生成
+        UIFlashOut* uiFlashOut = new UIFlashOut();
+
+        // カメラシェイク
+        Camera::Instance().ScreenVibrate(0.3f, 1.5f);
+
+        isCreateCoreBurst_ = true;
+    }
+
+    // ----- チャージエフェクト更新 -----
+    void SuperNovaAction::UpdateChargeEffect(const float& elapsedTime)
+    {
+        // まだチャージエフェクトが生成されていない
+        if (isCreateLavaCrawlerParticle_ == false) return;
+        // メインの爆発エフェクトが生成されているので処理しない
+        if (isCreateCoreBurst_) return;
+
+        PostProcess::Instance().SetUseRadialBlur();
+        preRadialBlurTimer_ += elapsedTime;
+        preRadialBlurTimer_ = std::min(preRadialBlurTimer_, 1.0f);
+
+        // offsetを使って振動を表現する
+        const float strength = XMFloatLerp(0.0f, 0.1f, preRadialBlurTimer_);
+        const float offset = rand() % 10 * 0.01f;
+
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = strength + offset;
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = maxSampleCount_;
+
+        // ブラーの開始中心点を決める
+        const DirectX::XMFLOAT3 dragonNeckPosition = owner_->GetJointPosition("Dragon15_neck_1");
+        DirectX::XMFLOAT2 centerPosition = Sprite::ConvertToScreenPos(dragonNeckPosition);
+        centerPosition.x /= SCREEN_WIDTH;
+        centerPosition.y /= SCREEN_HEIGHT;
+
+        // 画面外にいるときは発生地点を画面中央にする
+        if (centerPosition.x > 1.0f || centerPosition.y > 1.0f ||
+            centerPosition.x < 0.0f || centerPosition.y < 0.0f)
+        {
+            centerPosition = { 0.5f, 0.5f };
+        }
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->uvOffset_ = centerPosition;
+
+        // エフェクトのサイズを徐々に大きくする
+        const float speed = 0.4f;
+        scaleLerpTimer_ += speed * elapsedTime;
+        scaleLerpTimer_ = std::min(scaleLerpTimer_, 1.0f);
+
+        const float scale = XMFloatLerp(0.1f, 7.0f, scaleLerpTimer_);
+        EffectManager::Instance().GetEffect("Power")->SetScale(powerEffectHandle_, scale);
     }
 
     // ----- ラジアルブラー更新 -----
@@ -164,34 +226,44 @@ namespace ActionDragon
         // メインの爆発パーティクルが生成されていないので更新しない
         if (isCreateCoreBurst_ == false) return;
 
-        // ラジアルブラーを徐々のサンプリング回数を徐々に増やしていく
+        // ラジアルブラーを使用する サンプリング回数は５回
+        PostProcess::Instance().SetUseRadialBlur();
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = maxSampleCount_;
+
+        // ブラーの開始中心点を決める
+        const DirectX::XMFLOAT3 dragonNeckPosition = owner_->GetJointPosition("Dragon15_neck_1");
+        DirectX::XMFLOAT2 centerPosition = Sprite::ConvertToScreenPos(dragonNeckPosition);
+        centerPosition.x /= SCREEN_WIDTH;
+        centerPosition.y /= SCREEN_HEIGHT;
+
+        // ブラーの開始点が 0.0 ~ 1.0 を超えていた場合真ん中に補正する
+        if (centerPosition.x > 1.0f || centerPosition.y > 1.0f ||
+            centerPosition.x < 0.0f || centerPosition.y < 0.0f)
+        {
+            centerPosition = { 0.5f, 0.5f };
+        }
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->uvOffset_ = centerPosition;
+
+        // ブラー開始の数フレームを最大強度のブラーをかける
+        if (intenseBlurFrameCount_ < intenseBlurFrame_)
+        {
+            PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = 1.5f;
+            ++intenseBlurFrameCount_;
+            return;
+        }
+
+        // ラジアルブラーの強度を徐々に下げる
         if (radialBlurTimer_ < 2.0f)
         {
-            // ブラーの開始中心点を決める
-            const DirectX::XMFLOAT3 dragonNeckPosition = owner_->GetJointPosition("Dragon15_neck_1");
-            DirectX::XMFLOAT2 centerPosition = Sprite::ConvertToScreenPos(dragonNeckPosition);
-            centerPosition.x /= SCREEN_WIDTH;
-            centerPosition.y /= SCREEN_HEIGHT;
-            PostProcess::Instance().GetRadialBlurConstants()->GetData()->uvOffset_ = centerPosition;
+            radialBlurTimer_ += elapsedTime;
+            radialBlurTimer_ = std::min(radialBlurTimer_, 1.0f);
 
-            // サンプリング回数を求める
-            radialBlurTimer_ += 2.0f * elapsedTime;
-            int sampleCount = XMIntLerp(1, 7, radialBlurTimer_);
-            sampleCount = std::min(sampleCount, 7);
-            PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = sampleCount;
+            const float strength = XMFloatLerp(1.0f, 0.0f, radialBlurTimer_);
+
+            PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = strength;
 
             return;
         }
-        
-        if (returnBlurTimer_ < 1.0f)
-        {
-            returnBlurTimer_ += 3.0f * elapsedTime;
-            int sampleCount = XMIntLerp(7, 1, returnBlurTimer_);
-            sampleCount = std::max(sampleCount, 1);
-            PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = sampleCount;
-
-            return;
-        }        
 
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 1;
     }
@@ -199,8 +271,14 @@ namespace ActionDragon
     // ----- 終了処理 -----
     void SuperNovaAction::Finalize()
     {
-        ParticleManager::Instance().Remove(superNovaParticle_);
-
+        if (superNovaParticle_ != nullptr)
+        {
+            ParticleManager::Instance().Remove(superNovaParticle_);
+            superNovaParticle_ = nullptr;
+        }
+        
+        EffectManager::Instance().GetEffect("Power")->Stop(powerEffectHandle_);
+        
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 1;
     }
 }

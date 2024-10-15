@@ -7,7 +7,7 @@ cbuffer RadialBlurConstants : register(b0)
 {
     float2 uvOffset_;
     float strength_;
-    float sampleCount_;
+    int sampleCount_;
 };
 
 float4 main(PSIn psIn) : SV_TARGET
@@ -18,7 +18,7 @@ float4 main(PSIn psIn) : SV_TARGET
     
     float factor = strength_ / sampleCount_ * length(uv);
     
-    for (int i = 0; i < sampleCount_;++i)
+    for (int i = 0; i < sampleCount_; ++i)
     {
         float offset = 1 - factor * i;
         color += colorMap.Sample(samplerState, uv * offset + uvOffset_).rgb;

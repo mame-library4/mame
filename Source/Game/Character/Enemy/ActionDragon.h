@@ -47,6 +47,10 @@ namespace ActionDragon
         const ActionBase::State Run(const float& elapsedTime) override;
         
     private:
+        void GenerateChargeEffect(const float& elapsedTime);
+        void GenarateMainEffect(const float& elapsedTime);
+
+        void UpdateChargeEffect(const float& elapsedTime);
         void UpdateRadialBlur(const float& elapsedTime);
         
         void Finalize();
@@ -63,8 +67,11 @@ namespace ActionDragon
         Effekseer::Handle powerEffectHandle_ = {};
 
         // ----- ラジアルブラー -----
-        float radialBlurTimer_ = 0.0f;
-        float returnBlurTimer_ = 0.0f;
+        int         intenseBlurFrame_       = 3;
+        int         intenseBlurFrameCount_  = 0;
+        float       preRadialBlurTimer_     = 0.0f;
+        float       radialBlurTimer_        = 0.0f;
+        const int   maxSampleCount_         = 5.0f;
     };
 
     // 死亡行動

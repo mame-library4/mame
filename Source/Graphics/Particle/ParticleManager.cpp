@@ -25,6 +25,8 @@ void ParticleManager::Update(const float& elapsedTime)
         particleSystem->Update(elapsedTime);
     }
 
+    if (particleSystems_.size() == 0) return;
+
     // ”jŠü
     for (ParticleSystem* particleSystem : removes_)
     {

@@ -19,9 +19,9 @@ private:
     };
     struct RadialBlurConstants
     {
-        DirectX::XMFLOAT2 uvOffset_ = {};
-        float strength_ = 0.4f;
-        float sampleCount_ = 1.0f;
+        DirectX::XMFLOAT2 uvOffset_     = {};
+        float             strength_     = 0.4f;
+        int               sampleCount_  = 1;
     };
 
     PostProcess();

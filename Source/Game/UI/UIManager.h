@@ -30,6 +30,7 @@ public:
         UIActionGuide,      // |
         UIStamina,          // |
         UIHealth,           // |
+        UIFlashOut,         // |
         UIFader,            // |
         Max,                // Å´
     };

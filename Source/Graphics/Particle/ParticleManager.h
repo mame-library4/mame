@@ -3,6 +3,8 @@
 #include <vector>
 #include <set>
 
+class SuperNovaParticle;
+
 class ParticleManager
 {
 private:

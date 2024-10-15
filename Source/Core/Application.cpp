@@ -165,8 +165,7 @@ void Application::Render()
         PostProcess::Instance().Deactivate();
 
         deviceContext->ClearRenderTargetView(renderTargetView, color);
-        //deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
-        deviceContext->OMSetRenderTargets(1, &renderTargetView, Graphics::Instance().GetShader()->GetGBufferDepthStencilView());     
+        deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
 
         PostProcess::Instance().Draw();
     }

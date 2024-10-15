@@ -119,11 +119,6 @@ void GameScene::Finalize()
 // ----- 更新 -----
 void GameScene::Update(const float& elapsedTime)
 {
-    if (Input::Instance().GetMouse().GetButtonDown() & Mouse::BTN_RIGHT)
-    {
-        UIPartDestruction* data = new UIPartDestruction();
-    }
-
     // プレイヤー更新
     PlayerManager::Instance().Update(elapsedTime);
 
