@@ -50,8 +50,8 @@ void CollisionManager::UpdatePlayerVsEnemy()
 // ----- Playerの攻撃判定と Enemyのくらい判定をチェック -----
 void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
 {
-    // 攻撃判定が無効なのでここで終了
-    if (PlayerManager::Instance().GetPlayer()->GetIsAbleAttack() == false) return;
+    // 既に攻撃が当たった
+    if (PlayerManager::Instance().GetPlayer()->GetIsAttackHit()) return;
 
     // 攻撃可能フレーム外なのでここで終了
     if (PlayerManager::Instance().GetPlayer()->GetIsAttackValid() == false) return;
@@ -89,9 +89,9 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                 }
 
                 // ヒットエフェクトを再生 ( 弱点部位は違うエフェクトを再生する )
-                const std::string counterEffectName = isWeakPoint ? "Attack1" : "Attack";
-                Effect* counterEffect = EffectManager::Instance().GetEffect(counterEffectName.c_str());
-                counterEffect->Play(enemyData.GetPosition(), 0.3f, 1.0f);
+                const std::string hitEffectName = isWeakPoint ? "Attack1" : "Attack";
+                Effect* hitEffect = EffectManager::Instance().GetEffect(hitEffectName.c_str());
+                hitEffect->Play(enemyData.GetPosition(), 0.3f, 1.0f);
 
                 // 敵が死んでいなかったらダメージ処理をする
                 if (enemy->GetIsDead() == false)
@@ -102,7 +102,7 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                 }
                 
                 // Playerの攻撃判定を無くす
-                player->SetIsAbleAttack(false);
+                player->SetIsAttackHit(true);
 
                 // 敵が生きていたらDamageUIを生成する
                 if (PlayerManager::Instance().GetUseCollisionDetection())
@@ -121,7 +121,10 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                 }
                 else
                 {
-                    Input::Instance().GetGamePad().Vibration(0.1f, 0.3f);
+                    if (isWeakPoint) Input::Instance().GetGamePad().Vibration(0.2f, 0.4f);
+                    else Input::Instance().GetGamePad().Vibration(0.1f, 0.3f);
+
+                    
                 }
 
                 // 当たったので判定をここで終了する

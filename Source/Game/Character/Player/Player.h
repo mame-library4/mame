@@ -211,8 +211,8 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const bool GetIsAttackValid() const { return isAttackValid_; }
     void SetIsAttackValid(const bool& flag) { isAttackValid_ = flag; }
 
-    [[nodiscard]] const bool GetIsAbleAttack() const { return isAbleAttack_; }
-    void SetIsAbleAttack(const bool& flag) { isAbleAttack_ = flag; }
+    [[nodiscard]] const bool GetIsAttackHit() const { return isAttackHit_; }
+    void SetIsAttackHit(const bool& flag) { isAttackHit_ = flag; }
 
     // ----- 無敵判定 -----
     [[nodiscard]] const bool GetIsInvincible() const { return isInvincible_; }
@@ -288,7 +288,7 @@ private:
     bool isAbleCounterAttack_   = false;            // カウンター攻撃が可能か( 追加の )
     
     bool isAttackValid_         = false;            // 攻撃が有効か
-    bool isAbleAttack_          = false;            // 攻撃可能か
+    bool isAttackHit_           = false;            // 攻撃が当たったか
 
     bool isMoveAttackCancel_ = false;  // 移動入力による攻撃後隙キャンセル
     bool isDodgeAttackCancel_ = false; // 回避による攻撃キャンセル

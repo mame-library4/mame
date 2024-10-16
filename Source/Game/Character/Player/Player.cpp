@@ -439,7 +439,7 @@ void Player::ResetFlags()
     isDodge_            = false;            // 回避入力判定用フラグ
     isCounter_              = false;            // カウンター状態かフラグ
     isAbleCounterAttack_    = false;            // カウンター攻撃可能か
-    isAbleAttack_           = false;            // 攻撃できるかのフラグ
+    isAttackHit_            = false;            //
 }
 
 // ----- 先行入力受付開始フレーム設定 -----

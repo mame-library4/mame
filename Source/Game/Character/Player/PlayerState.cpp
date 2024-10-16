@@ -48,6 +48,9 @@ namespace PlayerState
     // ----- 更新 -----
     bool AttackData::Update(const float& animationFrame, const bool& flag)
     {
+        // 既に攻撃が当たっている
+        if (flag) return false;
+
         // 攻撃スタートフレームに達していないので終了
         if (animationFrame < attackStartFrame_) return false;
 
@@ -1378,9 +1381,6 @@ namespace PlayerState
         // アニメーション設定
         SetAnimation();
 
-        // 攻撃可能にする
-        owner_->SetIsAbleAttack(true);
-
         // カウンター時カメラを使用する
         Camera::Instance().SetUseCounterCamera();
 
@@ -1444,7 +1444,7 @@ namespace PlayerState
                     // エフェクトは剣の位置に出す
                     const DirectX::XMFLOAT3 offsetPosition = { -50.0f, 13.0f, 20.0f };
                     const DirectX::XMFLOAT3 position = owner_->GetJointPosition("hand_r", offsetPosition);
-                    
+
                     // 位置を更新するためのデータを保存する
                     effectOffsetVec_ = XMFloat3Normalize(position - owner_->GetTransform()->GetPosition());
                     effectLength_ = XMFloat3Length(position - owner_->GetTransform()->GetPosition());
@@ -1474,7 +1474,7 @@ namespace PlayerState
         Turn(elapsedTime);
 
         // 攻撃判定処理
-        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
+        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAttackHit());
         owner_->SetIsAttackValid(attackFlag);
 
         // アニメーション再生終了
@@ -1744,9 +1744,6 @@ namespace PlayerState
         // アニメーション再生
         owner_->PlayBlendAnimation(Player::Animation::ParryCounterAttack1, false, 1.0f, 0.35f);        
 
-        // 攻撃可能にする
-        owner_->SetIsAbleAttack(true);
-
         // 無敵状態にする
         owner_->SetIsInvincible(true);
 
@@ -1769,7 +1766,7 @@ namespace PlayerState
         }
 
         // 攻撃判定処理
-        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
+        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAttackHit());
         owner_->SetIsAttackValid(attackFlag);
 
         // アニメーション終了
@@ -1806,9 +1803,6 @@ namespace PlayerState
         owner_->PlayBlendAnimation(Player::Animation::RunAttack1, false, 1.0f, 0.2f);
         owner_->SetTransitionTime(0.1f);
 
-        // 攻撃可能にする
-        owner_->SetIsAbleAttack(true);
-
         // 先行入力設定
         owner_->SetNextInputStartFrame(0.0f, 0.3f, 0.3f, 0.8f);
         owner_->SetNextInputEndFrame(1.8f, 1.8f, 1.8f);
@@ -1835,7 +1829,7 @@ namespace PlayerState
         }
 
         // 攻撃判定処理
-        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
+        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAttackHit());
         owner_->SetIsAttackValid(attackFlag);
 
         if (owner_->IsPlayAnimation() == false)
@@ -1956,9 +1950,6 @@ namespace PlayerState
         // アニメーション設定
         SetAnimation();
 
-        // 攻撃可能にする
-        owner_->SetIsAbleAttack(true);
-
         // 回転補正量を求める
         owner_->CalculateRotationAdjustment();
 
@@ -1993,8 +1984,8 @@ namespace PlayerState
         SetAnimationSpeed();
 
         // 攻撃判定処理
-        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
-        owner_->SetIsAttackValid(attackFlag);        
+        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAttackHit());
+        owner_->SetIsAttackValid(attackFlag);
         
 
         if (owner_->IsPlayAnimation() == false)
@@ -2185,9 +2176,6 @@ namespace PlayerState
         // アニメーション設定
         SetAnimation();
 
-        // 攻撃可能にする
-        owner_->SetIsAbleAttack(true);
-
         // 回転補正量を求める
         owner_->CalculateRotationAdjustment();
 
@@ -2220,7 +2208,7 @@ namespace PlayerState
         SetAnimationSpeed();
 
         // 攻撃判定処理
-        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
+        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAttackHit());
         owner_->SetIsAttackValid(attackFlag);
 
         //if (owner_->IsPlayAnimation() == false)
@@ -2388,9 +2376,6 @@ namespace PlayerState
         owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_2, false, 1.3f, 0.4f);
         owner_->SetTransitionTime(0.3f);
 
-        // 攻撃可能にする
-        owner_->SetIsAbleAttack(true);
-
         // 回転補正量を求める
         owner_->CalculateRotationAdjustment();
 
@@ -2424,7 +2409,7 @@ namespace PlayerState
         SetAnimationSpeed();
 
         // 攻撃判定処理
-        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
+        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAttackHit());
         owner_->SetIsAttackValid(attackFlag);
 
 
@@ -2579,9 +2564,6 @@ namespace PlayerState
         owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_3, false);
         owner_->SetTransitionTime(0.1f);
 
-        // 攻撃可能にする
-        owner_->SetIsAbleAttack(true);
-
         // 回転補正量を求める
         owner_->CalculateRotationAdjustment();
 
@@ -2617,7 +2599,7 @@ namespace PlayerState
         }
 
         // 攻撃判定処理
-        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAbleAttack());
+        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAttackHit());
         owner_->SetIsAttackValid(attackFlag);
 
 

@@ -293,6 +293,8 @@ namespace PlayerState
 
     private:
         AttackData      attackData_;
+
+        bool isAbleAttack_ = false;
     };
 
     // ----- ƒRƒ“ƒ{0_1 -----
