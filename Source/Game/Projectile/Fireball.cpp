@@ -2,6 +2,7 @@
 #include "ProjectileManager.h"
 #include "MathHelper.h"
 #include "Effect/EffectManager.h"
+#include "Particle/ParticleManager.h"
 
 // ----- コンストラクタ -----
 Fireball::Fireball()
@@ -56,8 +57,10 @@ void Fireball::Update(const float& elapsedTime)
     lifeTimer_ += elapsedTime;
     if (lifeTimer_ > 10.0f)
     {
-        ProjectileManager::Instance().Remove(this);
+        //ProjectileManager::Instance().Remove(this);
     }
+
+    fireBallParticle_.UpdateFireBallParticle(GetTransform()->GetPosition());
 }
 
 // ----- 描画 -----
@@ -78,8 +81,10 @@ void Fireball::DrawDebug()
 }
 
 // ----- 発射 -----
-void Fireball::Launch(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& direction, const float& speed)
+void Fireball::Launch(const float& elapsedTime, const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& direction, const float& speed)
 {
+    fireBallParticle_.PlayFireBallParticle(elapsedTime, position);
+
     GetTransform()->SetPosition(position);
     direction_ = direction;
     

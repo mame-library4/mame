@@ -229,9 +229,6 @@
     <ClCompile Include="Source\Graphics\Particle\SnowParticle.cpp">
       <Filter>Mame\Graphics\Particle</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graphics\Particle\SuperNovaParticle.cpp">
-      <Filter>Mame\Graphics\Particle</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Graphics\Particle\ParticleManager.cpp">
       <Filter>Mame\Graphics\Particle</Filter>
     </ClCompile>
@@ -258,6 +255,12 @@
     </ClCompile>
     <ClCompile Include="Source\Game\UI\UITitle.cpp">
       <Filter>Mame\Game\UI\UITitle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Particle\SuperNovaParticle.cpp">
+      <Filter>Mame\Graphics\Particle\SuperNovaParticle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Particle\FireBallParticle.cpp">
+      <Filter>Mame\Graphics\Particle\FireBallParticle</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -517,9 +520,6 @@
     <ClInclude Include="Source\Graphics\Particle\SnowParticle.h">
       <Filter>Mame\Graphics\Particle</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Graphics\Particle\SuperNovaParticle.h">
-      <Filter>Mame\Graphics\Particle</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Graphics\Particle\ParticleManager.h">
       <Filter>Mame\Graphics\Particle</Filter>
     </ClInclude>
@@ -546,6 +546,12 @@
     </ClInclude>
     <ClInclude Include="Source\Game\UI\UITitle.h">
       <Filter>Mame\Game\UI\UITitle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Particle\SuperNovaParticle.h">
+      <Filter>Mame\Graphics\Particle\SuperNovaParticle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Particle\FireBallParticle.h">
+      <Filter>Mame\Graphics\Particle\FireBallParticle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -744,6 +750,15 @@
     <Filter Include="Mame\Game\UI\UITitle">
       <UniqueIdentifier>{65a76b76-d6cf-4e8d-ae31-b22dae13d24b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mame\Graphics\Particle\SuperNovaParticle">
+      <UniqueIdentifier>{a8ecb679-f306-4a53-b6b8-31f149e9e58e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Graphics\Particle\FireBallParticle">
+      <UniqueIdentifier>{18be484d-750f-47b1-9b7f-d3a56e5963a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Shader\Particle\FireBallParticle">
+      <UniqueIdentifier>{158cdc52-9a48-483b-821a-d4e9b802751c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -816,6 +831,9 @@
     </None>
     <None Include="Source\Shader\LavaCrawlerParticle.hlsli">
       <Filter>Mame\Shader\Particle\SuperNova\LavaCrawlerParticle</Filter>
+    </None>
+    <None Include="Source\Shader\FireBallParticle.hlsli">
+      <Filter>Mame\Shader\Particle\FireBallParticle</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -923,6 +941,18 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\LavaCrawlerPS.hlsl">
       <Filter>Mame\Shader\Particle\SuperNova\LavaCrawlerParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\FireBallUpdateCS.hlsl">
+      <Filter>Mame\Shader\Particle\FireBallParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\FireBallInitializeCS.hlsl">
+      <Filter>Mame\Shader\Particle\FireBallParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\FireBallGS.hlsl">
+      <Filter>Mame\Shader\Particle\FireBallParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\FireBallPS.hlsl">
+      <Filter>Mame\Shader\Particle\FireBallParticle</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

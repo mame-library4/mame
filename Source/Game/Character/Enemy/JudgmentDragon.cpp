@@ -94,14 +94,15 @@ const bool RoarJudgment::Judgment()
 // ----- ‹©‚Ô”»’è -----
 const bool ShoutJudgment::Judgment()
 {
-    return true;
+    //return true;
+    return false;
 
-    //return false;
     return owner_->GetIsRoar() == false;
 }
 
 const bool NearJudgment::Judgment()
 {
+    return false;
     //return true;
 
     const DirectX::XMFLOAT3 ownerPos = owner_->GetTransform()->GetPosition();

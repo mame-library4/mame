@@ -1331,7 +1331,11 @@ namespace ActionDragon
             {
                 Fireball* fireball = new Fireball();
                 
-                fireball->Launch(owner_->GetJointPosition("Dragon15_tongue4"), owner_->GetTransform()->CalcForward());
+                DirectX::XMFLOAT3 mouthPosition = owner_->GetJointPosition("Dragon15_tongue4");
+                DirectX::XMFLOAT3 playerPosition = PlayerManager::Instance().GetTransform()->GetPosition();
+                DirectX::XMFLOAT3 direction = XMFloat3Normalize(playerPosition - mouthPosition);
+
+                fireball->Launch(elapsedTime, mouthPosition, direction);
 
                 isCreateFireball_ = true;
             }
@@ -1390,7 +1394,7 @@ namespace ActionDragon
             }
 
             // ‰Î‹…”­ŽË
-            Launch(0.95f);
+            Launch(elapsedTime, 0.95f);
 
             //if (owner_->IsPlayAnimation() == false)
             if (owner_->GetAnimationSeconds() > 1.7f)
@@ -1408,7 +1412,7 @@ namespace ActionDragon
         case STATE::SecondAttack:
         {
             // ‰Î‹…”­ŽË
-            Launch(0.95f);
+            Launch(elapsedTime, 0.95f);
 
             //if (owner_->IsPlayAnimation() == false)
             if (owner_->GetAnimationSeconds() > 1.7f)
@@ -1425,7 +1429,7 @@ namespace ActionDragon
         case STATE::ThirdAttack:
         {
             // ‰Î‹…”­ŽË
-            Launch(0.95f);
+            Launch(elapsedTime, 0.95f);
 
             if (owner_->IsPlayAnimation() == false)
             {
@@ -1445,7 +1449,7 @@ namespace ActionDragon
     }
 
     // ----- ‰Î‹…”­ŽË -----
-    void FireBreathCombo::Launch(const float& launchFrame)
+    void FireBreathCombo::Launch(const float& elapsedTime, const float& launchFrame)
     {
         // Šù‚É”­ŽË‚µ‚Ä‚¢‚é
         if (isCreateFireball_) return;
@@ -1462,7 +1466,7 @@ namespace ActionDragon
         direction.y = 0;
         direction = XMFloat3Normalize(direction);
 
-        fireball->Launch(tongue4Position, direction);
+        fireball->Launch(elapsedTime, tongue4Position, direction);
 
         isCreateFireball_ = true;
     }

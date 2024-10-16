@@ -333,7 +333,7 @@ namespace ActionDragon
         };
 
         void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
-        void Launch(const float& launchFrame);
+        void Launch(const float& elapsedTime, const float& launchFrame);
 
     private:
         DirectX::XMFLOAT3 targetPosition_ = {};
