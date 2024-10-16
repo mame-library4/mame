@@ -10,6 +10,8 @@ Fireball::Fireball()
 {
     // Manager‚ÉŽ©•ªŽ©g‚ð“o˜^
     ProjectileManager::Instance().Register(this);
+
+    fireBallParticle_ = new FireBallParticle();
 }
 
 // ----- ƒfƒXƒgƒ‰ƒNƒ^ -----
@@ -60,7 +62,7 @@ void Fireball::Update(const float& elapsedTime)
         //ProjectileManager::Instance().Remove(this);
     }
 
-    fireBallParticle_.UpdateFireBallParticle(GetTransform()->GetPosition());
+    fireBallParticle_->UpdateFireBallParticle(GetTransform()->GetPosition());
 }
 
 // ----- •`‰æ -----
@@ -83,7 +85,7 @@ void Fireball::DrawDebug()
 // ----- ”­ŽË -----
 void Fireball::Launch(const float& elapsedTime, const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& direction, const float& speed)
 {
-    fireBallParticle_.PlayFireBallParticle(elapsedTime, position);
+    fireBallParticle_->PlayFireBallParticle(elapsedTime, position);
 
     GetTransform()->SetPosition(position);
     direction_ = direction;

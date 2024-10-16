@@ -28,7 +28,7 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     
     p.velocity_ = float3(vx, vy, vz);
     
-    p.position_ = emitterPosition_ + (p.velocity_ * 2.0f);
+    p.position_ = emitterPosition_ + (p.velocity_ * 0.5f);
     
     p.color_ = float4(1, 0, 0, 1);
 

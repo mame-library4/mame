@@ -8,6 +8,9 @@ FireBallParticle::FireBallParticle()
     :ParticleSystem(3000)
 {
 	CreateFireBallParticle();
+
+	constants_.speed_ = 20.0f;
+	constants_.particleSize_ = 0.1f;
 }
 
 void FireBallParticle::Update(const float& elapsedTime)
@@ -91,6 +94,8 @@ void FireBallParticle::UpdateFireBallParticle(const DirectX::XMFLOAT3& position)
 {
 	constants_.oldPosition_ = constants_.currentPosition_;
 	constants_.currentPosition_ = position;
+
+	if (position.y < 0.0f) constants_.isMoveStraight = 0;
 }
 
 // ----- ¶¬ -----

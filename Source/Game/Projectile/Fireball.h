@@ -25,6 +25,6 @@ private:
 
     float lifeTimer_ = 0.0f;
 
-    FireBallParticle fireBallParticle_;
+    FireBallParticle* fireBallParticle_ = nullptr;
 };
 

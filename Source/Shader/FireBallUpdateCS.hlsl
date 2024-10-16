@@ -14,24 +14,23 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     {
         float3 vec = currentPosition_ - oldPosition_;
         const float len = length(vec);
-        //if (len > 0.0f)
+        p.position_ += vec;
+    }
+    else
+    {
+        const float g = -0.5;
+        p.velocity_.y += g * deltaTime_;
+        p.position_ += p.velocity_ * speed_ * deltaTime_;
+
+        if (p.position_.y < -1.0)
         {
-            //p.position_ += vec;
-            p.position_ += p.velocity_ * speed_ * deltaTime_;
+            p.velocity_ = 0;
+            p.position_.y = -1.0;
+            
+            p.color_.a = 0;
         }
     }
     
-    //const float g = -0.5;
-    //p.velocity_.y += g * deltaTime_;
-    //p.position_ += p.velocity_ * speed_ * deltaTime_;
-
-    //if (p.position_.y < -1.0)
-    //{
-    //    p.velocity_ = 0;
-    //    p.position_.y = -1.0;
-            
-    //    p.color_.a = 0;
-    //}
 
     particleBuffer[id] = p;
 }

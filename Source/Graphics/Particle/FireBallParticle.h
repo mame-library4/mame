@@ -30,11 +30,11 @@ private:
     struct Constants
     {
         DirectX::XMFLOAT3   emitterPosition_ = { 0, 2, 0 };
+        float               particleSize_    = 0.02f;
         DirectX::XMFLOAT3   currentPosition_ = {};
+        float               time_            = 0.0f;
         DirectX::XMFLOAT3   oldPosition_     = {};
 
-        float               particleSize_    = 0.02f;
-        float               time_            = 0.0f;
         float               deltaTime_       = 0.0f;
         float               speed_           = 1.0f;
         int                 isMoveStraight   = 1;

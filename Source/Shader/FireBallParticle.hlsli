@@ -12,10 +12,10 @@ struct ParticleData
 cbuffer ParticleConstants : register(b2)
 {
     float3 emitterPosition_;
-    float3 currentPosition_;
-    float3 oldPosition_;
     float particleSize_;
+    float3 currentPosition_;
     float time_;
+    float3 oldPosition_;
     float deltaTime_;
     float speed_;
     int isMoveStraight_;
