@@ -2,6 +2,8 @@
 #include "Graphics.h"
 #include "Texture.h"
 #include "Misc.h"
+#include "MathHelper.h"
+#include "GameScene.h"
 
 // ----- コンストラクタ -----
 FireBallParticle::FireBallParticle()
@@ -10,7 +12,7 @@ FireBallParticle::FireBallParticle()
 	CreateFireBallParticle();
 
 	constants_.speed_ = 20.0f;
-	constants_.particleSize_ = 0.1f;
+	constants_.particleSize_ = 0.05f;
 }
 
 void FireBallParticle::Update(const float& elapsedTime)
@@ -92,10 +94,23 @@ void FireBallParticle::PlayFireBallParticle(const float& elapsedTime, const Dire
 
 void FireBallParticle::UpdateFireBallParticle(const DirectX::XMFLOAT3& position)
 {
+	if (constants_.isMoveStraight == 0) return;
+
 	constants_.oldPosition_ = constants_.currentPosition_;
 	constants_.currentPosition_ = position;
 
-	if (position.y < 0.0f) constants_.isMoveStraight = 0;
+	// 地面に当たった
+	if (position.y < 0.0f) SetToExplode();
+
+	// 壁に当たった
+	DirectX::XMFLOAT2 pos = { position.x, position.z };
+	const float length = XMFloat2Length(pos);
+	if (GameScene::stageRadius_ < length) SetToExplode();
+}
+
+void FireBallParticle::SetToExplode()
+{
+	constants_.isMoveStraight = 0;
 }
 
 // ----- 生成 -----

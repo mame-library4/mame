@@ -320,6 +320,8 @@ void CollisionManager::UpdatePlayerDamageVsProjectileAttack()
                 playerData.GetPosition(), playerData.GetRadius(),
                 projectile->GetTransform()->GetPosition(), projectile->GetRadius()))
             {
+                projectile->OnHit();
+
                 // カウンター状態ならカウンター成功
                 if (player->GetIsCounter())
                 {

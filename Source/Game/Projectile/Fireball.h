@@ -13,6 +13,7 @@ public:
     void Update(const float& elapsedTime)               override;
     void Render(ID3D11PixelShader* psShader = nullptr)  override;
     void DrawDebug()                                    override;
+    void OnHit()                                        override;
 
     void Launch(const float& elapsedTime, const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& direction, const float& speed = 0.0f);
 

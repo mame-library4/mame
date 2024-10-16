@@ -28,9 +28,17 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     
     p.velocity_ = float3(vx, vy, vz);
     
-    p.position_ = emitterPosition_ + (p.velocity_ * 0.5f);
+    if(id > 1500)
+    {
+        p.position_ = emitterPosition_ + (p.velocity_ * 0.5f);
+        p.color_ = float4(1, 0, 0, 1);
+    }
+    else
+    {
+        p.position_ = emitterPosition_ + (p.velocity_ * 0.8f);
+        p.color_ = float4(0.93f, 0.47f, 0, 1);
+    }
     
-    p.color_ = float4(1, 0, 0, 1);
 
     particleBuffer[id] = p;
 }

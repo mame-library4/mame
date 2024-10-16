@@ -13,6 +13,8 @@ public:
     virtual void Render(ID3D11PixelShader* psShader = nullptr)  = 0;
     virtual void DrawDebug();
 
+    virtual void OnHit() = 0;
+
 public:// [Get, Set] Function
     // ----- Damage -----
     [[nodiscard]] const float GetDamage() const { return damage_; }

@@ -1333,6 +1333,7 @@ namespace ActionDragon
                 
                 DirectX::XMFLOAT3 mouthPosition = owner_->GetJointPosition("Dragon15_tongue4");
                 DirectX::XMFLOAT3 playerPosition = PlayerManager::Instance().GetTransform()->GetPosition();
+                playerPosition.y = 0.7f;
                 DirectX::XMFLOAT3 direction = XMFloat3Normalize(playerPosition - mouthPosition);
 
                 fireball->Launch(elapsedTime, mouthPosition, direction);

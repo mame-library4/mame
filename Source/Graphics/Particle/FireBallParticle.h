@@ -15,6 +15,10 @@ public:
     void PlayFireBallParticle(const float& elapsedTime, const DirectX::XMFLOAT3& emitterPosition);
     void UpdateFireBallParticle(const DirectX::XMFLOAT3& position);
 
+    [[nodiscard]] const bool GetIsHit() const { return !constants_.isMoveStraight; }
+    void SetToExplode();
+    
+
 private:
     void CreateFireBallParticle();
 

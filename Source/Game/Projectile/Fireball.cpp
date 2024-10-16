@@ -48,12 +48,15 @@ void Fireball::Update(const float& elapsedTime)
     GetTransform()->AddPosition(direction_ * speed_ * elapsedTime);
 
     // エフェクト更新
-    ++effectDelay_;
-    if (effectDelay_ > effectMaxDelay_)
+    if (fireBallParticle_->GetIsHit() == false)
     {
-        EffectManager::Instance().GetEffect("Fire")->Play(GetTransform()->GetPosition(), 0.5f, 3.0f);
+        ++effectDelay_;
+        if (effectDelay_ > effectMaxDelay_)
+        {
+            EffectManager::Instance().GetEffect("Fire")->Play(GetTransform()->GetPosition(), 0.5f, 3.0f);
 
-        effectDelay_ = 0;
+            effectDelay_ = 0;
+        }
     }
 
     lifeTimer_ += elapsedTime;
@@ -68,7 +71,7 @@ void Fireball::Update(const float& elapsedTime)
 // ----- 描画 -----
 void Fireball::Render(ID3D11PixelShader* psShader)
 {
-    Object::Render(psShader);
+    //Object::Render(psShader);
 }
 
 // ----- ImGui用 -----
@@ -80,6 +83,12 @@ void Fireball::DrawDebug()
         Projectile::DrawDebug();
         ImGui::TreePop();
     }
+}
+
+// ----- 当たった時に呼び出される処理 -----
+void Fireball::OnHit()
+{
+    fireBallParticle_->SetToExplode(); // エフェクトの動きを爆発に切り替える
 }
 
 // ----- 発射 -----
