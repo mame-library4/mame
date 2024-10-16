@@ -91,7 +91,8 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                 // ヒットエフェクトを再生 ( 弱点部位は違うエフェクトを再生する )
                 const std::string hitEffectName = isWeakPoint ? "Attack1" : "Attack";
                 Effect* hitEffect = EffectManager::Instance().GetEffect(hitEffectName.c_str());
-                hitEffect->Play(enemyData.GetPosition(), 0.3f, 1.0f);
+                const float hitEffectSize = isWeakPoint ? 0.4f : 0.3f;
+                hitEffect->Play(enemyData.GetPosition(), hitEffectSize, 1.0f);
 
                 // 敵が死んでいなかったらダメージ処理をする
                 if (enemy->GetIsDead() == false)

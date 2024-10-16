@@ -817,13 +817,8 @@ namespace ActionDragon
             gamePadVibration_[1].Initialize(1.55f, 0.9f, 0.7f);
             gamePadVibration_[2].Initialize(3.0f, 2.0f, 1.0f);
 
-            blurStartFrame_ = 3.0f;
-            blurEndFrame_ = 5.0f;
-            maxBlurPower_ = 0.05f;
-            maxBlurTime_ = 0.2f;
-            blurTimer_ = 0.0f;
-
-            intenseBlurFrameCount_ = 0;
+            intenseBlurFrameCount_  = 0;
+            radialBlurTimer_        = 0.0f;
 
             isPlayerFilnch_ = false;
 
@@ -865,6 +860,11 @@ namespace ActionDragon
 
     void RoarLongAction::DrawDebug()
     {
+        ImGui::DragFloat("RadialBlurTimer", &radialBlurTimer_);
+        ImGui::DragFloat("RadialBlurSpeed", &radialBlurSpeed_);
+        ImGui::DragInt("IntenseBlurFrame", &intenseBlurFrame_);
+        ImGui::DragInt("IntenseBlurFrameCounter", &intenseBlurFrameCount_);
+        ImGui::DragFloat("MaxStrength", &maxStrength_);
     }
 
     // ----- ラジアルブラー更新 -----
@@ -897,7 +897,11 @@ namespace ActionDragon
             }
             else
             {
-                
+                radialBlurTimer_ += radialBlurSpeed_ * elapsedTime;
+                radialBlurTimer_ = std::min(radialBlurTimer_, 1.0f);
+                const float strength = XMFloatLerp(maxStrength_, 0.0f, radialBlurTimer_);
+
+                PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = strength;
             }
         }
 

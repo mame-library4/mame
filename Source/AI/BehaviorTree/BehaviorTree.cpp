@@ -79,11 +79,6 @@ NodeBase* BehaviorTree::Run(NodeBase* actionNode, BehaviorData* data, float elap
     return actionNode;
 }
 
-void BehaviorTree::DrawDebug()
-{
-    root_->DrawDebug();
-}
-
 // ----- “o˜^‚³‚ê‚½ƒm[ƒh‚ğ‘S‚Äíœ‚·‚é -----
 void BehaviorTree::NodeAllClear(NodeBase* delNode)
 {

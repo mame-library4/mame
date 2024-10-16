@@ -117,7 +117,7 @@ void EnemyDragon::DrawDebug()
 
             if (activeNode_ != nullptr)
             {
-                behaviorTree_->DrawDebug();
+                activeNode_->DrawDebug();
             }
 
             ImGui::TreePop();

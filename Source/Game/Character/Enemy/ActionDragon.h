@@ -204,20 +204,13 @@ namespace ActionDragon
         static const int vibrationNum_ = 3;
         GamePadVibration gamePadVibration_[vibrationNum_];
 
-        // ----- Blur -----
-        float   blurStartFrame_ = 0.0f; // ブラー開始フレーム
-        float   blurEndFrame_   = 0.0f; // ブラー終了フレーム
-        float   maxBlurPower_   = 0.0f; // ブラーの強さ
-        float   blurTimer_      = 0.0f; // ブラーのEasing用タイマー
-        float   maxBlurTime_    = 0.0f; // ブラー用
-
         // ----- ラジアルブラー -----
-        int         intenseBlurFrame_ = 3;
-        int         intenseBlurFrameCount_ = 0;
-        float       preRadialBlurTimer_ = 0.0f;
-        float       radialBlurTimer_ = 0.0f;
-        float       maxStrength_ = 1.0f;
-        const int   maxSampleCount_ = 5.0f;
+        int         intenseBlurFrame_       = 3;
+        int         intenseBlurFrameCount_  = 0;
+        float       maxStrength_            = 1.0f;
+        float       radialBlurTimer_        = 0.0f;
+        float       radialBlurSpeed_        = 1.0f;
+        const int   maxSampleCount_         = 5.0f;
 
         bool isPlayerFilnch_ = false;
     };

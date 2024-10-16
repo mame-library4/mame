@@ -31,8 +31,6 @@ public:
 
     NodeBase* Run(NodeBase* actionNode, BehaviorData* data, float elapsedTime);
 
-    void DrawDebug();
-
 private:
     void NodeAllClear(NodeBase* delNode);
 
