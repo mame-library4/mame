@@ -137,6 +137,8 @@ namespace PlayerState
         bool isFirstAnimation_ = false; // 最初のアニメーションか
 
         DirectX::XMFLOAT3 addForceDirection_ = {}; // 吹っ飛び方向
+
+        bool isCameraShakeActive_ = false;
     };
 
     // ----- 死亡 -----

@@ -110,6 +110,19 @@ void EnemyDragon::DrawDebug()
 {
     if (ImGui::BeginMenu("Dragon"))
     {
+        if (ImGui::TreeNode("BehaviorTree"))
+        {
+            std::string nodeName = (activeNode_ != nullptr) ? activeNode_->GetName() : u8"‚È‚µ";
+            ImGui::Text(u8"Behavior:%s", nodeName.c_str());
+
+            if (activeNode_ != nullptr)
+            {
+                behaviorTree_->DrawDebug();
+            }
+
+            ImGui::TreePop();
+        }
+
         if (ImGui::TreeNode("PartDestruction"))
         {
             ImGui::DragFloat("Head", &partHealth_[static_cast<int>(PartName::Head)]);
@@ -144,9 +157,6 @@ void EnemyDragon::DrawDebug()
 
         Character::DrawDebug();
         Object::DrawDebug();
-
-        std::string nodeName = (activeNode_ != nullptr) ? activeNode_->GetName() : u8"‚È‚µ";
-        ImGui::Text(u8"Behavior:%s", nodeName.c_str());
 
         ImGui::EndMenu();
     }

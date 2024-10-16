@@ -562,6 +562,8 @@ namespace PlayerState
 
         // 回転
         Turn();
+
+        isCameraShakeActive_ = false;
     }
 
     // ----- 更新 -----
@@ -569,6 +571,17 @@ namespace PlayerState
     {
         // アニメーションの速度設定
         SetAnimationSpeed();
+
+        // カメラシェイクを少し入れる
+        if (isCameraShakeActive_ == false)
+        {
+            if (owner_->GetAnimationSeconds() > 0.15f)
+            {
+                Camera::Instance().ScreenVibrate(0.1f, 0.3f);
+                isCameraShakeActive_ = true;
+            }
+        }
+
 
         // 移動値
         if (addForceData_.Update(owner_->GetAnimationSeconds()))
@@ -658,15 +671,20 @@ namespace PlayerState
     // ----- 回転処理 -----
     void DamageState::Turn()
     {
-        DirectX::XMFLOAT2 ownerFront = { owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z };
-        ownerFront = XMFloat2Normalize(ownerFront);
-        DirectX::XMFLOAT2 addForceDirection = { addForceDirection_.x, addForceDirection_.z };
-        addForceDirection = XMFloat2Normalize(addForceDirection * -1.0f);
+        DirectX::XMFLOAT2 ownerFront = XMFloat2Normalize({ owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z });
+        DirectX::XMFLOAT2 addForceDirection = XMFloat2Normalize(DirectX::XMFLOAT2(addForceDirection_.x, addForceDirection_.z) * -1.0f);
         
         float cross = XMFloat2Cross(addForceDirection, ownerFront);
-        float dot = XMFloat2Dot(addForceDirection, ownerFront) - 1.0f;
-        if (cross > 0) owner_->GetTransform()->AddRotationY(dot);
-        else owner_->GetTransform()->AddRotationY(-dot);
+        float angle = acosf(XMFloat2Dot(addForceDirection, ownerFront));
+
+        if (cross > 0)
+        {
+            owner_->GetTransform()->SetRotationY(-angle);
+        }
+        else
+        {
+            owner_->GetTransform()->SetRotationY(angle);
+        }
     }
 }
 

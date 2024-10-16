@@ -46,6 +46,8 @@ public:
     // --- Às ---
     ActionBase::State Run(const float& elapsedTime);
 
+    void DrawDebug();
+
 public:// --- æ“¾Eİ’è ---
 #pragma region [Get, Set] Function
     // --- –¼‘O ---

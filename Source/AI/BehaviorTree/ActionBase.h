@@ -16,6 +16,7 @@ public:
     ActionBase(Enemy* owner) : owner_(owner) {}
 
     virtual const ActionBase::State Run(const float& elapsedTime) = 0;
+    virtual void DrawDebug() = 0;
 
 protected:
     Enemy*  owner_;

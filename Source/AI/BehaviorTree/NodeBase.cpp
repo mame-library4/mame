@@ -194,6 +194,11 @@ ActionBase::State NodeBase::Run(const float& elapsedTime)
     return ActionBase::State::Failed;
 }
 
+void NodeBase::DrawDebug()
+{
+    if(action_ != nullptr) action_->DrawDebug();
+}
+
 // ----- qƒm[ƒhæ“¾ -----
 NodeBase* NodeBase::GetChild(const int& index)
 {

@@ -439,6 +439,7 @@ void Player::ResetFlags()
     isDodge_            = false;            // 回避入力判定用フラグ
     isCounter_              = false;            // カウンター状態かフラグ
     isAbleCounterAttack_    = false;            // カウンター攻撃可能か
+    isAttackValid_          = false;
     isAttackHit_            = false;            //
 }
 

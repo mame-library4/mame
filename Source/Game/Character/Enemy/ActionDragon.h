@@ -45,7 +45,8 @@ namespace ActionDragon
     public:
         SuperNovaAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
-        
+        void DrawDebug()                                      override;
+
     private:
         void GenerateChargeEffect(const float& elapsedTime);
         void GenarateMainEffect(const float& elapsedTime);
@@ -80,6 +81,7 @@ namespace ActionDragon
     public:
         DeathAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
     };
 
     // ひるみ行動
@@ -88,6 +90,7 @@ namespace ActionDragon
     public:
         FlinchAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
 
     private:
         enum class STATE
@@ -115,6 +118,7 @@ namespace ActionDragon
     public:
         FlyFlinchAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
 
     private:
         enum class STATE
@@ -136,11 +140,13 @@ namespace ActionDragon
         int maxLoopNum_     = 0; // 最大ループ数
     };
 
+    // 部位破壊時ダッシュした時の怯み
     class PartDestructionFlinchAction : public ActionBase
     {
     public:
         PartDestructionFlinchAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
     };
 
     // 非戦闘待機行動
@@ -149,6 +155,7 @@ namespace ActionDragon
     public:
         NonBattleIdleAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
 
     private:
         void SetAnimation();
@@ -163,6 +170,7 @@ namespace ActionDragon
     public:
         NonBattleWalkAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
     };
 
     // 咆哮行動
@@ -171,6 +179,7 @@ namespace ActionDragon
     public:
         RoarAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
 
     private:
         void UpdateBlur(const float& elapsedTime);
@@ -186,6 +195,7 @@ namespace ActionDragon
     public:
         RoarLongAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
 
     private:
         void UpdateBlur(const float& elapsedTime);
@@ -201,6 +211,14 @@ namespace ActionDragon
         float   blurTimer_      = 0.0f; // ブラーのEasing用タイマー
         float   maxBlurTime_    = 0.0f; // ブラー用
 
+        // ----- ラジアルブラー -----
+        int         intenseBlurFrame_ = 3;
+        int         intenseBlurFrameCount_ = 0;
+        float       preRadialBlurTimer_ = 0.0f;
+        float       radialBlurTimer_ = 0.0f;
+        float       maxStrength_ = 1.0f;
+        const int   maxSampleCount_ = 5.0f;
+
         bool isPlayerFilnch_ = false;
     };
 
@@ -210,6 +228,7 @@ namespace ActionDragon
     public:
         BackStepAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
     };
 
     // 飛び攻撃行動
@@ -218,6 +237,7 @@ namespace ActionDragon
     public:
         FlyAttackAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
 
     private:
         enum MoveDirection
@@ -258,6 +278,7 @@ namespace ActionDragon
     public:
         KnockBackAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
 
     private:
         enum class STATE
@@ -285,6 +306,7 @@ namespace ActionDragon
     public:
         SlamAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
     };
 
     // ブレス
@@ -293,6 +315,7 @@ namespace ActionDragon
     public:
         FireBreath(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
 
     private:
         DirectX::XMFLOAT3 targetPosition_ = {};
@@ -305,6 +328,7 @@ namespace ActionDragon
     public:
         FireBreathCombo(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
 
     private:
         enum class STATE
@@ -329,6 +353,7 @@ namespace ActionDragon
     public:
         ComboSlamAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
 
     private:
         enum class STATE
@@ -352,6 +377,7 @@ namespace ActionDragon
     public:
         ComboFlySlamAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
 
     private:
         enum class STATE
@@ -376,6 +402,7 @@ namespace ActionDragon
     public:
         ComboChargeAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
     };
 
     // 回転攻撃行動   
@@ -384,6 +411,7 @@ namespace ActionDragon
     public:
         TurnAttackAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
 
     private:
         enum class STATE
@@ -405,6 +433,7 @@ namespace ActionDragon
     public:
         TackleAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
 
     private:
         enum class STATE
@@ -427,6 +456,7 @@ namespace ActionDragon
     public:
         ComboTackleAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
     };
 
     // 上昇攻撃行動
@@ -435,6 +465,7 @@ namespace ActionDragon
     public:
         RiseAttackAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
 
     private:
         float riseTimer_ = 0.0f;
@@ -450,6 +481,7 @@ namespace ActionDragon
     public:
         MoveTurnAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
     };
 
     class MoveAction : public ActionBase
@@ -457,6 +489,7 @@ namespace ActionDragon
     public:
         MoveAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
 
     private:
         DirectX::XMFLOAT3 targetPosition_ = {};

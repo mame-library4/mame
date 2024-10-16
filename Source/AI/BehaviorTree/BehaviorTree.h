@@ -5,7 +5,6 @@ class ActionBase;
 class JudgmentBase;
 class NodeBase;
 class BehaviorData;
-//class EnemyTamamo;
 class Enemy;
 
 class BehaviorTree
@@ -31,6 +30,8 @@ public:
     void AddNode(std::string parentName, std::string entryName, int priority, SelectRule selectRule, JudgmentBase* judgment, ActionBase* action);
 
     NodeBase* Run(NodeBase* actionNode, BehaviorData* data, float elapsedTime);
+
+    void DrawDebug();
 
 private:
     void NodeAllClear(NodeBase* delNode);

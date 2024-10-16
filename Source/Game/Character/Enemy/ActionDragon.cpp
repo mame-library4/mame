@@ -132,6 +132,10 @@ namespace ActionDragon
         return ActionBase::State::Run;
     }
 
+    void SuperNovaAction::DrawDebug()
+    {
+    }
+
     // ----- チャージエフェクト生成 -----
     void SuperNovaAction::GenerateChargeEffect(const float& elapsedTime)
     {
@@ -300,6 +304,9 @@ namespace ActionDragon
 
         return ActionBase::State::Run;
     }
+    void DeathAction::DrawDebug()
+    {
+    }
 }
 
 // ----- 怯み行動 -----
@@ -393,6 +400,10 @@ namespace ActionDragon
         }
 
         return ActionBase::State::Run;
+    }
+
+    void FlinchAction::DrawDebug()
+    {
     }
 
     // ----- アニメーション設定 -----
@@ -518,6 +529,10 @@ namespace ActionDragon
         return ActionBase::State::Run;
     }
 
+    void FlyFlinchAction::DrawDebug()
+    {
+    }
+
     // ----- アニメーションの速度設定 -----
     void FlyFlinchAction::SetAnimationSpeed()
     {
@@ -585,6 +600,9 @@ namespace ActionDragon
 
         return ActionBase::State::Run;
     }
+    void PartDestructionFlinchAction::DrawDebug()
+    {
+    }
 }
 
 // ----- 非戦闘時待機 -----
@@ -621,6 +639,10 @@ namespace ActionDragon
         }
 
         return ActionBase::State();
+    }
+
+    void NonBattleIdleAction::DrawDebug()
+    {
     }
 
     // ----- アニメーション設定 -----
@@ -680,6 +702,9 @@ namespace ActionDragon
 
         return ActionBase::State();
     }
+    void NonBattleWalkAction::DrawDebug()
+    {
+    }
 }
 
 // ----- 咆哮 -----
@@ -729,6 +754,10 @@ namespace ActionDragon
         }
 
         return ActionBase::State::Run;
+    }
+
+    void RoarAction::DrawDebug()
+    {
     }
 
     // ----- ラジアルブラー更新 -----
@@ -794,6 +823,8 @@ namespace ActionDragon
             maxBlurTime_ = 0.2f;
             blurTimer_ = 0.0f;
 
+            intenseBlurFrameCount_ = 0;
+
             isPlayerFilnch_ = false;
 
             owner_->SetStep(1);
@@ -832,35 +863,45 @@ namespace ActionDragon
         return ActionBase::State::Run;
     }
 
+    void RoarLongAction::DrawDebug()
+    {
+    }
+
     // ----- ラジアルブラー更新 -----
     void RoarLongAction::UpdateBlur(const float& elapsedTime)
     {
-        const float animationSeconds = owner_->GetAnimationSeconds();
+        // ブラーの開始中心点を決める
+        const DirectX::XMFLOAT3 dragonNeckPosition = owner_->GetJointPosition("Dragon15_neck_1");
+        DirectX::XMFLOAT2 centerPosition = Sprite::ConvertToScreenPos(dragonNeckPosition);
+        centerPosition.x /= SCREEN_WIDTH;
+        centerPosition.y /= SCREEN_HEIGHT;
 
-        // ブラー終了フレームを過ぎたら、ブラーを緩める
-        if (animationSeconds > blurEndFrame_)
+        // ブラーの開始点が 0.0 ~ 1.0 を超えていた場合真ん中に補正する
+        if (centerPosition.x > 1.0f || centerPosition.y > 1.0f ||
+            centerPosition.x < 0.0f || centerPosition.y < 0.0f)
         {
-            PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ =
-                Easing::InSine(blurTimer_, maxBlurTime_, maxBlurPower_, 0.0f);
-
-            blurTimer_ -= elapsedTime;
-            blurTimer_ = std::max(blurTimer_, 0.0f);
+            centerPosition = { 0.5f, 0.5f };
         }
-        // ブラー開始フレームを過ぎたら、ブラーをかける
-        else if (animationSeconds > blurStartFrame_)
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->uvOffset_ = centerPosition;
+
+
+
+        if (owner_->GetAnimationSeconds() > 4.1f)
         {
-            PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ =
-                Easing::InQuint(blurTimer_, maxBlurTime_, maxBlurPower_, 0.0f);
-
-            blurTimer_ += elapsedTime;
-            blurTimer_ = std::min(blurTimer_, maxBlurTime_);
+            // ブラー開始の数フレームを最大強度のブラーをかける
+            if (intenseBlurFrameCount_ < intenseBlurFrame_)
+            {
+                PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = maxStrength_;
+                ++intenseBlurFrameCount_;
+                return;
+            }
+            else
+            {
+                
+            }
         }
 
-        // アニメーションのタイミングに合わせてブラーをもう１段階強くする
-        if (animationSeconds > 4.1f)
-        {
-            maxBlurPower_ = 0.1f;
-        }
+
     }
 }
 
@@ -894,6 +935,9 @@ namespace ActionDragon
         }
 
         return ActionBase::State();
+    }
+    void BackStepAction::DrawDebug()
+    {
     }
 }
 
@@ -1071,6 +1115,10 @@ namespace ActionDragon
         return ActionBase::State::Run;
     }
 
+    void FlyAttackAction::DrawDebug()
+    {
+    }
+
     // ----- アニメーション設定 -----
     void FlyAttackAction::SetAnimation()
     {
@@ -1221,6 +1269,9 @@ namespace ActionDragon
 
         return ActionBase::State::Run;
     }
+    void KnockBackAction::DrawDebug()
+    {
+    }
 }
 
 namespace ActionDragon
@@ -1231,6 +1282,9 @@ namespace ActionDragon
         if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
 
         return ActionBase::State();
+    }
+    void SlamAction::DrawDebug()
+    {
     }
 }
 
@@ -1288,6 +1342,9 @@ namespace ActionDragon
         }
 
         return ActionBase::State::Run;
+    }
+    void FireBreath::DrawDebug()
+    {
     }
 }
 
@@ -1377,6 +1434,10 @@ namespace ActionDragon
         }
 
         return ActionBase::State::Run;
+    }
+
+    void FireBreathCombo::DrawDebug()
+    {
     }
 
     // ----- 火球発射 -----
@@ -1521,6 +1582,10 @@ namespace ActionDragon
         return ActionBase::State::Run;
     }
 
+    void ComboSlamAction::DrawDebug()
+    {
+    }
+
     // ----- アニメーション設定 -----
     void ComboSlamAction::SetAnimation()
     {
@@ -1651,6 +1716,9 @@ namespace ActionDragon
 
         return ActionBase::State::Run;
     }
+    void ComboFlySlamAction::DrawDebug()
+    {
+    }
 }
 
 namespace ActionDragon
@@ -1661,6 +1729,9 @@ namespace ActionDragon
         if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
 
         return ActionBase::State();
+    }
+    void ComboChargeAction::DrawDebug()
+    {
     }
 }
 
@@ -1729,6 +1800,10 @@ namespace ActionDragon
         }
 
         return ActionBase::State::Run;
+    }
+
+    void TurnAttackAction::DrawDebug()
+    {
     }
 
     // ----- アニメーションを設定する -----
@@ -1920,6 +1995,9 @@ namespace ActionDragon
 
         return ActionBase::State::Run;
     }
+    void TackleAction::DrawDebug()
+    {
+    }
 }
 
 namespace ActionDragon
@@ -1927,6 +2005,9 @@ namespace ActionDragon
     const ActionBase::State ComboTackleAction::Run(const float& elapsedTime)
     {
         return ActionBase::State();
+    }
+    void ComboTackleAction::DrawDebug()
+    {
     }
 }
 
@@ -2046,6 +2127,9 @@ namespace ActionDragon
 
         return ActionBase::State::Run;
     }
+    void RiseAttackAction::DrawDebug()
+    {
+    }
 }
 
 namespace ActionDragon
@@ -2056,6 +2140,9 @@ namespace ActionDragon
         if (owner_->CheckStatusChange()) return ActionBase::State::Failed;
 
         return ActionBase::State();
+    }
+    void MoveTurnAction::DrawDebug()
+    {
     }
 }
 
@@ -2101,5 +2188,8 @@ namespace ActionDragon
         }
 
         return ActionBase::State::Run;
+    }
+    void MoveAction::DrawDebug()
+    {
     }
 }

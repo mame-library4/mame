@@ -94,7 +94,7 @@ const bool RoarJudgment::Judgment()
 // ----- ‹©‚Ô”»’è -----
 const bool ShoutJudgment::Judgment()
 {
-    //return true;
+    return true;
 
     //return false;
     return owner_->GetIsRoar() == false;
