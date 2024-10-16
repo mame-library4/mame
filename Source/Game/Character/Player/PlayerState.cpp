@@ -121,6 +121,18 @@ namespace PlayerState
     {
     }
 
+    // ----- ImGui用 -----
+    void IdleState::DrawDebug()
+    {
+        if (ImGui::TreeNode(GetName()))
+        {
+            float a;
+            ImGui::DragFloat("a", &a);
+
+            ImGui::TreePop();
+        }
+    }
+
     // ----- アニメーション設定 -----
     void IdleState::SetAnimation()
     {
@@ -268,9 +280,29 @@ namespace PlayerState
         owner_->SetIsDash(false);
     }
 
+    // ----- ImGui用 -----
+    void RunState::DrawDebug()
+    {
+        if (ImGui::BeginMenu(GetName()))
+        {
+
+
+            ImGui::EndMenu();
+        }
+    }
+
     // ----- アニメーション設定 -----
     void RunState::SetAnimation()
     {
+        // 移動キャンセルの場合素早くアニメーションを切り替える
+        if (owner_->GetIsMoveAttackCancel())
+        {
+            owner_->SetTransitionTime(0.15f);
+            owner_->PlayBlendAnimation(Player::Animation::Run, true);
+            owner_->SetIsMoveAttackCancel(false);
+            return;
+        }
+
         const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
 
         if (animationIndex == Player::Animation::RollForward ||
@@ -435,6 +467,9 @@ namespace PlayerState
     void LightFlinchState::Finalize()
     {
     }
+    void LightFlinchState::DrawDebug()
+    {
+    }
 }
 
 // ----- 怯み -----
@@ -487,6 +522,9 @@ namespace PlayerState
 
     // ----- 終了化 -----
     void FlinchState::Finalize()
+    {
+    }
+    void FlinchState::DrawDebug()
     {
     }
 }
@@ -580,6 +618,10 @@ namespace PlayerState
     {
         // 無敵状態を解除する
         owner_->SetIsInvincible(false);
+    }
+
+    void DamageState::DrawDebug()
+    {
     }
 
     // ----- アニメーションの速度設定 -----
@@ -688,6 +730,9 @@ namespace PlayerState
     {
         owner_->SetIsInvincible(false);
     }
+    void DeathState::DrawDebug()
+    {
+    }
 }
 
 // ----- 回避 -----
@@ -759,6 +804,10 @@ namespace PlayerState
     {
         // 変数をリセットしておく
         isFirstTime_ = true;
+    }
+
+    void DodgeState::DrawDebug()
+    {
     }
 
     // ----- 回転処理 -----
@@ -1317,58 +1366,6 @@ namespace PlayerState
     }
 }
 
-// ----- スキル -----
-namespace PlayerState
-{
-    // ----- 初期化 -----
-    void SkillState::Initialize()
-    {
-        // フラグをリセットする
-        owner_->ResetFlags();
-
-        //owner_->PlayBlendAnimation(Player::Animation::Skill1, false, 1.0f, 0.23f);
-        owner_->PlayBlendAnimation(Player::Animation::Skill0, false, 1.0f, 0.23f);
-        owner_->SetTransitionTime(0.1f);
-
-        //owner_->SetUseRootMotion(true);
-        //owner_->SetUseRootMotionMovement(true);
-    }
-
-    // ----- 更新 -----
-    void SkillState::Update(const float& elapsedTime)
-    {
-        SetAnimationSpeed();
-
-        if (owner_->IsPlayAnimation() == false)
-        {
-            owner_->ChangeState(Player::STATE::Idle);
-            return;
-        }
-    }
-
-    // ----- 終了化 -----
-    void SkillState::Finalize()
-    {
-    }
-
-    // ----- アニメーションの速度を設定 -----
-    void SkillState::SetAnimationSpeed()
-    {
-        const Player::Animation currentAnimation = static_cast<Player::Animation>(owner_->GetAnimationIndex());
-        const float animationFrame = owner_->GetAnimationSeconds();
-
-        if (currentAnimation == Player::Animation::Skill0)
-        {
-
-
-        }
-        else
-        {
-
-        }
-    }
-}
-
 // ----- カウンター -----
 namespace PlayerState
 {
@@ -1493,7 +1490,6 @@ namespace PlayerState
         }
 
         // カウンター成功
-        // TODO:ここつくる。カウンター
         //if (owner_->GetIsAbleCounterAttack())
         {
             if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER)
@@ -1512,6 +1508,10 @@ namespace PlayerState
 
     // ----- 終了化 -----
     void CounterState::Finalize()
+    {
+    }
+
+    void CounterState::DrawDebug()
     {
     }
 
@@ -1788,6 +1788,9 @@ namespace PlayerState
 
         owner_->SetUseRootMotion(false);
     }
+    void CounterComboState::DrawDebug()
+    {
+    }
 }
 
 // ----- 走り攻撃 -----
@@ -1847,18 +1850,46 @@ namespace PlayerState
     {
     }
 
+    void RunAttackState::DrawDebug()
+    {
+    }
+
     // ----- 先行入力処理 -----
     const bool RunAttackState::CheckNextInput()
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
 
-#pragma region ----- 先行入力受付 -----
-        // 回避先行入力受付
-        if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
-            animationSeconds <= owner_->GetDodgeInputEndFrame())
+        // -----------------------------------
+        //      回避による攻撃キャンセル
+        // -----------------------------------
+        if (owner_->GetIsDodgeAttackCancel())
         {
-            if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
+            if (owner_->IsDodgeKeyDown())
+            {
+                owner_->ChangeState(Player::STATE::Dodge);
+                return true;
+            }
         }
+        else
+        {
+            // 回避先行入力受付
+            if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
+                animationSeconds <= owner_->GetDodgeInputEndFrame())
+            {
+                if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
+            }
+            // 回避遷移チェック
+            if (owner_->GetNextInput() == Player::NextInput::Dodge)
+            {
+                if (animationSeconds >= owner_->GetDodgeTransitionFrame())
+                {
+                    owner_->ChangeState(Player::STATE::Dodge);
+                    return true;
+                }
+            }
+        }
+
+#pragma region ----- 先行入力受付 -----
         // 攻撃先行入力受付
         if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
             animationSeconds <= owner_->GetAttackInputEndFrame())
@@ -1875,17 +1906,8 @@ namespace PlayerState
 #pragma endregion ----- 先行入力受付 -----
 
 #pragma region ----- 遷移チェック -----
-        // 回避遷移チェック
-        if (owner_->GetNextInput() == Player::NextInput::Dodge)
-        {
-            if (animationSeconds >= owner_->GetDodgeTransitionFrame())
-            {
-                owner_->ChangeState(Player::STATE::Dodge);
-                return true;
-            }
-        }
         // 攻撃遷移チェック
-        else if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
+        if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
         {
             if (animationSeconds >= owner_->GetAttackTransitionFrame())
             {
@@ -1988,6 +2010,16 @@ namespace PlayerState
         owner_->SetUseRootMotion(false);
     }
 
+    // ----- ImGui用 -----
+    void ComboAttack0_0::DrawDebug()
+    {
+        if (ImGui::TreeNode(GetName()))
+        {
+
+            ImGui::TreePop();
+        }
+    }
+
     // ----- アニメーション設定 -----
     void ComboAttack0_0::SetAnimation()
     {
@@ -2046,13 +2078,59 @@ namespace PlayerState
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
 
-#pragma region ----- 先行入力受付 -----
-        // 回避先行入力受付
-        if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
-            animationSeconds <= owner_->GetDodgeInputEndFrame())
+        // -----------------------------------
+        //      回避による攻撃キャンセル
+        // -----------------------------------
+        if (owner_->GetIsDodgeAttackCancel())
         {
-            if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
+            if (owner_->IsDodgeKeyDown())
+            {
+                owner_->ChangeState(Player::STATE::Dodge);
+                return true;
+            }
         }
+        else
+        {
+            // 回避先行入力受付
+            if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
+                animationSeconds <= owner_->GetDodgeInputEndFrame())
+            {
+                if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
+            }
+
+            // 回避遷移チェック
+            if (owner_->GetNextInput() == Player::NextInput::Dodge)
+            {
+                if (animationSeconds >= owner_->GetDodgeTransitionFrame())
+                {
+                    owner_->ChangeState(Player::STATE::Dodge);
+                    return true;
+                }
+            }
+        }
+
+
+        // -----------------------------------
+        //      移動入力による後隙キャンセル
+        // -----------------------------------
+        if (animationSeconds >= owner_->GetMoveInputStartFrame())
+        {
+            // スティック入力があるか
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (aLx == 0.0f && aLy == 0.0f) return false;
+
+            owner_->SetIsMoveAttackCancel(true);
+
+            owner_->ChangeState(Player::STATE::Run);
+            return true;
+        }
+
+
+
+
+#pragma region ----- 先行入力受付 -----
+
         // 攻撃先行入力受付
         if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
             animationSeconds <= owner_->GetAttackInputEndFrame())
@@ -2069,17 +2147,9 @@ namespace PlayerState
 #pragma endregion ----- 先行入力受付 -----
 
 #pragma region ----- 遷移チェック -----
-        // 回避遷移チェック
-        if (owner_->GetNextInput() == Player::NextInput::Dodge)
-        {
-            if (animationSeconds >= owner_->GetDodgeTransitionFrame())
-            {
-                owner_->ChangeState(Player::STATE::Dodge);
-                return true;
-            }
-        }
+
         // 攻撃遷移チェック
-        else if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
+        if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
         {
             if (animationSeconds >= owner_->GetAttackTransitionFrame())
             {
@@ -2098,18 +2168,6 @@ namespace PlayerState
         }
 
 #pragma endregion ----- 遷移チェック -----
-
-        // 移動入力判定
-        if (animationSeconds >= owner_->GetMoveInputStartFrame())
-        {
-            // スティック入力があるか
-            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
-            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
-            if (aLx == 0.0f && aLy == 0.0f) return false;
-
-            owner_->ChangeState(Player::STATE::Run);
-            return true;
-        }
 
         return false;
     }
@@ -2179,6 +2237,16 @@ namespace PlayerState
         owner_->SetUseRootMotion(false);
     }
 
+    // ----- ImGui用 -----
+    void ComboAttack0_1::DrawDebug()
+    {
+        if (ImGui::TreeNode(GetName()))
+        {
+
+            ImGui::TreePop();
+        }
+    }
+
     // ----- アニメーション設定 -----
     void ComboAttack0_1::SetAnimation()
     {
@@ -2218,13 +2286,54 @@ namespace PlayerState
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
 
-#pragma region ----- 先行入力受付 -----
-        // 回避先行入力受付
-        if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
-            animationSeconds <= owner_->GetDodgeInputEndFrame())
+        // -----------------------------------
+        //      回避による攻撃キャンセル
+        // -----------------------------------
+        if (owner_->GetIsDodgeAttackCancel())
         {
-            if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
+            if (owner_->IsDodgeKeyDown())
+            {
+                owner_->ChangeState(Player::STATE::Dodge);
+                return true;
+            }
         }
+        else
+        {
+            // 回避先行入力受付
+            if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
+                animationSeconds <= owner_->GetDodgeInputEndFrame())
+            {
+                if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
+            }
+
+            // 回避遷移チェック
+            if (owner_->GetNextInput() == Player::NextInput::Dodge)
+            {
+                if (animationSeconds >= owner_->GetDodgeTransitionFrame())
+                {
+                    owner_->ChangeState(Player::STATE::Dodge);
+                    return true;
+                }
+            }
+        }
+
+        // -----------------------------------
+        //      移動入力による後隙キャンセル
+        // -----------------------------------
+        if (animationSeconds >= owner_->GetMoveInputStartFrame())
+        {
+            // スティック入力があるか
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (aLx == 0.0f && aLy == 0.0f) return false;
+
+            owner_->SetIsMoveAttackCancel(true);
+
+            owner_->ChangeState(Player::STATE::Run);
+            return true;
+        }
+
+#pragma region ----- 先行入力受付 -----
         // 攻撃先行入力受付
         if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
             animationSeconds <= owner_->GetAttackInputEndFrame())
@@ -2241,17 +2350,8 @@ namespace PlayerState
 #pragma endregion ----- 先行入力受付 -----
 
 #pragma region ----- 遷移チェック -----
-        // 回避遷移チェック
-        if (owner_->GetNextInput() == Player::NextInput::Dodge)
-        {
-            if (animationSeconds >= owner_->GetDodgeTransitionFrame())
-            {
-                owner_->ChangeState(Player::STATE::Dodge);
-                return true;
-            }
-        }
         // 攻撃遷移チェック
-        else if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
+        if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
         {
             if (animationSeconds >= owner_->GetAttackTransitionFrame())
             {
@@ -2270,18 +2370,6 @@ namespace PlayerState
         }
 
 #pragma endregion ----- 遷移チェック -----
-
-        // 移動入力判定
-        if (animationSeconds >= owner_->GetMoveInputStartFrame())
-        {
-            // スティック入力があるか
-            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
-            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
-            if (aLx == 0.0f && aLy == 0.0f) return false;
-
-            owner_->ChangeState(Player::STATE::Run);
-            return true;
-        }
 
         return false;
     }
@@ -2355,6 +2443,16 @@ namespace PlayerState
         owner_->SetUseRootMotion(false);
     }
 
+    // ----- ImGui用 -----
+    void ComboAttack0_2::DrawDebug()
+    {
+        if (ImGui::TreeNode(GetName()))
+        {
+
+            ImGui::TreePop();
+        }
+    }
+
     // ----- アニメーションの速度設定 -----
     void ComboAttack0_2::SetAnimationSpeed()
     {
@@ -2379,13 +2477,54 @@ namespace PlayerState
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
 
-#pragma region ----- 先行入力受付 -----
-        // 回避先行入力受付
-        if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
-            animationSeconds <= owner_->GetDodgeInputEndFrame())
+        // -----------------------------------
+        //      回避による攻撃キャンセル
+        // -----------------------------------
+        if (owner_->GetIsDodgeAttackCancel())
         {
-            if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
+            if (owner_->IsDodgeKeyDown())
+            {
+                owner_->ChangeState(Player::STATE::Dodge);
+                return true;
+            }
         }
+        else
+        {
+            // 回避先行入力受付
+            if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
+                animationSeconds <= owner_->GetDodgeInputEndFrame())
+            {
+                if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
+            }
+
+            // 回避遷移チェック
+            if (owner_->GetNextInput() == Player::NextInput::Dodge)
+            {
+                if (animationSeconds >= owner_->GetDodgeTransitionFrame())
+                {
+                    owner_->ChangeState(Player::STATE::Dodge);
+                    return true;
+                }
+            }
+        }
+
+        // -----------------------------------
+        //      移動入力による後隙キャンセル
+        // -----------------------------------
+        if (animationSeconds >= owner_->GetMoveInputStartFrame())
+        {
+            // スティック入力があるか
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (aLx == 0.0f && aLy == 0.0f) return false;
+
+            owner_->SetIsMoveAttackCancel(true);
+
+            owner_->ChangeState(Player::STATE::Run);
+            return true;
+        }
+
+#pragma region ----- 先行入力受付 -----
         // 攻撃先行入力受付
         if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
             animationSeconds <= owner_->GetAttackInputEndFrame())
@@ -2402,17 +2541,8 @@ namespace PlayerState
 #pragma endregion ----- 先行入力受付 -----
 
 #pragma region ----- 遷移チェック -----
-        // 回避遷移チェック
-        if (owner_->GetNextInput() == Player::NextInput::Dodge)
-        {
-            if (animationSeconds >= owner_->GetDodgeTransitionFrame())
-            {
-                owner_->ChangeState(Player::STATE::Dodge);
-                return true;
-            }
-        }
         // 攻撃遷移チェック
-        else if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
+        if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
         {
             if (animationSeconds >= owner_->GetAttackTransitionFrame())
             {
@@ -2431,18 +2561,6 @@ namespace PlayerState
         }
 
 #pragma endregion ----- 遷移チェック -----
-
-        // 移動入力判定
-        if (animationSeconds >= owner_->GetMoveInputStartFrame())
-        {
-            // スティック入力があるか
-            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
-            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
-            if (aLx == 0.0f && aLy == 0.0f) return false;
-
-            owner_->ChangeState(Player::STATE::Run);
-            return true;
-        }
 
         return false;
     }
@@ -2525,6 +2643,17 @@ namespace PlayerState
         owner_->SetUseRootMotion(false);
     }
 
+    // ----- ImGui用 -----
+    void ComboAttack0_3::DrawDebug()
+    {
+        if (ImGui::TreeNode(GetName()))
+        {
+
+
+            ImGui::TreePop();
+        }
+    }
+
     // ----- アニメーションの速度設定 -----
     void ComboAttack0_3::SetAnimationSpeed()
     {
@@ -2538,20 +2667,34 @@ namespace PlayerState
     {
         const float animationSeconds = owner_->GetAnimationSeconds();
 
-        // 回避先行入力受付
-        if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
-            animationSeconds <= owner_->GetDodgeInputEndFrame())
+        // -----------------------------------
+        //      回避による攻撃キャンセル
+        // -----------------------------------
+        if (owner_->GetIsDodgeAttackCancel())
         {
-            if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
-        }
-
-        // 回避遷移チェック
-        if (owner_->GetNextInput() == Player::NextInput::Dodge)
-        {
-            if (animationSeconds >= owner_->GetDodgeTransitionFrame())
+            if (owner_->IsDodgeKeyDown())
             {
                 owner_->ChangeState(Player::STATE::Dodge);
                 return true;
+            }
+        }
+        else
+        {
+            // 回避先行入力受付
+            if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
+                animationSeconds <= owner_->GetDodgeInputEndFrame())
+            {
+                if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
+            }
+
+            // 回避遷移チェック
+            if (owner_->GetNextInput() == Player::NextInput::Dodge)
+            {
+                if (animationSeconds >= owner_->GetDodgeTransitionFrame())
+                {
+                    owner_->ChangeState(Player::STATE::Dodge);
+                    return true;
+                }
             }
         }
 

@@ -22,9 +22,7 @@ public:// --- 定数 ---
         Flinch,
         Damage,         // ダメージ
         Death,          // 死亡
-        Dodge,      // 回避
-
-        Skill,
+        Dodge,          // 回避
 
         Counter,        // カウンター
         CounterCombo,   // カウンターコンボ
@@ -191,6 +189,11 @@ public:// --- 取得・設定 ---
     void SetNextInputTransitionFrame(const float& dodge = 0.0f, const float& attack = 0.0f, const float& counter = 0.0f);
 
 
+    // ----- 攻撃キャンセル -----
+    [[nodiscard]] const bool GetIsMoveAttackCancel() const { return isMoveAttackCancel_; }
+    void SetIsMoveAttackCancel(const bool& flag) { isMoveAttackCancel_ = flag; }
+    [[nodiscard]] const bool GetIsDodgeAttackCancel() const { return isDodgeAttackCancel_; }
+    void SetIsDodgeAttackCancel(const bool& flag) { isDodgeAttackCancel_ = flag; }
 
     [[nodiscard]] const NextInput GetNextInput() const { return nextInput_; }
     void SetNextInput(const NextInput& nextInput) { nextInput_ = nextInput; }
@@ -287,6 +290,9 @@ private:
     bool isAttackValid_         = false;            // 攻撃が有効か
     bool isAbleAttack_          = false;            // 攻撃可能か
 
+    bool isMoveAttackCancel_ = false;  // 移動入力による攻撃後隙キャンセル
+    bool isDodgeAttackCancel_ = false; // 回避による攻撃キャンセル
+
     // ---------- カウンター有効範囲 ----------
     float counterActiveRadius_   = 0.0f; // カウンター有効範囲
 
@@ -311,7 +317,8 @@ private:
 
     SwordTrail swordTrail_;
     Sword sword_;
-    bool isSwordPrimitiveDraw_ = true;
+    bool isSwordPrimitiveDraw_ = false;
+    //bool isSwordPrimitiveDraw_ = true;
 
     // ---------- 剣 ----------
     DirectX::XMFLOAT3 socketLocation_ = { 700, 10500, -7000 };

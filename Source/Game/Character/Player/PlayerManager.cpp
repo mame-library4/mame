@@ -48,6 +48,18 @@ void PlayerManager::RenderTrail()
 // ----- ImGui—p -----
 void PlayerManager::DrawDebug()
 {
+    if (ImGui::BeginMenu("Player"))
+    {
+        if (ImGui::TreeNode("HitStop"))
+        {
+            ImGui::DragInt("NormalHitStopFrame", &normalHitStopFrame_);
+            ImGui::DragInt("CriticalHitStopFrame", &criticalHitStopFrame_);
+            
+            ImGui::TreePop();
+        }
+
+        ImGui::EndMenu();
+    }
     player_->DrawDebug();
 }
 
@@ -57,9 +69,9 @@ void PlayerManager::DebugRender(DebugRenderer* debugRenderer)
     player_->DebugRender(debugRenderer);
 }
 
-void PlayerManager::SetHitStop(const float& hitStopFrame)
+void PlayerManager::SetHitStop(const HitStopType& type)
 {
-    hitStopFrame_ = hitStopFrame;
+    hitStopFrame_ = (type == HitStopType::Normal) ? normalHitStopFrame_ : criticalHitStopFrame_;
     currentHitStopFrame_ = 0;
     isHitStopActive_ = true;
 }

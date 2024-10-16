@@ -11,6 +11,8 @@ public:
     void Render()                           override; // •`‰æ
     void DrawDebug()                        override; // ImGui—p
 
+    void SetState(const int& state) {}
+
 private:
 
 

@@ -2,6 +2,7 @@
 #include "MathHelper.h"
 #include "Character/Player/PlayerManager.h"
 #include "Character/Enemy/EnemyManager.h"
+#include "Character/Enemy/EnemyDragon.h"
 #include "Projectile/ProjectileManager.h"
 #include "UI/UINumber.h"
 #include "Effect/EffectManager.h"
@@ -78,7 +79,18 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                 enemyData.SetIsHit(true);
                 enemyData.SetHitTimer(0.01f);                
 
-                Effect* counterEffect = EffectManager::Instance().GetEffect("Attack");
+                // 弱点部位か判断する
+                bool isWeakPoint = false;
+                const EnemyDragon::DamageData damageDataIndex = static_cast<EnemyDragon::DamageData>(enemyDataIndex);
+                if (damageDataIndex == EnemyDragon::DamageData::Head ||
+                    (damageDataIndex >= EnemyDragon::DamageData::Tail && damageDataIndex <= EnemyDragon::DamageData::TailEnd))
+                {
+                    isWeakPoint = true;
+                }
+
+                // ヒットエフェクトを再生 ( 弱点部位は違うエフェクトを再生する )
+                const std::string counterEffectName = isWeakPoint ? "Attack1" : "Attack";
+                Effect* counterEffect = EffectManager::Instance().GetEffect(counterEffectName.c_str());
                 counterEffect->Play(enemyData.GetPosition(), 0.3f, 1.0f);
 
                 // 敵が死んでいなかったらダメージ処理をする
@@ -98,13 +110,18 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                     UINumber* ui = new UINumber(enemyData.GetDamage(), enemyData.GetPosition());
                 }
 
-                // ヒットストップ
-                PlayerManager::Instance().SetHitStop(7);
+                // ヒットストップ ( 弱点部位はヒットストップを長くする )
+                PlayerManager::Instance().SetHitStop(isWeakPoint ? PlayerManager::HitStopType::Critical : PlayerManager::HitStopType::Normal);
+
 
                 // カウンター攻撃時ならコントローラーを振動させる
                 if (player->GetCurrentState() == Player::STATE::CounterCombo)
                 {
                     Input::Instance().GetGamePad().Vibration(0.3f, 1.0f);
+                }
+                else
+                {
+                    Input::Instance().GetGamePad().Vibration(0.1f, 0.3f);
                 }
 
                 // 当たったので判定をここで終了する
@@ -501,3 +518,4 @@ const bool CollisionManager::IntersectSphereVsCapsule(const DirectX::XMFLOAT3& s
 
     return false;
 }
+;

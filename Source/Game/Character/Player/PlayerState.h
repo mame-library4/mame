@@ -59,6 +59,7 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+        void DrawDebug()                        override;
 
     private:
         void SetAnimation();
@@ -75,6 +76,7 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+        void DrawDebug()                        override;
 
     private:
         void SetAnimation();
@@ -95,6 +97,7 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+        void DrawDebug()                        override;
     };
 
     class FlinchState : public State<Player>
@@ -106,6 +109,7 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+        void DrawDebug()                        override;
 
     private:
         int state_ = 0;
@@ -121,6 +125,7 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+        void DrawDebug()                        override;
 
     private:
         void SetAnimationSpeed();
@@ -144,6 +149,7 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+        void DrawDebug()                        override;
 
     private:
         float deathTimer_ = 0.0f;
@@ -160,6 +166,7 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+        void DrawDebug()                        override;
 
     private:
         void Turn(const float& elapsedTime);
@@ -184,20 +191,6 @@ namespace PlayerState
         bool isInputStick_  = false;    // スティック入力があるか
     };
 
-    class SkillState : public State<Player>
-    {
-    public:
-        SkillState(Player* player) : State(player, "Skill") {}
-        ~SkillState() {}
-
-        void Initialize()                       override;
-        void Update(const float& elapsedTime)   override;
-        void Finalize()                         override;
-
-    private:
-        void SetAnimationSpeed();
-    };
-
     // ----- カウンター -----
     class CounterState : public State<Player>
     {
@@ -208,6 +201,7 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+        void DrawDebug()                        override;
 
     private:
         void SetAnimation();
@@ -254,6 +248,7 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+        void DrawDebug()                        override;
 
     private:
         AddForceData        addForceData_;
@@ -269,6 +264,7 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+        void DrawDebug()                        override;
 
     private:
         [[nodiscard]] const bool CheckNextInput();
@@ -288,6 +284,7 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+        void DrawDebug()                        override;
 
     private:
         void SetAnimation();
@@ -308,6 +305,7 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+        void DrawDebug()                        override;
 
     private:
         void SetAnimation();
@@ -328,6 +326,7 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+        void DrawDebug()                        override;
 
     private:
         void SetAnimationSpeed();
@@ -347,6 +346,7 @@ namespace PlayerState
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
+        void DrawDebug()                        override;
 
     private:
         void SetAnimationSpeed();

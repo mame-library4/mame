@@ -53,7 +53,7 @@ private:
 
     float oldHealth_ = 0.0f;
 
-private:
+public:
     enum CollisionData
     {
         DownStart   = 0,

@@ -3,12 +3,11 @@
 #include "LoadingScene.h"
 #include "GameScene.h"
 #include "Input.h"
-#include "UI/UITitle.h"
 
 // ----- ƒŠƒ\[ƒX¶¬ -----
 void TitleScene::CreateResource()
 {
-    UITitle* uiTitle = new UITitle();
+    uiTitle_ = new UITitle();
 }
 
 // ----- ‰Šú‰» -----
@@ -49,6 +48,8 @@ void TitleScene::Update(const float& elapsedTime)
             isDrawUI_ = true;
         }
     }
+
+    uiTitle_->SetState(0);
 }
 
 void TitleScene::ShadowRender()

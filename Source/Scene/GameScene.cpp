@@ -64,10 +64,11 @@ void GameScene::CreateResource()
     
     Effect* effect2 = new Effect("./Resources/Effect/Fire.efk", "Fire");
     
-    Effect* effect3 = new Effect("./Resources/Effect/Attack2.efk", "Attack");
-    Effect* effect4 = new Effect("./Resources/Effect/SuperNova.efk", "SuperNova");
+    Effect* effect3 = new Effect("./Resources/Effect/Attack.efk", "Attack");
+    Effect* effect4 = new Effect("./Resources/Effect/Attack1.efk", "Attack1");
+    Effect* effect5 = new Effect("./Resources/Effect/SuperNova.efk", "SuperNova");
     
-    Effect* effect5 = new Effect("./Resources/Effect/Power.efk", "Power");
+    Effect* effect6 = new Effect("./Resources/Effect/Power.efk", "Power");
     
     UIHealth* uIHealth = new UIHealth();
     UIStamina* uIStamina = new UIStamina();

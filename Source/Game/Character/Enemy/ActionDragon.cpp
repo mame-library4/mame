@@ -790,7 +790,7 @@ namespace ActionDragon
 
             blurStartFrame_ = 3.0f;
             blurEndFrame_ = 5.0f;
-            maxBlurPower_ = 0.01f;
+            maxBlurPower_ = 0.05f;
             maxBlurTime_ = 0.2f;
             blurTimer_ = 0.0f;
 
@@ -859,7 +859,7 @@ namespace ActionDragon
         // アニメーションのタイミングに合わせてブラーをもう１段階強くする
         if (animationSeconds > 4.1f)
         {
-            maxBlurPower_ = 0.03f;
+            maxBlurPower_ = 0.1f;
         }
     }
 }

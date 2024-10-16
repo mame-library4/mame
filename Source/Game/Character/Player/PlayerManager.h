@@ -23,6 +23,11 @@ public:
     void DrawDebug();
     void DebugRender(DebugRenderer* debugRenderer);
 
+    enum class HitStopType
+    {
+        Normal,
+        Critical,
+    };
 
 
 public:// --- 取得・設定 ---
@@ -35,7 +40,7 @@ public:// --- 取得・設定 ---
     void SetUseCollisionDetection(const bool& flag) { useCollisionDetection_ = flag; }
 
     // ---------- ヒットストップ ----------
-    void SetHitStop(const float& hitStopFrame);
+    void SetHitStop(const HitStopType& type);
 
 private:
     std::unique_ptr<Player> player_;
@@ -46,6 +51,8 @@ private:
     // ---------- ヒットストップ ----------
     int     hitStopFrame_           = 0;
     int     currentHitStopFrame_    = 0;
+    int     normalHitStopFrame_     = 5;
+    int     criticalHitStopFrame_   = 7;
     bool    isHitStopActive_        = false;
 };
 

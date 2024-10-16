@@ -32,7 +32,7 @@ void EnemyDragon::Initialize()
     GetTransform()->SetScaleFactor(1.5f);
 
     // ステージとの判定offset設定
-    SetCollisionRadius(2.5f);
+    SetCollisionRadius(4.5f);
 
     // 回転速度設定
     SetRotateSpeed(5.0f);
