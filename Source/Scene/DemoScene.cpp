@@ -8,7 +8,7 @@
 #pragma region DEMOƒLƒƒƒ‰
 DemoChara::DemoChara()
     //: Character("./Resources/Model/Character/Zombie_Punching_Anim_mixamo_com1.glb", 1.0f)
-    : Character("./Resources/Model/Character/Zombie_Punching_Anim_mixamo_com1.gltf", 1.0f)
+    : Character("./Resources/Model/Character/Player/SwordGirl.gltf", 1.0f)
     //: Character("./Resources/Model/Character/SwordGirl.gltf", 1.0f)
     //: Character("./Resources/Model/Character/test/Dragon.gltf", 1.0f)
 {
