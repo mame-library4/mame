@@ -25,6 +25,7 @@ private:
 
     // ---------- çUåÇîªíË ----------
     void ResetAllAttackActiveFlag()                             override;
+    void SetSlamAttackActiveFlag(const bool& flag = true)       override;
     void SetTurnAttackActiveFlag(const bool& flag = true)       override;
     void SetTackleAttackActiveFlag(const bool& flag = true)     override;
     void SetFlyAttackActiveFlag(const bool& flag = true)        override;
@@ -47,8 +48,8 @@ private:
     //bool isDamageSphere_    = true;
     bool isDamageSphere_    = false;
 
-    bool isUpdateAnimation_ = false;
-    //bool isUpdateAnimation_ = true;
+    //bool isUpdateAnimation_ = false;
+    bool isUpdateAnimation_ = true;
     
 
     float oldHealth_ = 0.0f;
@@ -61,16 +62,18 @@ public:
     };
     enum AttackData
     {
-        TrunAttackStart         = 0,
-        TrunAttackEnd           = 5,
-        TackleAttackStart       = 6,
-        TackleAttackEnd         = 10,
-        FlyAttackStart          = 11,
-        FlyAttackEnd            = 12,
-        ComboSlamAttackStart    = 13,
-        ComboSlamAttackEnd      = 15,
-        KnockBackAttackStart    = 16,
-        KnockBackAttackEnd      = 29,
+        SlamAttackStart         = 0,
+        SlamAttackEnd           = 1,
+        TrunAttackStart         = 2,
+        TrunAttackEnd           = 7,
+        TackleAttackStart       = 8,
+        TackleAttackEnd         = 12,
+        FlyAttackStart          = 13,
+        FlyAttackEnd            = 14,
+        ComboSlamAttackStart    = 15,
+        ComboSlamAttackEnd      = 17,
+        KnockBackAttackStart    = 18,
+        KnockBackAttackEnd      = 31,
     };
     enum class DamageData
     {

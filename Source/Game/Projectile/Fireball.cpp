@@ -34,7 +34,7 @@ void Fireball::Initialize()
     // ダメージ設定
     SetDamage(40);
 
-    speed_ = 25.0f;
+    speed_ = 35.0f;
 }
 
 // ----- 終了化 -----

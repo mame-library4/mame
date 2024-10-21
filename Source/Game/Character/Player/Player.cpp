@@ -17,6 +17,9 @@ Player::Player()
         // ステートを登録する
         GetStateMachine()->RegisterState(new PlayerState::IdleState(this));             // 待機
         GetStateMachine()->RegisterState(new PlayerState::RunState(this));
+        GetStateMachine()->RegisterState(new PlayerState::GuardCounterState(this));
+        GetStateMachine()->RegisterState(new PlayerState::GuardCounterAttackState(this));
+
         GetStateMachine()->RegisterState(new PlayerState::LightFlinchState(this));
         GetStateMachine()->RegisterState(new PlayerState::FlinchState(this));
         GetStateMachine()->RegisterState(new PlayerState::DamageState(this));           // ダメージ
@@ -160,6 +163,8 @@ void Player::DrawDebug()
 {
     if (ImGui::BeginMenu("Player"))
     {
+        ImGui::DragFloat("GuardCounterRadius", &guardCounterRadius_, 0.1f, 0.0f, 100.0f);
+
         ImGui::Checkbox("DodgeAttackCancel", &isDodgeAttackCancel_);
 
         ImGui::Checkbox("IsSwordPrimitiveDraw", &isSwordPrimitiveDraw_);
@@ -224,6 +229,9 @@ void Player::DebugRender(DebugRenderer* debugRenderer)
     DirectX::XMFLOAT3 position = GetTransform()->GetPosition();
 
     debugRenderer->DrawCylinder(GetTransform()->GetPosition(), GetCollisionRadius(), 2.0f, { 1,1,1,1 });
+
+    DirectX::XMFLOAT3 pelvisPosition = GetJointPosition("pelvis");
+    debugRenderer->DrawSphere(pelvisPosition, guardCounterRadius_, { 1,1,1,1 });
 
     if (isCollisionSphere_)
     {

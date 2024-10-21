@@ -148,6 +148,7 @@ void CollisionManager::UpdatePlayerDamageVsEnemyAttack()
 
     // カウンターが成功したのでダメージをくらわない
     if (player->GetIsAbleCounterAttack()) return;
+    if (player->GetIsGuardCounterSuccessful()) return;
 
     Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
 
@@ -255,8 +256,47 @@ void CollisionManager::UpdatePlayerCollisionVsEnemyCollision()
 // ----- 敵の攻撃に対するカウンター判定 -----
 void CollisionManager::CounterCheckEnemyAttack()
 {
-    Player* player = PlayerManager::Instance().GetPlayer().get();
+    Player* player = PlayerManager::Instance().GetPlayer().get();    
 
+    // ガードカウンターとの判定
+    if (player->GetIsGuardCounterStance())
+    {
+        DirectX::XMFLOAT3 pelvisPosition = player->GetJointPosition("pelvis");
+        Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
+        for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetAttackDetectionDataCount(); ++enemyDataIndex)
+        {
+            const AttackDetectionData enemyData = enemy->GetAttackDetectionData(enemyDataIndex);
+
+            // このデータの攻撃判定が有効ではない
+            if (enemyData.GetIsActive() == false) continue;
+
+            // 当たったかチェック
+            if (IntersectSphereVsSphere(
+                pelvisPosition, player->GetGuardCounterRadius(),
+                enemyData.GetPosition(), enemyData.GetRadius()))
+            {
+                if (player->GetCurrentState() == Player::STATE::GuardCounter)
+                {
+                    // ガードカウンターが成功した
+                    player->SetIsGuardCounterSuccessful(true);
+
+                    // TODO: エフェクト再生
+                    DirectX::XMFLOAT3 vec = enemyData.GetPosition() - pelvisPosition;
+                    vec = pelvisPosition + XMFloat3Normalize(vec) * player->GetGuardCounterRadius();
+
+                    EffectManager::Instance().GetEffect("Counter")->Play(vec, 0.1f, 4.0f);
+
+                    // TODO: 敵を数フレーム停止させる
+                    enemy->SetHitStop();
+
+                    return;
+                }
+            }
+        }
+    }
+
+
+    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
     // 現在のステートがカウンターではないのでここで終了
     if (player->GetCurrentState() != Player::STATE::Counter) return;
 
@@ -265,8 +305,6 @@ void CollisionManager::CounterCheckEnemyAttack()
 
     // 既にカウンター成功している
     if (player->GetIsAbleCounterAttack()) return;
-
-    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
 
     // 敵の攻撃判定が無効
     if (enemy->GetIsAttackActive() == false) return;

@@ -87,6 +87,52 @@ namespace PlayerState
     private:
         float changeStateTimer_ = 0.0f;
     };
+    
+    // ----- ガードカウンター -----
+    class GuardCounterState : public State<Player>
+    {
+    public:
+        GuardCounterState(Player* player) : State(player, "GuardCounterState") {}
+        ~GuardCounterState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+
+    private:
+        void UpdateAnimation(); // アニメーション更新
+        void UpdateEffect(const float& elapsedTime);    // エフェクト更新
+
+    private:
+        Effekseer::Handle guardEffect_ = {};
+        const float guardStartAnimationSpeed_   = 3.0f; // ガード構えアニメーション再生速度
+        float       guardEffectStartSize_       = 2.0f; // エフェクトの最大サイズ
+        float       guardEffectEndSize_         = 1.3f; // エフェクトの最小サイズ
+        float       guardEffectLerpTimer_       = 0.0f; // EffectLerp用
+        float       guardEffectLerpSpeed_       = 0.4f; // EffectLerp速度調整用
+        float       guardCounterStartRadius_    = 1.4f;
+        float       guardCounterEndRadius_      = 0.9f;
+        
+
+        bool isGuardStartAnimationEnd_  = false; // ガード構えアニメーション再生終了フラグ
+        bool isGuardLoopAnimationEnd_   = false; // ガードアニメーション再生終了フラグ
+
+        GamePadVibration gamePadVibration_;
+    };
+
+    // ----- ガードカウンター攻撃 -----
+    class GuardCounterAttackState : public State<Player>
+    {
+    public:
+        GuardCounterAttackState(Player* player) : State(player, "GuardCounterAttackState") {}
+        ~GuardCounterAttackState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+    };
 
     class LightFlinchState : public State<Player>
     {

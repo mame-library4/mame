@@ -115,6 +115,12 @@ namespace PlayerState
     // ----- 更新 -----
     void IdleState::Update(const float& elapsedTime)
     {
+        if (owner_->IsGuardCounterKeyDown())
+        {
+            owner_->ChangeState(Player::STATE::GuardCounter);
+            return;
+        }
+
         // 先行入力判定
         if (CheckNextInput()) return;
     }
@@ -152,7 +158,7 @@ namespace PlayerState
         {
             owner_->SetTransitionTime(0.3f);
         }
-        else if (animationIndex == Player::Animation::RollForward ||
+        else if (animationIndex == Player::Animation::RollFront ||
             animationIndex == Player::Animation::RollBack ||
             animationIndex == Player::Animation::RollRight ||
             animationIndex == Player::Animation::RollLeft)
@@ -257,6 +263,12 @@ namespace PlayerState
     // ----- 更新 -----
     void RunState::Update(const float& elapsedTime)
     {
+        if (owner_->IsGuardCounterKeyDown())
+        {
+            owner_->ChangeState(Player::STATE::GuardCounter);
+            return;
+        }
+
         // 先行入力判定
         if (CheckNextInput()) return;
 
@@ -308,20 +320,20 @@ namespace PlayerState
 
         const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
 
-        if (animationIndex == Player::Animation::RollForward ||
+        if (animationIndex == Player::Animation::RollFront ||
             animationIndex == Player::Animation::RollBack    ||
             animationIndex == Player::Animation::RollRight   ||
             animationIndex == Player::Animation::RollLeft)
         {
             owner_->SetTransitionTime(0.2f);
         }
-        else if (animationIndex == Player::Animation::ComboAttack0_0 ||
-            animationIndex == Player::Animation::ComboAttack0_1 ||
+        else if (animationIndex == Player::Animation::Attack0_0 ||
+            animationIndex == Player::Animation::Attack0_1 ||
             animationIndex == Player::Animation::RunAttack1)
         {
             owner_->SetTransitionTime(0.3f);
         }
-        else if (animationIndex == Player::Animation::ComboAttack0_2)
+        else if (animationIndex == Player::Animation::Attack0_2)
         {
             owner_->SetTransitionTime(0.3f);
         }
@@ -444,6 +456,180 @@ namespace PlayerState
     }
 }
 
+// ----- ガードカウンター -----
+namespace PlayerState
+{
+    // ----- 初期化 ----
+    void GuardCounterState::Initialize()
+    {
+        // アニメーション設定
+        owner_->PlayBlendAnimation(Player::Animation::BlockStart, false, guardStartAnimationSpeed_);
+        owner_->SetTransitionTime(0.1f);
+
+        DirectX::XMFLOAT3 position = owner_->GetJointPosition("pelvis");
+        guardEffect_ = EffectManager::Instance().GetEffect("Guard")->Play(position, 1.0f, 1.0f);
+
+        owner_->SetIsGuardCounterStance(true);
+        owner_->SetIsGuardCounterSuccessful(false); // リセットする
+
+        // 変数初期化
+        gamePadVibration_.Initialize(0.0f, 0.2f, 0.5f);
+        guardEffectLerpTimer_       = 0.0f;
+        isGuardLoopAnimationEnd_    = false;
+        isGuardStartAnimationEnd_   = false;
+    }
+
+    // ----- 更新 -----
+    void GuardCounterState::Update(const float& elapsedTime)
+    {
+        // アニメーション更新
+        UpdateAnimation();
+
+        // エフェクト更新
+        UpdateEffect(elapsedTime);
+
+        // ガードカウンターを無効化する
+        if (owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::BlockEnd))
+        {
+            if (owner_->GetAnimationSeconds() > 0.24f && owner_->GetIsGuardCounterStance())
+            {
+                owner_->SetIsGuardCounterStance(false);
+            }
+        }
+
+        // カウンター成功
+        if (owner_->GetIsGuardCounterSuccessful())
+        {
+            owner_->ChangeState(Player::STATE::GuardCounterAttack);
+
+            // TODO:仮で作ってる
+            gamePadVibration_.Update(owner_->GetAnimationSeconds());
+
+            return;
+        }
+
+    }
+
+    // ----- 終了化 -----
+    void GuardCounterState::Finalize()
+    {
+        // エフェクトを停止させる
+        EffectManager::Instance().GetEffect("Guard")->Stop(guardEffect_);
+    }
+
+    // ----- ImGui用 -----
+    void GuardCounterState::DrawDebug()
+    {
+        ImGui::DragFloat("GuardEffectStartSize", &guardEffectStartSize_, 0.1f, 1.0f, 6.0f);
+        ImGui::DragFloat("GuardEffectEndSize",   &guardEffectEndSize_,   0.1f, 1.0f, 6.0f);
+        ImGui::DragFloat("LerpTimer", &guardEffectLerpTimer_);
+        ImGui::DragFloat("LerpSpeed", &guardEffectLerpSpeed_);
+    }
+
+    // ----- アニメーション更新 -----
+    void GuardCounterState::UpdateAnimation()
+    {
+        // ガード構えアニメーションが再生終了したか判定
+        if (isGuardStartAnimationEnd_ == false)
+        {
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->PlayAnimation(Player::Animation::BlockLoop, false);
+
+                isGuardStartAnimationEnd_ = true;
+
+            }
+            return;
+        }
+
+        if (isGuardLoopAnimationEnd_ == false)
+        {
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->PlayAnimation(Player::Animation::BlockEnd, false);
+
+                // エフェクトを停止させる
+                EffectManager::Instance().GetEffect("Guard")->Stop(guardEffect_);
+
+                isGuardLoopAnimationEnd_ = true;
+            }
+            return;
+        }
+
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+    }
+
+    // ----- エフェクト更新 -----
+    void GuardCounterState::UpdateEffect(const float& elapsedTime)
+    {
+        // ガードが終わっていたら更新しない
+        if (isGuardLoopAnimationEnd_) return;
+
+        Effect* guardEffect = EffectManager::Instance().GetEffect("Guard");
+        DirectX::XMFLOAT3 pelvisPosition = owner_->GetJointPosition("pelvis");
+
+        guardEffect->SetPosition(guardEffect_, pelvisPosition);
+
+        // -----------------------------------
+        //  　エフェクトのサイズを更新する
+        // 　ついでに判定用の変数も更新しておく
+        // -----------------------------------
+        guardEffectLerpTimer_ += guardEffectLerpSpeed_ * elapsedTime;
+        guardEffectLerpTimer_ = std::min(guardEffectLerpTimer_, 1.0f);
+        const float guardEffectSize = XMFloatLerp(guardEffectStartSize_, guardEffectEndSize_, guardEffectLerpTimer_);
+        guardEffect->SetScale(guardEffect_, guardEffectSize);
+
+        float guardCounterRadius = XMFloatLerp(guardCounterStartRadius_, guardCounterEndRadius_, guardEffectLerpTimer_);
+        owner_->SetGuardCounterRadius(guardCounterRadius);
+    }
+
+}
+
+// ----- ガードカウンター攻撃 -----
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void GuardCounterAttackState::Initialize()
+    {
+        // アニメーション設定    
+        //owner_->PlayBlendAnimation(Player::Animation::CounterAttack0, false, 1.0f, 0.35f);
+        owner_->PlayBlendAnimation(Player::Animation::CounterAttack0, false, 1.0f, 0.5f);
+        owner_->SetTransitionTime(0.1f);
+    }
+
+    // ----- 更新 -----
+    void GuardCounterAttackState::Update(const float& elapsedTime)
+    {
+        // RootMotionの設定
+        if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+        {
+            // RootMotionを使用する
+            owner_->SetUseRootMotion(true);
+        }
+
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+    }
+
+    // ----- 終了化 -----
+    void GuardCounterAttackState::Finalize()
+    {
+        owner_->SetUseRootMotion(false);
+    }
+
+    // ----- ImGui用 -----
+    void GuardCounterAttackState::DrawDebug()
+    {
+    }
+}
+
 // ----- 弱怯み -----
 namespace PlayerState
 {
@@ -453,7 +639,7 @@ namespace PlayerState
         // フラグをリセットする
         owner_->ResetFlags();
 
-        owner_->PlayBlendAnimation(Player::Animation::KnockDownStart, false);
+        owner_->PlayBlendAnimation(Player::Animation::DownStart, false);
     }
 
     // ----- 更新 -----
@@ -485,7 +671,7 @@ namespace PlayerState
         owner_->ResetFlags();
 
         // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::KnockDownStart, false, 2.0f);
+        owner_->PlayBlendAnimation(Player::Animation::DownStart, false, 2.0f);
 
         state_ = 0;
     }
@@ -498,7 +684,7 @@ namespace PlayerState
         case 0:
             if (owner_->IsPlayAnimation() == false)
             {
-                owner_->PlayAnimation(Player::Animation::KnockDownLoop, true);
+                owner_->PlayAnimation(Player::Animation::DownLoop, true);
                 state_ = 1;
             }
 
@@ -507,7 +693,7 @@ namespace PlayerState
             
             if (EnemyManager::Instance().GetEnemy(0)->GetActiveNodeName() != "Roar")
             {
-                owner_->PlayBlendAnimation(Player::Animation::KnockDownEnd, false);
+                owner_->PlayBlendAnimation(Player::Animation::DownEnd, false);
                 state_ = 2;
             }
 
@@ -542,7 +728,7 @@ namespace PlayerState
         owner_->ResetFlags();
 
         // アニメーション再生 
-        owner_->PlayAnimation(Player::Animation::HitLarge, false, 1.2f);
+        owner_->PlayAnimation(Player::Animation::Damage, false, 1.2f);
 
         // 無敵状態にする
         owner_->SetIsInvincible(true);
@@ -697,8 +883,7 @@ namespace PlayerState
         // フラグをリセットする
         owner_->ResetFlags();
 
-        owner_->PlayBlendAnimation(Player::Animation::HitLarge, false, 1.0f, 0.2f);
-        //owner_->PlayBlendAnimation(Player::Animation::KnockDownDeath, false, 1.0f, 0.5f);
+        owner_->PlayBlendAnimation(Player::Animation::Damage, false, 1.0f, 0.2f);
         owner_->SetTransitionTime(0.3f);
 
         // 死亡したので無敵状態にする
@@ -1022,7 +1207,7 @@ namespace PlayerState
 #pragma region 先行入力によるステート変更処理
         switch (static_cast<Player::Animation>(owner_->GetAnimationIndex()))
         {
-        case Player::Animation::RollForward:// 前
+        case Player::Animation::RollFront:// 前
         {
             // 回避の先行入力がある場合
             if (owner_->GetNextInput() == Player::NextInput::Dodge)
@@ -1188,7 +1373,7 @@ namespace PlayerState
 
         switch (static_cast<Player::Animation>(owner_->GetAnimationIndex()))
         {
-        case Player::Animation::RollForward:// 前
+        case Player::Animation::RollFront:// 前
             if (animationSeconds < 0.6f)
             {
                 owner_->SetAnimationSpeed(1.4f);
@@ -1244,14 +1429,14 @@ namespace PlayerState
         if (isFirstTime_ == false)
         {
             // 前方向のアニメーションを設定する
-            owner_->PlayBlendAnimation(Player::Animation::RollForward, false, 1.0f, 0.15f);
+            owner_->PlayBlendAnimation(Player::Animation::RollFront, false, 1.0f, 0.15f);
             owner_->SetTransitionTime(0.05f);
             return;            
         }
 
         // 元のアニメーションに応じてブレンドの時間を設定する
         const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
-        if (animationIndex == Player::Animation::ComboAttack0_0)
+        if (animationIndex == Player::Animation::Attack0_0)
         {
             owner_->SetTransitionTime(0.1f);
         }
@@ -1303,7 +1488,7 @@ namespace PlayerState
                 // 回転角が４５度よりも小さければ 前方向
                 if (dot < DirectX::XM_PIDIV4)
                 {                    
-                    owner_->PlayBlendAnimation(Player::Animation::RollForward, false, animationSpeed, animationStartFrame);
+                    owner_->PlayBlendAnimation(Player::Animation::RollFront, false, animationSpeed, animationStartFrame);
                     return;
                 }
 
@@ -1343,7 +1528,7 @@ namespace PlayerState
         // 入力値がない場合前方向のアニメーションを設定する
         else
         {
-            owner_->PlayBlendAnimation(Player::Animation::RollForward, false, animationSpeed, animationStartFrame);
+            owner_->PlayBlendAnimation(Player::Animation::RollFront, false, animationSpeed, animationStartFrame);
             return;
         }
     }
@@ -1381,7 +1566,7 @@ namespace PlayerState
         // アニメーションに応じて移動方向を設定する
         // ----------------------------------------
         const int animationIndex = owner_->GetAnimationIndex();
-        const int differenceNum = static_cast<int>(Player::Animation::RollForward);
+        const int differenceNum = static_cast<int>(Player::Animation::RollFront);
 
         moveDirection_  = moveDirection[animationIndex - differenceNum];
     }
@@ -1760,7 +1945,7 @@ namespace PlayerState
         owner_->ResetFlags();
 
         // アニメーション再生
-        owner_->PlayBlendAnimation(Player::Animation::ParryCounterAttack1, false, 1.0f, 0.35f);        
+        owner_->PlayBlendAnimation(Player::Animation::CounterAttack1, false, 1.0f, 0.35f);        
 
         // 無敵状態にする
         owner_->SetIsInvincible(true);
@@ -2035,26 +2220,26 @@ namespace PlayerState
         const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
 
         // oldAnimationが回避の場合攻撃の途中フレームから開始する
-        if (animationIndex == Player::Animation::RollForward ||
+        if (animationIndex == Player::Animation::RollFront ||
             animationIndex == Player::Animation::RollBack    ||
             animationIndex == Player::Animation::RollRight   ||
             animationIndex == Player::Animation::RollLeft)
         {
-            owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_0, false, 1.0f, 0.1f);
+            owner_->PlayBlendAnimation(Player::Animation::Attack0_0, false, 1.0f, 0.1f);
         }
         else if (animationIndex == Player::Animation::Run)
         {
-            owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_0, false, 1.0f, 0.1f);
+            owner_->PlayBlendAnimation(Player::Animation::Attack0_0, false, 1.0f, 0.1f);
             owner_->SetTransitionTime(0.1f);
         }
-        else if (animationIndex == Player::Animation::ComboAttack0_1)
+        else if (animationIndex == Player::Animation::Attack0_1)
         {
-            owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_0, false, 1.0f, 0.1f);
+            owner_->PlayBlendAnimation(Player::Animation::Attack0_0, false, 1.0f, 0.1f);
             owner_->SetTransitionTime(0.1f);
         }
         else
         {
-            owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_0, false);
+            owner_->PlayBlendAnimation(Player::Animation::Attack0_0, false);
             owner_->SetTransitionTime(0.1f);
         }
     }
@@ -2259,12 +2444,12 @@ namespace PlayerState
         if (owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::RunAttack1))
         {
             owner_->SetTransitionTime(0.2f);
-            owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_1, false, 1.0f, 0.1f);
+            owner_->PlayBlendAnimation(Player::Animation::Attack0_1, false, 1.0f, 0.1f);
         }
         else
         {
             owner_->SetTransitionTime(0.1f);
-            owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_1, false);
+            owner_->PlayBlendAnimation(Player::Animation::Attack0_1, false);
         }
     }
 
@@ -2391,7 +2576,7 @@ namespace PlayerState
         owner_->ResetFlags();
 
         // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_2, false, 1.3f, 0.4f);
+        owner_->PlayBlendAnimation(Player::Animation::Attack0_2, false, 1.3f, 0.4f);
         owner_->SetTransitionTime(0.3f);
 
         // 回転補正量を求める
@@ -2579,7 +2764,7 @@ namespace PlayerState
         owner_->ResetFlags();
 
         // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::ComboAttack0_3, false);
+        owner_->PlayBlendAnimation(Player::Animation::Attack0_3, false);
         owner_->SetTransitionTime(0.1f);
 
         // 回転補正量を求める

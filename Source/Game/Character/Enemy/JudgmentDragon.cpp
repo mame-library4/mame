@@ -102,8 +102,8 @@ const bool ShoutJudgment::Judgment()
 
 const bool NearJudgment::Judgment()
 {
-    return false;
-    //return true;
+    //return false;
+    return true;
 
     const DirectX::XMFLOAT3 ownerPos = owner_->GetTransform()->GetPosition();
     const DirectX::XMFLOAT3 playerPos = PlayerManager::Instance().GetTransform()->GetPosition();
@@ -121,7 +121,7 @@ const bool NearJudgment::Judgment()
 
 const bool ComboFlySlamJudgment::Judgment()
 {
-    //return false;
+    return false;
 
     const float distance = owner_->CalcDistanceToPlayer();
 

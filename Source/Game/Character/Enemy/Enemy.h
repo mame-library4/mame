@@ -144,6 +144,9 @@ public:
     // ---------- ダメージ ----------
     void AddDamage(const float& damage, const int& dataIndex);
 
+    // ---------- ヒットストップ ----------
+    void SetHitStop();
+
 public:// --- 取得・設定 ---
 #pragma region [Get, Set] Function
     // ----- BehaviorTree用 -----
@@ -195,6 +198,8 @@ public:// --- 取得・設定 ---
 
     // ---------- 攻撃判定 ----------
     virtual void ResetAllAttackActiveFlag()                             = 0; // 全攻撃判定無効化
+    virtual void SetSlamAttackActiveFlag(const bool& flag = true)       = 0; // たたきつけ攻撃
+
     virtual void SetTurnAttackActiveFlag(const bool& flag = true)       = 0; // 回転攻撃
     virtual void SetTackleAttackActiveFlag(const bool& flag = true)     = 0; // 突進攻撃
     virtual void SetFlyAttackActiveFlag(const bool& flag = true)        = 0; // 上昇攻撃
@@ -254,5 +259,11 @@ protected:
     float partHealth_[static_cast<int>(PartName::Max)]        = {}; // 部位ごとの体力
     bool  isPartDestruction_[static_cast<int>(PartName::Max)] = {}; // 部位破壊判定フラグ
 
+    // ---------- ヒットストップ ----------
+    int     hitStopFrame_ = 0;
+    int     currentHitStopFrame_ = 0;
+    int     normalHitStopFrame_ = 7;
+    //int     criticalHitStopFrame_ = 7;
+    bool    isHitStopActive_ = false;
 };
 

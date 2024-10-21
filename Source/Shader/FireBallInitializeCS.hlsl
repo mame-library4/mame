@@ -39,6 +39,7 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
         p.color_ = float4(0.93f, 0.47f, 0, 1);
     }
     
-
+    p.age_ = 1;
+    
     particleBuffer[id] = p;
 }

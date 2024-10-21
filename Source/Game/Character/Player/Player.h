@@ -18,6 +18,10 @@ public:// --- 定数 ---
     {
         Idle,           // 待機
         Run,
+
+        GuardCounter,       // ガードカウンター
+        GuardCounterAttack, // ガードカウンター攻撃
+
         LightFlinch,
         Flinch,
         Damage,         // ダメージ
@@ -43,64 +47,39 @@ public:// --- 定数 ---
 
     enum class Animation
     {
-        // 待機
-        Idle,
-
-        // 歩き
-        WalkStart,
-        Walk,
-        WalkEnd,
-
-        // 走り
-        RunStart,
-        Run,
-        RunEnd,
-
-        // 回避
-        RollForward,
-        RollBack,
-        RollRight,
-        RollLeft,
-
-        // 攻撃
-        ComboAttack0_0,
-        ComboAttack0_1,
-        ComboAttack0_2,
-        ComboAttack0_3,
-
-        // 防御
-        BlockStart,
-        BlockLoop,
-        BlockEnd,
-        
-        // カウンター攻撃
-        ParryCounterAttack0, // Right
-        ParryCounterAttack1, // Left
-
-        HitLarge,
-        GetUp,
-        HitForward,
-        HitBack,
-        HitRight,
-        HitLeft,
-
-        KnockDownStart,
-        KnockDownLoop,
-        KnockDownEnd,
-        KnockDownDeath,
-
-        ComboAttack1_0,
-        ComboAttack1_1,
-        ComboAttack1_2,
-        ComboAttack1_3,
-
-        RunAttack0,
-        RunAttack1,
-
-        Counter,
-
-        Skill0,
-        Skill1,
+        Idle,           // 待機
+        Walk,           // 歩き
+        Run,            // 走り
+        RollFront,      // 回避前
+        RollBack,       // 回避後ろ
+        RollRight,      // 回避右
+        RollLeft,       // 回避左
+        Attack0_0,      // 攻撃0_0
+        Attack0_1,      // 攻撃0_1
+        Attack0_2,      // 攻撃0_2
+        Attack0_3,      // 攻撃0_3
+        BlockStart,     // 防御開始
+        BlockLoop,      // 防御ループ
+        BlockEnd,       // 防御終わり        
+        CounterAttack0, // カウンター攻撃0
+        CounterAttack1, // カウンター攻撃0
+        Damage,         // ダメージ
+        GetUp,          // 起き上がり
+        HitFront,       // 弱ダメージ前
+        HitBack,        // 弱ダメージ後ろ
+        HitRight,       // 弱ダメージ右
+        HitLeft,        // 弱ダメージ左
+        DownStart,      // ダウン開始
+        DownLoop,       // ダウンループ
+        DownEnd,        // ダウン終わり
+        DownDeath,      // ダウン死亡
+        Attack1_0,      // 攻撃1_0
+        Attack1_1,      // 攻撃1_1
+        Attack1_2,      // 攻撃1_2
+        Attack1_3,      // 攻撃1_3
+        RunAttack0,     // 走り攻撃0
+        RunAttack1,     // 走り攻撃1
+        Counter,        // カウンター
     };
 
     // 先行入力の種類
@@ -222,12 +201,22 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const float GetCounterActiveRadius() const { return counterActiveRadius_; }
     void SetCounterActiveRadius(const float& range) { counterActiveRadius_ = range; }
 
+    // ---------- ガードカウンター　----------
+    [[nodiscard]] const float GetGuardCounterRadius() const { return guardCounterRadius_; }
+    void SetGuardCounterRadius(const float& radius) { guardCounterRadius_ = radius; }
+    [[nodiscard]] const bool GetIsGuardCounterStance() const { return isGuardCounterStance_; }
+    void SetIsGuardCounterStance(const bool& flag) { isGuardCounterStance_ = flag; }
+    [[nodiscard]] const bool GetIsGuardCounterSuccessful() const { return isGuardCounterSuccessful_; }
+    void SetIsGuardCounterSuccessful(const bool& flag) { isGuardCounterSuccessful_ = flag; }
+
     // ---------- キー入力 ----------
     [[nodiscard]] bool IsComboAttack0KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
     [[nodiscard]] bool IsDodgeKeyDown()        const;
     [[nodiscard]] bool IsCounterStanceKey()    const;
     [[nodiscard]] bool IsGetUpKeyDown()        const;
     [[nodiscard]] bool IsDashKey()             const;
+
+    [[nodiscard]] bool IsGuardCounterKeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_X; }
 
 #pragma endregion [Get, Set] Function
 
@@ -325,4 +314,9 @@ private:
     DirectX::XMFLOAT3 socketRotation_ = { 145.0f, -16.0f, 0.0f };
     DirectX::XMFLOAT3 socketScale_ = { 1.0f, 1.0f, -1.0f };
     DirectX::XMFLOAT4X4 weaponWorld_;
+
+    // ---------- ガードカウンター　----------
+    float guardCounterRadius_       = 0.9f;
+    bool  isGuardCounterStance_     = false; // ガードカウンター状態か
+    bool  isGuardCounterSuccessful_ = false; // 成功したか
 };

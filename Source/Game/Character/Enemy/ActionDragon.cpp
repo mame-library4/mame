@@ -69,6 +69,85 @@ namespace ActionDragon
     }
 }
 
+// ----- SlamAttackAction -----
+namespace ActionDragon
+{
+    const ActionBase::State SlamAttackAction::Run(const float& elapsedTime)
+    {
+        switch (owner_->GetStep())
+        {
+        case 0:
+            // アニメーション設定
+            owner_->PlayAnimation(Enemy::DragonAnimation::AttackSlam0, false);
+
+            // カウンター有効範囲を設定する
+            PlayerManager::Instance().GetPlayer()->SetCounterActiveRadius(6.0f);
+
+            // 変数初期化
+            slowStartFrame_ = 0.84f;
+
+            owner_->SetStep(1);
+            
+            break;
+        case 1:
+
+            // 攻撃判定処理
+            if (owner_->GetAnimationSeconds() > 1.04f)
+            {
+                if (owner_->GetIsAttackActive()) owner_->SetSlamAttackActiveFlag(false);
+            }
+            else if (owner_->GetAnimationSeconds() > slowStartFrame_)
+            {
+                if (owner_->GetIsAttackActive() == false) owner_->SetSlamAttackActiveFlag();
+            }
+
+            UpdateAnimationSpeed();
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+
+            break;
+        case 2:
+            break;
+        }
+
+        return ActionBase::State::Run;
+    }
+    void SlamAttackAction::DrawDebug()
+    {
+    }
+
+    // ----- アニメーションの速度を調整する -----
+    void SlamAttackAction::UpdateAnimationSpeed()
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+        float animationSpeed = 0.0f;
+
+        if (animationSeconds < 0.25f)
+        {
+            animationSpeed = 0.6f;
+        }
+        else if (animationSeconds < 0.45f)
+        {
+            animationSpeed = 0.8f;
+        }
+        // 攻撃を出す前の数フレーム感をスローにする
+        else if(animationSeconds > slowStartFrame_ && animationSeconds < 0.93f)
+        {
+            animationSpeed = 0.2f;
+        }
+        else
+        {
+            animationSpeed = 1.0f;
+        }
+
+        owner_->SetAnimationSpeed(animationSpeed);
+    }
+}
+
 // ----- SuperNova -----
 namespace ActionDragon
 {
@@ -1320,6 +1399,11 @@ namespace ActionDragon
             break;
         case 1:
 
+            if (owner_->GetAnimationSeconds() < 0.8f)
+            {
+                targetPosition_ = PlayerManager::Instance().GetTransform()->GetPosition();
+            }
+
             // 回転処理
             if (owner_->GetAnimationSeconds() > 0.25f)
             {
@@ -1332,9 +1416,11 @@ namespace ActionDragon
                 Fireball* fireball = new Fireball();
                 
                 DirectX::XMFLOAT3 mouthPosition = owner_->GetJointPosition("Dragon15_tongue4");
-                DirectX::XMFLOAT3 playerPosition = PlayerManager::Instance().GetTransform()->GetPosition();
-                playerPosition.y = 0.7f;
-                DirectX::XMFLOAT3 direction = XMFloat3Normalize(playerPosition - mouthPosition);
+                //DirectX::XMFLOAT3 playerPosition = PlayerManager::Instance().GetTransform()->GetPosition();
+                //playerPosition.y = 0.7f;
+                //DirectX::XMFLOAT3 direction = XMFloat3Normalize(playerPosition - mouthPosition);
+                targetPosition_.y = 0.7f;
+                DirectX::XMFLOAT3 direction = XMFloat3Normalize(targetPosition_ - mouthPosition);
 
                 fireball->Launch(elapsedTime, mouthPosition, direction);
 

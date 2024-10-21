@@ -1,10 +1,16 @@
 #include "Particle.hlsli"
 
+Texture2D colorMap : register(t0);
+SamplerState samplerState : register(s0);
+
 float4 main(GS_OUT psIn) : SV_TARGET
 {    
-    float3 color = psIn.color.rgb;
     
-    return float4(color, 1.0f);
-    return float4(color * 3.0f, 1.0f);
+    return float4(psIn.color);
+    
+    float4 color = colorMap.Sample(samplerState, psIn.texcoord);
+    
+    
+    return float4(psIn.color.rgb, psIn.color.a * color.a);
 
 }

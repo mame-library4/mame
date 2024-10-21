@@ -12,7 +12,8 @@ public:
     Effekseer::Handle Play(const DirectX::XMFLOAT3& position, const float& scale = 1.0f, const float& speed = 1.0f);
     void Stop(const Effekseer::Handle& handle);
 
-    void SetScale(const Effekseer::Handle& handle, const float& scale);
+    void SetPosition(const Effekseer::Handle& handle, const DirectX::XMFLOAT3& position); // à íuê›íË
+    void SetScale(const Effekseer::Handle& handle, const float& scale);                   // ëÂÇ´Ç≥ê›íË
 
     void DrawDebug();
 

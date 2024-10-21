@@ -121,6 +121,13 @@ void Enemy::AddDamage(const float& damage, const int& dataIndex)
     CheckPartDestruction();
 }
 
+void Enemy::SetHitStop()
+{
+    hitStopFrame_ = normalHitStopFrame_;
+    currentHitStopFrame_ = 0;
+    isHitStopActive_ = true;
+}
+
 // ----- •”ˆÊ”j‰ó”»’è -----
 void Enemy::CheckPartDestruction()
 {

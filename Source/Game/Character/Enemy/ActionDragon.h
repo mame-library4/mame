@@ -40,6 +40,21 @@ namespace ActionDragon
 
 namespace ActionDragon
 {
+    // ----- SlamAttackAction -----
+    class SlamAttackAction : public ActionBase
+    {
+    public:
+        SlamAttackAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
+
+    private:
+        void UpdateAnimationSpeed(); // アニメーションの速度を調整する
+
+    private:
+        float slowStartFrame_ = 0.0f; // スロー開始フレーム
+    };
+
     class SuperNovaAction : public ActionBase
     {
     public:

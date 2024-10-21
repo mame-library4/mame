@@ -46,6 +46,16 @@ void Effect::Stop(const Effekseer::Handle& handle)
     effekseerManager->StopEffect(handle);
 }
 
+// ----- ˆÊ’uİ’è -----
+void Effect::SetPosition(const Effekseer::Handle& handle, const DirectX::XMFLOAT3& position)
+{
+    Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
+
+    Effekseer::Vector3D pos = Effekseer::Vector3D(position.x, position.y, position.z);
+    effekseerManager->SetLocation(handle, pos);
+}
+
+// ----- ‘å‚«‚³İ’è -----
 void Effect::SetScale(const Effekseer::Handle& handle, const float& scale)
 {
     Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();

@@ -77,6 +77,16 @@ void EnemyDragon::Finalize()
 // ----- XV -----
 void EnemyDragon::Update(const float& elapsedTime)
 {
+    if (isHitStopActive_)
+    {
+        ++currentHitStopFrame_;
+
+        if (currentHitStopFrame_ >= hitStopFrame_) isHitStopActive_ = false;
+
+        // ƒqƒbƒgƒXƒgƒbƒv’†‚È‚Ì‚Å‚±‚±‚ÅI—¹
+        return;
+    }
+
     // behaviorTreeXV
     UpdateNode(elapsedTime);
 
@@ -215,6 +225,11 @@ void EnemyDragon::RegisterBehaviorNode()
     // --------------- €–S ---------------
     behaviorTree_->AddNode("Root", "Death", 0, BehaviorTree::SelectRule::None, new DeathJudgment(this), new ActionDragon::DeathAction(this));
 
+
+    behaviorTree_->AddNode("Root", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
+    
+
+#if 0
     // --------------- ‹¯‚İ ---------------
     behaviorTree_->AddNode("Root",   "Flinch",       1, BehaviorTree::SelectRule::Priority, new FlinchJudgment(this), nullptr);
     behaviorTree_->AddNode("Flinch", "PartDestructionFlinch", 0, BehaviorTree::SelectRule::None, new PartDestructionFlinchJudgment(this), new ActionDragon::PartDestructionFlinchAction(this));
@@ -245,7 +260,7 @@ void EnemyDragon::RegisterBehaviorNode()
     
     behaviorTree_->AddNode("Near", "ComboFlySlam",  0, BehaviorTree::SelectRule::None, new ComboFlySlamJudgment(this), new ActionDragon::ComboFlySlamAction(this));    
     
-#if 1
+#if 0
     behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
 
     behaviorTree_->AddNode("MostNear", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
@@ -262,8 +277,8 @@ void EnemyDragon::RegisterBehaviorNode()
     //behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
 
     
-    behaviorTree_->AddNode("MostNear", "SuperNova",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
     behaviorTree_->AddNode("MostNear", "TurnAttack",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
+    behaviorTree_->AddNode("MostNear", "SuperNova",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
     
     behaviorTree_->AddNode("MostNear", "ComboSlam",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));    
     behaviorTree_->AddNode("MostNear", "KnockBack",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::KnockBackAction(this));
@@ -282,13 +297,13 @@ void EnemyDragon::RegisterBehaviorNode()
        
     behaviorTree_->AddNode("Far", "FireBreath",        0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireBreath(this));
     behaviorTree_->AddNode("Far", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
-    behaviorTree_->AddNode("Far", "FireBreathCombo",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireBreathCombo(this));
+    behaviorTree_->AddNode("Far", "FireB1reathCombo",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireBreathCombo(this));
     behaviorTree_->AddNode("Far", "Tackle",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
     //behaviorTree_->AddNode("Far", "Move",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveAction(this));
     
     //behaviorTree_->AddNode("Far", "MoveTurn",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveTurnAction(this));
     //behaviorTree_->AddNode("Far", "MoveAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveAttackAction(this));
-
+#endif
 }
 
 bool EnemyDragon::CheckStatusChange()
@@ -481,32 +496,36 @@ void EnemyDragon::RegisterCollisionData()
 #pragma endregion ---------- ‚­‚ç‚¢”»’è“o˜^ ----------
 
 #pragma region ---------- UŒ‚”»’è“o˜^ ----------
+    // ----- ‚½‚½‚«‚Â‚¯UŒ‚ -----
+    RegisterAttackDetectionData({ "SlamAttack_0", 1.0f, {}, "Dragon15_l_hand" });     // 0
+    RegisterAttackDetectionData({ "SlamAttack_1", 1.0f, {}, "Dragon15_l_forearm" });  // 1
+
     // ----- ‰ñ“]UŒ‚—p -----
-    RegisterAttackDetectionData({ "TurnAttack_0", 1.0f, {}, "Dragon15_tail_00" }); // 0
+    RegisterAttackDetectionData({ "TurnAttack_0", 1.0f, {}, "Dragon15_tail_00" }); // 2
     RegisterAttackDetectionData({ "TurnAttack_1", 1.0f, {}, "Dragon15_tail_01" });
     RegisterAttackDetectionData({ "TurnAttack_2", 1.0f, {}, "Dragon15_tail_02" });
     RegisterAttackDetectionData({ "TurnAttack_3", 1.0f, {}, "Dragon15_tail_03" });
     RegisterAttackDetectionData({ "TurnAttack_4", 1.0f, {}, "Dragon15_tail_04" });
-    RegisterAttackDetectionData({ "TurnAttack_5", 1.0f, {}, "Dragon15_tail_05" }); // 5
+    RegisterAttackDetectionData({ "TurnAttack_5", 1.0f, {}, "Dragon15_tail_05" }); // 7
 
     // ----- “ËiUŒ‚—p -----
-    RegisterAttackDetectionData({ "TackleAttack_0", 1.0f, {}, "Dragon15_neck_3" }); // 6
+    RegisterAttackDetectionData({ "TackleAttack_0", 1.0f, {}, "Dragon15_neck_3" }); // 8
     RegisterAttackDetectionData({ "TackleAttack_1", 1.0f, {}, "Dragon15_neck_1" }); 
     RegisterAttackDetectionData({ "TackleAttack_2", 1.0f, {}, "Dragon15_spine2" }); 
     RegisterAttackDetectionData({ "TackleAttack_3", 1.0f, {}, "Dragon15_spine0" }); 
-    RegisterAttackDetectionData({ "TackleAttack_4", 1.0f, {}, "Dragon15_tail_00"}); // 10
+    RegisterAttackDetectionData({ "TackleAttack_4", 1.0f, {}, "Dragon15_tail_00"}); // 12
 
     // ----- ‹ó’†‚©‚ç‚½‚½‚«‚Â‚¯UŒ‚ -----
-    RegisterAttackDetectionData({ "FlyAttack_0", 1.0f, {}, "Dragon15_r_hand" }); // 11
-    RegisterAttackDetectionData({ "FlyAttack_1", 1.0f, {}, "Dragon15_l_hand" }); // 12
+    RegisterAttackDetectionData({ "FlyAttack_0", 1.0f, {}, "Dragon15_r_hand" }); // 13
+    RegisterAttackDetectionData({ "FlyAttack_1", 1.0f, {}, "Dragon15_l_hand" }); // 14
     
     // ----- ƒRƒ“ƒ{‚½‚½‚«‚Â‚¯UŒ‚ -----
-    RegisterAttackDetectionData({ "ComboSlam_0", 0.8f, {}, "Dragon15_r_hand"     }); // 13
+    RegisterAttackDetectionData({ "ComboSlam_0", 0.8f, {}, "Dragon15_r_hand"     }); // 15
     RegisterAttackDetectionData({ "ComboSlam_1", 0.8f, {}, "Dragon15_r_forearm"  }); 
-    RegisterAttackDetectionData({ "ComboSlam_2", 0.7f, {}, "Dragon15_r_finger21" }); // 15
+    RegisterAttackDetectionData({ "ComboSlam_2", 0.7f, {}, "Dragon15_r_finger21" }); // 17
 
     // ----- ‚«”ò‚Î‚µUŒ‚ -----
-    RegisterAttackDetectionData({ "KnockBack_0",  0.55f, { 1.9f,  0.15f, 0.0f },  "Dragon15_r_wing_04" }); // 16
+    RegisterAttackDetectionData({ "KnockBack_0",  0.55f, { 1.9f,  0.15f, 0.0f },  "Dragon15_r_wing_04" }); // 18
     RegisterAttackDetectionData({ "KnockBack_1",  0.6f,  { 1.21f, 0.15f, 0.0f },  "Dragon15_r_wing_04" });
     RegisterAttackDetectionData({ "KnockBack_2",  0.65f, { 0.4f,  0.2f,  0.0f },  "Dragon15_r_wing_04" });
     RegisterAttackDetectionData({ "KnockBack_3",  0.45f, { 2.0f, 0.0f, 0.0f },    "Dragon15_r_wing_07" });
@@ -519,7 +538,7 @@ void EnemyDragon::RegisterCollisionData()
     RegisterAttackDetectionData({ "KnockBack_10", 0.6f,  { -0.3f, 0.0f, 0.0f },   "Dragon15_r_wing_10" });
     RegisterAttackDetectionData({ "KnockBack_11", 0.45f, { 2.25f, 0.0f, 0.0f },   "Dragon15_r_wing_12" });
     RegisterAttackDetectionData({ "KnockBack_12", 0.5f,  { 1.55f, 0.0f, 0.0f },   "Dragon15_r_wing_12" });
-    RegisterAttackDetectionData({ "KnockBack_13", 0.6f,  { 0.8f, 0.0f, 0.0f },    "Dragon15_r_wing_12" }); // 29
+    RegisterAttackDetectionData({ "KnockBack_13", 0.6f,  { 0.8f, 0.0f, 0.0f },    "Dragon15_r_wing_12" }); // 31
 
 #pragma endregion ---------- UŒ‚”»’è“o˜^ ----------
 
@@ -614,6 +633,18 @@ void EnemyDragon::ResetAllAttackActiveFlag()
     for (AttackDetectionData& data : attackDetectionData_)
     {
         data.SetIsActive(false);
+    }
+}
+
+// ----- ‚½‚½‚«‚Â‚¯UŒ‚”»’èİ’è -----
+void EnemyDragon::SetSlamAttackActiveFlag(const bool& flag)
+{
+    // UŒ‚”»’èƒtƒ‰ƒO‚ğƒZƒbƒg‚·‚é
+    SetIsAttackActive(flag);
+
+    for (int i = AttackData::SlamAttackStart; i <= AttackData::SlamAttackEnd; ++i)
+    {
+        GetAttackDetectionData(i).SetIsActive(flag);
     }
 }
 
