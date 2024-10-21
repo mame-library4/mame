@@ -192,6 +192,13 @@ namespace PlayerState
             if (owner_->IsComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
         }
 
+        // カウンター先行入力受付
+        if (animationSeconds >= owner_->GetCounterInputStartFrame() &&
+            animationSeconds <= owner_->GetCounterInputEndFrame())
+        {
+            if (owner_->IsCounterStanceKey()) owner_->SetNextInput(Player::NextInput::Counter);
+        }
+
 #pragma endregion ----- 先行入力受付 -----
 
 #pragma region ----- 遷移チェック -----
@@ -210,6 +217,15 @@ namespace PlayerState
             if (animationSeconds >= owner_->GetAttackTransitionFrame())
             {
                 owner_->ChangeState(Player::STATE::ComboAttack0_0);
+                return true;
+            }
+        }
+        // カウンター遷移チェック
+        else if (owner_->GetNextInput() == Player::NextInput::Counter)
+        {
+            if (animationSeconds >= owner_->GetCounterTransitionFrame())
+            {
+                owner_->ChangeState(Player::STATE::Counter);
                 return true;
             }
         }

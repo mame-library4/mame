@@ -84,7 +84,7 @@ namespace ActionDragon
             PlayerManager::Instance().GetPlayer()->SetCounterActiveRadius(6.0f);
 
             // 変数初期化
-            slowStartFrame_ = 0.84f;
+            slowStartFrame_ = 0.9f;
 
             owner_->SetStep(1);
             
@@ -101,6 +101,7 @@ namespace ActionDragon
                 if (owner_->GetIsAttackActive() == false) owner_->SetSlamAttackActiveFlag();
             }
 
+            // アニメーションの速度を調整する
             UpdateAnimationSpeed();
 
             if (owner_->IsPlayAnimation() == false)
@@ -109,8 +110,6 @@ namespace ActionDragon
                 return ActionBase::State::Complete;
             }
 
-            break;
-        case 2:
             break;
         }
 
@@ -135,7 +134,7 @@ namespace ActionDragon
             animationSpeed = 0.8f;
         }
         // 攻撃を出す前の数フレーム感をスローにする
-        else if(animationSeconds > slowStartFrame_ && animationSeconds < 0.93f)
+        else if(animationSeconds > slowStartFrame_ && animationSeconds < 0.965f)
         {
             animationSpeed = 0.2f;
         }

@@ -374,6 +374,7 @@ public:
     // ----- JointPosiion -----
     DirectX::XMFLOAT3 GetJointPosition(const size_t& nodeIndex, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {});
     DirectX::XMFLOAT3 GetJointPosition(const std::string& nodeName, const float& scaleFactor, const DirectX::XMFLOAT3& offsetPosition = {});
+    DirectX::XMFLOAT3 GetJointPosition(const std::string& nodeName, const DirectX::XMFLOAT4X4& world);
     DirectX::XMMATRIX GetJointGlobalTransform(const size_t& nodeIndex);
     DirectX::XMMATRIX GetJointGlobalTransform(const std::string& nodeName);
     DirectX::XMMATRIX GetJointWorldTransform(const std::string& nodeName, const float& scaleFacter);

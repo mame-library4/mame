@@ -38,8 +38,10 @@ void SwordTrail::Update(const DirectX::XMFLOAT3& startPosition, const DirectX::X
 	texcoord_[0][0] = { 0,1 };
 	texcoord_[1][0] = { 0,0 };
 
-	DirectX::XMFLOAT4 color = { 1, 0, 0, 1 };
-	DirectX::XMFLOAT4 color2 = { 0, 0, 1, 1 };
+	//DirectX::XMFLOAT4 color = { 1, 0, 0, 1 };
+	//DirectX::XMFLOAT4 color2 = { 0, 0, 1, 1 };
+	DirectX::XMFLOAT4 color = { 1, 1, 1, 1 };
+	DirectX::XMFLOAT4 color2 = { 1, 1, 1, 1 };
 
 	const float startTexcoord = 1;
 	const float endTexcoord = 0;

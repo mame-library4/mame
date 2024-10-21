@@ -310,10 +310,11 @@ private:
     //bool isSwordPrimitiveDraw_ = true;
 
     // ---------- 剣 ----------
-    DirectX::XMFLOAT3 socketLocation_ = { 700, 10500, -7000 };
-    DirectX::XMFLOAT3 socketRotation_ = { 145.0f, -16.0f, 0.0f };
+    DirectX::XMFLOAT3 socketLocation_ = { -1000.0f, 0.0f, -300.0f };
+    DirectX::XMFLOAT3 socketRotation_ = { 0.0f, 95.0f, 0.0f };
     DirectX::XMFLOAT3 socketScale_ = { 1.0f, 1.0f, -1.0f };
     DirectX::XMFLOAT4X4 weaponWorld_;
+    float swordTrailEndPosition_ = -0.05f;
 
     // ---------- ガードカウンター　----------
     float guardCounterRadius_       = 0.9f;

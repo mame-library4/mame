@@ -8,7 +8,8 @@
 // ----- コンストラクタ -----
 Player::Player()
     : Character("./Resources/Model/Character/Player/SwordGirl.gltf", 0.01f),
-    weapon_("./Resources/Model/Character/Sword/Sword.gltf")
+    weapon_("./Resources/Model/Character/Sword1/Sword.gltf")
+    //weapon_("./Resources/Model/Character/Sword/Sword.gltf")
 {
     // --- ステートマシン ---
     {
@@ -108,9 +109,6 @@ void Player::Update(const float& elapsedTime)
             ChangeState(STATE::Death);
         }
 
-        // 剣の座標更新
-        UpdateSwordTransform();
-
         return;
     }
 
@@ -124,14 +122,14 @@ void Player::Update(const float& elapsedTime)
     // ステージの外に出ないようにする
     CollisionCharacterVsStage();
    
-    //const DirectX::XMFLOAT3 startPos = GetJointPosition("R1:R:j_middle", 0.01f);
-    //const DirectX::XMFLOAT3 startPos = GetJointPosition("index_01_r", GetScaleFactor()) + DirectX::XMFLOAT3(0, 0, 10);
-    //const DirectX::XMFLOAT3 endPos = GetJointPosition("index_01_r", GetScaleFactor());
-    //swordTrail_.Update(startPos, endPos);
-
 
     // 剣の座標更新
     UpdateSwordTransform();
+
+    const DirectX::XMFLOAT3 startPos = weapon_.GetJointPosition("joint1", weaponWorld_);
+    const DirectX::XMFLOAT3 joint2Pos = weapon_.GetJointPosition("joint2", weaponWorld_);
+    const DirectX::XMFLOAT3 endPos = startPos + XMFloat3Normalize(startPos - joint2Pos) * swordTrailEndPosition_;
+    swordTrail_.Update(startPos, endPos);
 
     // Collisionデータ更新
     UpdateCollisions(elapsedTime);
@@ -155,7 +153,7 @@ void Player::RenderTrail()
 {
     if (isSwordPrimitiveDraw_) sword_.Render();
 
-    //swordTrail_.Render();
+    swordTrail_.Render();
 }
 
 // ----- ImGui用 -----
@@ -163,6 +161,8 @@ void Player::DrawDebug()
 {
     if (ImGui::BeginMenu("Player"))
     {
+        ImGui::DragFloat("SwordTrailEndPosition", &swordTrailEndPosition_);
+
         ImGui::DragFloat("GuardCounterRadius", &guardCounterRadius_, 0.1f, 0.0f, 100.0f);
 
         ImGui::Checkbox("DodgeAttackCancel", &isDodgeAttackCancel_);
