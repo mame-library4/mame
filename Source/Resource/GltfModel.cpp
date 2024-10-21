@@ -181,6 +181,7 @@ GltfModel::GltfModel(const std::string& filename)
     animatedNodes_[0] = nodes_;
     animatedNodes_[1] = nodes_;
     blendedAnimationNodes_ = nodes_;
+    upperLowerBodyAnimatedNodes_ = nodes_;
 
     zeroAnimatedNodes_ = nodes_;
 }
@@ -218,6 +219,9 @@ void GltfModel::UpdateAnimation(const float& elapsedTime)
 
     // アニメーション更新
     Animate(animationIndex_, animationSeconds_, nodes_);
+
+    // 上下半身アニメーション更新
+    UpdateUpperLowerBodyAnimation();
 }
 
 const bool GltfModel::IsPlayAnimation()
@@ -296,6 +300,15 @@ void GltfModel::Render(const float& scaleFactor, ID3D11PixelShader* psShader)
     psShader ? deviceContext->PSSetShader(psShader, nullptr, 0) : deviceContext->PSSetShader(pixelShader_.Get(), nullptr, 0);
     deviceContext->IASetInputLayout(inputLayout_.Get());
     deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    if (isUpperLowerBodyAnimation_)
+    {
+        nodes_.at(1) = upperLowerBodyAnimatedNodes_.at(1);
+        for (int i = 52; i < nodes_.size(); ++i)
+        {
+            nodes_.at(i) = upperLowerBodyAnimatedNodes_.at(i);
+        }
+    }
 
     std::function<void(int)> traverse{ [&](int nodeIndex)->void {
         const Node& node{nodes_.at(nodeIndex)};
@@ -690,6 +703,16 @@ void GltfModel::Animate(size_t animationIndex, float time, std::vector<Node>& an
     {
         animatedNodes = nodes_;
     }
+}
+
+void GltfModel::UpdateUpperLowerBodyAnimation()
+{
+    if (isUpperLowerBodyAnimation_ == false) return;
+
+    Animate(upperLowerBodyAnimationIndex_, animationSeconds_, upperLowerBodyAnimatedNodes_);
+
+    const std::vector<Node>* nodes[2] = { &nodes_, &upperLowerBodyAnimatedNodes_ };
+    BlendAnimations(nodes, 0.5f, upperLowerBodyAnimatedNodes_);
 }
 
 // ----- アニメーション再生 -----

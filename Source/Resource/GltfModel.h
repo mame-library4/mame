@@ -388,6 +388,9 @@ public:
     void SetRootJointIndex(const int& index) { rootJointIndex_ = index; }
     void SetUseRootMotion(const bool& flag);
 
+    void SetUpperLowerBodyAnimationIndex(const int& index) { upperLowerBodyAnimationIndex_ = index; }
+    void SetIsUpperLowerBodyAnimation(const bool& flag) { isUpperLowerBodyAnimation_ = flag; }
+
 private:
     void FetchNodes(const tinygltf::Model& gltfModel);
     void FetchMeshes(ID3D11Device* device, const tinygltf::Model& gltfModel);
@@ -402,6 +405,8 @@ private:
     bool UpdateBlendAnimation(const float& elapsedTime);
     void BlendAnimations(const std::vector<Node>* nodes[2], float factor, std::vector<Node>& node);
     void Animate(size_t animationIndex, float time, std::vector<Node>& animatedNodes);
+    
+    void UpdateUpperLowerBodyAnimation();
 
 private:
     std::string filename_;
@@ -452,4 +457,9 @@ private:
     int                 rootJointIndex_         = 1;
     float               rootMotionSpeed_        = 1.0f;
     bool                isFirstTimeRootMotion_  = false; // RootMotionèââÒîªíË
+
+    // ---------- è„â∫îºêgï™ó£óp ----------
+    std::vector<Node>   upperLowerBodyAnimatedNodes_;
+    int                 upperLowerBodyAnimationIndex_   = -1;
+    bool                isUpperLowerBodyAnimation_      = false;
 };

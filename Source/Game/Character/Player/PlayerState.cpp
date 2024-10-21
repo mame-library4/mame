@@ -472,6 +472,9 @@ namespace PlayerState
         owner_->SetIsGuardCounterStance(true);
         owner_->SetIsGuardCounterSuccessful(false); // ƒŠƒZƒbƒg‚·‚é
 
+        //owner_->SetUpperLowerBodyAnimationIndex(static_cast<int>(Player::Animation::Walk));
+        //owner_->SetIsUpperLowerBodyAnimation(true);
+
         // •Ï”‰Šú‰»
         gamePadVibration_.Initialize(0.0f, 0.2f, 0.5f);
         guardEffectLerpTimer_       = 0.0f;
