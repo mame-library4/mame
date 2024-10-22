@@ -153,7 +153,7 @@ void Player::RenderTrail()
 {
     if (isSwordPrimitiveDraw_) sword_.Render();
 
-    swordTrail_.Render();
+    if (isDrawSwordTrail_) swordTrail_.Render();
 }
 
 // ----- ImGui—p -----

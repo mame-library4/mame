@@ -618,6 +618,8 @@ namespace PlayerState
         //owner_->PlayBlendAnimation(Player::Animation::CounterAttack0, false, 1.0f, 0.35f);
         owner_->PlayBlendAnimation(Player::Animation::CounterAttack0, false, 1.0f, 0.5f);
         owner_->SetTransitionTime(0.1f);
+
+        owner_->SetIsDrawSwordTrail(true);
     }
 
     // ----- XV -----
@@ -641,6 +643,8 @@ namespace PlayerState
     void GuardCounterAttackState::Finalize()
     {
         owner_->SetUseRootMotion(false);
+
+        owner_->SetIsDrawSwordTrail(false);
     }
 
     // ----- ImGui—p -----

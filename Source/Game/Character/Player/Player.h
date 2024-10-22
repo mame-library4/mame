@@ -201,6 +201,9 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const float GetCounterActiveRadius() const { return counterActiveRadius_; }
     void SetCounterActiveRadius(const float& range) { counterActiveRadius_ = range; }
 
+    // ---------- 剣の軌跡 ----------
+    void SetIsDrawSwordTrail(const bool& flag) { isDrawSwordTrail_ = flag; }
+
     // ---------- ガードカウンター　----------
     [[nodiscard]] const float GetGuardCounterRadius() const { return guardCounterRadius_; }
     void SetGuardCounterRadius(const float& radius) { guardCounterRadius_ = radius; }
@@ -308,6 +311,9 @@ private:
     Sword sword_;
     bool isSwordPrimitiveDraw_ = false;
     //bool isSwordPrimitiveDraw_ = true;
+
+    // ---------- 剣の軌跡 ----------
+    bool isDrawSwordTrail_ = false;
 
     // ---------- 剣 ----------
     DirectX::XMFLOAT3 socketLocation_ = { -1000.0f, 0.0f, -300.0f };

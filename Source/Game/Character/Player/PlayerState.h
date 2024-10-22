@@ -107,8 +107,8 @@ namespace PlayerState
     private:
         Effekseer::Handle guardEffect_ = {};
         const float guardStartAnimationSpeed_   = 3.0f; // ガード構えアニメーション再生速度
-        float       guardEffectStartSize_       = 2.0f; // エフェクトの最大サイズ
-        float       guardEffectEndSize_         = 1.3f; // エフェクトの最小サイズ
+        float       guardEffectStartSize_       = 2.8f; // エフェクトの最大サイズ
+        float       guardEffectEndSize_         = 1.8f; // エフェクトの最小サイズ
         float       guardEffectLerpTimer_       = 0.0f; // EffectLerp用
         float       guardEffectLerpSpeed_       = 0.4f; // EffectLerp速度調整用
         float       guardCounterStartRadius_    = 1.4f;

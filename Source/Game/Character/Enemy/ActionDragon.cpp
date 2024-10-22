@@ -74,6 +74,12 @@ namespace ActionDragon
 {
     const ActionBase::State SlamAttackAction::Run(const float& elapsedTime)
     {
+        // ŽÀs’†ƒm[ƒh‚ð’†’f‚·‚é‚©
+        if (owner_->CheckStatusChange())
+        {
+            return ActionBase::State::Failed;
+        }
+
         switch (owner_->GetStep())
         {
         case 0:

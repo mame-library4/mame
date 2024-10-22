@@ -1,5 +1,6 @@
 #pragma once
 #include "BaseScene.h"
+#include "Object.h"
 #include "UI/UITitle.h"
 
 class TitleScene : public BaseScene
@@ -23,6 +24,11 @@ public:// Šî–{“I‚ÈŠÖ”
 
 private:
     UITitle* uiTitle_;
+
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> iblTextures_[4];
+    std::unique_ptr<Object> stageObject_;
+    std::unique_ptr<Object> dragonObject_;
+    std::unique_ptr<Object> playerObject_;
 
     bool isDrawUI_ = false; // UI•`‰æ”»’è
 };

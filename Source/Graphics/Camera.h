@@ -23,6 +23,8 @@ public:
     void SetPerspectiveFov();
     void DrawDebug();
 
+    void SetTitleCamera();
+
     // ---------- ‰ñ“]ˆ— ---------------
     void Rotate(const float& elapsedTime);
 

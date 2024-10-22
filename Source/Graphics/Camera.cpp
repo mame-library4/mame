@@ -285,6 +285,16 @@ void Camera::DrawDebug()
     }
 }
 
+void Camera::SetTitleCamera()
+{
+    GetTransform()->SetRotationX(DirectX::XMConvertToRadians(16.0f));
+    GetTransform()->SetRotationY(DirectX::XMConvertToRadians(180.0f));
+
+    targetOffset_ = { 0, -1, 0 };
+    cameraOffset_ = { 0, 2.5f, 0 };
+    length_ = 6.0f;
+}
+
 // ----- ‰ñ“]ˆ— -----
 void Camera::Rotate(const float& elapsedTime)
 {
