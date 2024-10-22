@@ -25,7 +25,7 @@ public:
 
     Sprite::Transform* GetTransform() { return sprite_->GetTransform(); }
 
-private:
+protected:
     const UIManager::UIType type_;
     std::unique_ptr<Sprite> sprite_;
     std::string             name_;

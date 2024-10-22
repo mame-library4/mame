@@ -221,7 +221,20 @@ void GltfModel::UpdateAnimation(const float& elapsedTime)
     Animate(animationIndex_, animationSeconds_, nodes_);
 
     // 上下半身アニメーション更新
-    UpdateUpperLowerBodyAnimation();
+    UpdateUpperLowerBodyAnimation(elapsedTime);
+
+    if (isUpperLowerBodyAnimation_)
+    {
+        nodes_.at(2) = upperLowerBodyAnimatedNodes_.at(2);
+        nodes_.at(3) = upperLowerBodyAnimatedNodes_.at(3);
+        nodes_.at(4) = upperLowerBodyAnimatedNodes_.at(4);
+        //for (int i = 0; i < 52; ++i)
+        for (int i = 52; i < 63; ++i)
+        {
+            nodes_.at(i) = upperLowerBodyAnimatedNodes_.at(i);
+        }
+    }
+    CumulateTransforms(nodes_);
 }
 
 const bool GltfModel::IsPlayAnimation()
@@ -300,15 +313,6 @@ void GltfModel::Render(const float& scaleFactor, ID3D11PixelShader* psShader)
     psShader ? deviceContext->PSSetShader(psShader, nullptr, 0) : deviceContext->PSSetShader(pixelShader_.Get(), nullptr, 0);
     deviceContext->IASetInputLayout(inputLayout_.Get());
     deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-    if (isUpperLowerBodyAnimation_)
-    {
-        nodes_.at(1) = upperLowerBodyAnimatedNodes_.at(1);
-        for (int i = 52; i < nodes_.size(); ++i)
-        {
-            nodes_.at(i) = upperLowerBodyAnimatedNodes_.at(i);
-        }
-    }
 
     std::function<void(int)> traverse{ [&](int nodeIndex)->void {
         const Node& node{nodes_.at(nodeIndex)};
@@ -705,14 +709,23 @@ void GltfModel::Animate(size_t animationIndex, float time, std::vector<Node>& an
     }
 }
 
-void GltfModel::UpdateUpperLowerBodyAnimation()
+void GltfModel::UpdateUpperLowerBodyAnimation(const float& elapsedTime)
 {
     if (isUpperLowerBodyAnimation_ == false) return;
 
-    Animate(upperLowerBodyAnimationIndex_, animationSeconds_, upperLowerBodyAnimatedNodes_);
+    // アニメーション再生時間経過
+    upperLowerBodyAnimationSeconds_ += elapsedTime;
 
-    const std::vector<Node>* nodes[2] = { &nodes_, &upperLowerBodyAnimatedNodes_ };
-    BlendAnimations(nodes, 0.5f, upperLowerBodyAnimatedNodes_);
+    // アニメーションの最終フレームを取ってくる
+    float duration = animations_.at(upperLowerBodyAnimationIndex_).duration_;
+
+    // アニメーションが再生しきっている場合
+    if (upperLowerBodyAnimationSeconds_ > duration)
+    {
+        upperLowerBodyAnimationSeconds_ = 0.0f;
+    }
+
+    Animate(upperLowerBodyAnimationIndex_, upperLowerBodyAnimationSeconds_, upperLowerBodyAnimatedNodes_);    
 }
 
 // ----- アニメーション再生 -----

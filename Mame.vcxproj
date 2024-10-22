@@ -284,6 +284,7 @@
     <ClCompile Include="Source\Scene\LoadingScene.cpp" />
     <ClCompile Include="Source\Scene\SceneManager.cpp" />
     <ClCompile Include="Source\Scene\TitleScene.cpp" />
+    <ClCompile Include="Source\Scene\TitleState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External\imgui\imconfig.h" />
@@ -383,6 +384,7 @@
     <ClInclude Include="Source\Scene\LoadingScene.h" />
     <ClInclude Include="Source\Scene\SceneManager.h" />
     <ClInclude Include="Source\Scene\TitleScene.h" />
+    <ClInclude Include="Source\Scene\TitleState.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="3dgp.rc" />

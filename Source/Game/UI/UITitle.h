@@ -11,10 +11,12 @@ public:
     void Render()                           override; // •`‰æ
     void DrawDebug()                        override; // ImGui—p
 
-    void SetState(const int& state) {}
+public:
+    void SetIsDrawAllUI(const bool& flag);
+    void SetIsDrawTitleLogo(const bool& flag) { UI::SetIsDraw(flag); }
 
 private:
-
+    
 
 };
 

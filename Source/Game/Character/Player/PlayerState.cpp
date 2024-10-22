@@ -488,8 +488,8 @@ namespace PlayerState
         owner_->SetIsGuardCounterStance(true);
         owner_->SetIsGuardCounterSuccessful(false); // リセットする
 
-        //owner_->SetUpperLowerBodyAnimationIndex(static_cast<int>(Player::Animation::Walk));
-        //owner_->SetIsUpperLowerBodyAnimation(true);
+        owner_->SetUpperLowerBodyAnimationIndex(static_cast<int>(Player::Animation::Walk));
+        owner_->SetIsUpperLowerBodyAnimation(true);
 
         // 変数初期化
         gamePadVibration_.Initialize(0.0f, 0.2f, 0.5f);
@@ -534,6 +534,8 @@ namespace PlayerState
     {
         // エフェクトを停止させる
         EffectManager::Instance().GetEffect("Guard")->Stop(guardEffect_);
+
+        owner_->SetIsUpperLowerBodyAnimation(false);
     }
 
     // ----- ImGui用 -----
@@ -632,6 +634,12 @@ namespace PlayerState
             owner_->SetUseRootMotion(true);
         }
 
+        // 剣の軌跡の設定
+        if (owner_->GetAnimationSeconds() > 1.0f && owner_->GetIsDrawSwordTrail())
+        {
+            owner_->SetIsDrawSwordTrail(false);
+        }
+
         if (owner_->IsPlayAnimation() == false)
         {
             owner_->ChangeState(Player::STATE::Idle);
@@ -643,8 +651,6 @@ namespace PlayerState
     void GuardCounterAttackState::Finalize()
     {
         owner_->SetUseRootMotion(false);
-
-        owner_->SetIsDrawSwordTrail(false);
     }
 
     // ----- ImGui用 -----

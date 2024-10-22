@@ -21,3 +21,9 @@ void UITitle::Render()
 void UITitle::DrawDebug()
 {
 }
+
+// ----- ‘S‚Ä‚ÌUI‚ğˆêŠ‡‚Å•ÏX -----
+void UITitle::SetIsDrawAllUI(const bool& flag)
+{
+    UI::SetIsDraw(flag);
+}

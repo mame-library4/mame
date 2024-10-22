@@ -407,7 +407,7 @@ private:
     void BlendAnimations(const std::vector<Node>* nodes[2], float factor, std::vector<Node>& node);
     void Animate(size_t animationIndex, float time, std::vector<Node>& animatedNodes);
     
-    void UpdateUpperLowerBodyAnimation();
+    void UpdateUpperLowerBodyAnimation(const float& elapsedTime);
 
 private:
     std::string filename_;
@@ -462,5 +462,6 @@ private:
     // ---------- è„â∫îºêgï™ó£óp ----------
     std::vector<Node>   upperLowerBodyAnimatedNodes_;
     int                 upperLowerBodyAnimationIndex_   = -1;
+    float               upperLowerBodyAnimationSeconds_ = 0.0f;
     bool                isUpperLowerBodyAnimation_      = false;
 };

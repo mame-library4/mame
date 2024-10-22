@@ -262,6 +262,9 @@
     <ClCompile Include="Source\Graphics\Particle\FireBallParticle.cpp">
       <Filter>Mame\Graphics\Particle\FireBallParticle</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Scene\TitleState.cpp">
+      <Filter>Mame\Scene\TitleScene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -552,6 +555,9 @@
     </ClInclude>
     <ClInclude Include="Source\Graphics\Particle\FireBallParticle.h">
       <Filter>Mame\Graphics\Particle\FireBallParticle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\TitleState.h">
+      <Filter>Mame\Scene\TitleScene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

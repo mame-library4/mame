@@ -202,6 +202,7 @@ public:// --- 取得・設定 ---
     void SetCounterActiveRadius(const float& range) { counterActiveRadius_ = range; }
 
     // ---------- 剣の軌跡 ----------
+    [[nodiscard]] const bool GetIsDrawSwordTrail() const { return isDrawSwordTrail_; }
     void SetIsDrawSwordTrail(const bool& flag) { isDrawSwordTrail_ = flag; }
 
     // ---------- ガードカウンター　----------
