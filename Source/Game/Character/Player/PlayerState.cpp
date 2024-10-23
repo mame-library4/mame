@@ -357,6 +357,7 @@ namespace PlayerState
         {
             owner_->SetTransitionTime(0.15f);
         }
+
         owner_->PlayBlendAnimation(Player::Animation::Run, true);
     }
 
@@ -479,8 +480,7 @@ namespace PlayerState
     void GuardCounterState::Initialize()
     {
         // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::BlockStart, false, guardStartAnimationSpeed_);
-        owner_->SetTransitionTime(0.1f);
+        owner_->PlayUpperLowerBodyAnimation(static_cast<int>(Player::Animation::BlockStart), false, 0.4f);
 
         DirectX::XMFLOAT3 position = owner_->GetJointPosition("pelvis");
         guardEffect_ = EffectManager::Instance().GetEffect("Guard")->Play(position, 1.0f, 1.0f);
@@ -488,8 +488,10 @@ namespace PlayerState
         owner_->SetIsGuardCounterStance(true);
         owner_->SetIsGuardCounterSuccessful(false); // リセットする
 
-        owner_->SetUpperLowerBodyAnimationIndex(static_cast<int>(Player::Animation::Walk));
-        owner_->SetIsUpperLowerBodyAnimation(true);
+
+        // 最大速度を設定
+        //owner_->SetMaxSpeed(2.0f);
+        owner_->SetMaxSpeed(5.0f);
 
         // 変数初期化
         gamePadVibration_.Initialize(0.0f, 0.2f, 0.5f);
@@ -501,6 +503,29 @@ namespace PlayerState
     // ----- 更新 -----
     void GuardCounterState::Update(const float& elapsedTime)
     {
+        // 移動入力処理
+        GamePad& gamePad = Input::Instance().GetGamePad();
+        const float aLx = gamePad.GetAxisLX();
+        const float aLy = gamePad.GetAxisLY();
+        if (fabsf(aLx) != 0.0f || fabsf(aLy) != 0.0f)
+        {
+            //owner_->SetUpperLowerBodyAnimationIndex(static_cast<int>(Player::Animation::Run));
+            //owner_->SetUpperLowerBodyAnimationIndex(static_cast<int>(Player::Animation::Walk));
+
+            // 旋回
+            owner_->Turn(elapsedTime);
+        }
+        else
+        {
+            //owner_->SetUpperLowerBodyAnimationIndex(static_cast<int>(Player::Animation::Idle));
+            //owner_->SetUpperLowerBodyAnimationIndex(static_cast<int>(Player::Animation::BlockLoop));
+
+            // 移動&回転処理リセット
+            owner_->SetMoveDirection({});
+            owner_->SetVelocity({});
+        }
+
+
         // アニメーション更新
         UpdateAnimation();
 
@@ -535,7 +560,9 @@ namespace PlayerState
         // エフェクトを停止させる
         EffectManager::Instance().GetEffect("Guard")->Stop(guardEffect_);
 
-        owner_->SetIsUpperLowerBodyAnimation(false);
+        // 移動&回転処理リセット
+        owner_->SetMoveDirection({});
+        owner_->SetVelocity({});
     }
 
     // ----- ImGui用 -----

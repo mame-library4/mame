@@ -51,11 +51,9 @@ public:
     [[nodiscard]] const int GetNodeIndex(const std::string& nodeName) { return gltfModel_.GetNodeIndex(nodeName); }
     std::vector<GltfModel::Node>* GetNodes() { return gltfModel_.GetNodes(); }
 
-    void SetUpperLowerBodyAnimationIndex(const int& index) { gltfModel_.SetUpperLowerBodyAnimationIndex(index); }
-    void SetIsUpperLowerBodyAnimation(const bool& flag) { gltfModel_.SetIsUpperLowerBodyAnimation(flag); }
+    void PlayUpperLowerBodyAnimation(const int& index, const bool& loop = true, const float& startFrame = 0.0f) { gltfModel_.PlayUpperLowerBodyAnimation(index, loop, startFrame); }
 
 private:
     GltfModel   gltfModel_;
     const float scaleFactor_;
 };
-
