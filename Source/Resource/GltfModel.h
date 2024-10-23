@@ -466,5 +466,5 @@ private:
     float               upperLowerBodyAnimationSeconds_         = 0.0f;
     float               upperLowerBodyBlendAnimationSeconds_    = 0.0f;
     bool                isUpperLowerBodyAnimation_              = false;
-    bool                isBlendUpperLowerBodyAnimation_         = false;
+    bool                isBlendUpperLowerBodyAnimation_         = false; // ƒuƒŒƒ“ƒh
 };

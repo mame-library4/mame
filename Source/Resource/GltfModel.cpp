@@ -198,10 +198,11 @@ void GltfModel::UpdateAnimation(const float& elapsedTime)
 
     if (isBlendUpperLowerBodyAnimation_)
     {
-        weight_ = upperLowerBodyBlendAnimationSeconds_ / transitionTime_;
+        weight_ = upperLowerBodyBlendAnimationSeconds_ / 0.2f;
+        //weight_ = upperLowerBodyBlendAnimationSeconds_ / transitionTime_;
 
-        // 下半身アニメーション更新
-#if 0
+
+        // 下半身アニメーション更新 (下半身アニメーションが止まってしまうので)
         // アニメーション再生時間経過
         upperLowerBodyAnimationSeconds_ += elapsedTime;
         // アニメーションの最終フレームを取ってくる
@@ -211,12 +212,14 @@ void GltfModel::UpdateAnimation(const float& elapsedTime)
         {
             upperLowerBodyAnimationSeconds_ = 0.0f;
         }
-        Animate(upperLowerBodyAnimationIndex_, upperLowerBodyAnimationSeconds_, upperLowerBodyAnimatedNodes_[1]);
+        // 上半身アニメーション
+        std::vector<Node> upperNodes = upperLowerBodyAnimatedNodes_[1];
+        // 下半身アニメーション
         std::vector<Node> lowerNodes = upperLowerBodyAnimatedNodes_[1];
-        Animate(animationIndex_, animationSeconds_, lowerNodes);
+        Animate(upperLowerBodyAnimationIndex_, upperLowerBodyAnimationSeconds_, lowerNodes);
         // 合体させる
-        upperLowerBodyAnimatedNodes_[1] = SetUpperLowerBodyAnimation(upperLowerBodyAnimatedNodes_[1], lowerNodes);
-#endif
+        upperLowerBodyAnimatedNodes_[1] = SetUpperLowerBodyAnimation(upperNodes, lowerNodes);
+
         const std::vector<Node>* nodes[2] = { &upperLowerBodyAnimatedNodes_[0], &upperLowerBodyAnimatedNodes_[1] };
         BlendAnimations(nodes, weight_, blendedAnimationNodes_);
         nodes_ = blendedAnimationNodes_;
@@ -785,18 +788,31 @@ void GltfModel::PlayAnimation(const int& index, const bool& loop, const float& s
     isAnimationLooped_ = false;
 }
 
+// ----- ブレンドアニメーション再生 -----
 void GltfModel::PlayBlendAnimation(const int& index, const bool& loop, const float& speed, const float& blendAnimationFrame)
 {
-    // 現在ブレンドアニメーション中の場合
-    if (isBlendAnimation_)
+    // 上下半身分離アニメーション中の場合
+    if (isUpperLowerBodyAnimation_)
     {
         animatedNodes_[0] = nodes_;
+
+        Animate(index, blendAnimationSeconds_, animatedNodes_[1]);
+
+        isUpperLowerBodyAnimation_ = false;
     }
     else
     {
-        Animate(animationIndex_, animationSeconds_, animatedNodes_[0]);
+        // 現在ブレンドアニメーション中の場合
+        if (isBlendAnimation_)
+        {
+            animatedNodes_[0] = nodes_;
+        }
+        else
+        {
+            Animate(animationIndex_, animationSeconds_, animatedNodes_[0]);
+        }
+        Animate(index, blendAnimationFrame, animatedNodes_[1]);
     }
-    Animate(index, blendAnimationFrame, animatedNodes_[1]);
 
     animationIndex_ = index;
 
