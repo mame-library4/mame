@@ -480,7 +480,7 @@ namespace PlayerState
     void GuardCounterState::Initialize()
     {
         // アニメーション設定
-        owner_->PlayUpperLowerBodyAnimation(static_cast<int>(Player::Animation::BlockLoop), false);
+        owner_->PlayUpperLowerBodyAnimation(static_cast<int>(Player::Animation::BlockLoop), true);
 
         DirectX::XMFLOAT3 position = owner_->GetJointPosition("pelvis");
         guardEffect_ = EffectManager::Instance().GetEffect("Guard")->Play(position, 1.0f, 1.0f);
@@ -501,8 +501,16 @@ namespace PlayerState
     // ----- 更新 -----
     void GuardCounterState::Update(const float& elapsedTime)
     {
-        // 移動入力処理
         GamePad& gamePad = Input::Instance().GetGamePad();
+
+        const bool guardButton = gamePad.GetButton() & GamePad::BTN_X;
+        if (owner_->GetIsBlendUpperLowerBodyAnimation() == false && guardButton == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+
+        // 移動入力処理
         const float aLx = gamePad.GetAxisLX();
         const float aLy = gamePad.GetAxisLY();
         if (fabsf(aLx) != 0.0f || fabsf(aLy) != 0.0f)
@@ -520,10 +528,6 @@ namespace PlayerState
             owner_->SetMoveDirection({});
             owner_->SetVelocity({});
         }
-
-
-        // アニメーション更新
-        UpdateAnimation();
 
         // エフェクト更新
         UpdateEffect(elapsedTime);
@@ -568,16 +572,6 @@ namespace PlayerState
         ImGui::DragFloat("GuardEffectEndSize",   &guardEffectEndSize_,   0.1f, 1.0f, 6.0f);
         ImGui::DragFloat("LerpTimer", &guardEffectLerpTimer_);
         ImGui::DragFloat("LerpSpeed", &guardEffectLerpSpeed_);
-    }
-
-    // ----- アニメーション更新 -----
-    void GuardCounterState::UpdateAnimation()
-    {
-        if (owner_->IsPlayAnimation() == false)
-        {
-            owner_->ChangeState(Player::STATE::Idle);
-            return;
-        }
     }
 
     // ----- エフェクト更新 -----

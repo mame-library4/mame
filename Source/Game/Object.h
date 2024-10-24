@@ -51,8 +51,10 @@ public:
     [[nodiscard]] const int GetNodeIndex(const std::string& nodeName) { return gltfModel_.GetNodeIndex(nodeName); }
     std::vector<GltfModel::Node>* GetNodes() { return gltfModel_.GetNodes(); }
 
+    // ----- 上下半身分離アニメーション -----
     void PlayUpperLowerBodyAnimation(const int& index, const bool& loop = true, const float& startFrame = 0.0f) { gltfModel_.PlayUpperLowerBodyAnimation(index, loop, startFrame); }
     void ChangeLowerBodyAnimation(const int& index) { gltfModel_.ChangeLowerBodyAnimation(index); }
+    [[nodiscard]] const bool GetIsBlendUpperLowerBodyAnimation() const { return gltfModel_.GetIsBlendUpperLowerBodyAnimation(); }
 
 private:
     GltfModel   gltfModel_;

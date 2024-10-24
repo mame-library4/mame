@@ -241,7 +241,7 @@ void GltfModel::UpdateAnimation(const float& elapsedTime)
     if (isBlendChangeLowerBodyAnimation_)
     {
         // weight値計算
-        changeLowerBodyweight_ = changeLowerBodyAnimationSeconds_ / 0.2f;
+        changeLowerBodyweight_ = changeLowerBodyAnimationSeconds_ / 0.1f;
 
         // 上半身アニメーション
         std::vector<Node> upperNodes = upperLowerBodyAnimatedNodes_[0];

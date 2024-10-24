@@ -101,7 +101,6 @@ namespace PlayerState
         void DrawDebug()                        override;
 
     private:
-        void UpdateAnimation(); // アニメーション更新
         void UpdateEffect(const float& elapsedTime);    // エフェクト更新
 
     private:

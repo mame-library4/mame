@@ -371,6 +371,7 @@ public:
     // ----- 上下半身分離アニメーション -----
     void PlayUpperLowerBodyAnimation(const int& index, const bool& loop = true, const float& startFrame = 0.0f);
     void ChangeLowerBodyAnimation(const int& index); // 下半身のアニメーション変更
+    [[nodiscard]] const bool GetIsBlendUpperLowerBodyAnimation() const { return isBlendUpperLowerBodyAnimation_; }
 
     // ---------- Transform ----------
     Transform* GetTransform() { return &transform_; }
