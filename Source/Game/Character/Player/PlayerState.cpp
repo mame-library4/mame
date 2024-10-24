@@ -488,9 +488,7 @@ namespace PlayerState
         owner_->SetIsGuardCounterStance(true);
         owner_->SetIsGuardCounterSuccessful(false); // リセットする
 
-
         // 最大速度を設定
-        //owner_->SetMaxSpeed(2.0f);
         owner_->SetMaxSpeed(5.0f);
 
         // 変数初期化
@@ -544,16 +542,46 @@ namespace PlayerState
             }
         }
 
-        // カウンター成功
+        // ガードが成功した
         if (owner_->GetIsGuardCounterSuccessful())
         {
-            owner_->ChangeState(Player::STATE::GuardCounterAttack);
+            // 自動的にカウンターに遷移する
+            if (owner_->GetIsAutoCounterModeEnabled())
+            {
+                // TODO:仮で作ってる
+                gamePadVibration_.Update(owner_->GetAnimationSeconds());
 
-            // TODO:仮で作ってる
-            gamePadVibration_.Update(owner_->GetAnimationSeconds());
+                owner_->ChangeState(Player::STATE::GuardCounterAttack);
+                return;
+            }
+            else
+            {
+                // ガードゲージを消費 (ガードゲージがまだあればtrue)
+                if (owner_->UseGuardGaugeOnBlock())
+                {// ガードできた
+                    // ガードした方向に向かせる
 
-            return;
+                    // 無敵状態にする
+                    owner_->SetIsInvincible(true);
+
+                    // ガードブロックしたステートへ遷移
+                    owner_->ChangeState(Player::STATE::GuardBlock);
+                    return;
+                }
+                else
+                {// ガードが破壊された
+                    // ガード破壊されたステートへ遷移
+
+                    // 無敵状態にする
+                    owner_->SetIsInvincible(true);
+
+                    owner_->SetIsGuardCounterSuccessful(false);
+                    owner_->ChangeState(Player::STATE::GuardBroken);
+                    return;
+                }
+            }
         }
+
 
     }
 
@@ -599,6 +627,12 @@ namespace PlayerState
 
         float guardCounterRadius = XMFloatLerp(guardCounterStartRadius_, guardCounterEndRadius_, guardEffectLerpTimer_);
         owner_->SetGuardCounterRadius(guardCounterRadius);
+    }
+
+    // ----- ガードが成功したかチェック -----
+    const bool GuardCounterState::CheckGuardCounterSuccessful()
+    {
+        return false;
     }
 
 }
@@ -648,6 +682,90 @@ namespace PlayerState
 
     // ----- ImGui用 -----
     void GuardCounterAttackState::DrawDebug()
+    {
+    }
+}
+
+// ----- ガードブロック -----
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void GuardBlockState::Initialize()
+    {
+        // アニメーション再生
+        owner_->PlayBlendAnimation(Player::Animation::BlockHit, false);
+
+        // ルートモーションを使用
+        owner_->SetUseRootMotion(true);
+
+        // ルートの移動値を増やす
+        owner_->SetRootMotionValue(3.0f);
+    }
+
+    // ----- 更新 -----
+    void GuardBlockState::Update(const float& elapsedTime)
+    {
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+    }
+
+    // ----- 終了化 -----
+    void GuardBlockState::Finalize()
+    {
+        // 無敵状態を解除する
+        owner_->SetIsInvincible(false);
+
+        // ルートモーションを使用しない
+        owner_->SetUseRootMotion(false);
+
+        // ルートの移動値をリセット
+        owner_->SetRootMotionValue(1.0f);
+    }
+
+    // ----- ImGui用 -----
+    void GuardBlockState::DrawDebug()
+    {
+    }
+}
+
+// ----- ガード破壊された -----
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void GuardBrokenState::Initialize()
+    {
+        // アニメーション再生
+        owner_->PlayBlendAnimation(Player::Animation::BlockBreak, false);        
+
+        // ルートモーションを使用
+        owner_->SetUseRootMotion(true);
+    }
+
+    // ----- 更新 -----
+    void GuardBrokenState::Update(const float& elapsedTime)
+    {
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+    }
+
+    // ----- 終了化 -----
+    void GuardBrokenState::Finalize()
+    {
+        // 無敵状態を解除する
+        owner_->SetIsInvincible(false);
+
+        // ルートモーションを使用しない
+        owner_->SetUseRootMotion(false);
+    }
+
+    // ----- ImGui用 -----
+    void GuardBrokenState::DrawDebug()
     {
     }
 }
@@ -905,7 +1023,7 @@ namespace PlayerState
         // フラグをリセットする
         owner_->ResetFlags();
 
-        owner_->PlayBlendAnimation(Player::Animation::Damage, false, 1.0f, 0.2f);
+        owner_->PlayBlendAnimation(Player::Animation::Death, false, 1.0f, 0.2f);
         owner_->SetTransitionTime(0.3f);
 
         // 死亡したので無敵状態にする

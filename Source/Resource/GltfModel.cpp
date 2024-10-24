@@ -1035,7 +1035,7 @@ void GltfModel::RootMotion(const float& scaleFacter)
     DirectX::XMStoreFloat3(&displacement, DirectX::XMVector3TransformNormal(DirectX::XMLoadFloat3(&displacement), C * S * R));
 
     DirectX::XMFLOAT3 translation = GetTransform()->GetPosition();
-    translation = translation + displacement * rootMotionSpeed_;
+    translation = translation + displacement * rootMotionValue_;
     GetTransform()->SetPosition(translation);
 
     node.globalTransform_._41 = zeroAnimatedNodes_.at(rootJointIndex_).globalTransform_._41;

@@ -394,6 +394,8 @@ public:
     void SetRootJointIndex(const int& index) { rootJointIndex_ = index; }
     void SetUseRootMotion(const bool& flag);
 
+    void SetRootMotionValue(const float& value) { rootMotionValue_ = value; }
+
 private:
     void FetchNodes(const tinygltf::Model& gltfModel);
     void FetchMeshes(ID3D11Device* device, const tinygltf::Model& gltfModel);
@@ -459,7 +461,7 @@ private:
     std::vector<GltfModel::Node> zeroAnimatedNodes_;
     DirectX::XMFLOAT3   previousPosition_       = {};
     int                 rootJointIndex_         = 1;
-    float               rootMotionSpeed_        = 1.0f;
+    float               rootMotionValue_        = 1.0f;
     bool                isFirstTimeRootMotion_  = false; // RootMotionèââÒîªíË
 
     // ---------- è„â∫îºêgï™ó£óp ----------

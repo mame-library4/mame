@@ -102,6 +102,7 @@ namespace PlayerState
 
     private:
         void UpdateEffect(const float& elapsedTime);    // エフェクト更新
+        [[nodiscard]] const bool CheckGuardCounterSuccessful();
 
     private:
         Effekseer::Handle guardEffect_ = {};
@@ -122,6 +123,31 @@ namespace PlayerState
     public:
         GuardCounterAttackState(Player* player) : State(player, "GuardCounterAttackState") {}
         ~GuardCounterAttackState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+    };
+
+    class GuardBlockState : public State<Player>
+    {
+    public:
+        GuardBlockState(Player* player) : State(player, "GuardBlockState") {}
+        ~GuardBlockState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+    };
+
+    // ----- ガード破壊された -----
+    class GuardBrokenState : public State<Player>
+    {
+    public:
+        GuardBrokenState(Player* player) : State(player, "GuardBrokenState") {}
+        ~GuardBrokenState() {}
 
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;

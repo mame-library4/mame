@@ -30,6 +30,7 @@ public:
     // ---------- RootMotion ----------
     void RootMotion() { gltfModel_.RootMotion(scaleFactor_); }
     void SetUseRootMotion(const bool& flag) { gltfModel_.SetUseRootMotion(flag); }
+    void SetRootMotionValue(const float& value) { gltfModel_.SetRootMotionValue(value); }
 
 public:
     // ---------- Transform ----------

@@ -280,6 +280,13 @@ void CollisionManager::CounterCheckEnemyAttack()
                     // ガードカウンターが成功した
                     player->SetIsGuardCounterSuccessful(true);
 
+                    // ノックバックの方向算出
+                    DirectX::XMFLOAT3 playerPosition = player->GetTransform()->GetPosition();
+                    DirectX::XMFLOAT3 knockBackDirection = playerPosition - enemyData.GetPosition();
+                    knockBackDirection.y = 0.0f;
+                    knockBackDirection = XMFloat3Normalize(knockBackDirection);
+                    player->SetKnockBackDirection(knockBackDirection);
+
                     // TODO: エフェクト再生
                     DirectX::XMFLOAT3 vec = enemyData.GetPosition() - pelvisPosition;
                     vec = pelvisPosition + XMFloat3Normalize(vec) * player->GetGuardCounterRadius();

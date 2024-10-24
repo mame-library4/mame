@@ -20,6 +20,8 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::RunState(this));
         GetStateMachine()->RegisterState(new PlayerState::GuardCounterState(this));
         GetStateMachine()->RegisterState(new PlayerState::GuardCounterAttackState(this));
+        GetStateMachine()->RegisterState(new PlayerState::GuardBlockState(this));
+        GetStateMachine()->RegisterState(new PlayerState::GuardBrokenState(this));
 
         GetStateMachine()->RegisterState(new PlayerState::LightFlinchState(this));
         GetStateMachine()->RegisterState(new PlayerState::FlinchState(this));
@@ -166,8 +168,6 @@ void Player::DrawDebug()
     {
         ImGui::DragFloat("SwordTrailEndPosition", &swordTrailEndPosition_);
 
-        ImGui::DragFloat("GuardCounterRadius", &guardCounterRadius_, 0.1f, 0.0f, 100.0f);
-
         ImGui::Checkbox("DodgeAttackCancel", &isDodgeAttackCancel_);
 
         ImGui::Checkbox("IsSwordPrimitiveDraw", &isSwordPrimitiveDraw_);
@@ -186,15 +186,22 @@ void Player::DrawDebug()
 
             ImGui::TreePop();
         }
-        // ----- ガードゲージ -----
-        if (ImGui::TreeNode("GuardGauge"))
+        // ----- ガードカウンター -----
+        if (ImGui::TreeNode("GuardCounter"))
         {
-            ImGui::DragFloat("GuardGauge", &guardGauge_);
-            ImGui::DragFloat("RecoverySpeed", &guardGaugeRecoverySpeed_);
-            ImGui::DragFloat("GuardCost", &guardCost_);
-            ImGui::DragFloat("GuardDamageCost", &guardDamageCost_);
+            ImGui::DragFloat("GuardCounterRadius", &guardCounterRadius_, 0.1f, 0.0f, 100.0f);
+            ImGui::Checkbox("AutoCounterMode", &isAutoCounterModeEnabled_);
 
-            ImGui::TreePop();
+            // ----- ガードゲージ -----
+            if (ImGui::TreeNode("GuardGauge"))
+            {
+                ImGui::DragFloat("GuardGauge", &guardGauge_);
+                ImGui::DragFloat("RecoverySpeed", &guardGaugeRecoverySpeed_);
+                ImGui::DragFloat("GuardCost", &guardCost_);
+                ImGui::DragFloat("GuardDamageCost", &guardDamageCost_);
+
+                ImGui::TreePop();
+            }
         }
 
 
@@ -475,6 +482,18 @@ void Player::UpdateGuardGaugeRecovery(const float& elapsedTime)
 void Player::UseGuardGauge(const float& elapsedTime)
 {
     guardGauge_ -= guardCost_ * elapsedTime;
+
+    guardGauge_ = std::max(guardGauge_, 0.0f);
+}
+
+// ----- ブロックしたときのガードゲージ消費 -----
+const bool Player::UseGuardGaugeOnBlock()
+{
+    guardGauge_ -= guardDamageCost_;
+
+    guardGauge_ = std::max(guardGauge_, 0.0f);
+
+    return guardGauge_ > 0.0f;
 }
 
 void Player::ResetFlags()

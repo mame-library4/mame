@@ -21,6 +21,8 @@ public:// --- 定数 ---
 
         GuardCounter,       // ガードカウンター
         GuardCounterAttack, // ガードカウンター攻撃
+        GuardBlock,         // ガードブロック
+        GuardBroken,        // ガード破壊
 
         LightFlinch,
         Flinch,
@@ -85,6 +87,11 @@ public:// --- 定数 ---
         DodgeBack,  // 回避後ろ
         DodgeRight, // 回避右
         DodgeLeft,  // 回避左
+
+        BlockHit,
+        BlockBreak,
+        Death,
+        Parry,
     };
 
     // 先行入力の種類
@@ -170,6 +177,7 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const float GetGuardGauge() const { return guardGauge_; }
     [[nodiscard]] const float GetMaxGuardGauge() const { return maxGuardGauge_; }
     void UseGuardGauge(const float& elapsedTime);
+    [[nodiscard]] const bool UseGuardGaugeOnBlock();
 
     // ---------- 行動 -------------------------------------------------------
     // ----- フラグをリセット -----
@@ -224,6 +232,12 @@ public:// --- 取得・設定 ---
     void SetIsGuardCounterStance(const bool& flag) { isGuardCounterStance_ = flag; }
     [[nodiscard]] const bool GetIsGuardCounterSuccessful() const { return isGuardCounterSuccessful_; }
     void SetIsGuardCounterSuccessful(const bool& flag) { isGuardCounterSuccessful_ = flag; }
+    [[nodiscard]] const bool GetIsAutoCounterModeEnabled() const { return isAutoCounterModeEnabled_; }
+    void SetIsAutoCounterModeEnabled(const bool& flag) { isAutoCounterModeEnabled_ = flag; }
+
+    // ---------- ノックバック ----------
+    [[nodiscard]] const DirectX::XMFLOAT3 GetKnockBackDirection() const { return knockBackDirection_; }
+    void SetKnockBackDirection(const DirectX::XMFLOAT3& direction) { knockBackDirection_ = direction; }
 
     // ---------- キー入力 ----------
     [[nodiscard]] bool IsComboAttack0KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
@@ -345,4 +359,8 @@ private:
     float guardCounterRadius_       = 0.9f;
     bool  isGuardCounterStance_     = false; // ガードカウンター状態か
     bool  isGuardCounterSuccessful_ = false; // 成功したか
+    bool  isAutoCounterModeEnabled_ = false; // 自動カウンター有効か
+
+    // ---------- ノックバック ----------
+    DirectX::XMFLOAT3 knockBackDirection_ = {};
 };
