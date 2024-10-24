@@ -17,7 +17,7 @@ private:
 
     bool isAllUICreated = false; // 全てのリソースが生成されたか
 
-    float maxStaminaSizeX_ = 450.0f;
+    const float maxStaminaSizeX_ = 450.0f;
 
     float warningFlashTimer_ = 0.0f;
     float warningFlashTime_  = 0.3f;

@@ -510,6 +510,9 @@ namespace PlayerState
             return;
         }
 
+        // ガードゲージを消費
+        owner_->UseGuardGauge(elapsedTime);
+
         // 移動入力処理
         const float aLx = gamePad.GetAxisLX();
         const float aLy = gamePad.GetAxisLY();

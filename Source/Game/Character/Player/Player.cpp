@@ -73,8 +73,9 @@ void Player::Initialize()
     SetHealth(GetMaxHealth());
 
     // スタミナ設定
-    maxStamina_ = 50.0f;
     stamina_ = maxStamina_;
+    // ガードゲージ設定
+    guardGauge_ = maxGuardGauge_;
 
     // 速度設定
     SetAcceleration(50.0f);
@@ -137,6 +138,8 @@ void Player::Update(const float& elapsedTime)
     // スタミナ回復
     UpdateStaminaRecovery(elapsedTime);
 
+    // ガードゲージ回復
+    UpdateGuardGaugeRecovery(elapsedTime);
 
     sword_.Update(GetJointWorldTransform("hand_r"), GetJointWorldTransform("index_01_r"));
     //sword_.Update(GetJointPosition("hand_r"));
@@ -173,12 +176,23 @@ void Player::DrawDebug()
         ImGui::DragFloat("DashSpeed", &dashSpeed_);
         ImGui::DragFloat("DashAnimationSpeed", &dashAnimationSpeed_);
 
+        // ----- スタミナ -----
         if (ImGui::TreeNode("Stamina"))
         {
             ImGui::DragFloat("Stamina", &stamina_);
             ImGui::DragFloat("RecoverySpeed", &staminaRecoverySpeed_);
             ImGui::DragFloat("DodgeCost", &dodgeStaminaCost_);
             ImGui::DragFloat("DashCost", &dashStaminaCost_);
+
+            ImGui::TreePop();
+        }
+        // ----- ガードゲージ -----
+        if (ImGui::TreeNode("GuardGauge"))
+        {
+            ImGui::DragFloat("GuardGauge", &guardGauge_);
+            ImGui::DragFloat("RecoverySpeed", &guardGaugeRecoverySpeed_);
+            ImGui::DragFloat("GuardCost", &guardCost_);
+            ImGui::DragFloat("GuardDamageCost", &guardDamageCost_);
 
             ImGui::TreePop();
         }
@@ -439,6 +453,28 @@ void Player::UpdateStaminaRecovery(const float& elapsedTime)
     if (isDash_) return;
 
     stamina_ += staminaRecoverySpeed_ * elapsedTime;
+}
+
+// ----- ガードゲージ回復更新 -----
+void Player::UpdateGuardGaugeRecovery(const float& elapsedTime)
+{
+    // ガードゲージの回復量がない
+    if (guardGauge_ >= maxGuardGauge_) return;
+
+    // 特定のステート時は回復しない
+    const STATE currentState = GetCurrentState();
+    if (currentState == STATE::GuardCounter || currentState == STATE::GuardCounterAttack)
+    {
+        return;
+    }
+
+    guardGauge_ += guardGaugeRecoverySpeed_ * elapsedTime;
+}
+
+// ----- ガード中のゲージ消費 -----
+void Player::UseGuardGauge(const float& elapsedTime)
+{
+    guardGauge_ -= guardCost_ * elapsedTime;
 }
 
 void Player::ResetFlags()

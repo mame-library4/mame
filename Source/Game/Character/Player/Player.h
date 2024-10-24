@@ -80,6 +80,11 @@ public:// --- 定数 ---
         RunAttack0,     // 走り攻撃0
         RunAttack1,     // 走り攻撃1
         Counter,        // カウンター
+
+        DodgeFront, // 回避前
+        DodgeBack,  // 回避後ろ
+        DodgeRight, // 回避右
+        DodgeLeft,  // 回避左
     };
 
     // 先行入力の種類
@@ -118,8 +123,11 @@ public:
     void CalculateRotationAdjustment(); // 回転補正量設定
     void UpdateRotationAdjustment(const float& elapsedTime);    // 回転補正
 
-    // ---------- スタミナ ----------
+    // ---------- スタミナ回復 ----------
     void UpdateStaminaRecovery(const float& elapsedTime);
+
+    // ---------- ガードゲージ回復 ----------
+    void UpdateGuardGaugeRecovery(const float& elapsedTime);
 
     // ---------- Collision ----------
     void UpdateCollisions(const float& elapsedTime) override;
@@ -138,19 +146,18 @@ public:// --- 取得・設定 ---
 
     // ---------- 移動 ------------------------------
     void SetMoveDirection(const DirectX::XMFLOAT3 direction) { moveDirection_ = direction; } // 移動方向
-
+    // ----- ダッシュ -----
     [[nodiscard]] const float GetDashSpeed() const { return dashSpeed_; }
     [[nodiscard]] const float GetDashAnimationSpeed() const { return dashAnimationSpeed_; }
     [[nodiscard]] const bool GetIsDash() const { return isDash_; }
     void SetIsDash(const bool& flag) { isDash_ = flag; }
 
     // ---------- スタミナ ----------
-    [[nodiscard]] const float GetStamina() const { return stamina_; }
+    [[nodiscard]] const float GetStamina()    const { return stamina_; }
     [[nodiscard]] const float GetMaxStamina() const { return maxStamina_; }
-    void SetStanima(const float& stamina) { stamina_ = stamina; }
-    
+    void SetStanima(const float& stamina) { stamina_ = stamina; }    
     [[nodiscard]] const float GetDodgeStaminaCost() const { return dodgeStaminaCost_; }
-    [[nodiscard]] const float GetDashStamiaCost() const { return dashStaminaCost_; }
+    [[nodiscard]] const float GetDashStamiaCost()   const { return dashStaminaCost_; }
     void UseDodgeStamina() { stamina_ -= dodgeStaminaCost_; }
     void UseDashStamina(const float& elapsedTime);
     
@@ -158,6 +165,11 @@ public:// --- 取得・設定 ---
     void SetStaminaRecoverySpeed(const float& speed) { staminaRecoverySpeed_ = speed; }
 
     [[nodiscard]] const bool GetIsStaminaDepleted() const { return isStaminaDepleted; }
+
+    // ---------- ガードゲージ ----------
+    [[nodiscard]] const float GetGuardGauge() const { return guardGauge_; }
+    [[nodiscard]] const float GetMaxGuardGauge() const { return maxGuardGauge_; }
+    void UseGuardGauge(const float& elapsedTime);
 
     // ---------- 行動 -------------------------------------------------------
     // ----- フラグをリセット -----
@@ -294,19 +306,25 @@ private:
 
     // ---------- Debug用 --------------------
     bool isCollisionSphere_ = true;
-    bool isDamageSphere_ = true;
-    bool isAttackSphere_ = true;
+    bool isDamageSphere_    = true;
+    bool isAttackSphere_    = true;
 
     // ---------- スタミナ ----------
-    float stamina_      = 1.0f;
-    float maxStamina_   = 1.0f;
-    float staminaRecoverySpeed_ = 15.0f;
+    float       stamina_                = 0.0f;
+    const float maxStamina_             = 50.0f; // 最大値
+    float       staminaRecoverySpeed_   = 15.0f;
 
     float dodgeStaminaCost_ = 10.0f; // 回避に使うスタミナ量
     float dashStaminaCost_  = 3.0f; // ダッシュに使うスタミナ量
 
-    bool isStaminaDepleted = false;
+    bool isStaminaDepleted = false; // スタミナが枯渇している
 
+    // ---------- ガードゲージ ----------
+    float       guardGauge_                 = 0.0f;
+    const float maxGuardGauge_              = 100.0f; // 最大値
+    float       guardGaugeRecoverySpeed_    = 10.0f;   // 回復速度
+    float       guardCost_                  = 20.0f;   // ガードをする時に使用するコスト
+    float       guardDamageCost_            = 1.0f;   // ガード中,攻撃をくらったときに使用するコスト
 
     SwordTrail swordTrail_;
     Sword sword_;

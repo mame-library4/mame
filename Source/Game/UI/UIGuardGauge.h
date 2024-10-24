@@ -14,6 +14,8 @@ public:
 private:
     std::unique_ptr<Sprite> guardGaugeFrame_;
 
+    const float maxGuardGaugeSizeX = 450.0f;
+
     bool isAllUICreated = false; // 全てのリソースが生成されたか
 };
 
