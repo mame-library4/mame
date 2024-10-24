@@ -28,6 +28,7 @@ public:
         UICrosshair,        // |
         UINotifications,    // |
         UIActionGuide,      // |
+        UIGuardGauge,       // |
         UIStamina,          // |
         UIHealth,           // |
         UITitle,            // |

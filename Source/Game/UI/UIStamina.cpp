@@ -25,6 +25,7 @@ UIStamina::UIStamina()
     GetTransform()->SetSize(maxStaminaSizeX_, 7.0f);
     GetTransform()->SetColor(1.0f, 1.0f, 0.0f);
 
+    // ‘S‚Ä‚ÌUI‚ª¶¬‚³‚ê‚½
     isAllUICreated = true;
 }
 

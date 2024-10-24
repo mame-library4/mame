@@ -265,6 +265,9 @@
     <ClCompile Include="Source\Scene\TitleState.cpp">
       <Filter>Mame\Scene\TitleScene</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\UI\UIGuardGauge.cpp">
+      <Filter>Mame\Game\UI\UIGuardGauge</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -559,6 +562,9 @@
     <ClInclude Include="Source\Scene\TitleState.h">
       <Filter>Mame\Scene\TitleScene</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\UI\UIGuardGauge.h">
+      <Filter>Mame\Game\UI\UIGuardGauge</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -764,6 +770,9 @@
     </Filter>
     <Filter Include="Mame\Shader\Particle\FireBallParticle">
       <UniqueIdentifier>{158cdc52-9a48-483b-821a-d4e9b802751c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\UI\UIGuardGauge">
+      <UniqueIdentifier>{3bb82cd5-83a4-4a79-afaa-d20bea612f35}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

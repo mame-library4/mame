@@ -236,6 +236,7 @@
     <ClCompile Include="Source\Game\UI\UICrosshair.cpp" />
     <ClCompile Include="Source\Game\UI\UIFader.cpp" />
     <ClCompile Include="Source\Game\UI\UIFlashOut.cpp" />
+    <ClCompile Include="Source\Game\UI\UIGuardGauge.cpp" />
     <ClCompile Include="Source\Game\UI\UIHealth.cpp" />
     <ClCompile Include="Source\Game\UI\UIHuntComplete.cpp" />
     <ClCompile Include="Source\Game\UI\UIManager.cpp" />
@@ -331,6 +332,7 @@
     <ClInclude Include="Source\Game\UI\UICrosshair.h" />
     <ClInclude Include="Source\Game\UI\UIFader.h" />
     <ClInclude Include="Source\Game\UI\UIFlashOut.h" />
+    <ClInclude Include="Source\Game\UI\UIGuardGauge.h" />
     <ClInclude Include="Source\Game\UI\UIHealth.h" />
     <ClInclude Include="Source\Game\UI\UIHuntComplete.h" />
     <ClInclude Include="Source\Game\UI\UIManager.h" />
