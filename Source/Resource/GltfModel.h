@@ -370,6 +370,7 @@ public:
 
     // ----- 上下半身分離アニメーション -----
     void PlayUpperLowerBodyAnimation(const int& index, const bool& loop = true, const float& startFrame = 0.0f);
+    void ChangeLowerBodyAnimation(const int& index); // 下半身のアニメーション変更
 
     // ---------- Transform ----------
     Transform* GetTransform() { return &transform_; }
@@ -462,9 +463,14 @@ private:
 
     // ---------- 上下半身分離用 ----------
     std::vector<Node>   upperLowerBodyAnimatedNodes_[2];
-    int                 upperLowerBodyAnimationIndex_           = -1;
-    float               upperLowerBodyAnimationSeconds_         = 0.0f;
+    int                 lowerBodyAnimationIndex_                = -1;   // 下半身アニメーション番号
+    float               lowerBodyAnimationSeconds_              = 0.0f; // 下半身アニメーション再生用
     float               upperLowerBodyBlendAnimationSeconds_    = 0.0f;
     bool                isUpperLowerBodyAnimation_              = false;
     bool                isBlendUpperLowerBodyAnimation_         = false; // ブレンド
+    
+    std::vector<Node>   changeLowerBodyAnimatedNodes_[2];               // 下半身アニメーション変更用
+    float               changeLowerBodyAnimationSeconds_        = 0.0f; // 下半身アニメーション変更用
+    float               changeLowerBodyweight_                  = 0.0f; // 影響値
+    bool                isBlendChangeLowerBodyAnimation_        = false;
 };

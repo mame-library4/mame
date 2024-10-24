@@ -52,6 +52,7 @@ public:
     std::vector<GltfModel::Node>* GetNodes() { return gltfModel_.GetNodes(); }
 
     void PlayUpperLowerBodyAnimation(const int& index, const bool& loop = true, const float& startFrame = 0.0f) { gltfModel_.PlayUpperLowerBodyAnimation(index, loop, startFrame); }
+    void ChangeLowerBodyAnimation(const int& index) { gltfModel_.ChangeLowerBodyAnimation(index); }
 
 private:
     GltfModel   gltfModel_;

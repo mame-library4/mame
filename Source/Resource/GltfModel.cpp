@@ -183,6 +183,8 @@ GltfModel::GltfModel(const std::string& filename)
     blendedAnimationNodes_ = nodes_;
     upperLowerBodyAnimatedNodes_[0] = nodes_;
     upperLowerBodyAnimatedNodes_[1] = nodes_;
+    changeLowerBodyAnimatedNodes_[0] = nodes_;
+    changeLowerBodyAnimatedNodes_[1] = nodes_;
 
     zeroAnimatedNodes_ = nodes_;
 }
@@ -201,22 +203,21 @@ void GltfModel::UpdateAnimation(const float& elapsedTime)
         weight_ = upperLowerBodyBlendAnimationSeconds_ / 0.2f;
         //weight_ = upperLowerBodyBlendAnimationSeconds_ / transitionTime_;
 
-
         // 下半身アニメーション更新 (下半身アニメーションが止まってしまうので)
         // アニメーション再生時間経過
-        upperLowerBodyAnimationSeconds_ += elapsedTime;
+        lowerBodyAnimationSeconds_ += elapsedTime;
         // アニメーションの最終フレームを取ってくる
-        float duration = animations_.at(upperLowerBodyAnimationIndex_).duration_;
+        float duration = animations_.at(lowerBodyAnimationIndex_).duration_;
         // アニメーションが再生しきっている場合
-        if (upperLowerBodyAnimationSeconds_ > duration)
+        if (lowerBodyAnimationSeconds_ > duration)
         {
-            upperLowerBodyAnimationSeconds_ = 0.0f;
+            lowerBodyAnimationSeconds_ = 0.0f;
         }
         // 上半身アニメーション
         std::vector<Node> upperNodes = upperLowerBodyAnimatedNodes_[1];
         // 下半身アニメーション
         std::vector<Node> lowerNodes = upperLowerBodyAnimatedNodes_[1];
-        Animate(upperLowerBodyAnimationIndex_, upperLowerBodyAnimationSeconds_, lowerNodes);
+        Animate(lowerBodyAnimationIndex_, lowerBodyAnimationSeconds_, lowerNodes);        
         // 合体させる
         upperLowerBodyAnimatedNodes_[1] = SetUpperLowerBodyAnimation(upperNodes, lowerNodes);
 
@@ -233,6 +234,34 @@ void GltfModel::UpdateAnimation(const float& elapsedTime)
             isBlendUpperLowerBodyAnimation_ = false;
         }
 
+        return;
+    }
+
+    // 下半身アニメーション切り替え
+    if (isBlendChangeLowerBodyAnimation_)
+    {
+        // weight値計算
+        changeLowerBodyweight_ = changeLowerBodyAnimationSeconds_ / 0.2f;
+
+        // 上半身アニメーション
+        std::vector<Node> upperNodes = upperLowerBodyAnimatedNodes_[0];
+        Animate(animationIndex_, animationSeconds_, upperNodes);
+
+        // 下半身アニメーション
+        std::vector<Node> lowerNodes = nodes_;
+        Animate(lowerBodyAnimationIndex_, lowerBodyAnimationSeconds_, changeLowerBodyAnimatedNodes_[1]);
+        const std::vector<Node>* nodes[2] = { &changeLowerBodyAnimatedNodes_[0], &changeLowerBodyAnimatedNodes_[1] };
+        BlendAnimations(nodes, changeLowerBodyweight_, lowerNodes);
+
+        // 合体させる
+        nodes_ = SetUpperLowerBodyAnimation(upperNodes, lowerNodes);
+
+        changeLowerBodyAnimationSeconds_ += elapsedTime;
+        if (changeLowerBodyweight_ > 1.0f)
+        {
+            changeLowerBodyAnimationSeconds_ = 0.0f;
+            isBlendChangeLowerBodyAnimation_ = false;
+        }
         return;
     }
 
@@ -742,18 +771,18 @@ void GltfModel::UpdateUpperLowerBodyAnimation(const float& elapsedTime)
     if (isUpperLowerBodyAnimation_ == false) return;
 
     // アニメーション再生時間経過
-    upperLowerBodyAnimationSeconds_ += elapsedTime;
+    lowerBodyAnimationSeconds_ += elapsedTime;
 
     // アニメーションの最終フレームを取ってくる
-    float duration = animations_.at(upperLowerBodyAnimationIndex_).duration_;
+    float duration = animations_.at(lowerBodyAnimationIndex_).duration_;
 
     // アニメーションが再生しきっている場合
-    if (upperLowerBodyAnimationSeconds_ > duration)
+    if (lowerBodyAnimationSeconds_ > duration)
     {
-        upperLowerBodyAnimationSeconds_ = 0.0f;
+        lowerBodyAnimationSeconds_ = 0.0f;
     }
 
-    Animate(upperLowerBodyAnimationIndex_, upperLowerBodyAnimationSeconds_, upperLowerBodyAnimatedNodes_[0]);
+    Animate(lowerBodyAnimationIndex_, lowerBodyAnimationSeconds_, upperLowerBodyAnimatedNodes_[0]);
 
     // ※プレイヤーのbone構造に対応
     nodes_ = SetUpperLowerBodyAnimation(nodes_, upperLowerBodyAnimatedNodes_[0]);
@@ -846,13 +875,27 @@ void GltfModel::PlayUpperLowerBodyAnimation(const int& index, const bool& loop, 
     upperLowerBodyAnimatedNodes_[1] = SetUpperLowerBodyAnimation(upperLowerBodyAnimatedNodes_[1], lowerNodes);
 
     // 各種変数を設定する    
-    upperLowerBodyAnimationIndex_   = animationIndex_;  // 下半身アニメーション番号
+    lowerBodyAnimationIndex_   = animationIndex_;  // 下半身アニメーション番号
     animationIndex_                 = index;            // 上半身アニメーション番号
-    upperLowerBodyAnimationSeconds_ = animationSeconds_;// 下半身アニメーションタイマー
+    lowerBodyAnimationSeconds_ = animationSeconds_;// 下半身アニメーションタイマー
     animationSeconds_               = startFrame;       // 上半身アニメーションタイマー
     isUpperLowerBodyAnimation_      = true;
     isBlendUpperLowerBodyAnimation_ = true;
     animationLoopFlag_              = loop;
+}
+
+// ----- 下半身アニメーション変更 -----
+void GltfModel::ChangeLowerBodyAnimation(const int& index)
+{
+    // 現在のアニメーション番号と同じなのでここで終了
+    if (lowerBodyAnimationIndex_ == index) return;
+
+    // 現在使用している下半身アニメーション
+    Animate(lowerBodyAnimationIndex_, lowerBodyAnimationSeconds_, changeLowerBodyAnimatedNodes_[0]);
+
+    lowerBodyAnimationIndex_ = index;
+    changeLowerBodyAnimationSeconds_ = 0.0f;
+    isBlendChangeLowerBodyAnimation_ = true;
 }
 
 // ----- 指定したジョイントの位置を取得 -----

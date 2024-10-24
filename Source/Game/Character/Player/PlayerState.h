@@ -113,10 +113,6 @@ namespace PlayerState
         float       guardEffectLerpSpeed_       = 0.4f; // EffectLerp速度調整用
         float       guardCounterStartRadius_    = 1.4f;
         float       guardCounterEndRadius_      = 0.9f;
-        
-
-        bool isGuardStartAnimationEnd_  = false; // ガード構えアニメーション再生終了フラグ
-        bool isGuardLoopAnimationEnd_   = false; // ガードアニメーション再生終了フラグ
 
         GamePadVibration gamePadVibration_;
     };

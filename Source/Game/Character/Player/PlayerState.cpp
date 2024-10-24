@@ -480,7 +480,7 @@ namespace PlayerState
     void GuardCounterState::Initialize()
     {
         // アニメーション設定
-        owner_->PlayUpperLowerBodyAnimation(static_cast<int>(Player::Animation::BlockStart), false, 0.4f);
+        owner_->PlayUpperLowerBodyAnimation(static_cast<int>(Player::Animation::BlockLoop), false);
 
         DirectX::XMFLOAT3 position = owner_->GetJointPosition("pelvis");
         guardEffect_ = EffectManager::Instance().GetEffect("Guard")->Play(position, 1.0f, 1.0f);
@@ -496,8 +496,6 @@ namespace PlayerState
         // 変数初期化
         gamePadVibration_.Initialize(0.0f, 0.2f, 0.5f);
         guardEffectLerpTimer_       = 0.0f;
-        isGuardLoopAnimationEnd_    = false;
-        isGuardStartAnimationEnd_   = false;
     }
 
     // ----- 更新 -----
@@ -509,16 +507,14 @@ namespace PlayerState
         const float aLy = gamePad.GetAxisLY();
         if (fabsf(aLx) != 0.0f || fabsf(aLy) != 0.0f)
         {
-            //owner_->SetUpperLowerBodyAnimationIndex(static_cast<int>(Player::Animation::Run));
-            //owner_->SetUpperLowerBodyAnimationIndex(static_cast<int>(Player::Animation::Walk));
+            owner_->ChangeLowerBodyAnimation(static_cast<int>(Player::Animation::Run));
 
             // 旋回
             owner_->Turn(elapsedTime);
         }
         else
         {
-            //owner_->SetUpperLowerBodyAnimationIndex(static_cast<int>(Player::Animation::Idle));
-            //owner_->SetUpperLowerBodyAnimationIndex(static_cast<int>(Player::Animation::BlockLoop));
+            owner_->ChangeLowerBodyAnimation(static_cast<int>(Player::Animation::Idle));
 
             // 移動&回転処理リセット
             owner_->SetMoveDirection({});
@@ -577,33 +573,6 @@ namespace PlayerState
     // ----- アニメーション更新 -----
     void GuardCounterState::UpdateAnimation()
     {
-        // ガード構えアニメーションが再生終了したか判定
-        if (isGuardStartAnimationEnd_ == false)
-        {
-            if (owner_->IsPlayAnimation() == false)
-            {
-                owner_->PlayAnimation(Player::Animation::BlockLoop, false);
-
-                isGuardStartAnimationEnd_ = true;
-
-            }
-            return;
-        }
-
-        if (isGuardLoopAnimationEnd_ == false)
-        {
-            if (owner_->IsPlayAnimation() == false)
-            {
-                owner_->PlayAnimation(Player::Animation::BlockEnd, false);
-
-                // エフェクトを停止させる
-                EffectManager::Instance().GetEffect("Guard")->Stop(guardEffect_);
-
-                isGuardLoopAnimationEnd_ = true;
-            }
-            return;
-        }
-
         if (owner_->IsPlayAnimation() == false)
         {
             owner_->ChangeState(Player::STATE::Idle);
@@ -615,7 +584,7 @@ namespace PlayerState
     void GuardCounterState::UpdateEffect(const float& elapsedTime)
     {
         // ガードが終わっていたら更新しない
-        if (isGuardLoopAnimationEnd_) return;
+        //if (isGuardLoopAnimationEnd_) return;
 
         Effect* guardEffect = EffectManager::Instance().GetEffect("Guard");
         DirectX::XMFLOAT3 pelvisPosition = owner_->GetJointPosition("pelvis");
