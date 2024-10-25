@@ -114,6 +114,11 @@ namespace PlayerState
         float       guardCounterStartRadius_    = 1.4f;
         float       guardCounterEndRadius_      = 0.9f;
 
+        // ----- ジャストガード用 -----
+        float   justGuardTimer_         = 0.0f;  // ジャストガード管理タイマー
+        float   justGuardFrame_         = 0.0f;  // ジャストガード受付フレーム
+        bool    isJustGuardSuccessful_  = false; // ジャストガードが成功したか
+
         GamePadVibration gamePadVibration_;
     };
 
@@ -130,6 +135,7 @@ namespace PlayerState
         void DrawDebug()                        override;
     };
 
+    // ----- ガードブロック -----
     class GuardBlockState : public State<Player>
     {
     public:
@@ -258,7 +264,38 @@ namespace PlayerState
         bool isFirstTime_   = true;     // このステートに入るのが初めてかどうか
         bool isRotating_    = false;    // 回転処理をするか
         bool isInputStick_  = false;    // スティック入力があるか
+
+        // ----- ジャスト回避用 -----
+        float justDodgeFrame_ = 0.0f;
+        float justDodgeTimer_ = 0.0f;
     };
+      
+    // ----- ジャスト回避 -----
+    class JustDodgeState : public State<Player>
+    {
+    public:
+        JustDodgeState(Player* player) : State(player, "JustDodgeState") {}
+        ~JustDodgeState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+    };
+
+    // ----- ラッシュ攻撃 -----
+    class RushAttackState : public State<Player>
+    {
+    public:
+        RushAttackState(Player* player) : State(player, "RushAttackState") {}
+        ~RushAttackState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+    };
+
 
     // ----- カウンター -----
     class CounterState : public State<Player>

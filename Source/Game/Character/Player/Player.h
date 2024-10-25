@@ -29,6 +29,9 @@ public:// --- 定数 ---
         Damage,         // ダメージ
         Death,          // 死亡
         Dodge,          // 回避
+        
+        JustDodge,      // ジャスト回避
+        RushAttack,     // ラッシュ攻撃
 
         Counter,        // カウンター
         CounterCombo,   // カウンターコンボ
@@ -92,6 +95,13 @@ public:// --- 定数 ---
         BlockBreak,
         Death,
         Parry,
+
+        Attack2_0,
+
+        AttackRush0,
+        AttackRush1,
+        AttackRush2,
+        AttackRush3,
     };
 
     // 先行入力の種類
@@ -178,6 +188,8 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const float GetMaxGuardGauge() const { return maxGuardGauge_; }
     void UseGuardGauge(const float& elapsedTime);
     [[nodiscard]] const bool UseGuardGaugeOnBlock();
+    [[nodiscard]] const bool GetIsGuardGaugeDepleted() const { return isGuardGaugeDepleted_; }
+    void SetIsGuardGaugeDepleted(const bool& flag) { isGuardGaugeDepleted_ = flag; }
 
     // ---------- 行動 -------------------------------------------------------
     // ----- フラグをリセット -----
@@ -336,9 +348,10 @@ private:
     // ---------- ガードゲージ ----------
     float       guardGauge_                 = 0.0f;
     const float maxGuardGauge_              = 100.0f; // 最大値
-    float       guardGaugeRecoverySpeed_    = 10.0f;   // 回復速度
-    float       guardCost_                  = 20.0f;   // ガードをする時に使用するコスト
-    float       guardDamageCost_            = 1.0f;   // ガード中,攻撃をくらったときに使用するコスト
+    float       guardGaugeRecoverySpeed_    = 10.0f;  // 回復速度
+    float       guardCost_                  = 20.0f;  // ガードをする時に使用するコスト
+    float       guardDamageCost_            = 20.0f;  // ガード中,攻撃をくらったときに使用するコスト
+    bool        isGuardGaugeDepleted_       = false;  // ガードゲージが枯渇
 
     SwordTrail swordTrail_;
     Sword sword_;

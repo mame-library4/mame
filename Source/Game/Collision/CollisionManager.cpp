@@ -280,12 +280,26 @@ void CollisionManager::CounterCheckEnemyAttack()
                     // ガードカウンターが成功した
                     player->SetIsGuardCounterSuccessful(true);
 
-                    // ノックバックの方向算出
-                    DirectX::XMFLOAT3 playerPosition = player->GetTransform()->GetPosition();
-                    DirectX::XMFLOAT3 knockBackDirection = playerPosition - enemyData.GetPosition();
-                    knockBackDirection.y = 0.0f;
-                    knockBackDirection = XMFloat3Normalize(knockBackDirection);
-                    player->SetKnockBackDirection(knockBackDirection);
+                    // 敵のアニメーションによってノックバックの種類を変える
+                    Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(enemy->GetAnimationIndex());
+                    if (animationIndex == Enemy::DragonAnimation::AttackSlam0)
+                    {
+                        DirectX::XMFLOAT3 playerPosition = player->GetTransform()->GetPosition();
+                        DirectX::XMFLOAT3 enemyPosition = enemy->GetTransform()->GetPosition();
+                        DirectX::XMFLOAT3 knockBackDirection = enemyPosition - playerPosition;
+                        knockBackDirection.y = 0.0f;
+                        knockBackDirection = XMFloat3Normalize(knockBackDirection);
+                        player->SetKnockBackDirection(knockBackDirection);
+                    }
+                    else
+                    {
+                        // ノックバックの方向算出
+                        DirectX::XMFLOAT3 playerPosition = player->GetTransform()->GetPosition();
+                        DirectX::XMFLOAT3 knockBackDirection = enemyData.GetPosition() - playerPosition;
+                        knockBackDirection.y = 0.0f;
+                        knockBackDirection = XMFloat3Normalize(knockBackDirection);
+                        player->SetKnockBackDirection(knockBackDirection);
+                    }
 
                     // TODO: エフェクト再生
                     DirectX::XMFLOAT3 vec = enemyData.GetPosition() - pelvisPosition;
@@ -399,33 +413,63 @@ void CollisionManager::CounterCheckProjectile()
 {
     Player* player = PlayerManager::Instance().GetPlayer().get();
 
-    // 現在のステートがカウンターではないのでここで終了
-    if (player->GetCurrentState() != Player::STATE::Counter) return;
+    // 現在のステートがカウンター受け付けてないので判定しない
+    Player::STATE currentState = player->GetCurrentState();
+    if (currentState != Player::STATE::Counter &&
+        currentState != Player::STATE::GuardCounter)
+    {
+        return;
+    }
 
-    // カウンターを受け付けていない
-    if (player->GetIsCounter() == false) return;
+    // 現在カウンターを受け付けていない
+    if (player->GetIsCounter() == false && player->GetIsGuardCounterStance() == false) return;
 
     // 既にカウンター成功している
-    if (player->GetIsAbleCounterAttack()) return;
+    if (player->GetIsAbleCounterAttack() && player->GetIsGuardCounterSuccessful()) return;
 
     const DirectX::XMFLOAT3 playerPosition = player->GetTransform()->GetPosition();
+    const DirectX::XMFLOAT3 pelvisPosition = player->GetJointPosition("pelvis");
 
     std::vector<Projectile*> projectiles = ProjectileManager::Instance().GetProjectiles();
     for (int projectileIndex = 0; projectileIndex < projectiles.size(); ++projectileIndex)
     {
         Projectile* projectile = projectiles.at(projectileIndex);
         const DirectX::XMFLOAT3 projectilePosition = projectile->GetTransform()->GetPosition();
-        
+
         // 範囲内にいるか判定
         if (IntersectSphereVsSphere(
             playerPosition, 0.0f,
             projectilePosition, projectile->GetCounterRadius()))
         {
-            // カウンター成功
-            player->SetIsAbleCounterAttack(true);
+            // ----- 見切カウンター -----
+            if (currentState == Player::STATE::Counter)
+            {
+                // カウンター成功
+                player->SetIsAbleCounterAttack(true);
+            }
+            // ----- ガードカウンター -----
+            else
+            {
+                // ガードカウンターが成功した
+                player->SetIsGuardCounterSuccessful(true);
+
+                // ノックバックの方向算出
+                DirectX::XMFLOAT3 playerPosition = player->GetTransform()->GetPosition();
+                DirectX::XMFLOAT3 knockBackDirection = projectile->GetTransform()->GetPosition() - playerPosition;
+                knockBackDirection.y = 0.0f;
+                knockBackDirection = XMFloat3Normalize(knockBackDirection);
+                player->SetKnockBackDirection(knockBackDirection);
+
+                // TODO: エフェクト再生
+                DirectX::XMFLOAT3 vec = projectile->GetTransform()->GetPosition() - pelvisPosition;
+                vec = pelvisPosition + XMFloat3Normalize(vec) * player->GetGuardCounterRadius();
+
+                EffectManager::Instance().GetEffect("Counter")->Play(vec, 0.1f, 4.0f);
+            }
+
+            return;
         }
     }
-
 }
 
 // ---------- 球と球の交差判定 ----------

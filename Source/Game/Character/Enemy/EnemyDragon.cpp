@@ -225,7 +225,7 @@ void EnemyDragon::RegisterBehaviorNode()
     // --------------- Ž€–S ---------------
     behaviorTree_->AddNode("Root", "Death", 0, BehaviorTree::SelectRule::None, new DeathJudgment(this), new ActionDragon::DeathAction(this));
 
-
+    //behaviorTree_->AddNode("Root", "FireBreath", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireBreath(this));
     behaviorTree_->AddNode("Root", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
     
 

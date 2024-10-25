@@ -27,7 +27,11 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::FlinchState(this));
         GetStateMachine()->RegisterState(new PlayerState::DamageState(this));           // ダメージ
         GetStateMachine()->RegisterState(new PlayerState::DeathState(this));            // 死亡
-        GetStateMachine()->RegisterState(new PlayerState::DodgeState(this));        // 回避
+        
+        GetStateMachine()->RegisterState(new PlayerState::DodgeState(this));            // 回避
+        GetStateMachine()->RegisterState(new PlayerState::JustDodgeState(this));            // 回避
+        GetStateMachine()->RegisterState(new PlayerState::RushAttackState(this));            // 回避
+
         GetStateMachine()->RegisterState(new PlayerState::CounterState(this));          // カウンター
         GetStateMachine()->RegisterState(new PlayerState::CounterComboState(this));     // カウンターコンボ
         GetStateMachine()->RegisterState(new PlayerState::RunAttackState(this));        // コンボ0_3
@@ -202,6 +206,7 @@ void Player::DrawDebug()
 
                 ImGui::TreePop();
             }
+            ImGui::TreePop();
         }
 
 
@@ -466,11 +471,18 @@ void Player::UpdateStaminaRecovery(const float& elapsedTime)
 void Player::UpdateGuardGaugeRecovery(const float& elapsedTime)
 {
     // ガードゲージの回復量がない
-    if (guardGauge_ >= maxGuardGauge_) return;
+    if (guardGauge_ >= maxGuardGauge_)
+    {
+        // ゲージ枯渇状態を解除
+        if (isGuardGaugeDepleted_) isGuardGaugeDepleted_ = false;
+
+        return;
+    }
 
     // 特定のステート時は回復しない
     const STATE currentState = GetCurrentState();
-    if (currentState == STATE::GuardCounter || currentState == STATE::GuardCounterAttack)
+    if (currentState == STATE::GuardCounter || currentState == STATE::GuardCounterAttack ||
+        currentState == STATE::GuardBlock   || currentState == STATE::GuardBroken)
     {
         return;
     }

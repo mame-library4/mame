@@ -13,9 +13,14 @@ public:
 
 private:
     std::unique_ptr<Sprite> guardGaugeFrame_;
-
-    const float maxGuardGaugeSizeX = 450.0f;
+    std::unique_ptr<Sprite> guardGaugeWarning_;
 
     bool isAllUICreated = false; // 全てのリソースが生成されたか
+    
+    const float maxGuardGaugeSizeX = 450.0f;
+
+    float warningFlashTimer_    = 0.0f;
+    float warningFlashTime_     = 0.3f;
+    bool  isFadingIn_           = true;
 };
 

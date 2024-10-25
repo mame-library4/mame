@@ -23,4 +23,3 @@ private:
     float warningFlashTime_  = 0.3f;
     bool isFadingIn_ = true;
 };
-

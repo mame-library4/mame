@@ -115,7 +115,7 @@ namespace PlayerState
     // ----- 更新 -----
     void IdleState::Update(const float& elapsedTime)
     {
-        if (owner_->IsGuardCounterKeyDown())
+        if (owner_->IsGuardCounterKeyDown() && owner_->GetIsGuardGaugeDepleted() == false)
         {
             owner_->ChangeState(Player::STATE::GuardCounter);
             return;
@@ -279,7 +279,7 @@ namespace PlayerState
     // ----- 更新 -----
     void RunState::Update(const float& elapsedTime)
     {
-        if (owner_->IsGuardCounterKeyDown())
+        if (owner_->IsGuardCounterKeyDown() && owner_->GetIsGuardGaugeDepleted() == false)
         {
             owner_->ChangeState(Player::STATE::GuardCounter);
             return;
@@ -508,6 +508,13 @@ namespace PlayerState
             return;
         }
 
+        // ガードゲージがなくなったら待機に遷移する
+        if (owner_->GetGuardGauge() <= 0.0f)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+
         // ガードゲージを消費
         owner_->UseGuardGauge(elapsedTime);
 
@@ -533,15 +540,6 @@ namespace PlayerState
         // エフェクト更新
         UpdateEffect(elapsedTime);
 
-        // ガードカウンターを無効化する
-        if (owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::BlockEnd))
-        {
-            if (owner_->GetAnimationSeconds() > 0.24f && owner_->GetIsGuardCounterStance())
-            {
-                owner_->SetIsGuardCounterStance(false);
-            }
-        }
-
         // ガードが成功した
         if (owner_->GetIsGuardCounterSuccessful())
         {
@@ -556,6 +554,16 @@ namespace PlayerState
             }
             else
             {
+                // 回転処理
+                const DirectX::XMFLOAT3 knockBackDirection_float3 = owner_->GetKnockBackDirection();
+                const DirectX::XMFLOAT3 playerFront_float3 = owner_->GetTransform()->CalcForward();
+                const DirectX::XMFLOAT2 knockBackDirection = XMFloat2Normalize({ knockBackDirection_float3.x, knockBackDirection_float3.z });
+                const DirectX::XMFLOAT2 playerFront = XMFloat2Normalize({ playerFront_float3.x, playerFront_float3.z });
+                float angle = acosf(XMFloat2Dot(knockBackDirection, playerFront));
+                float cross = XMFloat2Cross(knockBackDirection, playerFront);
+                if (cross > 0)  owner_->GetTransform()->AddRotationY(-angle);
+                else            owner_->GetTransform()->AddRotationY(angle);
+
                 // ガードゲージを消費 (ガードゲージがまだあればtrue)
                 if (owner_->UseGuardGaugeOnBlock())
                 {// ガードできた
@@ -570,12 +578,15 @@ namespace PlayerState
                 }
                 else
                 {// ガードが破壊された
-                    // ガード破壊されたステートへ遷移
+                    // ガードゲージがなくなったフラグを立てる
+                    owner_->SetIsGuardGaugeDepleted(true);
 
                     // 無敵状態にする
                     owner_->SetIsInvincible(true);
 
                     owner_->SetIsGuardCounterSuccessful(false);
+                    
+                    // ガード破壊されたステートへ遷移
                     owner_->ChangeState(Player::STATE::GuardBroken);
                     return;
                 }
@@ -594,6 +605,8 @@ namespace PlayerState
         // 移動&回転処理リセット
         owner_->SetMoveDirection({});
         owner_->SetVelocity({});
+
+        owner_->SetIsGuardCounterStance(false);
     }
 
     // ----- ImGui用 -----
@@ -700,11 +713,20 @@ namespace PlayerState
 
         // ルートの移動値を増やす
         owner_->SetRootMotionValue(3.0f);
+
+        // コントローラ振動
+        Input::Instance().GetGamePad().Vibration(0.2f, 0.5f);
     }
 
     // ----- 更新 -----
     void GuardBlockState::Update(const float& elapsedTime)
     {
+        if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER)
+        {
+            owner_->ChangeState(Player::STATE::GuardCounterAttack);
+            return;
+        }
+
         if (owner_->IsPlayAnimation() == false)
         {
             owner_->ChangeState(Player::STATE::Idle);
@@ -742,6 +764,9 @@ namespace PlayerState
 
         // ルートモーションを使用
         owner_->SetUseRootMotion(true);
+
+        // ルートの移動値を増やす
+        owner_->SetRootMotionValue(3.0f);
     }
 
     // ----- 更新 -----
@@ -762,6 +787,9 @@ namespace PlayerState
 
         // ルートモーションを使用しない
         owner_->SetUseRootMotion(false);
+
+        // ルートの移動値をリセット
+        owner_->SetRootMotionValue(1.0f);
     }
 
     // ----- ImGui用 -----
@@ -1112,11 +1140,28 @@ namespace PlayerState
 
         isRotating_ = false;
         isFirstTime_ = false;
+
+        justDodgeFrame_ = 0.5f;
+        justDodgeTimer_ = 0.0f;
     }
 
     // ----- 更新 -----
     void DodgeState::Update(const float& elapsedTime)
     {
+        // ジャスト回避判定
+        if (justDodgeTimer_ < justDodgeFrame_)
+        {
+            justDodgeTimer_ += elapsedTime;
+
+            // TODO:ジャスト回避
+            // ジャスト回避が成功したら遷移する
+            if (0)
+            {
+                owner_->ChangeState(Player::STATE::JustDodge);
+                return;
+            }
+        }
+
         // 先行入力処理
         if (CheckNextInput()) return;
 
@@ -1709,6 +1754,68 @@ namespace PlayerState
         const int differenceNum = static_cast<int>(Player::Animation::RollFront);
 
         moveDirection_  = moveDirection[animationIndex - differenceNum];
+    }
+}
+
+// ----- ジャスト回避 -----
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void JustDodgeState::Initialize()
+    {
+    }
+
+    // ----- 更新 -----
+    void JustDodgeState::Update(const float& elapsedTime)
+    {
+        // 回避のアニメーションのままなら、待機に遷移
+        if (owner_->IsPlayAnimation() == false)
+        {
+            Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+
+            if (animationIndex == Player::Animation::RollFront || animationIndex == Player::Animation::RollBack ||
+                animationIndex == Player::Animation::RollRight || animationIndex == Player::Animation::RollLeft)
+            {
+                owner_->ChangeState(Player::STATE::Idle);
+                return;
+            }
+        }
+
+
+    }
+
+    // ----- 終了化 -----
+    void JustDodgeState::Finalize()
+    {
+    }
+
+    // ----- ImGui用 -----
+    void JustDodgeState::DrawDebug()
+    {
+    }
+}
+
+// ----- ラッシュ攻撃 -----
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void RushAttackState::Initialize()
+    {
+    }
+
+    // ----- 更新 -----
+    void RushAttackState::Update(const float& elapsedTime)
+    {
+    }
+
+    // ----- 終了化 -----
+    void RushAttackState::Finalize()
+    {
+    }
+
+    // ----- ImGui用 -----
+    void RushAttackState::DrawDebug()
+    {
     }
 }
 
