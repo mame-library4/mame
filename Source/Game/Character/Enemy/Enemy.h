@@ -212,11 +212,14 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const bool GetIsStageCollisionJudgement() const { return isStageCollisionJudgement_; }
     void SetIsStageCollisionJudgement(const bool& flag) { isStageCollisionJudgement_ = flag; }
 
-    // ---------- 怯み判定用データ ----------
-    [[nodiscard]] const int GetFlinchDetectionDataCount() const { return flinchDetectionData_.size(); }
-    std::vector<AttackDetectionData> GetFlinchDetectionData() { return flinchDetectionData_; }
-    AttackDetectionData& GetFlinchDetectionData(const int& index) { return flinchDetectionData_.at(index); }
+    // ---------- ジャスト回避判定用データ ----------
+    void RegisterJustDodgeDetectionData(const JustDodgeDetectionData& data) { justDodgeDetectionData_.emplace_back(data); }
+    [[nodiscard]] const int GetJustDodgeDetectionDataCount() const { return justDodgeDetectionData_.size(); }
+    std::vector<JustDodgeDetectionData> GetJustDodgeDetectionData() { return justDodgeDetectionData_; }
+    JustDodgeDetectionData& GetFlinchDetectionData(const int& index) { return justDodgeDetectionData_.at(index); }
 
+
+    // ---------- 部位破壊 ----------
     [[nodiscard]] const bool GetIsPartDestruction(const PartName& partName) const { return isPartDestruction_[static_cast<int>(partName)]; }
 
 private:
@@ -230,7 +233,7 @@ protected:
     std::unique_ptr<BehaviorData>   behaviorData_;
     NodeBase*                       activeNode_ = nullptr;
 
-    std::vector<AttackDetectionData> flinchDetectionData_; // 怯み判定用データ
+    std::vector<JustDodgeDetectionData> justDodgeDetectionData_;
 
     int     step_       = 0;        // 行動ステップ
     bool    isFlinch_   = false;    // ひるみフラグ

@@ -60,3 +60,9 @@ void CollisionDetectionData::DrawDebug()
 {
     collisionSphereData_.DrawDebug();
 }
+
+// ----- ImGui—p -----
+void JustDodgeDetectionData::DrawDebug()
+{
+    collisionSphereData_.DrawDebug();
+}

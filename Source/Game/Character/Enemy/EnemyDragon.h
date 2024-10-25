@@ -54,6 +54,9 @@ private:
 
     float oldHealth_ = 0.0f;
 
+    // テスト用
+    bool isJustDodgeDetectionY_ = false;
+
 public:
     enum CollisionData
     {

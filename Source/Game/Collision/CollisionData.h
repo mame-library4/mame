@@ -222,3 +222,43 @@ private:
 
     std::string updateName_;
 };
+
+// ----- ジャスト回避判定 -----
+struct JustDodgeDetectionData
+{
+    JustDodgeDetectionData(const std::string& name, const float& radius,
+        const DirectX::XMFLOAT3& offsetPosition = {}, const std::string& updateName = "")
+        : collisionSphereData_(name, radius, offsetPosition, { 1, 0, 0, 1 }),
+        updateName_((updateName == "") ? name : updateName)
+    {}
+    JustDodgeDetectionData() = default;
+
+    // ---------- ImGui用 ----------
+    void DrawDebug();
+
+    // ---------- 名前 ----------
+    [[nodiscard]] const std::string GetName() const { return collisionSphereData_.GetName(); }
+
+    // ---------- 半径 ----------
+    [[nodiscard]] const float GetRadius() const { return collisionSphereData_.GetRadius(); }
+
+    // ---------- 位置 ----------
+    [[nodiscard]] const DirectX::XMFLOAT3 GetOffsetPosition() const { return collisionSphereData_.GetOffsetPosition(); }
+    [[nodiscard]] const DirectX::XMFLOAT3 GetPosition() const { return collisionSphereData_.GetPosition(); }
+    void SetJointPosition(const DirectX::XMFLOAT3& position) { collisionSphereData_.SetJointPosition(position); }
+
+    // ---------- 色 ----------
+    [[nodiscard]] const DirectX::XMFLOAT4 GetColor() const { return collisionSphereData_.GetColor(); }
+
+    // ---------- 有効(使用)フラグ ----------
+    [[nodiscard]] const bool GetIsActive() const { return isActive_; }
+    void SetIsActive(const bool& isActive) { isActive_ = isActive; }
+
+    // ---------- 更新用名前 ----------
+    [[nodiscard]] const std::string GetUpdateName() const { return updateName_; }
+
+private:
+    CollisionSphereData collisionSphereData_;   // 球体データ
+    std::string         updateName_;            // 更新用の名前
+    bool                isActive_ = true;       // 現在有効か
+};

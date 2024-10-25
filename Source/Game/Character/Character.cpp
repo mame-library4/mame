@@ -67,7 +67,6 @@ void Character::DrawDebug()
 
     if (ImGui::TreeNode("Collision"))
     {
-
         if (ImGui::TreeNode("DamageDetection"))
         {
             for (DamageDetectionData& data : damageDetectionData_)

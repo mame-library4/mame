@@ -120,6 +120,17 @@ void EnemyDragon::DrawDebug()
 {
     if (ImGui::BeginMenu("Dragon"))
     {
+        if (ImGui::TreeNode("JustDodgeDetectionData"))
+        {
+            ImGui::Checkbox("IsJustDodgeDetectionY", &isJustDodgeDetectionY_);
+
+            for (JustDodgeDetectionData& data : justDodgeDetectionData_)
+            {
+                data.DrawDebug();
+            }
+            ImGui::TreePop();
+        }
+
         if (ImGui::TreeNode("BehaviorTree"))
         {
             std::string nodeName = (activeNode_ != nullptr) ? activeNode_->GetName() : u8"なし";
@@ -165,6 +176,8 @@ void EnemyDragon::DrawDebug()
             ImGui::TreePop();
         }
 
+        
+
         Character::DrawDebug();
         Object::DrawDebug();
 
@@ -206,14 +219,14 @@ void EnemyDragon::DebugRender(DebugRenderer* debugRenderer)
         }
     }
 
-    for (auto& data : GetFlinchDetectionData())
+    // ジャスト回避判定用
+    for (auto& data : GetJustDodgeDetectionData())
     {
         // 現在アクティブではないでの表示しない
         if (data.GetIsActive() == false) continue;
 
-        //debugRenderer->DrawSphere(data.GetPosition(), data.GetRadius(), {1,0,1,1});
+        debugRenderer->DrawSphere(data.GetPosition(), data.GetRadius(), {1,0,1,1});
     }
-
 }
 
 // ----- Behavior登録 -----
@@ -542,38 +555,16 @@ void EnemyDragon::RegisterCollisionData()
 
 #pragma endregion ---------- 攻撃判定登録 ----------
 
+#pragma region ---------- ジャスト回避判定登録 ----------
+    // ----- たたきつけ攻撃 -----
+    RegisterJustDodgeDetectionData({ "SlamAttack_0", 2.2f, { 1.34f, 1.5f, 0.0f }, "Dragon15_spine2" }); // 0
+    RegisterJustDodgeDetectionData({ "SlamAttack_1", 2.2f, { 0.0f, 4.0f, 0.0f },  "Dragon15_spine2" }); 
+    RegisterJustDodgeDetectionData({ "SlamAttack_2", 2.2f, { 2.5f, -1.5f, 0.0f }, "Dragon15_spine2" }); 
+    RegisterJustDodgeDetectionData({ "SlamAttack_3", 2.0f, { 1.9f, 3.9f, 0.0f },  "Dragon15_spine2" }); 
+    RegisterJustDodgeDetectionData({ "SlamAttack_4", 2.0f, { 3.5f, 0.5f, 0.0f },  "Dragon15_spine2" }); 
+    RegisterJustDodgeDetectionData({ "SlamAttack_5", 2.0f, { 3.0f, 2.2f, 0.0f },  "Dragon15_spine2" }); // 5
 
-    // 怯み判定登録
-    AttackDetectionData flinchDetectionData[] =
-    {
-        //// ----- 回転攻撃用 -----
-        //{ "TurnAttack_0", 1.0f, {}, "Dragon15_tail_00" }, // 0
-        //{ "TurnAttack_1", 1.0f, {}, "Dragon15_tail_01" }, // 
-        //{ "TurnAttack_2", 1.0f, {}, "Dragon15_tail_02" }, // 
-        //{ "TurnAttack_3", 1.0f, {}, "Dragon15_tail_03" }, // 
-        //{ "TurnAttack_4", 1.0f, {}, "Dragon15_tail_04" }, // 
-        //{ "TurnAttack_5", 1.0f, {}, "Dragon15_tail_05" }, // 5
-
-        //// ----- 突進攻撃用 -----
-        //{ "TackleAttack_0", 1.0f, {}, "Dragon15_neck_3" },  // 6
-        //{ "TackleAttack_1", 1.0f, {}, "Dragon15_neck_1" },  // 
-        //{ "TackleAttack_2", 1.0f, {}, "Dragon15_spine2" },  // 
-        //{ "TackleAttack_3", 1.0f, {}, "Dragon15_spine0" },  // 
-        //{ "TackleAttack_4", 1.0f, {}, "Dragon15_tail_00" }, // 10
-
-        //// ----- 空中からたたきつけ攻撃 -----
-        //{ "FlyAttack_0", 1.0f, {}, "Dragon15_r_hand" },    // 11
-        //{ "FlyAttack_1", 1.0f, {}, "Dragon15_l_hand" },    // 12
-
-        // ----- コンボたたきつけ攻撃 -----
-        { "ComboSlam_0", 1.0f, {}, "Dragon15_r_hand" },     // 13
-        { "ComboSlam_1", 1.0f, {}, "Dragon15_r_forearm" },  // 
-        { "ComboSlam_2", 1.0f, {}, "Dragon15_r_finger21" }, // 15
-    };
-    for (int i = 0; i < _countof(flinchDetectionData); ++i)
-    {
-        flinchDetectionData_.emplace_back(flinchDetectionData[i]);
-    }
+#pragma endregion ---------- ジャスト回避判定登録 ----------
 }
 
 void EnemyDragon::UpdateCollisions(const float& elapsedTime)
@@ -614,11 +605,15 @@ void EnemyDragon::UpdateCollisions(const float& elapsedTime)
         data.SetJointPosition(pos);
     }
 
-
-    for (AttackDetectionData& data : flinchDetectionData_)
+    // ジャスト回避判定更新
+    for (JustDodgeDetectionData& data : justDodgeDetectionData_)
     {
-        // ジョイントの名前で位置設定 ( 名前がジョイントの名前ではないとき別途更新必要 )
-        data.SetJointPosition(GetJointPosition(data.GetUpdateName(), data.GetOffsetPosition()));
+        DirectX::XMFLOAT3 pos = GetJointPosition(data.GetUpdateName(), data.GetOffsetPosition());
+        
+        // Yは全て0.0fにする
+        if(isJustDodgeDetectionY_) pos.y = 0.0f;
+
+        data.SetJointPosition(pos);
     }
 }
 
