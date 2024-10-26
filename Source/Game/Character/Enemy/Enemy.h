@@ -216,7 +216,7 @@ public:// --- æ“¾Eİ’è ---
     void RegisterJustDodgeDetectionData(const JustDodgeDetectionData& data) { justDodgeDetectionData_.emplace_back(data); }
     [[nodiscard]] const int GetJustDodgeDetectionDataCount() const { return justDodgeDetectionData_.size(); }
     std::vector<JustDodgeDetectionData> GetJustDodgeDetectionData() { return justDodgeDetectionData_; }
-    JustDodgeDetectionData& GetFlinchDetectionData(const int& index) { return justDodgeDetectionData_.at(index); }
+    JustDodgeDetectionData& GetJustDodgeDetectionData(const int& index) { return justDodgeDetectionData_.at(index); }
 
 
     // ---------- •”ˆÊ”j‰ó ----------

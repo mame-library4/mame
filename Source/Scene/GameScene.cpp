@@ -18,6 +18,7 @@
 #include "UI/UIActionGuide.h"
 
 #include "Particle/ParticleManager.h"
+#include "System/SystemManager.h"
 
 // ----- ステージの真ん中位置 -----
 DirectX::XMFLOAT3 GameScene::stageCenter_ = {};
@@ -126,33 +127,28 @@ void GameScene::Finalize()
 // ----- 更新 -----
 void GameScene::Update(const float& elapsedTime)
 {
+    // スロー処理を考慮した経過時間
+    const float adjustedElapsedTime = SystemManager::Instance().GetAllSlowSpeed() * elapsedTime;
+    // プレイヤー用のスロー考慮経過時間
+    const float adjustedPlayerElapsedTime = SystemManager::Instance().GetPlayerSlowSpeed() * elapsedTime;
+
     // プレイヤー更新
-    PlayerManager::Instance().Update(elapsedTime);
+    PlayerManager::Instance().Update(adjustedPlayerElapsedTime);
 
     // 敵更新
-    EnemyManager::Instance().Update(elapsedTime);
+    EnemyManager::Instance().Update(adjustedElapsedTime);
 
     // 発射物
-    ProjectileManager::Instance().Update(elapsedTime);
+    ProjectileManager::Instance().Update(adjustedElapsedTime);
 
     // ステージ位置更新
     stageCenter_ = stage_->GetTransform()->GetPosition();
 
     // Collision更新
-    CollisionManager::Instance().Update(elapsedTime);
-
-    if (GetAsyncKeyState('Q') & 0x8000)
-    {
-        PlayerManager::Instance().GetPlayer()->SetHealth(0);
-    }
-    
-
-    // カメラの位置更新
-    //const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
-    //Camera::Instance().SetTarget(cameraTargetPosition);
+    CollisionManager::Instance().Update(adjustedElapsedTime);
 
     // パーティクル
-    ParticleManager::Instance().Update(elapsedTime);
+    ParticleManager::Instance().Update(adjustedElapsedTime);
 
     // UI描画判定更新
     if (isDrawUI_ == false)
@@ -293,6 +289,8 @@ void GameScene::DrawDebug()
 {
     if (ImGui::BeginMainMenuBar())
     {
+        SystemManager::Instance().DrawDebug();
+
         // プレイヤーImGui
         PlayerManager::Instance().DrawDebug();
 

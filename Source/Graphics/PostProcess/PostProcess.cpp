@@ -10,12 +10,15 @@ PostProcess::PostProcess()
 
     Graphics::Instance().CreatePsFromCso("./Resources/Shader/PostProcessPS.cso", postProcessPS_.GetAddressOf());
     Graphics::Instance().CreatePsFromCso("./Resources/Shader/RadialBlurPS.cso", radialBlurPS_.GetAddressOf());
+    Graphics::Instance().CreatePsFromCso("./Resources/Shader/VignettePS.cso", vignettePS_.GetAddressOf());
 
     postProcess_ = std::make_unique<FrameBuffer>(SCREEN_WIDTH, SCREEN_HEIGHT);
     radialBlur_  = std::make_unique<FrameBuffer>(SCREEN_WIDTH, SCREEN_HEIGHT);
+    vignette_    = std::make_unique<FrameBuffer>(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     constant_            = std::make_unique<ConstantBuffer<Constants>>();
     radialBlurConstants_ = std::make_unique<ConstantBuffer<RadialBlurConstants>>();
+    vignetteConstants_   = std::make_unique<ConstantBuffer<VignetteConstants>>();
 }
 
 // ----- デストラクタ -----
@@ -54,56 +57,109 @@ void PostProcess::Draw()
         cascadedShadowMap_.GetDepthMap().Get()
     };
 
-    // ラジアルブラーを使用する
-    if (useRadialBlur_)
+    // ビネット
+    if (usevignette_)
     {
-        radialBlur_->Clear();
-        radialBlur_->Activate();
-        renderer_->Draw(shaderResourceViews, 0, _countof(shaderResourceViews), postProcessPS_.Get());
-        radialBlur_->Deactivate();
+        // ラジアルブラー
+        if (useRadialBlur_)
+        {
+            radialBlur_->Clear();
+            radialBlur_->Activate();
+            renderer_->Draw(shaderResourceViews, 0, _countof(shaderResourceViews), postProcessPS_.Get());
+            radialBlur_->Deactivate();
+        }
 
-        radialBlurConstants_->Activate(0);
-        renderer_->Draw(radialBlur_->shaderResourceViews_->GetAddressOf(), 0, 1, radialBlurPS_.Get());
+        // ---------- ビネット開始 ----------
+        vignette_->Clear();
+        vignette_->Activate();
+
+        if (useRadialBlur_)
+        {
+            radialBlurConstants_->Activate(0);
+            renderer_->Draw(radialBlur_->shaderResourceViews_->GetAddressOf(), 0, 1, radialBlurPS_.Get());
+        }
+        else
+        {
+            renderer_->Draw(shaderResourceViews, 0, _countof(shaderResourceViews), postProcessPS_.Get());
+        }
+
+        vignette_->Deactivate();
+        // ---------- ビネット終了 ----------
+        
+        vignetteConstants_->Activate(0);
+        renderer_->Draw(vignette_->shaderResourceViews_->GetAddressOf(), 0, 1, vignettePS_.Get());
     }
-    // ラジアルブラーを使用しない
     else
     {
-        renderer_->Draw(shaderResourceViews, 0, _countof(shaderResourceViews), postProcessPS_.Get());
+        // ラジアルブラーを使用する
+        if (useRadialBlur_)
+        {
+            radialBlur_->Clear();
+            radialBlur_->Activate();
+            renderer_->Draw(shaderResourceViews, 0, _countof(shaderResourceViews), postProcessPS_.Get());
+            radialBlur_->Deactivate();
+
+            radialBlurConstants_->Activate(0);
+            renderer_->Draw(radialBlur_->shaderResourceViews_->GetAddressOf(), 0, 1, radialBlurPS_.Get());
+        }
+        // ラジアルブラーを使用しない
+        else
+        {
+            renderer_->Draw(shaderResourceViews, 0, _countof(shaderResourceViews), postProcessPS_.Get());
+        }
     }
 }
 
 // ----- ImGui用 -----
 void PostProcess::DrawDebug()
 {
-    if (ImGui::TreeNode("PostProcess"))
+    if (ImGui::BeginMainMenuBar())
     {
-        ImGui::DragFloat("CriticalDepthValue", &criticalDepthValue_);
-
-        ImGui::SliderFloat("ShadowColor", &constant_->GetData()->shadowColor_, 0.0f, 1.0f);
-        ImGui::DragFloat("ShadowDepthBias", &constant_->GetData()->shadowDepthBias_, 0.00001f, 0.0f, 0.01f, "%.8f");
-        ImGui::Checkbox("ColorizeCascadedLayer", &constant_->GetData()->colorizeCascadedLayer_);
-
-        cascadedShadowMap_.DrawDebug();
-
-        if (ImGui::TreeNode("Bloom_"))
+        if (ImGui::BeginMenu("PostProcess"))
         {
-            ImGui::Image(reinterpret_cast<ImTextureID>(postProcess_->shaderResourceViews_[0].Get()), ImVec2(256.0, 256.0));
 
-            bloom_.DrawDebug();
+            ImGui::DragFloat("CriticalDepthValue", &criticalDepthValue_);
 
-            ImGui::TreePop();
+            ImGui::SliderFloat("ShadowColor", &constant_->GetData()->shadowColor_, 0.0f, 1.0f);
+            ImGui::DragFloat("ShadowDepthBias", &constant_->GetData()->shadowDepthBias_, 0.00001f, 0.0f, 0.01f, "%.8f");
+            ImGui::Checkbox("ColorizeCascadedLayer", &constant_->GetData()->colorizeCascadedLayer_);
+
+            cascadedShadowMap_.DrawDebug();
+
+            if (ImGui::TreeNode("Bloom_"))
+            {
+                ImGui::Image(reinterpret_cast<ImTextureID>(postProcess_->shaderResourceViews_[0].Get()), ImVec2(256.0, 256.0));
+
+                bloom_.DrawDebug();
+
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNode("RadialBlur"))
+            {
+                ImGui::DragFloat2("UVOffset", &radialBlurConstants_->GetData()->uvOffset_.x, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("Strength", &radialBlurConstants_->GetData()->strength_, 0.1f, 0.0f, 2.0f);
+                ImGui::DragInt("SampleCount", &radialBlurConstants_->GetData()->sampleCount_, 1, 1, 5);
+
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNode("Vignette"))
+            {
+                ImGui::Checkbox("UseVignette", &usevignette_);
+                ImGui::ColorEdit4("Color", &vignetteConstants_->GetData()->vignetteColor_.x);
+                ImGui::DragFloat2("Center", &vignetteConstants_->GetData()->vignetteCenter_.x);
+                ImGui::DragFloat("Intensity", &vignetteConstants_->GetData()->vignetteIntensity_, 0.1f, 0.0f, 10.0f);
+                ImGui::DragFloat("Smoothness", &vignetteConstants_->GetData()->vignetteSmoothness_, 0.1f, 0.0f, 10.0f);
+                ImGui::DragFloat("Rounded", &vignetteConstants_->GetData()->vignetteRounded_, 0.1f, 0.0f, 10.0f);
+                ImGui::DragFloat("Roundness", &vignetteConstants_->GetData()->vignetteRoundness_, 0.1f, 0.0f, 10.0f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::EndMenu();
         }
-
-        if (ImGui::TreeNode("RadialBlur"))
-        {
-            ImGui::DragFloat2("UVOffset", &radialBlurConstants_->GetData()->uvOffset_.x, 0.01f, 0.0f, 1.0f);
-            ImGui::DragFloat("Strength", &radialBlurConstants_->GetData()->strength_, 0.1f, 0.0f, 2.0f);
-            ImGui::DragInt("SampleCount", &radialBlurConstants_->GetData()->sampleCount_, 1, 1, 5);
-
-            ImGui::TreePop();
-        }
-
-        ImGui::TreePop();
+        ImGui::EndMainMenuBar();
     }
 }
 

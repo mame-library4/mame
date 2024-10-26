@@ -268,6 +268,9 @@
     <ClCompile Include="Source\Game\UI\UIGuardGauge.cpp">
       <Filter>Mame\Game\UI\UIGuardGauge</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\System\SystemManager.cpp">
+      <Filter>Mame\Game\System</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -565,6 +568,9 @@
     <ClInclude Include="Source\Game\UI\UIGuardGauge.h">
       <Filter>Mame\Game\UI\UIGuardGauge</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\System\SystemManager.h">
+      <Filter>Mame\Game\System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -774,6 +780,9 @@
     <Filter Include="Mame\Game\UI\UIGuardGauge">
       <UniqueIdentifier>{3bb82cd5-83a4-4a79-afaa-d20bea612f35}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mame\Game\System">
+      <UniqueIdentifier>{f9689e72-9d56-42eb-ae3c-3aabda947202}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -968,6 +977,9 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\FireBallPS.hlsl">
       <Filter>Mame\Shader\Particle\FireBallParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\VignettePS.hlsl">
+      <Filter>Mame\Shader\PostProcess</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

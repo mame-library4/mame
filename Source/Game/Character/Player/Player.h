@@ -251,6 +251,13 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const DirectX::XMFLOAT3 GetKnockBackDirection() const { return knockBackDirection_; }
     void SetKnockBackDirection(const DirectX::XMFLOAT3& direction) { knockBackDirection_ = direction; }
 
+    // ---------- ジャスト回避 ----------
+    [[nodiscard]] const float GetJustDodgeRadius() const { return justDodgeRadius_; }
+    [[nodiscard]] const bool GetIsJustDodgeCheckEnabled() const { return isJustDodgeCheckEnabled_; }
+    void SetIsJustDodgeCheckEnabled(const bool& flag) { isJustDodgeCheckEnabled_ = flag; }
+    [[nodiscard]] const bool GetIsJustDodgeSuccessful() const { return isJustDodgeSuccessful_; }
+    void SetIsJustDodgeSuccessful(const bool& flag) { isJustDodgeSuccessful_ = flag; }
+
     // ---------- キー入力 ----------
     [[nodiscard]] bool IsComboAttack0KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
     [[nodiscard]] bool IsDodgeKeyDown()        const;
@@ -376,4 +383,9 @@ private:
 
     // ---------- ノックバック ----------
     DirectX::XMFLOAT3 knockBackDirection_ = {};
+
+    // ---------- ジャスト回避 ----------
+    float   justDodgeRadius_            = 1.0f;  // 判定範囲
+    bool    isJustDodgeCheckEnabled_    = false; // ジャスト回避判定をするか
+    bool    isJustDodgeSuccessful_      = false; // ジャスト回避が成功したか
 };

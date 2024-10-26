@@ -34,6 +34,9 @@ void CollisionManager::UpdatePlayerVsEnemy()
     // -------------------------------------------------------
     //   ここから下の処理はプレイヤーから見た処理になっています
     // -------------------------------------------------------
+    // ジャスト回避判定
+    CheckJustDodgeCollision();
+
     // 攻撃判定
     UpdatePlayerAttackVsEnemyDamage();
 
@@ -45,6 +48,34 @@ void CollisionManager::UpdatePlayerVsEnemy()
 
     // 押し出し判定
     UpdatePlayerCollisionVsEnemyCollision();
+}
+
+// ----- ジャスト回避判定 -----
+void CollisionManager::CheckJustDodgeCollision()
+{
+    Player* player = PlayerManager::Instance().GetPlayer().get();
+ 
+    // ジャスト回避判定をしない
+    if (player->GetIsJustDodgeCheckEnabled() == false) return;
+    
+    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
+    const DirectX::XMFLOAT3 playerPosition = player->GetTransform()->GetPosition();
+
+    for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetJustDodgeDetectionDataCount(); ++enemyDataIndex)
+    {
+        const JustDodgeDetectionData enemyData = enemy->GetJustDodgeDetectionData(enemyDataIndex);
+
+        // 当たったかチェック
+        if (IntersectSphereVsSphere(
+            playerPosition, player->GetJustDodgeRadius(),
+            enemyData.GetPosition(), enemyData.GetRadius()))
+        {
+            // ジャスト回避成功
+            player->SetIsJustDodgeSuccessful(true);
+
+            return;
+        }
+    }
 }
 
 // ----- Playerの攻撃判定と Enemyのくらい判定をチェック -----

@@ -170,28 +170,33 @@ void Player::DrawDebug()
 {
     if (ImGui::BeginMenu("Player"))
     {
-        ImGui::DragFloat("SwordTrailEndPosition", &swordTrailEndPosition_);
-
         ImGui::Checkbox("DodgeAttackCancel", &isDodgeAttackCancel_);
 
-        ImGui::Checkbox("IsSwordPrimitiveDraw", &isSwordPrimitiveDraw_);
-        sword_.DrawDebug();
-
-        ImGui::DragFloat("DashSpeed", &dashSpeed_);
-        ImGui::DragFloat("DashAnimationSpeed", &dashAnimationSpeed_);
-
+        // ----- ジャスト回避 -----
+        if (ImGui::CollapsingHeader("JustDodge"))
+        {
+            ImGui::DragFloat("Radius", &justDodgeRadius_);
+            std::string text = isJustDodgeCheckEnabled_ ? "CheckEnabled : True" : "CheckEnabled : False";
+            ImGui::Text(text.c_str());
+            text = isJustDodgeSuccessful_ ? "JustDodge : True" : "JustDodge : False";
+            ImGui::Text(text.c_str());
+        }
+        // ----- ダッシュ -----
+        if (ImGui::CollapsingHeader("Dash"))
+        {
+            ImGui::DragFloat("DashSpeed", &dashSpeed_);
+            ImGui::DragFloat("DashAnimationSpeed", &dashAnimationSpeed_);
+        }
         // ----- スタミナ -----
-        if (ImGui::TreeNode("Stamina"))
+        if (ImGui::CollapsingHeader("Stamina"))
         {
             ImGui::DragFloat("Stamina", &stamina_);
             ImGui::DragFloat("RecoverySpeed", &staminaRecoverySpeed_);
             ImGui::DragFloat("DodgeCost", &dodgeStaminaCost_);
             ImGui::DragFloat("DashCost", &dashStaminaCost_);
-
-            ImGui::TreePop();
         }
         // ----- ガードカウンター -----
-        if (ImGui::TreeNode("GuardCounter"))
+        if (ImGui::CollapsingHeader("GuardCounter"))
         {
             ImGui::DragFloat("GuardCounterRadius", &guardCounterRadius_, 0.1f, 0.0f, 100.0f);
             ImGui::Checkbox("AutoCounterMode", &isAutoCounterModeEnabled_);
@@ -206,19 +211,25 @@ void Player::DrawDebug()
 
                 ImGui::TreePop();
             }
-            ImGui::TreePop();
         }
 
-
-        if (ImGui::TreeNode("Weapon"))
+        if (ImGui::CollapsingHeader("Sword"))
         {
-            weapon_.DrawDebug();
+            if (ImGui::TreeNode("SwordTrail"))
+            {
+                ImGui::DragFloat("SwordTrailEndPosition", &swordTrailEndPosition_);
+                swordTrail_.DrawDebug();
 
+                ImGui::TreePop();
+            }
+
+            ImGui::Checkbox("IsSwordPrimitiveDraw", &isSwordPrimitiveDraw_);            
+            sword_.DrawDebug();
+
+            weapon_.DrawDebug();
             ImGui::DragFloat3("weaponLocation", &socketLocation_.x);
             ImGui::DragFloat3("weaponRotation", &socketRotation_.x);
             ImGui::DragFloat3("socketScale", &socketScale_.x);
-
-            ImGui::TreePop();
         }
 
         if (ImGui::TreeNode("RotationAdjustment"))
@@ -243,8 +254,6 @@ void Player::DrawDebug()
         ImGui::Checkbox("Attack", &isAttackSphere_);
 
         ImGui::DragFloat("CounterActiveRadius", &counterActiveRadius_);
-
-        swordTrail_.DrawDebug();
         ImGui::EndMenu();
     }
 }
@@ -255,6 +264,8 @@ void Player::DebugRender(DebugRenderer* debugRenderer)
     DirectX::XMFLOAT3 position = GetTransform()->GetPosition();
 
     debugRenderer->DrawCylinder(GetTransform()->GetPosition(), GetCollisionRadius(), 2.0f, { 1,1,1,1 });
+
+    debugRenderer->DrawSphere(GetTransform()->GetPosition(), justDodgeRadius_, { 0,0,0,1 });
 
     DirectX::XMFLOAT3 pelvisPosition = GetJointPosition("pelvis");
     debugRenderer->DrawSphere(pelvisPosition, guardCounterRadius_, { 1,1,1,1 });

@@ -20,6 +20,7 @@ public:
 
 private:
     void UpdatePlayerVsEnemy();
+    void CheckJustDodgeCollision(); // ƒWƒƒƒXƒg‰ñ”ð”»’è
     void UpdatePlayerAttackVsEnemyDamage();
     void UpdatePlayerDamageVsEnemyAttack();
     void UpdatePlayerCollisionVsEnemyCollision();

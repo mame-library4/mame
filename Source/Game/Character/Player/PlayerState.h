@@ -265,6 +265,9 @@ namespace PlayerState
         bool isRotating_    = false;    // 回転処理をするか
         bool isInputStick_  = false;    // スティック入力があるか
 
+        // ----- ルートモーション用 -----
+        float rootMotionMoveValue_ = 1.2f;
+
         // ----- ジャスト回避用 -----
         float justDodgeFrame_ = 0.0f;
         float justDodgeTimer_ = 0.0f;
@@ -281,6 +284,20 @@ namespace PlayerState
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
         void DrawDebug()                        override;
+
+    private:
+        // ----- スロー用 -----
+        float slowStartFrame_ = 0.1f;
+        float mostSlowStartFrame_ = 1.0f;
+        float slowTimer_ = 0.0f;
+
+        // ----- ポストエフェクト用 -----
+        float lerpTimer_ = 0.0f;
+        float lerpSpeed_ = 10.0f;
+        float maxLerpStrength_ = 0.1f;
+
+        // ----- ルートモーション用 -----
+        float rootMotionMoveValue_ = 1.2f;
     };
 
     // ----- ラッシュ攻撃 -----

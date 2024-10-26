@@ -8,6 +8,8 @@
 #include "Effect/EffectManager.h"
 
 #include "UI/UIFader.h"
+#include "System/SystemManager.h"
+#include "PostProcess/PostProcess.h"
 
 // ----- AddForceData -----
 namespace PlayerState
@@ -1130,6 +1132,9 @@ namespace PlayerState
         // スタミナ消費
         owner_->UseDodgeStamina();
 
+        // ジャスト回避判定有効化
+        owner_->SetIsJustDodgeCheckEnabled(true);
+
         // 操作UI設定
         if (UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide) != nullptr)
             UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 0.0f);
@@ -1148,6 +1153,14 @@ namespace PlayerState
     // ----- 更新 -----
     void DodgeState::Update(const float& elapsedTime)
     {
+        // RootMotionの設定
+        if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+        {
+            // RootMotionを使用する
+            owner_->SetUseRootMotion(true);
+            owner_->SetRootMotionValue(rootMotionMoveValue_);
+        }
+
         // ジャスト回避判定
         if (justDodgeTimer_ < justDodgeFrame_)
         {
@@ -1155,11 +1168,20 @@ namespace PlayerState
 
             // TODO:ジャスト回避
             // ジャスト回避が成功したら遷移する
-            if (0)
+            if (owner_->GetIsJustDodgeSuccessful())
             {
+                // フラグリセット
+                owner_->SetIsJustDodgeCheckEnabled(false);
+                owner_->SetIsJustDodgeSuccessful(false);
+
                 owner_->ChangeState(Player::STATE::JustDodge);
                 return;
             }
+        }
+        else
+        {
+            if(owner_->GetIsJustDodgeCheckEnabled()) 
+                owner_->SetIsJustDodgeCheckEnabled(false);
         }
 
         // 先行入力処理
@@ -1173,7 +1195,7 @@ namespace PlayerState
         // 移動処理
         if (addForceData_.Update(owner_->GetAnimationSeconds()))
         {
-            owner_->AddForce(moveDirection_, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+            //owner_->AddForce(moveDirection_, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
         }
 
         // 無敵時間処理
@@ -1193,12 +1215,17 @@ namespace PlayerState
     // ----- 終了化 -----
     void DodgeState::Finalize()
     {
+        // ルートモーションフラグリセット
+        owner_->SetUseRootMotion(false);
+
         // 変数をリセットしておく
         isFirstTime_ = true;
     }
 
     void DodgeState::DrawDebug()
     {
+        ImGui::Text(GetName());
+        ImGui::DragFloat("RootMotionMoveValue", &rootMotionMoveValue_, 0.1f, 0.0f, 10.0f);
     }
 
     // ----- 回転処理 -----
@@ -1259,6 +1286,9 @@ namespace PlayerState
 
         // スタミナ消費
         owner_->UseDodgeStamina();
+
+        // ルートモーションリセット
+        owner_->SetUseRootMotion(false);
 
         // 変数初期化
         addForceData_.Initialize(0.15f, 0.27f, 0.4f);
@@ -1763,11 +1793,67 @@ namespace PlayerState
     // ----- 初期化 -----
     void JustDodgeState::Initialize()
     {
+        // ラジアルブラー設定
+        PostProcess::Instance().SetUseRadialBlur();
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 5;
+
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->uvOffset_ = { 0.5f, 0.5f };
+
+        // ビネット設定
+        PostProcess::Instance().SetUseVignette();
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteColor_ = { 0.65f, 0.65f, 0.65f, 1.0f };
+        //PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteColor_ = { 0.33f, 0.33f, 0.33f, 1.0f };
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteSmoothness_ = 2.2f;
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteIntensity_ = 0.0f;
+
+        slowTimer_ = 0.0f;
+
+        lerpTimer_ = 0.0f;
     }
 
     // ----- 更新 -----
     void JustDodgeState::Update(const float& elapsedTime)
     {
+        // ----------------------------------------
+        //  ラジアルブラーとビネットを徐々に強くする
+        // ----------------------------------------
+        lerpTimer_ += lerpSpeed_ * elapsedTime;
+        lerpTimer_ = std::min(lerpTimer_, 1.0f);
+        const float strength = XMFloatLerp(0.0f, maxLerpStrength_, lerpTimer_);
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = strength;
+
+        const float intensity = XMFloatLerp(0.0f, 1.0f, lerpTimer_);
+        //const float intensity = XMFloatLerp(0.0f, 0.5f, lerpTimer_);
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteIntensity_ = intensity;
+
+        // スローの設定
+        if (owner_->GetAnimationSeconds() > 0.78f)
+        {
+            SystemManager::Instance().SetAllSlowSpeed(1.0f);
+            SystemManager::Instance().SetPlayerSlowSpeed(1.0f);
+        }
+        else if (owner_->GetAnimationSeconds() > 0.33f)
+        {
+            slowTimer_ += elapsedTime;
+            if (slowTimer_ > slowStartFrame_)
+            {
+                SystemManager::Instance().SetPlayerSlowSpeed(0.1f);
+            }
+            else
+            {
+                SystemManager::Instance().SetPlayerSlowSpeed(0.4f);
+                SystemManager::Instance().SetAllSlowSpeed(0.1f);
+            }
+        }
+
+        // RootMotionの設定
+        if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+        {
+            // RootMotionを使用する
+            owner_->SetUseRootMotion(true);
+            owner_->SetRootMotionValue(rootMotionMoveValue_);
+        }
+
         // 回避のアニメーションのままなら、待機に遷移
         if (owner_->IsPlayAnimation() == false)
         {
@@ -1787,11 +1873,30 @@ namespace PlayerState
     // ----- 終了化 -----
     void JustDodgeState::Finalize()
     {
+        // ラジアルブラーリセット
+        PostProcess::Instance().SetUseRadialBlur(false);
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 1;
+
+        // ビネットリセット
+        PostProcess::Instance().SetUseVignette(false);
+
+
+        SystemManager::Instance().SetAllSlowSpeed(1.0f);
+        SystemManager::Instance().SetPlayerSlowSpeed(1.0f);
+
+        owner_->SetUseRootMotion(false);
     }
 
     // ----- ImGui用 -----
     void JustDodgeState::DrawDebug()
     {
+        ImGui::Text(GetName());
+        ImGui::DragFloat("SlowTimer", &slowTimer_);
+        ImGui::DragFloat("SlowStartFrame", &slowStartFrame_, 0.1f, 0.0f, 1.0f);
+
+        ImGui::DragFloat("LerpTimer", &lerpTimer_);
+        ImGui::DragFloat("LerpSpeed", &lerpSpeed_);
+        ImGui::DragFloat("MaxLerpStrength", &maxLerpStrength_, 0.01f, 0.0f, 1.0f);
     }
 }
 
