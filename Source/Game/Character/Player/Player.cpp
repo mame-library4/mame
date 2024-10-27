@@ -568,7 +568,7 @@ void Player::UseDashStamina(const float& elapsedTime)
 }
 
 // ----- 回避入力判定 -----
-bool Player::IsDodgeKeyDown() const
+const bool Player::IsDodgeKeyDown() const
 {
     // スタミナがないので入力判定をしない
     if (GetStamina() < GetDodgeStaminaCost()) return false;
@@ -577,7 +577,7 @@ bool Player::IsDodgeKeyDown() const
 }
 
 // ----- カウンター受付入力判定 -----
-bool Player::IsCounterStanceKey() const
+const bool Player::IsCounterStanceKey() const
 {
     if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B && Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_TRIGGER) return true;
     if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_B && Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER) return true;
@@ -586,7 +586,7 @@ bool Player::IsCounterStanceKey() const
 }
 
 // ----- 起き上がりの入力判定 -----
-bool Player::IsGetUpKeyDown() const
+const bool Player::IsGetUpKeyDown() const
 {
     // ---------- Mouse ----------
     Mouse& mouse = Input::Instance().GetMouse();
@@ -616,7 +616,7 @@ bool Player::IsGetUpKeyDown() const
 }
 
 // ----- ダッシュボタンが押されているか -----
-bool Player::IsDashKey() const
+const bool Player::IsDashKey() const
 {
     if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER) return true;
 

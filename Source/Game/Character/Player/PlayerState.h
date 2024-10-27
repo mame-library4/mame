@@ -311,6 +311,26 @@ namespace PlayerState
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
         void DrawDebug()                        override;
+
+    private:
+        void Turn(const float& elapsedTime); // 旋回処理
+
+        void SetTargetPosition(); // ターゲットを設定
+
+    private:
+        AttackData      attackData_;
+
+        // ----- 旋回 -----
+        float rotationSpeed_ = 20.0f;
+
+        float radius_ = 1.0f;
+
+        DirectX::XMFLOAT3   targetPosition_     = {};
+        std::string         targetJointName_    = "";
+
+        bool isNextInput_ = false;
+
+        int currentAttackNum_ = 0;
     };
 
 

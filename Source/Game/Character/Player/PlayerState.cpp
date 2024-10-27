@@ -1796,15 +1796,16 @@ namespace PlayerState
         // ラジアルブラー設定
         PostProcess::Instance().SetUseRadialBlur();
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 5;
-
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->uvOffset_ = { 0.5f, 0.5f };
 
         // ビネット設定
         PostProcess::Instance().SetUseVignette();
         PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteColor_ = { 0.65f, 0.65f, 0.65f, 1.0f };
-        //PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteColor_ = { 0.33f, 0.33f, 0.33f, 1.0f };
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteCenter_ = { 0.5f, 0.5f };
         PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteSmoothness_ = 2.2f;
         PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteIntensity_ = 0.0f;
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteRounded_ = 1.0f;
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteRoundness_ = 1.0f;
 
         slowTimer_ = 0.0f;
 
@@ -1843,6 +1844,16 @@ namespace PlayerState
             {
                 SystemManager::Instance().SetPlayerSlowSpeed(0.4f);
                 SystemManager::Instance().SetAllSlowSpeed(0.1f);
+            }
+        }
+
+        // ラッシュ攻撃入力
+        if (owner_->GetAnimationSeconds() <= 0.78f)
+        {
+            if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B)
+            {
+                owner_->ChangeState(Player::STATE::RushAttack);
+                return;
             }
         }
 
@@ -1906,21 +1917,290 @@ namespace PlayerState
     // ----- 初期化 -----
     void RushAttackState::Initialize()
     {
+        owner_->SetAnimationSpeed(2.0f);
+
+        SystemManager::Instance().SetAllSlowSpeed(0.01f);
+        SystemManager::Instance().SetPlayerSlowSpeed(1.0f);
+
+        // ラジアルブラー設定
+        PostProcess::Instance().SetUseRadialBlur();
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 5;
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = 0.1f;
+        // ビネット設定
+        PostProcess::Instance().SetUseVignette();
+
+        // 変数初期化
+        currentAttackNum_ = 0;
     }
 
     // ----- 更新 -----
     void RushAttackState::Update(const float& elapsedTime)
     {
+        Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+
+        // -----------------------------------------------------------------
+        //  回避モーションの場合脚が地面につくまで再生する。
+        //  再生し終わったら次のアニメーションを再生する
+        // -----------------------------------------------------------------
+        if (animationIndex == Player::Animation::RollFront || animationIndex == Player::Animation::RollBack ||
+            animationIndex == Player::Animation::RollRight || animationIndex == Player::Animation::RollLeft)
+        {
+            if(owner_->GetAnimationSeconds() > 0.85f)
+            {
+                owner_->PlayBlendAnimation(Player::Animation::DodgeFront, false, 1.0f, 0.3f);
+
+                // 敵のアニメーションに合わせてターゲットを設定する
+                SetTargetPosition();
+            }
+        }
+
+        // -----------------------------------------------------------------
+        //  敵との距離を一気に詰める
+        // -----------------------------------------------------------------
+        if (animationIndex == Player::Animation::DodgeFront)
+        {
+            // ルートモーションを使用する
+            if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+            {
+                owner_->SetUseRootMotion(true);
+
+                owner_->SetRootMotionValue(3.0f);
+                //owner_->SetRootMotionValue(5.0f);
+            }
+
+            // 移動判定
+            DirectX::XMFLOAT3 ownerPosition_float3 = owner_->GetTransform()->GetPosition();
+            DirectX::XMFLOAT2 ownerPosition = { ownerPosition_float3.x, ownerPosition_float3.z };
+            DirectX::XMFLOAT2 targetposition = { targetPosition_.x, targetPosition_.z };
+            const float length = XMFloat2Length(ownerPosition - targetposition);
+            if (length < radius_)
+            {
+                owner_->SetRootMotionValue(0.0f);
+            }
+
+            // 回転処理
+            Turn(elapsedTime);
+
+
+            if (owner_->GetAnimationSeconds() > 0.45f)
+            {
+                owner_->PlayBlendAnimation(Player::Animation::AttackRush0, false, 1.0f, 0.18f);
+                owner_->SetUseRootMotion(false);
+
+                attackData_.Initialize(0.18f, 0.28f);
+                owner_->ResetFlags();
+
+                ++currentAttackNum_;
+            }
+        }
+
+        // ラッシュ攻撃処理
+        if (animationIndex == Player::Animation::AttackRush0)
+        {
+            // 先行入力取得
+            if (owner_->IsRushAttackKeyDown()) isNextInput_ = true;
+
+            // 攻撃判定処理
+            const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAttackHit());
+            owner_->SetIsAttackValid(attackFlag);
+
+            // 攻撃終了フレーム
+            if (owner_->GetAnimationSeconds() > 0.28f)
+            {
+                // アニメーション再生速度を落とす
+                owner_->SetAnimationSpeed(0.2f);
+
+                // 先行入力があれば次の攻撃
+                if (isNextInput_)
+                {
+                    owner_->PlayBlendAnimation(Player::Animation::AttackRush1, false, 1.0f, 0.15f);
+                    isNextInput_ = false;
+
+                    attackData_.Initialize(0.15f, 0.3f);
+                    owner_->ResetFlags();
+
+                    ++currentAttackNum_;
+                }
+            }
+        }
+        if (animationIndex == Player::Animation::AttackRush1)
+        {
+            // 先行入力取得
+            if (owner_->IsRushAttackKeyDown()) isNextInput_ = true;
+
+            // 攻撃判定処理
+            const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAttackHit());
+            owner_->SetIsAttackValid(attackFlag);
+
+            // 攻撃終了フレーム
+            if (owner_->GetAnimationSeconds() > 0.3f)
+            {
+                // アニメーション再生速度を落とす
+                owner_->SetAnimationSpeed(0.2f);
+
+                // 先行入力があれば次の攻撃
+                if (isNextInput_)
+                {
+                    owner_->PlayBlendAnimation(Player::Animation::AttackRush2, false, 1.0f, 0.15f);
+                    isNextInput_ = false;
+
+                    attackData_.Initialize(0.15f, 0.25f);
+                    owner_->ResetFlags();
+
+                    ++currentAttackNum_;
+                }
+            }
+        }
+        if (animationIndex == Player::Animation::AttackRush2)
+        {
+            // 先行入力取得
+            if (owner_->IsRushAttackKeyDown()) isNextInput_ = true;
+
+            // 攻撃判定処理
+            const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAttackHit());
+            owner_->SetIsAttackValid(attackFlag);
+
+            // 攻撃終了フレーム
+            if (owner_->GetAnimationSeconds() > 0.25f)
+            {
+                // アニメーション再生速度を落とす
+                owner_->SetAnimationSpeed(0.2f);
+
+                // 先行入力があれば次の攻撃
+                if (isNextInput_)
+                {
+                    owner_->PlayBlendAnimation(Player::Animation::AttackRush3, false, 1.0f, 0.15f);
+                    isNextInput_ = false;
+
+                    attackData_.Initialize(0.15f, 0.35f);
+                    owner_->ResetFlags();
+
+                    ++currentAttackNum_;
+                }
+            }
+        }
+        if (animationIndex == Player::Animation::AttackRush3)
+        {
+            // 先行入力取得
+            if (owner_->IsRushAttackKeyDown()) isNextInput_ = true;
+
+            // 攻撃判定処理
+            const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAttackHit());
+            owner_->SetIsAttackValid(attackFlag);
+
+            // 攻撃終了フレーム
+            if (owner_->GetAnimationSeconds() > 0.35f)
+            {
+                // アニメーション再生速度を落とす
+                owner_->SetAnimationSpeed(0.2f);
+
+                // 先行入力があれば次の攻撃
+                if (isNextInput_)
+                {
+                    owner_->PlayBlendAnimation(Player::Animation::AttackRush0, false, 1.0f, 0.18f);
+                    isNextInput_ = false;
+
+                    attackData_.Initialize(0.18f, 0.28f);
+                    owner_->ResetFlags();
+
+                    ++currentAttackNum_;
+                }
+
+                if (currentAttackNum_ >= 8)
+                {
+                    owner_->ChangeState(Player::STATE::Idle);
+                    return;
+                }
+            }
+        }
+
+        if (animationIndex == Player::Animation::AttackRush0 ||
+            animationIndex == Player::Animation::AttackRush1 ||
+            animationIndex == Player::Animation::AttackRush2 ||
+            animationIndex == Player::Animation::AttackRush3)
+        {
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->ChangeState(Player::STATE::Idle);
+                return;
+            }
+        }
     }
 
     // ----- 終了化 -----
     void RushAttackState::Finalize()
     {
+        // ラジアルブラーリセット
+        PostProcess::Instance().SetUseRadialBlur(false);
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 1;
+
+        // ビネットリセット
+        PostProcess::Instance().SetUseVignette(false);
+
+        SystemManager::Instance().SetAllSlowSpeed(1.0f);
+        SystemManager::Instance().SetPlayerSlowSpeed(1.0f);
+
+        owner_->SetUseRootMotion(false);
     }
 
     // ----- ImGui用 -----
     void RushAttackState::DrawDebug()
     {
+        ImGui::Text(GetName());
+        ImGui::DragFloat("RotationSpeed", &rotationSpeed_);
+        ImGui::DragFloat3("TargetPosition", &targetPosition_.x);
+
+        ImGui::DragInt("CurrentAttackNum", &currentAttackNum_);
+    }
+
+    // ----- 旋回処理 -----
+    void RushAttackState::Turn(const float& elapsedTime)
+    {
+        DirectX::XMFLOAT3 ownerFront_float3 = owner_->GetTransform()->CalcForward();
+        DirectX::XMFLOAT2 ownerFront        = { ownerFront_float3.x, ownerFront_float3.z };
+        DirectX::XMFLOAT2 ownerPosition     = { owner_->GetTransform()->GetPositionX(), owner_->GetTransform()->GetPositionZ() };
+        DirectX::XMFLOAT2 targetPosition    = { targetPosition_.x, targetPosition_.z };
+        DirectX::XMFLOAT2 vec               = XMFloat2Normalize(targetPosition - ownerPosition);
+
+        ownerFront = XMFloat2Normalize(ownerFront);
+
+        // 外積でどっちに回転するか判断
+        float cross = XMFloat2Cross(vec, ownerFront);
+
+        // 内積で回転幅を算出
+        float dot = XMFloat2Dot(vec, ownerFront);
+        float angle = acosf(dot);
+
+        if (angle < DirectX::XMConvertToRadians(1)) return;
+
+        const float speed = rotationSpeed_ * elapsedTime;
+        angle *= speed;
+
+        // 回転処理
+        if (cross > 0)
+        {
+            owner_->GetTransform()->AddRotationY(-angle);
+        }
+        else
+        {
+            owner_->GetTransform()->AddRotationY(angle);
+        }
+    }
+
+    // ----- 敵のアニメーションに合わせてターゲットを設定する -----
+    void RushAttackState::SetTargetPosition()
+    {
+        Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
+        Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(enemy->GetAnimationIndex());
+
+        // たたきつけ攻撃
+        if (animationIndex == Enemy::DragonAnimation::AttackSlam0)
+        {
+            targetJointName_ = "Dragon15_r_hand";
+
+        }
+        
+        targetPosition_ = enemy->GetJointPosition(targetJointName_.c_str());
     }
 }
 

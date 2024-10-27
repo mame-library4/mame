@@ -143,8 +143,10 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                 }
 
                 // ヒットストップ ( 弱点部位はヒットストップを長くする )
-                PlayerManager::Instance().SetHitStop(isWeakPoint ? PlayerManager::HitStopType::Critical : PlayerManager::HitStopType::Normal);
-
+                if (player->GetCurrentState() != Player::STATE::RushAttack)
+                {
+                    PlayerManager::Instance().SetHitStop(isWeakPoint ? PlayerManager::HitStopType::Critical : PlayerManager::HitStopType::Normal);
+                }
 
                 // カウンター攻撃時ならコントローラーを振動させる
                 if (player->GetCurrentState() == Player::STATE::CounterCombo)

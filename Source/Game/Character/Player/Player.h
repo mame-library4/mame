@@ -259,13 +259,14 @@ public:// --- éÊìæÅEê›íË ---
     void SetIsJustDodgeSuccessful(const bool& flag) { isJustDodgeSuccessful_ = flag; }
 
     // ---------- ÉLÅ[ì¸óÕ ----------
-    [[nodiscard]] bool IsComboAttack0KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
-    [[nodiscard]] bool IsDodgeKeyDown()        const;
-    [[nodiscard]] bool IsCounterStanceKey()    const;
-    [[nodiscard]] bool IsGetUpKeyDown()        const;
-    [[nodiscard]] bool IsDashKey()             const;
+    [[nodiscard]] const bool IsComboAttack0KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
+    [[nodiscard]] const bool IsDodgeKeyDown()        const;
+    [[nodiscard]] const bool IsCounterStanceKey()    const;
+    [[nodiscard]] const bool IsGetUpKeyDown()        const;
+    [[nodiscard]] const bool IsDashKey()             const;
 
-    [[nodiscard]] bool IsGuardCounterKeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_X; }
+    [[nodiscard]] const bool IsGuardCounterKeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_X; }
+    [[nodiscard]] const bool IsRushAttackKeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
 
 #pragma endregion [Get, Set] Function
 
