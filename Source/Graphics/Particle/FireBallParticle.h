@@ -7,7 +7,6 @@ public:
     FireBallParticle();
     ~FireBallParticle() override {}
 
-    void Initialize(const float& elapsedTime) override {}
     void Update(const float& elapsedTime)     override;
     void Render()                             override;
     void DrawDebug()                          override;
@@ -17,13 +16,9 @@ public:
 
     [[nodiscard]] const bool GetIsHit() const { return !constants_.isMoveStraight; }
     void SetToExplode();
-    
 
 private:
-    void CreateFireBallParticle();
-
-private:
-    struct ParticleData
+    struct Particle
     {
         DirectX::XMFLOAT4 color_        = { 1, 1, 1, 1 };
         DirectX::XMFLOAT3 position_     = {};

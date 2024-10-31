@@ -5,6 +5,12 @@ SamplerState samplerStates[3] : register(s0);
 
 float4 main(GS_OUT psIn) : SV_TARGET
 {
+    float4 color = psIn.color;
+    color.rgb *= 2.0f;
+    
+    return color;
+    
+#if 0
     float4 color = textureMap.Sample(samplerStates[1], psIn.texcoord);
     
     float alpha = min(color.a, psIn.color.a);
@@ -12,4 +18,5 @@ float4 main(GS_OUT psIn) : SV_TARGET
     float3 finalColor = psIn.color.rgb * 2.0f;
     
     return float4(finalColor, alpha);
+#endif
 }

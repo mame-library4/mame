@@ -7,13 +7,14 @@ public:
     SnowParticle();
     ~SnowParticle() override {}
 
-    void Initialize(const float& deltaTime) override;
     void Update(const float& deltaTime)     override;
     void Render()                           override;
     void DrawDebug()                        override;
 
+    void Play(const float& elapsedTime);
+
 private:
-    struct ParticleData
+    struct Particle
     {
         DirectX::XMFLOAT3 position_     = {}; // ˆÊ’u
         DirectX::XMFLOAT2 size_         = {}; // ‘å‚«‚³

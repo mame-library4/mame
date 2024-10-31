@@ -3,13 +3,13 @@
 #include "Easing.h"
 #include "Input.h"
 #include "Camera.h"
+#include "Common.h"
 #include "../Player/PlayerManager.h"
 
 #include "Projectile/ProjectileManager.h"
 #include "Projectile/Fireball.h"
 
 #include "Particle/ParticleManager.h"
-#include "Common.h"
 
 #include "sprite.h"
 #include "Application.h"
@@ -69,6 +69,25 @@ namespace ActionDragon
     }
 }
 
+// ----- 死亡行動 -----
+namespace ActionDragon
+{
+    const ActionBase::State DeathAction::Run(const float& elapsedTime)
+    {
+        if (owner_->GetStep() == 0)
+        {
+
+            owner_->SetStep(1);
+        }
+
+        return ActionBase::State::Run;
+    }
+    void DeathAction::DrawDebug()
+    {
+    }
+}
+
+#pragma region ---------- 攻撃のインパクトを考慮した行動 ----------
 // ----- SlamAttackAction -----
 namespace ActionDragon
 {
@@ -77,6 +96,8 @@ namespace ActionDragon
         // 実行中ノードを中断するか
         if (owner_->CheckStatusChange())
         {
+            Finalize();
+
             return ActionBase::State::Failed;
         }
 
@@ -89,6 +110,11 @@ namespace ActionDragon
             // カウンター有効範囲を設定する
             PlayerManager::Instance().GetPlayer()->SetCounterActiveRadius(6.0f);
 
+            // 攻撃力設定
+            owner_->SetAttackPower(Enemy::AttackAction::TurnAttack);
+
+            slamAttackParticle_ = new SlamAttackParticle();
+
             // 変数初期化
             slowStartFrame_ = 0.9f;
 
@@ -96,6 +122,13 @@ namespace ActionDragon
             
             break;
         case 1:
+
+            slamAttackParticle_->UpdateHandPosition(owner_->GetJointPosition("Dragon15_l_hand"));
+
+            if (slamAttackParticle_->GetIsChargeParticleActive() == false && owner_->GetAnimationSeconds() > 0.4f)
+            {
+                slamAttackParticle_->PlayChargeParticle(owner_->GetJointPosition("Dragon15_l_hand"));
+            }
 
             // 攻撃判定処理
             if (owner_->GetAnimationSeconds() > 1.04f)
@@ -112,6 +145,8 @@ namespace ActionDragon
 
             if (owner_->IsPlayAnimation() == false)
             {
+                Finalize();
+
                 owner_->SetStep(0);
                 return ActionBase::State::Complete;
             }
@@ -121,8 +156,19 @@ namespace ActionDragon
 
         return ActionBase::State::Run;
     }
+    
     void SlamAttackAction::DrawDebug()
     {
+    }
+
+    // ----- 終了化 -----
+    void SlamAttackAction::Finalize()
+    {
+        if (slamAttackParticle_ != nullptr)
+        {
+            ParticleManager::Instance().Remove(slamAttackParticle_);
+            slamAttackParticle_ = nullptr;
+        }
     }
 
     // ----- アニメーションの速度を調整する -----
@@ -152,6 +198,149 @@ namespace ActionDragon
         owner_->SetAnimationSpeed(animationSpeed);
     }
 }
+
+// ----- TurnAttackAction -----
+namespace ActionDragon
+{
+    const ActionBase::State TurnAttackAction::Run(const float& elapsedTime)
+    {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange())
+        {
+            Finalize();
+            return ActionBase::State::Failed;
+        }
+
+        switch (static_cast<STATE>(owner_->GetStep()))
+        {
+        case STATE::Initialize:// 初期設定
+            // アニメーション設定
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurn, false);
+
+            // 現時点ではルートモーションを使用しない
+            owner_->SetUseRootMotion(false);
+
+            // 攻撃力設定
+            owner_->SetAttackPower(Enemy::AttackAction::TurnAttack);
+
+            // カウンター有効範囲を設定
+
+            // ジャスト回避範囲を設定
+
+            // パーティクル生成
+            tailParticle_ = new TailParticle();
+            {
+                std::vector<DirectX::XMFLOAT3> jointPosition;
+                jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_01"));
+                jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_02"));
+                jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_03"));
+                jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_04"));
+                jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_05"));
+                tailParticle_->UpdateJointPosition(jointPosition);
+            }
+            tailParticle_->PlayTailParticle();
+            tailParticle_->PlayChargeParticle();
+
+            // Attackステートへ
+            SetState(STATE::Attack);
+
+            break;
+        case STATE::Attack:
+            // ルートモーション使用設定
+            if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+            {
+                owner_->SetUseRootMotion(true);
+            }
+
+            // アニメーションの速度を調整する
+            UpdateAnimationSpeed();
+
+            // パーティクル更新
+            {
+                std::vector<DirectX::XMFLOAT3> jointPosition;
+                jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_01"));
+                jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_02"));
+                jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_03"));
+                jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_04"));
+                jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_05"));
+                tailParticle_->UpdateJointPosition(jointPosition);
+
+                std::vector<DirectX::XMMATRIX> jointWorldMatrix;
+                jointWorldMatrix.emplace_back(owner_->GetJointWorldTransform("Dragon15_tail_01"));
+                jointWorldMatrix.emplace_back(owner_->GetJointWorldTransform("Dragon15_tail_02"));
+                jointWorldMatrix.emplace_back(owner_->GetJointWorldTransform("Dragon15_tail_03"));
+                jointWorldMatrix.emplace_back(owner_->GetJointWorldTransform("Dragon15_tail_04"));
+                jointWorldMatrix.emplace_back(owner_->GetJointWorldTransform("Dragon15_tail_05"));
+                tailParticle_->UpdateJointWorldMatrix(jointWorldMatrix);
+            }
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                Finalize();
+
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }            
+
+            break;
+        }
+
+        return ActionBase::State::Run;
+    }
+
+    // ----- ImGui用 -----
+    void TurnAttackAction::DrawDebug()
+    {
+        ImGui::Text(u8"---------- スロー ----------");
+        ImGui::DragFloat("SlowStartFrame", &slowStartFrame_, 0.01f, 0.0f, 3.5f);
+        ImGui::DragFloat("SlowEndFrame", &slowEndFrame_, 0.01f, 0.0f, 3.5f);
+        ImGui::DragFloat("SlowSpeed", &slowSpeed_, 0.01f, 0.0f, 1.0f);
+
+        ImGui::Text(u8"---------- 攻撃の後隙 ----------");
+        ImGui::DragFloat("RecoveryFrame", &recoveryFrame_, 0.01f, 0.0f, 3.5f);
+        ImGui::DragFloat("RecoverySpeed", &recoverySpeed_, 0.1f, 0.0f, 1.0f);
+    }
+
+    // ----- 終了化 -----
+    void TurnAttackAction::Finalize()
+    {
+        if (tailParticle_ != nullptr)
+        {
+            ParticleManager::Instance().Remove(tailParticle_);
+            tailParticle_ = nullptr;
+        }
+    }
+
+    // ----- アニメーションの速度を調整する -----
+    void TurnAttackAction::UpdateAnimationSpeed()
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+        float animationSpeed = 0.0f;
+
+        // 予備動作としてスローにする
+        if (animationSeconds > slowStartFrame_ && animationSeconds < slowEndFrame_)
+        {
+            animationSpeed = slowSpeed_;
+        }
+        // 予備動作よりも前
+        else if (animationSeconds < slowStartFrame_)
+        {
+            animationSpeed = 0.8f;
+        }
+        else if (animationSeconds > recoveryFrame_)
+        {
+            animationSpeed = recoverySpeed_;
+        }
+        else
+        {
+            animationSpeed = 1.0f;
+        }
+
+        owner_->SetAnimationSpeed(animationSpeed);
+    }
+}
+#pragma endregion ---------- 攻撃のインパクトを考慮した行動 ----------
+
 
 // ----- SuperNova -----
 namespace ActionDragon
@@ -375,23 +564,8 @@ namespace ActionDragon
     }
 }
 
-// ----- 死亡行動 -----
-namespace ActionDragon
-{
-    const ActionBase::State DeathAction::Run(const float& elapsedTime)
-    {
-        if (owner_->GetStep() == 0)
-        {
 
-            owner_->SetStep(1);
-        }
-
-        return ActionBase::State::Run;
-    }
-    void DeathAction::DrawDebug()
-    {
-    }
-}
+#if 0
 
 // ----- 怯み行動 -----
 namespace ActionDragon
@@ -2293,3 +2467,4 @@ namespace ActionDragon
     {
     }
 }
+#endif

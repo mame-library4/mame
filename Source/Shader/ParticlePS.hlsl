@@ -2,5 +2,7 @@
 
 float4 main(GS_OUT psIn) : SV_TARGET
 {    
-    return psIn.color;
+    float4 color = psIn.color;
+    
+    return color;
 }

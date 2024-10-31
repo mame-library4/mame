@@ -2,7 +2,10 @@
 #include "BehaviorTree/ActionBase.h"
 #include "Enemy.h"
 
+#include "Particle/TailParticle.h"
 #include "Particle/SuperNovaParticle.h"
+#include "Particle/SlamAttackParticle.h"
+
 #include "Effect/EffectManager.h"
 
 namespace ActionDragon
@@ -40,6 +43,16 @@ namespace ActionDragon
 
 namespace ActionDragon
 {
+    // 死亡行動
+    class DeathAction : public ActionBase
+    {
+    public:
+        DeathAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
+    };
+
+#pragma region ---------- 攻撃のインパクトを考慮した行動 ----------
     // ----- SlamAttackAction -----
     class SlamAttackAction : public ActionBase
     {
@@ -49,11 +62,47 @@ namespace ActionDragon
         void DrawDebug()                                      override;
 
     private:
+        void Finalize();
         void UpdateAnimationSpeed(); // アニメーションの速度を調整する
 
     private:
+        SlamAttackParticle* slamAttackParticle_ = nullptr;
+
         float slowStartFrame_ = 0.0f; // スロー開始フレーム
     };
+
+    // ----- TurnAttack -----
+    class TurnAttackAction : public ActionBase
+    {
+    public:
+        TurnAttackAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
+
+    private:// ----- 定数 -----
+        enum class STATE
+        {
+            Initialize, // 初期化
+            Attack,     // 攻撃
+        };
+
+    private:
+        void Finalize(); // 終了化
+        void UpdateAnimationSpeed(); // アニメーションの速度を調整する
+
+        void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
+    private:
+        TailParticle* tailParticle_ = nullptr;
+
+        float slowStartFrame_   = 0.5f;   // スロー開始フレーム
+        float slowEndFrame_     = 0.8f; // スロー終了フレーム
+        float slowSpeed_        = 0.3f;
+
+        float recoveryFrame_ = 2.0f; // 攻撃の後隙
+        float recoverySpeed_ = 1.0f;
+    };
+
+#pragma endregion ---------- 攻撃のインパクトを考慮した行動 ----------
 
     class SuperNovaAction : public ActionBase
     {
@@ -90,15 +139,9 @@ namespace ActionDragon
         const int   maxSampleCount_         = 5.0f;
     };
 
-    // 死亡行動
-    class DeathAction : public ActionBase
-    {
-    public:
-        DeathAction(Enemy* owner) : ActionBase(owner) {}
-        const ActionBase::State Run(const float& elapsedTime) override;
-        void DrawDebug()                                      override;
-    };
 
+
+#if 0
     // ひるみ行動
     class FlinchAction : public ActionBase
     {
@@ -502,4 +545,5 @@ namespace ActionDragon
     private:
         DirectX::XMFLOAT3 targetPosition_ = {};
     };
+#endif  
 }

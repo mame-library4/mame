@@ -8,7 +8,8 @@
 
 class Enemy : public Character
 {
-public:
+public:// ----- ’è” -----
+#pragma region ----- ’è” -----
     enum class DragonAnimation
     {
         Idle0,          // ‘Ò‹@0
@@ -109,8 +110,23 @@ public:
         FlyTurn,
         Nova2,
     };
+    
+    // UŒ‚‚Ìí—Ş
+    enum class AttackAction
+    {
+        SlamAttack,
+        TurnAttack,
+
+        KnockBackAttack,
+        TackleAttack,
+        FireBreath,
+
+        Max,
+    };
 
     enum class PartName { Head, Chest, Body, Leg, Tail, Wings, Max };
+
+#pragma endregion ----- ’è” -----
 
 public:
     Enemy(const std::string& filename, const float& scaleFactor);
@@ -188,11 +204,12 @@ public:// --- æ“¾Eİ’è ---
     [[nodiscard]] const bool GetIsRoar() const { return isRoar_; }
     void SetIsRoar(const bool& flag) { isRoar_ = flag; }
 
-    // ----- UŒ‚ƒ_ƒ[ƒW -----
-    [[nodiscard]] const float GetAttackDamage() const { return attackDamage_; }
-    void SetAttackDamage(const float& damage) { attackDamage_ = damage; }
-
 #pragma endregion [Get, Set] Function
+
+    // ---------- UŒ‚—Í ----------
+    [[noidscard]] const float GetAttackPower() const { return attackPower_; }
+    void SetAttackPower(const AttackAction& type) { attackPower_ = attackPowerList_[static_cast<int>(type)]; }
+
 
     [[nodiscard]] const std::string GetActiveNodeName() const { return (activeNode_ != nullptr) ? activeNode_->GetName() : ""; }
 
@@ -244,8 +261,6 @@ protected:
     float               nearAttackRadius_       = 15.0f; // ‹ß‹——£UŒ‚ŠJn”ÍˆÍ
     float               comboFlyAttackRadius_   = 8.5f;  // ‚R˜A‘±‚½‚½‚«‚Â‚¯UŒ‚   
 
-    float attackDamage_ = 0.0f; // UŒ‚ƒ_ƒ[ƒW
-
     DirectX::XMFLOAT3 movePosition_ = {}; // ˆÚ“®æˆÊ’u
 
     int     attackComboCount_ = 0; // ˜A‘±UŒ‚‰ñ”
@@ -268,5 +283,9 @@ protected:
     int     normalHitStopFrame_ = 7;
     //int     criticalHitStopFrame_ = 7;
     bool    isHitStopActive_ = false;
+
+    // ---------- UŒ‚—Í ----------
+    float attackPower_ = 0.0f;
+    float attackPowerList_[static_cast<int>(AttackAction::Max)] = {};
 };
 

@@ -210,8 +210,8 @@ void CollisionManager::UpdatePlayerDamageVsEnemyAttack()
                 }
 
                 // ƒ_ƒ[ƒW‚ð—^‚¦‚é
-                int damage = enemy->GetAttackDamage();
-                player->AddDamage(enemy->GetAttackDamage());
+                int damage = enemy->GetAttackPower();
+                player->AddDamage(damage);
 
                 // HP‚ª‚Ü‚¾‚ ‚é‚Ì‚ÅDamageState‚É‘JˆÚ
                 if (player->GetHealth() > 0.0f)

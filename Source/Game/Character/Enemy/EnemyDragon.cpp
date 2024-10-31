@@ -120,6 +120,26 @@ void EnemyDragon::DrawDebug()
 {
     if (ImGui::BeginMenu("Dragon"))
     {
+        if (ImGui::CollapsingHeader("AttackPower"))
+        {
+            ImGui::BeginChild(ImGui::GetID((void*)0), ImVec2(350, 100), ImGuiWindowFlags_NoTitleBar);
+            const char* name[] =
+            { 
+                "SlamAttack",
+                "TurnAttack",
+                "KnockBackAttack",
+                "TackleAttack",
+                "FireBreath",
+            };
+
+            for (int i = 0; i < static_cast<int>(AttackAction::Max); ++i)
+            {
+                ImGui::DragFloat(name[i], &attackPowerList_[i]);
+            }
+
+            ImGui::EndChild();
+        }
+
         if (ImGui::TreeNode("JustDodgeDetectionData"))
         {
             ImGui::Checkbox("IsJustDodgeDetectionY", &isJustDodgeDetectionY_);
@@ -238,8 +258,11 @@ void EnemyDragon::RegisterBehaviorNode()
     // --------------- Ž€–S ---------------
     behaviorTree_->AddNode("Root", "Death", 0, BehaviorTree::SelectRule::None, new DeathJudgment(this), new ActionDragon::DeathAction(this));
 
-    //behaviorTree_->AddNode("Root", "FireBreath", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireBreath(this));
-    behaviorTree_->AddNode("Root", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
+    behaviorTree_->AddNode("Root", "Attack", 0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+
+    behaviorTree_->AddNode("Attack", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
+    behaviorTree_->AddNode("Attack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
+    behaviorTree_->AddNode("Attack", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
     
 
 #if 0

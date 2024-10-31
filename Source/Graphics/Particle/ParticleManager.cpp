@@ -15,7 +15,6 @@ void ParticleManager::Update(const float& elapsedTime)
     for (ParticleSystem* particleSystem : generates_)
     {
         particleSystems_.emplace_back(particleSystem);
-        particleSystem->Initialize(elapsedTime);
     }
     generates_.clear();
 

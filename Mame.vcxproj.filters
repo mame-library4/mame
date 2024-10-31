@@ -223,13 +223,7 @@
     <ClCompile Include="Source\Game\UI\UICrosshair.cpp">
       <Filter>Mame\Game\UI\UICrosshair</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graphics\Particle\ParticleSystem.cpp">
-      <Filter>Mame\Graphics\Particle</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Graphics\Particle\SnowParticle.cpp">
-      <Filter>Mame\Graphics\Particle</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Graphics\Particle\ParticleManager.cpp">
       <Filter>Mame\Graphics\Particle</Filter>
     </ClCompile>
     <ClCompile Include="Source\Game\UI\UIHealth.cpp">
@@ -270,6 +264,21 @@
     </ClCompile>
     <ClCompile Include="Source\Game\System\SystemManager.cpp">
       <Filter>Mame\Game\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Particle\TailParticle.cpp">
+      <Filter>Mame\Graphics\Particle\TailParticle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Particle\ParticleManager.cpp">
+      <Filter>Mame\Graphics\Particle\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Particle\ParticleSystem.cpp">
+      <Filter>Mame\Graphics\Particle\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Particle\ParticleData.cpp">
+      <Filter>Mame\Graphics\Particle\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Particle\SlamAttackParticle.cpp">
+      <Filter>Mame\Graphics\Particle\SlamAttackParticle</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -523,13 +532,7 @@
     <ClInclude Include="Source\Game\UI\UICrosshair.h">
       <Filter>Mame\Game\UI\UICrosshair</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Graphics\Particle\ParticleSystem.h">
-      <Filter>Mame\Graphics\Particle</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Graphics\Particle\SnowParticle.h">
-      <Filter>Mame\Graphics\Particle</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Graphics\Particle\ParticleManager.h">
       <Filter>Mame\Graphics\Particle</Filter>
     </ClInclude>
     <ClInclude Include="Source\Game\UI\UIHealth.h">
@@ -570,6 +573,21 @@
     </ClInclude>
     <ClInclude Include="Source\Game\System\SystemManager.h">
       <Filter>Mame\Game\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Particle\TailParticle.h">
+      <Filter>Mame\Graphics\Particle\TailParticle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Particle\ParticleManager.h">
+      <Filter>Mame\Graphics\Particle\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Particle\ParticleSystem.h">
+      <Filter>Mame\Graphics\Particle\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Particle\ParticleData.h">
+      <Filter>Mame\Graphics\Particle\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Particle\SlamAttackParticle.h">
+      <Filter>Mame\Graphics\Particle\SlamAttackParticle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -783,6 +801,27 @@
     <Filter Include="Mame\Game\System">
       <UniqueIdentifier>{f9689e72-9d56-42eb-ae3c-3aabda947202}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mame\Graphics\Particle\TailParticle">
+      <UniqueIdentifier>{a11c994f-5f91-4f78-b837-a854ab00e9d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Shader\Particle\TailParticle">
+      <UniqueIdentifier>{9e7026ed-60c6-46fa-84ab-7eb195f6eee3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Shader\Particle\TailParticle\TailParticle">
+      <UniqueIdentifier>{cd38904b-16cb-43c0-acc8-6320690dd6ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Shader\Particle\TailParticle\TailChargeParticle">
+      <UniqueIdentifier>{91ddc1cb-5a55-41a9-8204-7e857465ea2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Graphics\Particle\Core">
+      <UniqueIdentifier>{149f59ef-c62a-47f8-9148-81af78ed1d71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Shader\Particle\SlamAttackParticle">
+      <UniqueIdentifier>{c969ccef-5edd-402b-a911-468dc43b7ee7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Graphics\Particle\SlamAttackParticle">
+      <UniqueIdentifier>{4f64cca6-9f4e-4693-a838-9a08f901a558}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -858,6 +897,15 @@
     </None>
     <None Include="Source\Shader\FireBallParticle.hlsli">
       <Filter>Mame\Shader\Particle\FireBallParticle</Filter>
+    </None>
+    <None Include="Source\Shader\TailParticle.hlsli">
+      <Filter>Mame\Shader\Particle\TailParticle\TailParticle</Filter>
+    </None>
+    <None Include="Source\Shader\TailChargeParticle.hlsli">
+      <Filter>Mame\Shader\Particle\TailParticle\TailChargeParticle</Filter>
+    </None>
+    <None Include="Source\Shader\SlamChargeParticle.hlsli">
+      <Filter>Mame\Shader\Particle\SlamAttackParticle</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -980,6 +1028,33 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\VignettePS.hlsl">
       <Filter>Mame\Shader\PostProcess</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\TailParticleUpdateCS.hlsl">
+      <Filter>Mame\Shader\Particle\TailParticle\TailParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\TailParticleInitializeCS.hlsl">
+      <Filter>Mame\Shader\Particle\TailParticle\TailParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\TailParticleGS.hlsl">
+      <Filter>Mame\Shader\Particle\TailParticle\TailParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\TailChargeInitializeCS.hlsl">
+      <Filter>Mame\Shader\Particle\TailParticle\TailChargeParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\TailChargeUpdateCS.hlsl">
+      <Filter>Mame\Shader\Particle\TailParticle\TailChargeParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\TailChargeGS.hlsl">
+      <Filter>Mame\Shader\Particle\TailParticle\TailChargeParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SlamChargeInitializeCS.hlsl">
+      <Filter>Mame\Shader\Particle\SlamAttackParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SlamChargeUpdateCS.hlsl">
+      <Filter>Mame\Shader\Particle\SlamAttackParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SlamChargeGS.hlsl">
+      <Filter>Mame\Shader\Particle\SlamAttackParticle</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
