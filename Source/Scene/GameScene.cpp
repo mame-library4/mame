@@ -72,7 +72,8 @@ void GameScene::CreateResource()
     
     Effect* effect6 = new Effect("./Resources/Effect/Power.efk", "Power");
     Effect* effect7 = new Effect("./Resources/Effect/Guard1.efk", "Guard");
-    //Effect* effect7 = new Effect("./Resources/Effect/Guard.efk", "Guard");
+    Effect* effect8 = new Effect("./Resources/Effect/Charge1.efk", "Charge");
+    //Effect* effect8 = new Effect("./Resources/Effect/Charge.efk", "Charge");
     
     UIHealth* uIHealth = new UIHealth();
     UIStamina* uIStamina = new UIStamina();

@@ -117,17 +117,22 @@ namespace ActionDragon
 
             // 変数初期化
             slowStartFrame_ = 0.9f;
+            isCreateChargeEffect_ = false;
 
             owner_->SetStep(1);
             
             break;
         case 1:
 
+            PlayChargeEffect();
             slamAttackParticle_->UpdateHandPosition(owner_->GetJointPosition("Dragon15_l_hand"));
 
-            if (slamAttackParticle_->GetIsChargeParticleActive() == false && owner_->GetAnimationSeconds() > 0.4f)
+            if (isCreateChargeEffect_)
             {
-                slamAttackParticle_->PlayChargeParticle(owner_->GetJointPosition("Dragon15_l_hand"));
+                if (owner_->GetUseEffekSeerEffect())
+                {
+                    EffectManager::Instance().GetEffect("Charge")->SetPosition(powerEffectHandle_, owner_->GetJointPosition("Dragon15_l_hand"));
+                }
             }
 
             // 攻撃判定処理
@@ -169,6 +174,11 @@ namespace ActionDragon
             ParticleManager::Instance().Remove(slamAttackParticle_);
             slamAttackParticle_ = nullptr;
         }
+
+        if (owner_->GetUseEffekSeerEffect())
+        {
+            EffectManager::Instance().GetEffect("Charge")->Stop(powerEffectHandle_);
+        }
     }
 
     // ----- アニメーションの速度を調整する -----
@@ -196,6 +206,26 @@ namespace ActionDragon
         }
 
         owner_->SetAnimationSpeed(animationSpeed);
+    }
+
+    // ----- チャージエフェクト再生 -----
+    void SlamAttackAction::PlayChargeEffect()
+    {
+        // もう既に生成している
+        if (isCreateChargeEffect_) return;
+
+        if (owner_->GetAnimationSeconds() < 0.4f) return;
+
+        // チャージエフェクトとパーティクルを再生する
+        DirectX::XMFLOAT3 emitterPosition = owner_->GetJointPosition("Dragon15_l_hand");
+        slamAttackParticle_->PlayChargeParticle(emitterPosition);
+        
+        if (owner_->GetUseEffekSeerEffect())
+        {
+            powerEffectHandle_ = EffectManager::Instance().GetEffect("Charge")->Play(emitterPosition, 1.0f, 1.0f);
+        }
+
+        isCreateChargeEffect_ = true;
     }
 }
 

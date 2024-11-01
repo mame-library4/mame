@@ -65,8 +65,13 @@ namespace ActionDragon
         void Finalize();
         void UpdateAnimationSpeed(); // アニメーションの速度を調整する
 
+        void PlayChargeEffect();
+
     private:
         SlamAttackParticle* slamAttackParticle_ = nullptr;
+
+        Effekseer::Handle powerEffectHandle_ = {};
+        bool isCreateChargeEffect_ = false;
 
         float slowStartFrame_ = 0.0f; // スロー開始フレーム
     };

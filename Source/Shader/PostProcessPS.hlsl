@@ -1,48 +1,40 @@
-struct PSIn
-{
-    float4 position : SV_POSITION;
-    float2 texcoord : TEXCOORD;
-};
-
-#define POINT 0
-#define LINEAR 1
-#define ANISOTROPIC 2
-#define LINEAR_BORDER_BLACK 3
-#define LINEAR_BORDER_WHITE 4
-
-SamplerState samplerStates[5] : register(s0);
-SamplerComparisonState comparisonSamplerState : register(s5);
+#include "PostProcess.hlsli"
 
 Texture2D colorMap : register(t0);
 Texture2D depthMap : register(t1);
 Texture2D bloomMap : register(t2);
 Texture2DArray cascadedShadowMaps : register(t3);
 
-cbuffer SceneConstantBuffer : register(b1)
+float3 BrightnessContrast(float3 fragmentColor, float brightness, float contrast)
 {
-    row_major float4x4 viewProjection_;
-    float4 lightDirection_;
-    float4 cameraPosition_;
-    
-    row_major float4x4 inverseProjection_;
-    row_major float4x4 inverseViewProjection_;
-};
-
-cbuffer PostProcessConstants : register(b2)
-{
-    float shadowColor_;
-    float shadowDepthBias_;
-    bool colorizeCascadedLayer_;
-
-    float blurPower;
-};
-
-cbuffer CsmConstants : register(b3)
-{
-    row_major float4x4 cascadedMatrices_[4];
-    float4 cascadedPlaneDistances_;
+    fragmentColor += brightness;
+    if (contrast > 0.0)
+    {
+        fragmentColor = (fragmentColor - 0.5) / (1.0 - contrast) + 0.5;
+    }
+    else if (contrast < 0.0)
+    {
+        fragmentColor = (fragmentColor - 0.5) * (1.0 + contrast) + 0.5;
+    }
+    return fragmentColor;
 }
-
+float3 HueSaturation(float3 fragmentColor, float hue, float saturation)
+{
+    float angle = hue * 3.14159265;
+    float s = sin(angle), c = cos(angle);
+    float3 weights = (float3(2.0 * c, -sqrt(3.0) * s - c, sqrt(3.0) * s - c) + 1.0) / 3.0;
+    fragmentColor = float3(dot(fragmentColor, weights.xyz), dot(fragmentColor, weights.zxy), dot(fragmentColor, weights.yzx));
+    float average = (fragmentColor.r + fragmentColor.g + fragmentColor.b) / 3.0;
+    if (saturation > 0.0)
+    {
+        fragmentColor += (average - fragmentColor) * (1.0 - 1.0 / (1.001 - saturation));
+    }
+    else
+    {
+        fragmentColor += (average - fragmentColor) * (-saturation);
+    }
+    return fragmentColor;
+}
 
 float4 main(PSIn pin) : SV_TARGET
 {       
@@ -110,15 +102,10 @@ float4 main(PSIn pin) : SV_TARGET
         color *= lerp(shadowColor_, 1.0, shadowFactor) * layerColor;
     }
     
+    color = HueSaturation(color, hue_, saturation_);
+    color = BrightnessContrast(color, brightness_, contrast_);    
+    
     color += bloomMap.Sample(samplerStates[LINEAR], pin.texcoord).rgb;    
-    
-    // Tone mapping : HDR -> SDR
-    const float exposure = 1.2;
-    //color = 1 - exp(-color * exposure);
-    
-    // Gamma process
-    const float GAMMA = 2.2;
-    //color = pow(color, 1.0 / GAMMA);   
     
     return float4(color, alpha);
 }

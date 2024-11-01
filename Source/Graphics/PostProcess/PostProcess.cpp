@@ -11,10 +11,15 @@ PostProcess::PostProcess()
     Graphics::Instance().CreatePsFromCso("./Resources/Shader/PostProcessPS.cso", postProcessPS_.GetAddressOf());
     Graphics::Instance().CreatePsFromCso("./Resources/Shader/RadialBlurPS.cso", radialBlurPS_.GetAddressOf());
     Graphics::Instance().CreatePsFromCso("./Resources/Shader/VignettePS.cso", vignettePS_.GetAddressOf());
+    Graphics::Instance().CreatePsFromCso("./Resources/Shader/toneMapPS.cso", toneMapPS_.GetAddressOf());
 
+    
+    sceneBuffer_ = std::make_unique<FrameBuffer>(SCREEN_WIDTH, SCREEN_HEIGHT);
     postProcess_ = std::make_unique<FrameBuffer>(SCREEN_WIDTH, SCREEN_HEIGHT);
     radialBlur_  = std::make_unique<FrameBuffer>(SCREEN_WIDTH, SCREEN_HEIGHT);
     vignette_    = std::make_unique<FrameBuffer>(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    postEffectConstants_ = std::make_unique<ConstantBuffer<PostEffectConstants>>();
 
     constant_            = std::make_unique<ConstantBuffer<Constants>>();
     radialBlurConstants_ = std::make_unique<ConstantBuffer<RadialBlurConstants>>();
@@ -29,84 +34,60 @@ PostProcess::~PostProcess()
 // ----- ポストプロセス開始 -----
 void PostProcess::Activate()
 {
-    postProcess_->Clear();
-    postProcess_->Activate(Graphics::Instance().GetShader()->GetGBufferDepthStencilView());
+    sceneBuffer_->Clear();
+    sceneBuffer_->Activate(Graphics::Instance().GetShader()->GetGBufferDepthStencilView());
 }
 
 // ----- ポストプロセス終了 -----
 void PostProcess::Deactivate()
 {
-    postProcess_->Deactivate();
-    bloom_.Execute(postProcess_->shaderResourceViews_[0].Get());
+    sceneBuffer_->Deactivate();
 }
 
 // ----- ポストプロセス描画 -----
 void PostProcess::Draw()
 {
     constant_->Activate(2);
-
+    bloom_.Execute(sceneBuffer_->GetColorMap().Get());
+    
     Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_OFF_ZW_OFF);
     Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
     Graphics::Instance().SetBlendState(Shader::BLEND_STATE::NONE);
 
     ID3D11ShaderResourceView* shaderResourceViews[] =
     {
-        postProcess_->shaderResourceViews_[0].Get(),
+        sceneBuffer_->GetColorMap().Get(),
         Graphics::Instance().GetShader()->GetDepthMap().Get(),
         bloom_.GetColorMap().Get(),
-        cascadedShadowMap_.GetDepthMap().Get()
+        cascadedShadowMap_.GetDepthMap().Get(),
     };
+    postProcess_->Clear();
+    postProcess_->Activate();
 
-    // ビネット
-    if (usevignette_)
+
+    if (useVignette_ && useRadialBlur_)
     {
-        // ラジアルブラー
-        if (useRadialBlur_)
-        {
-            radialBlur_->Clear();
-            radialBlur_->Activate();
-            renderer_->Draw(shaderResourceViews, 0, _countof(shaderResourceViews), postProcessPS_.Get());
-            radialBlur_->Deactivate();
-        }
-
-        // ---------- ビネット開始 ----------
-        vignette_->Clear();
-        vignette_->Activate();
-
-        if (useRadialBlur_)
-        {
-            radialBlurConstants_->Activate(0);
-            renderer_->Draw(radialBlur_->shaderResourceViews_->GetAddressOf(), 0, 1, radialBlurPS_.Get());
-        }
-        else
-        {
-            renderer_->Draw(shaderResourceViews, 0, _countof(shaderResourceViews), postProcessPS_.Get());
-        }
-
-        vignette_->Deactivate();
-        // ---------- ビネット終了 ----------
-        
-        vignetteConstants_->Activate(0);
-        renderer_->Draw(vignette_->shaderResourceViews_->GetAddressOf(), 0, 1, vignettePS_.Get());
+        UpdateVignette([&]() { UpdateRadialBler([&]() { renderer_->Draw(shaderResourceViews, 0, _countof(shaderResourceViews), postProcessPS_.Get()); }); });
+    }
+    else if (useVignette_)
+    {
+        UpdateVignette([&]() { renderer_->Draw(shaderResourceViews, 0, _countof(shaderResourceViews), postProcessPS_.Get()); });
+    }
+    else if (useRadialBlur_)
+    {
+        UpdateRadialBler([&]() { renderer_->Draw(shaderResourceViews, 0, _countof(shaderResourceViews), postProcessPS_.Get()); });
     }
     else
     {
-        // ラジアルブラーを使用する
-        if (useRadialBlur_)
-        {
-            radialBlur_->Clear();
-            radialBlur_->Activate();
-            renderer_->Draw(shaderResourceViews, 0, _countof(shaderResourceViews), postProcessPS_.Get());
-            radialBlur_->Deactivate();
+        renderer_->Draw(shaderResourceViews, 0, _countof(shaderResourceViews), postProcessPS_.Get());
+    }    
 
-            radialBlurConstants_->Activate(0);
-            renderer_->Draw(radialBlur_->shaderResourceViews_->GetAddressOf(), 0, 1, radialBlurPS_.Get());
-        }
-        // ラジアルブラーを使用しない
-        else
-        {
-            renderer_->Draw(shaderResourceViews, 0, _countof(shaderResourceViews), postProcessPS_.Get());
-        }
+    postProcess_->Deactivate();
+
+    // ToneMapping
+    {
+        postEffectConstants_->Activate(8);
+        renderer_->Draw(postProcess_->GetColorMap().GetAddressOf(), 0, 1, toneMapPS_.Get());
     }
 }
 
@@ -117,6 +98,19 @@ void PostProcess::DrawDebug()
     {
         if (ImGui::BeginMenu("PostProcess"))
         {
+            if (ImGui::TreeNode("ToneMap"))
+            {
+                ImGui::ColorEdit3("Colrize", &postEffectConstants_->GetData()->colorize_.x);
+                ImGui::DragFloat("Exposure", &postEffectConstants_->GetData()->exposure_, 0.01f, 0.0f, 10.0f);
+                
+                ImGui::DragFloat("Brightness",  &postEffectConstants_->GetData()->brightness_, 0.01f, -1.0f, 1.0f);
+                ImGui::DragFloat("Contrast",    &postEffectConstants_->GetData()->contrast_, 0.01f, -1.0f, 1.0f);
+                ImGui::DragFloat("Hue",         &postEffectConstants_->GetData()->hue_, 0.01f, -1.0f, 1.0f);
+                ImGui::DragFloat("Saturation",  &postEffectConstants_->GetData()->saturation_, 0.01f, -1.0f, 1.0f);
+
+                ImGui::TreePop();
+            }
+
 
             ImGui::DragFloat("CriticalDepthValue", &criticalDepthValue_);
 
@@ -128,7 +122,7 @@ void PostProcess::DrawDebug()
 
             if (ImGui::TreeNode("Bloom_"))
             {
-                ImGui::Image(reinterpret_cast<ImTextureID>(postProcess_->shaderResourceViews_[0].Get()), ImVec2(256.0, 256.0));
+                ImGui::Image(reinterpret_cast<ImTextureID>(postProcess_->GetColorMap().Get()), ImVec2(256.0, 256.0));
 
                 bloom_.DrawDebug();
 
@@ -146,7 +140,7 @@ void PostProcess::DrawDebug()
 
             if (ImGui::TreeNode("Vignette"))
             {
-                ImGui::Checkbox("UseVignette", &usevignette_);
+                ImGui::Checkbox("UseVignette", &useVignette_);
                 ImGui::ColorEdit4("Color", &vignetteConstants_->GetData()->vignetteColor_.x);
                 ImGui::DragFloat2("Center", &vignetteConstants_->GetData()->vignetteCenter_.x);
                 ImGui::DragFloat("Intensity", &vignetteConstants_->GetData()->vignetteIntensity_, 0.1f, 0.0f, 10.0f);
@@ -176,4 +170,30 @@ void PostProcess::MakeCascadedShadowMap(const DirectX::XMFLOAT4& lightDirection,
     drawcallback();
 
     cascadedShadowMap_.Deactivate();
+}
+
+void PostProcess::UpdateRadialBler(std::function<void()> drawcallback)
+{
+    radialBlur_->Clear();
+    radialBlur_->Activate();
+
+    drawcallback();
+
+    radialBlur_->Deactivate();
+
+    radialBlurConstants_->Activate(0);
+    renderer_->Draw(radialBlur_->GetColorMap().GetAddressOf(), 0, 1, radialBlurPS_.Get());
+}
+
+void PostProcess::UpdateVignette(std::function<void()> drawcallback)
+{
+    vignette_->Clear();
+    vignette_->Activate();
+
+    drawcallback();
+
+    vignette_->Deactivate();
+
+    vignetteConstants_->Activate(0);
+    renderer_->Draw(vignette_->GetColorMap().GetAddressOf(), 0, 1, vignettePS_.Get());
 }

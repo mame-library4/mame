@@ -18,7 +18,7 @@ public:
     // ----- ImGui用 -----
     void DrawDebug();
 
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& GetColorMap() { return bloom_->shaderResourceViews_[0]; }
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& GetColorMap() { return bloom_->GetColorMap(); }
 
 private:
     // ---------- 書き出し用 -----------------------------------
@@ -47,8 +47,8 @@ private:
     // ---------- 定数バッファー -------------------------
     struct BloomConstants
     {
-        float bloomExtractionThreshold_ = 0.85f;    // 輝度抽出閾値
-        float bloomIntensity_           = 0.05f;    // ブルーム強度
+        float bloomExtractionThreshold_ = 0.8f;    // 輝度抽出閾値
+        float bloomIntensity_           = 0.25f;    // ブルーム強度
         float dummy_[2]                 = {};       // ダミー
     };
     std::unique_ptr<ConstantBuffer<BloomConstants>> constantBuffer_;

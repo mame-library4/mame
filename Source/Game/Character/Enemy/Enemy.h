@@ -239,6 +239,8 @@ public:// --- æ“¾Eİ’è ---
     // ---------- •”ˆÊ”j‰ó ----------
     [[nodiscard]] const bool GetIsPartDestruction(const PartName& partName) const { return isPartDestruction_[static_cast<int>(partName)]; }
 
+    [[nodiscard]] const bool GetUseEffekSeerEffect() const { return useEffekseerEffect_; }
+
 private:
     // ---------- •”ˆÊ”j‰ó ----------
     virtual void AddDamagePart(const float& damage, const int& dataIndex) = 0;
@@ -287,5 +289,7 @@ protected:
     // ---------- UŒ‚—Í ----------
     float attackPower_ = 0.0f;
     float attackPowerList_[static_cast<int>(AttackAction::Max)] = {};
+
+    bool useEffekseerEffect_ = false;
 };
 

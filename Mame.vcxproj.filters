@@ -1056,5 +1056,8 @@
     <FxCompile Include="Source\Shader\SlamChargeGS.hlsl">
       <Filter>Mame\Shader\Particle\SlamAttackParticle</Filter>
     </FxCompile>
+    <FxCompile Include="Source\Shader\ToneMapPS.hlsl">
+      <Filter>Mame\Shader\PostProcess</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

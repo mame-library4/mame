@@ -120,6 +120,8 @@ void EnemyDragon::DrawDebug()
 {
     if (ImGui::BeginMenu("Dragon"))
     {
+        ImGui::Checkbox("EffekSeerEffect", &useEffekseerEffect_);
+
         if (ImGui::CollapsingHeader("AttackPower"))
         {
             ImGui::BeginChild(ImGui::GetID((void*)0), ImVec2(350, 100), ImGuiWindowFlags_NoTitleBar);

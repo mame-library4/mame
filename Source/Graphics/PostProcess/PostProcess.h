@@ -9,6 +9,17 @@
 class PostProcess
 {
 private:
+    struct PostEffectConstants
+    {
+        DirectX::XMFLOAT3 colorize_ = { 1, 1, 1 };
+        float             exposure_ = 0.3f;
+
+        float brightness_ = -0.15f;
+        float contrast_ = 0.15f;
+        float hue_ = 0.000f;
+        float saturation_ = 0.0f;
+    };
+
     struct Constants
     {
         float shadowColor_ = 0.55f;
@@ -58,24 +69,33 @@ public:
     ConstantBuffer<VignetteConstants>* GetVignetteConstants() { return vignetteConstants_.get(); }
 
     void SetUseRadialBlur(const bool& flag = true) { useRadialBlur_ = flag; }
-    void SetUseVignette(const bool& flag = true) { usevignette_ = flag; }
+    void SetUseVignette(const bool& flag = true) { useVignette_ = flag; }
+
+private:
+    void UpdateRadialBler(std::function<void()> drawcallback);
+    void UpdateVignette(std::function<void()> drawcallback);
 
 private:
     std::unique_ptr<FullscreenQuad>             renderer_;
+    std::unique_ptr<FrameBuffer>                sceneBuffer_;
     std::unique_ptr<FrameBuffer>                postProcess_;
     std::unique_ptr<FrameBuffer>                radialBlur_;
     std::unique_ptr<FrameBuffer>                vignette_;
     
+    Microsoft::WRL::ComPtr<ID3D11PixelShader>   castShadowPS_;
+
     Microsoft::WRL::ComPtr<ID3D11PixelShader>   postProcessPS_;
     Microsoft::WRL::ComPtr<ID3D11PixelShader>   radialBlurPS_;
     Microsoft::WRL::ComPtr<ID3D11PixelShader>   vignettePS_;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader>   toneMapPS_;
 
+    std::unique_ptr<ConstantBuffer<PostEffectConstants>>    postEffectConstants_;
     std::unique_ptr<ConstantBuffer<Constants>>              constant_;
     std::unique_ptr<ConstantBuffer<RadialBlurConstants>>    radialBlurConstants_;
     std::unique_ptr<ConstantBuffer<VignetteConstants>>      vignetteConstants_;
 
     bool useRadialBlur_ = false; // ラジアルブラー使用フラグ
-    bool usevignette_   = false; // ビネット使用フラグ
+    bool useVignette_   = false; // ビネット使用フラグ
 
     float criticalDepthValue_ = 0.0f;
 
