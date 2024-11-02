@@ -822,6 +822,15 @@
     <Filter Include="Mame\Graphics\Particle\SlamAttackParticle">
       <UniqueIdentifier>{4f64cca6-9f4e-4693-a838-9a08f901a558}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mame\Shader\Particle\SlamAttackParticle\Explosion">
+      <UniqueIdentifier>{ade78cbe-f538-4624-8d3c-9c123bc107f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Shader\Particle\SlamAttackParticle\Charge">
+      <UniqueIdentifier>{9b73d9c6-1abd-40d0-ad00-bb9b8b754262}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Shader\Particle\TailParticle\TailTrailParticle">
+      <UniqueIdentifier>{5eff8ec6-db00-40a7-8eb0-c56b57cafd15}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -898,14 +907,26 @@
     <None Include="Source\Shader\FireBallParticle.hlsli">
       <Filter>Mame\Shader\Particle\FireBallParticle</Filter>
     </None>
-    <None Include="Source\Shader\TailParticle.hlsli">
-      <Filter>Mame\Shader\Particle\TailParticle\TailParticle</Filter>
-    </None>
     <None Include="Source\Shader\TailChargeParticle.hlsli">
       <Filter>Mame\Shader\Particle\TailParticle\TailChargeParticle</Filter>
     </None>
+    <None Include="Source\Shader\SlamExplosionParticle.hlsli">
+      <Filter>Mame\Shader\Particle\SlamAttackParticle\Explosion</Filter>
+    </None>
     <None Include="Source\Shader\SlamChargeParticle.hlsli">
+      <Filter>Mame\Shader\Particle\SlamAttackParticle\Charge</Filter>
+    </None>
+    <None Include="Source\Shader\SlamAttackParticle.hlsli">
       <Filter>Mame\Shader\Particle\SlamAttackParticle</Filter>
+    </None>
+    <None Include="Source\Shader\TailMainParticle.hlsli">
+      <Filter>Mame\Shader\Particle\TailParticle\TailParticle</Filter>
+    </None>
+    <None Include="Source\Shader\TailParticle.hlsli">
+      <Filter>Mame\Shader\Particle\TailParticle</Filter>
+    </None>
+    <None Include="Source\Shader\TailTrailParticle.hlsli">
+      <Filter>Mame\Shader\Particle\TailParticle\TailTrailParticle</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -1047,17 +1068,35 @@
     <FxCompile Include="Source\Shader\TailChargeGS.hlsl">
       <Filter>Mame\Shader\Particle\TailParticle\TailChargeParticle</Filter>
     </FxCompile>
-    <FxCompile Include="Source\Shader\SlamChargeInitializeCS.hlsl">
-      <Filter>Mame\Shader\Particle\SlamAttackParticle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\SlamChargeUpdateCS.hlsl">
-      <Filter>Mame\Shader\Particle\SlamAttackParticle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\SlamChargeGS.hlsl">
-      <Filter>Mame\Shader\Particle\SlamAttackParticle</Filter>
-    </FxCompile>
     <FxCompile Include="Source\Shader\ToneMapPS.hlsl">
       <Filter>Mame\Shader\PostProcess</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SlamExplosionUpdateCS.hlsl">
+      <Filter>Mame\Shader\Particle\SlamAttackParticle\Explosion</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SlamChargeGS.hlsl">
+      <Filter>Mame\Shader\Particle\SlamAttackParticle\Charge</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SlamChargeInitializeCS.hlsl">
+      <Filter>Mame\Shader\Particle\SlamAttackParticle\Charge</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SlamChargeUpdateCS.hlsl">
+      <Filter>Mame\Shader\Particle\SlamAttackParticle\Charge</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SlamExplosionGS.hlsl">
+      <Filter>Mame\Shader\Particle\SlamAttackParticle\Explosion</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SlamExplosionInitializeCS.hlsl">
+      <Filter>Mame\Shader\Particle\SlamAttackParticle\Explosion</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\TailTrailUpdateCS.hlsl">
+      <Filter>Mame\Shader\Particle\TailParticle\TailTrailParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\TailTrailInitializeCS.hlsl">
+      <Filter>Mame\Shader\Particle\TailParticle\TailTrailParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\TailTrailGS.hlsl">
+      <Filter>Mame\Shader\Particle\TailParticle\TailTrailParticle</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

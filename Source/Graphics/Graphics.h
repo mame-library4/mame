@@ -44,6 +44,8 @@ public:// ----- シェーダー関連 -----
     void SetBlendState(const Shader::BLEND_STATE& blendState) { shader_->SetBlendState(blendState); }
     void SetRasterizerState(const Shader::RASTER_STATE& rasterizerState) { shader_->SetRasterizerState(rasterizerState); }
 
+    void LightConstantsActive(const int& slot) { shader_->LightConstantsActive(slot); }
+
 private:
     static Graphics* instance_;
 

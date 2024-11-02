@@ -181,6 +181,8 @@ void GameScene::DeferredRender()
     deviceContext->PSSetShaderResources(34, 1, iblTextures_[2].GetAddressOf());
     deviceContext->PSSetShaderResources(35, 1, iblTextures_[3].GetAddressOf());
 
+    Graphics::Instance().LightConstantsActive(12);
+
     // ステージ
     //Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
     stage_->Render(0.01f, gBufferPixelShader);

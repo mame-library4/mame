@@ -4,6 +4,7 @@
 #include <DirectXMath.h>
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 #define TINYGLTF_NO_EXTERNAL_IMAGE
 #define TINYGLTF_NO_STB_IMAGE

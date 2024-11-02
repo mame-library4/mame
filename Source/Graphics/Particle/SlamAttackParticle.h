@@ -11,12 +11,16 @@ public:
     void Render()                             override;
     void DrawDebug()                          override;
 
+    // ----- パーティクル再生 -----
     void PlayChargeParticle(const DirectX::XMFLOAT3& handPosition);
+    void PlayExplosionParticle(const DirectX::XMFLOAT3& emitterPosition);
+
     void UpdateHandPosition(const DirectX::XMFLOAT3& handPosition);
 
     [[nodiscard]] const bool GetIsChargeParticleActive() const { return chargeParticleData_.GetIsActive(); }
 
 private:
+#pragma region ---------- ParticleData ----------
     struct Particle
     {
         DirectX::XMFLOAT4 color_    = {};
@@ -32,22 +36,44 @@ private:
         float               age_        = 0.0f;
         int                 state_      = 0.0f;
     };
-    struct ChargeParticleConstants
+
+    // ---------- ExplosionParticle ---------- 
+    struct ExplosionParticle
     {
-        DirectX::XMFLOAT3 handPosition_ = {};
-        float deltaTime_    = 0.0f;
-        float speed_        = 15.0f;
-        float size_         = 0.04f; 
-        DirectX::XMFLOAT2 dummy_ = {};
+        DirectX::XMFLOAT4   color_      = {};
+        DirectX::XMFLOAT3   position_   = {};
+        DirectX::XMFLOAT3   velocity_   = {};
+        float               size_       = 0.0f;
+        int                 state_      = 0;
     };
 
-    ParticleData            chargeParticleData_;
-    ChargeParticleConstants chargeParticleConstants_;
+    struct Constants
+    {
+        DirectX::XMFLOAT3   handPosition_       = {};
+        float               deltaTime_          = 0.0f;
+        DirectX::XMFLOAT3   emitterPosition_    = {};
+        float               speed_              = 15.0f;
+        float               size_               = 0.04f; 
+        DirectX::XMFLOAT3   dummy_        = {};
+    };
+
+#pragma endregion ---------- ParticleData ----------
+
 
     const int csSlot_ = 0;
     const int cbSlot_ = 2;
     const int gsSlot_ = 0;
 
     float easingTimer_ = 0.0f;
+
+    // ----- チャージパーティクル -----
+    ParticleData            chargeParticleData_;
+
+    // ----- 爆発パーティクル -----
+    ParticleData            explosionParticle_;
+    
+    Constants               constants_;
+
+    float lifeTimer_ = 5.0f;
 };
 

@@ -1,14 +1,12 @@
 #include "Model.h"
-#include "Misc.h"
-
 #include <sstream>
 #include <functional>
-
-#include "../Graphics/shader.h"
-#include "texture.h"
-
 #include <filesystem>
 #include <fstream>
+
+#include "Graphics.h"
+#include "texture.h"
+#include "Misc.h"
 
 
 inline DirectX::XMFLOAT4X4 to_xmfloat4x4(const FbxAMatrix& fbxamatrix)

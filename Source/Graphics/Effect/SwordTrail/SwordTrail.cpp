@@ -1,4 +1,5 @@
 #include "SwordTrail.h"
+#include "Graphics.h"
 
 // ----- çXêV -----
 void SwordTrail::Update(const DirectX::XMFLOAT3& startPosition, const DirectX::XMFLOAT3& endPosition)

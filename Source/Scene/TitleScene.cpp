@@ -3,9 +3,10 @@
 #include "SceneManager.h"
 #include "LoadingScene.h"
 #include "GameScene.h"
-#include "Input.h"
+#include "Graphics.h"
 #include "Texture.h"
 #include "Camera.h"
+#include "Input.h"
 
 
 // ----- ÉäÉ\Å[ÉXê∂ê¨ -----

@@ -81,7 +81,7 @@ void Bloom::DrawDebug()
 {
     if (ImGui::TreeNode("Bloom"))
     {
-        ImGui::DragFloat("ExtractionThreshold", &constantBuffer_->GetData()->bloomExtractionThreshold_, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("ExtractionThreshold", &constantBuffer_->GetData()->bloomExtractionThreshold_, 0.01f, 0.0f, 3.0f);
         ImGui::DragFloat("Intencity", &constantBuffer_->GetData()->bloomIntensity_, 0.01f, 0.0f, 1.0f);
 
         if (ImGui::TreeNode("Textures"))

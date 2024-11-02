@@ -72,6 +72,7 @@ namespace ActionDragon
 
         Effekseer::Handle powerEffectHandle_ = {};
         bool isCreateChargeEffect_ = false;
+        bool isPlayExplosionParticle_ = false;
 
         float slowStartFrame_ = 0.0f; // スロー開始フレーム
     };

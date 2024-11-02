@@ -1,5 +1,5 @@
 #include "Particle.hlsli"
-#include "TailMainParticle.hlsli"
+#include "SlamExplosionParticle.hlsli"
 
 StructuredBuffer<ParticleData> particleBuffer : register(t0);
 
@@ -24,7 +24,7 @@ void main(point VS_OUT input[1] : SV_POSITION, inout TriangleStream<GS_OUT> outp
     ParticleData p = particleBuffer[input[0].vertexId];
 
     const float aspect_ratio = 1280.0 / 720.0;
-    float2 particle_scale = float2(particleSize_, particleSize_ * aspect_ratio);
+    float2 particle_scale = float2(p.size_, p.size_ * aspect_ratio);
 
 	[unroll]
     for (uint vertex_index = 0; vertex_index < 4; ++vertex_index)

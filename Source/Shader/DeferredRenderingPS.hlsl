@@ -55,6 +55,22 @@ PS_OUT main(VS_OUT psIn) : SV_TARGET
     diffuse = lerp(diffuse, diffuse * data.occlusionFactor_, data.occlusionStrength_);
     specular = lerp(specular, specular * data.occlusionFactor_, data.occlusionStrength_);
     
+    // ì_åıåπ
+    for (int i = 0; i < maxPointLight; ++i)
+    {
+        float3 L = data.worldPosition_.xyz - pointLights[i].position_.xyz;
+        float len = length(L);
+        if (len >= pointLights[i].range_)
+            continue;
+        float attenuteLength = saturate(1.0f - len / pointLights[i].range_);
+        float attenution = attenuteLength * attenuteLength;
+        L /= len;
+        float3 pointLightDiffuse = (float3) 0, pointLightSpecular = (float3) 0;
+        DirectBDRF(diffuseReflectance, F0, N, V, L, pointLights[i].color_.rgb, data.roughness_, pointLightDiffuse, pointLightSpecular);
+        diffuse += pointLightDiffuse * attenution * pointLights[i].intensity_;
+        specular += pointLightSpecular * attenution * pointLights[i].intensity_;
+    }
+    
     // é©å»î≠çsêFâ¡éZ
     float3 color = diffuse + specular + emissiveColor;
     

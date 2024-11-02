@@ -1,3 +1,4 @@
+#include "SlamAttackParticle.hlsli"
 #include "SlamChargeParticle.hlsli"
 
 RWStructuredBuffer<ParticleData> particleBuffer : register(u0);

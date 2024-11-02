@@ -118,6 +118,7 @@ namespace ActionDragon
             // •Ï”‰Šú‰»
             slowStartFrame_ = 0.9f;
             isCreateChargeEffect_ = false;
+            isPlayExplosionParticle_ = false;
 
             owner_->SetStep(1);
             
@@ -126,6 +127,15 @@ namespace ActionDragon
 
             PlayChargeEffect();
             slamAttackParticle_->UpdateHandPosition(owner_->GetJointPosition("Dragon15_l_hand"));
+
+            if (owner_->GetAnimationSeconds() > 1.02f && isPlayExplosionParticle_ == false)
+            {
+                DirectX::XMFLOAT3 emitterPosition = owner_->GetJointPosition("Dragon15_l_hand");
+                emitterPosition.y = 0.0f;
+                slamAttackParticle_->PlayExplosionParticle(emitterPosition);
+
+                isPlayExplosionParticle_ = true;
+            }
 
             if (isCreateChargeEffect_)
             {
@@ -171,7 +181,6 @@ namespace ActionDragon
     {
         if (slamAttackParticle_ != nullptr)
         {
-            ParticleManager::Instance().Remove(slamAttackParticle_);
             slamAttackParticle_ = nullptr;
         }
 

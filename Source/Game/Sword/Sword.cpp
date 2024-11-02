@@ -1,5 +1,6 @@
 #include "Sword.h"
 #include "MathHelper.h"
+#include "Graphics.h"
 
 // ----- çXêV -----
 void Sword::Update(const DirectX::XMMATRIX& start, const DirectX::XMMATRIX& end)

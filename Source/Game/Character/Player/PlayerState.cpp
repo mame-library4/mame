@@ -1843,7 +1843,7 @@ namespace PlayerState
             else
             {
                 SystemManager::Instance().SetPlayerSlowSpeed(0.4f);
-                SystemManager::Instance().SetAllSlowSpeed(0.1f);
+                SystemManager::Instance().SetAllSlowSpeed(0.05f);
             }
         }
 

@@ -1,4 +1,4 @@
-#include "TailParticle.hlsli"
+#include "TailMainParticle.hlsli"
 
 RWStructuredBuffer<ParticleData> particleBuffer : register(u0);
 

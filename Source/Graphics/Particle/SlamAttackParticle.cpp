@@ -1,51 +1,73 @@
 #include "SlamAttackParticle.h"
+#include "ParticleManager.h"
 #include "Graphics.h"
 #include "Easing.h"
 
 // ----- コンストラクタ -----
 SlamAttackParticle::SlamAttackParticle()
-    : ParticleSystem(2000), chargeParticleData_(500)
+    : ParticleSystem(2000), chargeParticleData_(500), explosionParticle_(1000)
 {
-    chargeParticleData_.CreateParticleData(sizeof(ChargeParticle), sizeof(ChargeParticleConstants), "./Resources/Shader/ParticleVS.cso", "./Resources/Shader/ParticlePS.cso",
+    chargeParticleData_.CreateParticleData(sizeof(ChargeParticle), sizeof(Constants), "./Resources/Shader/ParticleVS.cso", "./Resources/Shader/ParticlePS.cso",
         "./Resources/Shader/SlamChargeGS.cso", "./Resources/Shader/SlamChargeInitializeCS.cso", "./Resources/Shader/SlamChargeUpdateCS.cso");
+
+    explosionParticle_.CreateParticleData(sizeof(ExplosionParticle), sizeof(Constants), "./Resources/Shader/ParticleVS.cso", "./Resources/Shader/ParticlePS.cso",
+        "./Resources/Shader/SlamExplosionGS.cso", "./Resources/Shader/SlamExplosionInitializeCS.cso", "./Resources/Shader/SlamExplosionUpdateCS.cso");
 }
 
 // ----- 更新 -----
 void SlamAttackParticle::Update(const float& elapsedTime)
 {
-    chargeParticleConstants_.deltaTime_ = elapsedTime;
+    lifeTimer_ -= elapsedTime;
+
+    if (lifeTimer_ <= 0.0f)
+    {
+        ParticleManager::Instance().Remove(this);
+        return;
+    }
+
+    constants_.deltaTime_ = elapsedTime;
 
     const float totalFrame = 0.3f;
     easingTimer_ += elapsedTime;
     easingTimer_ = min(easingTimer_, totalFrame);
     const float speed = Easing::OutCirc(easingTimer_, totalFrame, 5.0f, 20.0f);
 
-    chargeParticleConstants_.speed_ = speed;
+    constants_.speed_ = speed;
 
 
-    chargeParticleData_.Update(csSlot_, cbSlot_, &chargeParticleConstants_);
+    chargeParticleData_.Update(csSlot_, cbSlot_, &constants_);
+
+    explosionParticle_.Update(csSlot_, cbSlot_, &constants_);
 }
 
 // ----- 描画 -----
 void SlamAttackParticle::Render()
 {
-    chargeParticleData_.Render(gsSlot_, cbSlot_, &chargeParticleConstants_);
+    chargeParticleData_.Render(gsSlot_, cbSlot_, &constants_);
+    
+    explosionParticle_.Render(gsSlot_, cbSlot_, &constants_);
 }
 
 // ----- ImGui用 -----
 void SlamAttackParticle::DrawDebug()
 {
-    ImGui::DragFloat("Speed", &chargeParticleConstants_.speed_);
+    ImGui::DragFloat("Speed", &constants_.speed_);
 }
 
 // ----- 再生 -----
 void SlamAttackParticle::PlayChargeParticle(const DirectX::XMFLOAT3& handPosition)
 {
-    chargeParticleConstants_.handPosition_ = handPosition;
-    chargeParticleData_.PlayParticle(csSlot_, cbSlot_, &chargeParticleConstants_);
+    constants_.handPosition_ = handPosition;
+    chargeParticleData_.PlayParticle(csSlot_, cbSlot_, &constants_);
+}
+
+void SlamAttackParticle::PlayExplosionParticle(const DirectX::XMFLOAT3& emitterPosition)
+{
+    constants_.emitterPosition_ = emitterPosition;
+    explosionParticle_.PlayParticle(csSlot_, cbSlot_, &constants_);
 }
 
 void SlamAttackParticle::UpdateHandPosition(const DirectX::XMFLOAT3& handPosition)
 {
-    chargeParticleConstants_.handPosition_ = handPosition;
+    constants_.handPosition_ = handPosition;
 }

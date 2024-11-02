@@ -29,6 +29,27 @@ public:
         DirectX::XMFLOAT4 camera{ 0, 0, 1, 0 };
     }view;
 
+    struct PointLights
+    {
+        DirectX::XMFLOAT4   position_   = {};
+        DirectX::XMFLOAT4   color_      = { 1, 1, 1, 1 };
+        float               range_      = 0.0f;
+        float               intensity_  = 1.0f;
+        DirectX::XMFLOAT2   dummy_      = {};        
+    };
+    struct HemisphereLights
+    {
+        DirectX::XMFLOAT4   skyColor_       = { 0.0f, 0.0f, 0.0f, 1.0f };
+        DirectX::XMFLOAT4   groundColor_    = { 0.0f, 0.0f, 1.0f, 1.0f };
+        float               weight_         = 0.0f;
+        DirectX::XMFLOAT3   dummy_          = {};
+    };
+    struct LightConstants
+    {
+        HemisphereLights    hemisphereLight_;   // 半球ライティング
+        PointLights         pointLights[8];     // 点光源
+    };
+
 public:
     Shader();
     ~Shader() {}
@@ -62,6 +83,8 @@ public:
 
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& GetDepthMap() { return gBufferDepthShaderResourceView_; }
 
+    void LightConstantsActive(const int& slot);
+
 private:
     void CreateBlendStates();           // ブレンドステート作成
     void CreateRasterizerStates();      // ラスタライザステート作成
@@ -70,7 +93,6 @@ private:
     void CreateGBuffer();               // G-Buffer作成
 
 private:
-//public:
     Microsoft::WRL::ComPtr<ID3D11BlendState>            blendStates_[static_cast<int>(BLEND_STATE::MAX)];
     Microsoft::WRL::ComPtr<ID3D11RasterizerState>       rasterizerStates_[static_cast<int>(RASTER_STATE::MAX)];
     Microsoft::WRL::ComPtr<ID3D11DepthStencilState>     depthStencilStates_[static_cast<int>(DEPTH_STATE::MAX)];
@@ -81,11 +103,13 @@ private:
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>    gBufferShaderResourceView_[static_cast<int>(GBufferId::Max)];
     Microsoft::WRL::ComPtr<ID3D11PixelShader>           gBufferPixelShader_;
 
-
     Microsoft::WRL::ComPtr<ID3D11Texture2D>             gBufferDepthStencilBuffer_;
     Microsoft::WRL::ComPtr<ID3D11DepthStencilView>      gBufferDepthStencilView_;
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>    gBufferDepthShaderResourceView_;
 
+    // ---------- LightConstants ----------
+    LightConstants lightConstants_ = {};
+    Microsoft::WRL::ComPtr<ID3D11Buffer> lightConstantsBuffer_;
 };
 
 

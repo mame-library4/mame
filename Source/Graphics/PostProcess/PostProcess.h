@@ -11,13 +11,12 @@ class PostProcess
 private:
     struct PostEffectConstants
     {
-        DirectX::XMFLOAT3 colorize_ = { 1, 1, 1 };
-        float             exposure_ = 0.3f;
-
-        float brightness_ = -0.15f;
-        float contrast_ = 0.15f;
-        float hue_ = 0.000f;
-        float saturation_ = 0.0f;
+        DirectX::XMFLOAT3   colorize_   = { 1, 1, 1 };
+        float               exposure_   = 0.22f;
+        float               brightness_ = -0.05f;
+        float               contrast_   = 0.2f;
+        float               hue_        = 0.0f;
+        float               saturation_ = 0.0f;
     };
 
     struct Constants

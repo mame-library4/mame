@@ -51,11 +51,42 @@ Shader::Shader()
     depthShaderResourceViewDesc.Texture2D.MipLevels = 1;
     result = Graphics::Instance().GetDevice()->CreateShaderResourceView(gBufferDepthStencilBuffer_.Get(), &depthShaderResourceViewDesc, gBufferDepthShaderResourceView_.GetAddressOf());
     _ASSERT_EXPR(SUCCEEDED(result), HRTrace(result));
+
+    D3D11_BUFFER_DESC bufferDesc    = {};
+    bufferDesc.Usage                = D3D11_USAGE_DEFAULT;
+    bufferDesc.BindFlags            = D3D11_BIND_CONSTANT_BUFFER;
+    bufferDesc.CPUAccessFlags       = 0;
+    bufferDesc.MiscFlags            = 0;
+    bufferDesc.StructureByteStride  = 0;
+    bufferDesc.ByteWidth            = sizeof(LightConstants);
+    result = Graphics::Instance().GetDevice()->CreateBuffer(&bufferDesc, nullptr, lightConstantsBuffer_.GetAddressOf());
 }
 
 // ----- ImGui用 -----
 void Shader::DrawDebug()
 {
+    if (ImGui::CollapsingHeader("LightConstants"))
+    {
+        if (ImGui::BeginChild(ImGui::GetID((void*)0), ImVec2(350, 300), ImGuiWindowFlags_NoTitleBar))
+        {
+            for (int i = 0; i < 8; ++i)
+            {
+                std::string text = std::string("----- PointLight") + std::to_string(i) + std::string(" -----");
+                ImGui::Text(text.c_str());
+                std::string p = std::string("Position") + std::to_string(i);
+                ImGui::DragFloat3(p.c_str(), &lightConstants_.pointLights[i].position_.x, 0.1f, -10.0f, +10.0f);
+                std::string c = std::string("Color") + std::to_string(i);
+                ImGui::ColorEdit3(c.c_str(), &lightConstants_.pointLights[i].color_.x);
+                std::string r = std::string("Range") + std::to_string(i);
+                ImGui::DragFloat(r.c_str(), &lightConstants_.pointLights[i].range_, 0.1f, 0.0f, 100.0f);
+                std::string intensity = std::string("Intensity") + std::to_string(i);
+                ImGui::DragFloat(intensity.c_str(), &lightConstants_.pointLights[i].intensity_, 0.1f, 0.0f, 1000.0f);
+                ImGui::Separator();
+            }
+            ImGui::EndChild();
+        }
+    }
+
     if (ImGui::TreeNode("G-Buffer"))
     {
         for (int i = 0; i < static_cast<int>(GBufferId::Max); ++i)
@@ -80,6 +111,7 @@ void Shader::DrawDebug()
     }
 }
 
+#pragma region ---------- シェーダー作成関数 ----------
 // ----- 頂点シェーダー作成 -----
 HRESULT Shader::CreateVsFromCso(const char* csoName, ID3D11VertexShader** vertexShader, ID3D11InputLayout** inputLayout, D3D11_INPUT_ELEMENT_DESC* inputElementDesc, UINT numElements)
 {
@@ -230,6 +262,8 @@ HRESULT Shader::CreateHsFromCso(const char* csoName, ID3D11HullShader** hullShad
     return result;
 }
 
+#pragma endregion ---------- シェーダー作成関数 ----------
+
 // ----- ブレンドステート設定 -----
 void Shader::SetBlendState(const BLEND_STATE& blendState)
 {
@@ -297,6 +331,14 @@ void Shader::SetDepthBuffer()
 {
     //Graphics::Instance().GetDeviceContext()->OMSetDepthStencilState()
     //Graphics::Instance().GetDeviceContext()->ClearDepthStencilView(gBufferShaderResourceView_[4].GetAddressOf())
+}
+
+void Shader::LightConstantsActive(const int& slot)
+{
+    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
+
+    deviceContext->UpdateSubresource(lightConstantsBuffer_.Get(), 0, 0, &lightConstants_, 0, 0);
+    deviceContext->PSSetConstantBuffers(slot, 1, lightConstantsBuffer_.GetAddressOf());
 }
 
 // ----- ブレンドステート作成 -----
