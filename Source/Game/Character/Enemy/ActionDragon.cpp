@@ -270,6 +270,7 @@ namespace ActionDragon
             tailParticle_ = new TailParticle();
             {
                 std::vector<DirectX::XMFLOAT3> jointPosition;
+                jointPosition.emplace_back(owner_->GetTransform()->GetPosition());
                 jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_01"));
                 jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_02"));
                 jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_03"));
@@ -277,12 +278,12 @@ namespace ActionDragon
                 jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_05"));
                 tailParticle_->UpdateJointPosition(jointPosition);
             }
-            //tailParticle_->PlayTailParticle();
-            //tailParticle_->PlayChargeParticle();
                        
             // 変数初期化
             addForceData_.Initialize(1.5f, 0.3f, 0.5f);
+            isPlayTailParticle_ = false;
             isPlayTailTrailParticle_ = false;
+            isRemoveParticle_ = false;
 
             // Attackステートへ
             SetState(STATE::Attack);
@@ -295,16 +296,39 @@ namespace ActionDragon
                 owner_->SetUseRootMotion(true);
             }
 
+            if (owner_->GetAnimationSeconds() > slowStartFrame_ && isPlayTailParticle_ == false)
+            {
+                tailParticle_->PlayTailParticle();
+                isPlayTailParticle_ = true;
+            }
+
             if (owner_->GetAnimationSeconds() > 1.55f && isPlayTailTrailParticle_ == false)
             {
                 isPlayTailTrailParticle_ = true;
                 tailParticle_->PlayTailTrailParticle();
             }
 
+            // 回転攻撃の終わりに、尻尾についているパーティクルを落とす
+            if (owner_->GetAnimationSeconds() > removeFrame_ && isRemoveParticle_ == false)
+            {
+                tailParticle_->Remove();
+                isRemoveParticle_ = true;
+            }
+
             // 移動処理
             if (addForceData_.Update(owner_->GetAnimationSeconds()))
             {
-                owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+                //owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+            }
+
+            // 攻撃判定処理
+            if (owner_->GetAnimationSeconds() > 1.85f)
+            {
+                if (owner_->GetIsAttackActive()) owner_->SetTurnAttackActiveFlag(false);
+            }
+            else if (owner_->GetAnimationSeconds() > 1.55f)
+            {
+                if (owner_->GetIsAttackActive() == false) owner_->SetTurnAttackActiveFlag();
             }
 
             // アニメーションの速度を調整する
@@ -354,6 +378,7 @@ namespace ActionDragon
     {
         if (tailParticle_ != nullptr)
         {
+            tailParticle_->Remove();
             tailParticle_ = nullptr;
         }
     }

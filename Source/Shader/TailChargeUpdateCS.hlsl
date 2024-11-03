@@ -8,7 +8,7 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     uint id = dtid.x;
     ParticleData p = particleBuffer[id];
     
-    p.position_ += p.velocity_ * speed_ * deltaTime_;
+    p.position_ += p.velocity_ * deltaTime_;
     
     particleBuffer[id] = p;
 }

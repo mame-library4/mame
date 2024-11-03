@@ -108,7 +108,11 @@ namespace ActionDragon
         float recoveryFrame_ = 2.0f; // 攻撃の後隙
         float recoverySpeed_ = 1.0f;
 
-        bool isPlayTailTrailParticle_ = false;
+        const float removeFrame_ = 2.2f;
+
+        bool isPlayTailParticle_        = false;
+        bool isPlayTailTrailParticle_   = false;
+        bool isRemoveParticle_          = false;
     };
 
 #pragma endregion ---------- 攻撃のインパクトを考慮した行動 ----------

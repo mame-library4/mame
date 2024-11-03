@@ -19,6 +19,8 @@ public:
     // ---------- êKîˆÇÃà íuçXêV ----------
     void UpdateJointPosition(const std::vector<DirectX::XMFLOAT3>& jointPosition);
 
+    void Remove();
+
 private:
 #pragma region ---------- ParticleData ----------
     struct Particle
@@ -27,16 +29,17 @@ private:
         DirectX::XMFLOAT3   position_       = {}; 
         DirectX::XMFLOAT3   randomOffset_   = {}; 
         DirectX::XMFLOAT3   velocity_       = {}; 
+        float               size_           = 0.0f;
         int                 tailIndex_      = 0;  // êKîˆÇÃî‘çÜ
-        int dummy_[2] = {};
+        int                 state_          = 0;
     };
     struct ChargeParticleData
     {
         DirectX::XMFLOAT4   color_ = {};
         DirectX::XMFLOAT3   position_ = {};
         DirectX::XMFLOAT3   velocity_ = {};
+        float               size_ = 0.0f;
         int                 tailIndex_ = 0;  // êKîˆÇÃî‘çÜ
-        int dummy_ = 0;
     };
     struct TrailParticle
     {
@@ -54,21 +57,14 @@ private:
     static const int maxJointNum_ = 6;
     struct Constants
     {
-        DirectX::XMFLOAT4 jointPosition_[maxJointNum_] = {};
-        DirectX::XMFLOAT4 particleColor_ = { 1, 1, 1, 1 };
-        DirectX::XMFLOAT3 direction_;
-        float             particleSize_ = 0.02f;
-
-        float               time_ = 0.0f;
-        float               deltaTime_ = 0.0f;
-        float               speed_ = 1.0f;
-
-        float radius_ = 1.0f;
-        float height_ = 3.0f;
-
-        float tailTrailTimer_ = 0.0f;
-
-        float dummy_[2] = {};
+        DirectX::XMFLOAT4   jointPosition_[maxJointNum_] = {};
+        DirectX::XMFLOAT4   direction_[4]                = {};
+        DirectX::XMFLOAT4   height_                      = {};
+        DirectX::XMFLOAT4   radius_                      = {};
+        float               deltaTime_                   = 0.0f;
+        float               tailTrailTimer_              = 0.0f;        
+        int                 tailParticleState_           = 0;
+        int dummy_ = 0;
     };
 
 #pragma endregion ---------- ParticleData ----------
@@ -85,6 +81,11 @@ private:
     // ----- tailTrail -----
     ParticleData tailTrailParticle_;
 
-    float lifeTimer_ = 7.0f;
+    float lifeTimer_ = 30.0f;
+
+    float lerpTimer_ = 0.0f;
+    int state_ = 0;
+
+    bool isRemove_ = false;
 };
 
