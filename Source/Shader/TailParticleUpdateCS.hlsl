@@ -15,7 +15,7 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     
   
     
-    p.position_ = tailPosition_[p.tailIndex_].xyz + p.randomOffset_;
+    p.position_ = jointPosition_[p.tailIndex_].xyz + p.randomOffset_;
     
     p.color_ = particleColor_;
     

@@ -1,10 +1,9 @@
 #define NUMTHREADS_X 16
 
-#define MaxTailNum 5
+#define maxJointNum 6
 cbuffer TailParticleConstants : register(b2)
 {
-    float4x4 tailWorld_[MaxTailNum];
-    float4 tailPosition_[MaxTailNum];
+    float4 jointPosition_[maxJointNum];
     float4 particleColor_;
     float3 direction_;
     float particleSize_;
@@ -13,4 +12,5 @@ cbuffer TailParticleConstants : register(b2)
     float speed_;    
     float radius_;
     float height_;
+    float tailTrailTimer_;
 };

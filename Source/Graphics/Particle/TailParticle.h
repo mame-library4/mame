@@ -18,7 +18,6 @@ public:
 
     // ---------- êKîˆÇÃà íuçXêV ----------
     void UpdateJointPosition(const std::vector<DirectX::XMFLOAT3>& jointPosition);
-    void UpdateJointWorldMatrix(const std::vector<DirectX::XMMATRIX>& jointWorldMatrix);
 
 private:
 #pragma region ---------- ParticleData ----------
@@ -29,6 +28,7 @@ private:
         DirectX::XMFLOAT3   randomOffset_   = {}; 
         DirectX::XMFLOAT3   velocity_       = {}; 
         int                 tailIndex_      = 0;  // êKîˆÇÃî‘çÜ
+        int dummy_[2] = {};
     };
     struct ChargeParticleData
     {
@@ -43,18 +43,18 @@ private:
         DirectX::XMFLOAT4   color_       = {};
         DirectX::XMFLOAT3   position_    = {};
         DirectX::XMFLOAT3   velocity_    = {};
+        float               speed_       = 0.0f;
         float               size_        = 0.0f;
         float               createTimer_ = 0.0f;
         float               life_        = 0.0f;
         int                 state_       = 0;
-        DirectX::XMFLOAT2   dummy_ = {};
+        int                 jointIndex_  = 0;
     };
 
-    static const int MaxTailNum_ = 5;
+    static const int maxJointNum_ = 6;
     struct Constants
     {
-        DirectX::XMFLOAT4X4 tailWorld_[MaxTailNum_] = {};
-        DirectX::XMFLOAT4 tailPosition_[MaxTailNum_] = {};
+        DirectX::XMFLOAT4 jointPosition_[maxJointNum_] = {};
         DirectX::XMFLOAT4 particleColor_ = { 1, 1, 1, 1 };
         DirectX::XMFLOAT3 direction_;
         float             particleSize_ = 0.02f;
@@ -66,7 +66,9 @@ private:
         float radius_ = 1.0f;
         float height_ = 3.0f;
 
-        float dummy_[3] = {};
+        float tailTrailTimer_ = 0.0f;
+
+        float dummy_[2] = {};
     };
 
 #pragma endregion ---------- ParticleData ----------
@@ -82,5 +84,7 @@ private:
 
     // ----- tailTrail -----
     ParticleData tailTrailParticle_;
+
+    float lifeTimer_ = 7.0f;
 };
 

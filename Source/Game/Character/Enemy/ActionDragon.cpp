@@ -277,8 +277,12 @@ namespace ActionDragon
                 jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_05"));
                 tailParticle_->UpdateJointPosition(jointPosition);
             }
-            tailParticle_->PlayTailParticle();
-            tailParticle_->PlayChargeParticle();
+            //tailParticle_->PlayTailParticle();
+            //tailParticle_->PlayChargeParticle();
+                       
+            // 変数初期化
+            addForceData_.Initialize(1.5f, 0.3f, 0.5f);
+            isPlayTailTrailParticle_ = false;
 
             // Attackステートへ
             SetState(STATE::Attack);
@@ -291,26 +295,31 @@ namespace ActionDragon
                 owner_->SetUseRootMotion(true);
             }
 
+            if (owner_->GetAnimationSeconds() > 1.55f && isPlayTailTrailParticle_ == false)
+            {
+                isPlayTailTrailParticle_ = true;
+                tailParticle_->PlayTailTrailParticle();
+            }
+
+            // 移動処理
+            if (addForceData_.Update(owner_->GetAnimationSeconds()))
+            {
+                owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+            }
+
             // アニメーションの速度を調整する
             UpdateAnimationSpeed();
 
             // パーティクル更新
             {
                 std::vector<DirectX::XMFLOAT3> jointPosition;
+                jointPosition.emplace_back(owner_->GetTransform()->GetPosition());
                 jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_01"));
                 jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_02"));
                 jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_03"));
                 jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_04"));
                 jointPosition.emplace_back(owner_->GetJointPosition("Dragon15_tail_05"));
                 tailParticle_->UpdateJointPosition(jointPosition);
-
-                std::vector<DirectX::XMMATRIX> jointWorldMatrix;
-                jointWorldMatrix.emplace_back(owner_->GetJointWorldTransform("Dragon15_tail_01"));
-                jointWorldMatrix.emplace_back(owner_->GetJointWorldTransform("Dragon15_tail_02"));
-                jointWorldMatrix.emplace_back(owner_->GetJointWorldTransform("Dragon15_tail_03"));
-                jointWorldMatrix.emplace_back(owner_->GetJointWorldTransform("Dragon15_tail_04"));
-                jointWorldMatrix.emplace_back(owner_->GetJointWorldTransform("Dragon15_tail_05"));
-                tailParticle_->UpdateJointWorldMatrix(jointWorldMatrix);
             }
 
             if (owner_->IsPlayAnimation() == false)
@@ -345,7 +354,6 @@ namespace ActionDragon
     {
         if (tailParticle_ != nullptr)
         {
-            ParticleManager::Instance().Remove(tailParticle_);
             tailParticle_ = nullptr;
         }
     }

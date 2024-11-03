@@ -98,6 +98,7 @@ namespace ActionDragon
 
         void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
     private:
+        AddForceData addForceData_;
         TailParticle* tailParticle_ = nullptr;
 
         float slowStartFrame_   = 0.5f;   // スロー開始フレーム
@@ -106,6 +107,8 @@ namespace ActionDragon
 
         float recoveryFrame_ = 2.0f; // 攻撃の後隙
         float recoverySpeed_ = 1.0f;
+
+        bool isPlayTailTrailParticle_ = false;
     };
 
 #pragma endregion ---------- 攻撃のインパクトを考慮した行動 ----------

@@ -7,4 +7,5 @@ struct ParticleData
     float3 randomOffset_;
     float3 velocity_;
     int tailIndex_;
+    int dummy_[2];
 };

@@ -93,13 +93,6 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     //p.tailIndex_ = id % MaxTailNum;
     p.tailIndex_ = 0;
     
-    //float f0 = frac(sin(id) * 43758.5453123);
-    //float f1 = frac(sin(id * 1.2345) * 43758.5453123);
-    
-    //p.randomOffset_.x = sin(f0);
-    //p.randomOffset_.y = sin(f1) * cos(f0);
-    //p.randomOffset_.z = cos(f0);
-    
     float3 initialPosition = GetCylindricalPosition(id, radius_, height_, direction_);    
     p.randomOffset_ = initialPosition;
     

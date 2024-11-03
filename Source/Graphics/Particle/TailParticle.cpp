@@ -1,4 +1,5 @@
 #include "TailParticle.h"
+#include "ParticleManager.h"
 #include "Graphics.h"
 #include "Texture.h"
 #include "Misc.h"
@@ -14,14 +15,23 @@ TailParticle::TailParticle()
 	tailChargeParticle_.CreateParticleData(sizeof(ChargeParticleData), sizeof(Constants), "./Resources/Shader/ParticleVS.cso", "./Resources/Shader/ParticlePS.cso",
 		"./Resources/Shader/TailChargeGS.cso", "./Resources/Shader/TailChargeInitializeCS.cso", "./Resources/Shader/TailChargeUpdateCS.cso");
 
-	tailTrailParticle_.CreateParticleData(sizeof(TailParticle), sizeof(Constants), "./Resources/Shader/ParticleVS.cso", "./Resources/Shader/ParticlePS.cso",
-		"./Resources/Shader/TailChargeGS.cso", "./Resources/Shader/TailChargeInitializeCS.cso", "./Resources/Shader/TailChargeUpdateCS.cso");
+	tailTrailParticle_.CreateParticleData(sizeof(TrailParticle), sizeof(Constants), "./Resources/Shader/ParticleVS.cso", "./Resources/Shader/ParticlePS.cso",
+		"./Resources/Shader/TailTrailGS.cso", "./Resources/Shader/TailTrailInitializeCS.cso", "./Resources/Shader/TailTrailUpdateCS.cso");
 }
 
 void TailParticle::Update(const float& elapsedTime)
 {
+	lifeTimer_ -= elapsedTime;
+
+	if (lifeTimer_ <= 0.0f)
+	{
+		ParticleManager::Instance().Remove(this);
+		return;
+	}
+
 	constants_.deltaTime_ = elapsedTime;
-	
+	constants_.tailTrailTimer_ += elapsedTime;
+
 	GetParticleData()->Update(csUAVSlot_, cbSlot_, &constants_);
 
     tailChargeParticle_.Update(csUAVSlot_, cbSlot_, &constants_);
@@ -73,35 +83,24 @@ void TailParticle::PlayChargeParticle()
 
 void TailParticle::PlayTailTrailParticle()
 {
+	constants_.tailTrailTimer_ = 0.0f;
 	tailTrailParticle_.PlayParticle(csUAVSlot_, cbSlot_, &constants_);
 }
 
 // ----- êKîˆÇÃà íuçXêV -----
 void TailParticle::UpdateJointPosition(const std::vector<DirectX::XMFLOAT3>& jointPosition)
 {
-	if (jointPosition.size() != MaxTailNum_) return;
+	if (jointPosition.size() != maxJointNum_) return;
 
-	for (int i = 0; i < MaxTailNum_; ++i)
+	for (int i = 0; i < maxJointNum_; ++i)
 	{
 		DirectX::XMFLOAT3 tailPosition = jointPosition.at(i);
-		constants_.tailPosition_[i] = DirectX::XMFLOAT4(tailPosition.x, tailPosition.y, tailPosition.z, 1.0f);
+		constants_.jointPosition_[i] = DirectX::XMFLOAT4(tailPosition.x, tailPosition.y, tailPosition.z, 1.0f);
 	}
 
-	DirectX::XMFLOAT3 direction = jointPosition.at(1) - jointPosition.at(0);
+	DirectX::XMFLOAT3 direction = jointPosition.at(2) - jointPosition.at(1);
 
 	constants_.direction_ = XMFloat3Normalize(direction);
 
 	constants_.height_ = XMFloat3Length(direction);
-}
-
-void TailParticle::UpdateJointWorldMatrix(const std::vector<DirectX::XMMATRIX>& jointWorldMatrix)
-{
-	if (jointWorldMatrix.size() != MaxTailNum_) return;
-
-	for (int i = 0; i < MaxTailNum_; ++i)
-	{
-		DirectX::XMFLOAT4X4 tailWorld = {};
-		DirectX::XMStoreFloat4x4(&tailWorld, jointWorldMatrix.at(i));
-		constants_.tailWorld_[i] = tailWorld;
-	}
 }
