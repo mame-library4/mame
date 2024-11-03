@@ -12,6 +12,11 @@ SlamAttackParticle::SlamAttackParticle()
 
     explosionParticle_.CreateParticleData(sizeof(ExplosionParticle), sizeof(Constants), "./Resources/Shader/ParticleVS.cso", "./Resources/Shader/ParticlePS.cso",
         "./Resources/Shader/SlamExplosionGS.cso", "./Resources/Shader/SlamExplosionInitializeCS.cso", "./Resources/Shader/SlamExplosionUpdateCS.cso");
+
+    pointLights_.position_ = {};
+    pointLights_.color_ = { 1.0f, 0.9f, 0.0f, 1.0f };
+    pointLights_.range_ = 5.0f;
+    pointLights_.intensity_ = 0;
 }
 
 // ----- 更新 -----
@@ -38,6 +43,14 @@ void SlamAttackParticle::Update(const float& elapsedTime)
     chargeParticleData_.Update(csSlot_, cbSlot_, &constants_);
 
     explosionParticle_.Update(csSlot_, cbSlot_, &constants_);
+
+    // ポイントライト設定
+    if (chargeParticleData_.GetIsActive())
+    {
+        pointLights_.intensity_ += 30 * elapsedTime;
+        pointLights_.intensity_ = min(pointLights_.intensity_, 15.0f);
+    }
+    Graphics::Instance().SetPointLights(0, pointLights_);
 }
 
 // ----- 描画 -----
@@ -70,4 +83,6 @@ void SlamAttackParticle::PlayExplosionParticle(const DirectX::XMFLOAT3& emitterP
 void SlamAttackParticle::UpdateHandPosition(const DirectX::XMFLOAT3& handPosition)
 {
     constants_.handPosition_ = handPosition;
+
+    pointLights_.position_ = DirectX::XMFLOAT4(handPosition.x, handPosition.y, handPosition.z, 1.0f);
 }

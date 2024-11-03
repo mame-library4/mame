@@ -7,16 +7,21 @@
 
 // ----- コンストラクタ -----
 TailParticle::TailParticle()
-    : ParticleSystem(1000), tailChargeParticle_(3000), tailTrailParticle_(3000)
+    : ParticleSystem(6000), tailTrailParticle_(3000)
 {
     GetParticleData()->CreateParticleData(sizeof(Particle), sizeof(Constants), "./Resources/Shader/ParticleVS.cso", "./Resources/Shader/ParticlePS.cso",
         "./Resources/Shader/TailParticleGS.cso", "./Resources/Shader/TailParticleInitializeCS.cso", "./Resources/Shader/TailParticleUpdateCS.cso");
 
-    tailChargeParticle_.CreateParticleData(sizeof(ChargeParticleData), sizeof(Constants), "./Resources/Shader/ParticleVS.cso", "./Resources/Shader/ParticlePS.cso",
-        "./Resources/Shader/TailChargeGS.cso", "./Resources/Shader/TailChargeInitializeCS.cso", "./Resources/Shader/TailChargeUpdateCS.cso");
-
     tailTrailParticle_.CreateParticleData(sizeof(TrailParticle), sizeof(Constants), "./Resources/Shader/ParticleVS.cso", "./Resources/Shader/ParticlePS.cso",
         "./Resources/Shader/TailTrailGS.cso", "./Resources/Shader/TailTrailInitializeCS.cso", "./Resources/Shader/TailTrailUpdateCS.cso");
+
+    for (int i = 0; i < maxPointLights_; ++i)
+    {
+        pointLights_[i].position_   = {};
+        pointLights_[i].color_      = { 1.0f, 0.9f, 0.0f, 1.0f };
+        pointLights_[i].range_      = 5.0f;
+        pointLights_[i].intensity_  = 0;
+    }
 }
 
 void TailParticle::Update(const float& elapsedTime)
@@ -29,90 +34,55 @@ void TailParticle::Update(const float& elapsedTime)
         return;
     }
 
-    // 尻尾のパーティクルが有効な場合
-    if (GetParticleData()->GetIsActive())
-    {
-        const float speed = 3.5f;
-        if (state_ == 0)
-        {
-            lerpTimer_ += speed * elapsedTime;
-            lerpTimer_ = min(lerpTimer_, 1.0f);
-
-            const float radius = XMFloatLerp(0.0f, 0.7f, lerpTimer_);
-
-            constants_.radius_.x = radius;
-            if (lerpTimer_ == 1.0f)
-            {
-                lerpTimer_ = 0.0f;
-                state_ = 1;
-            }
-        }
-        else if (state_ == 1)
-        {
-            lerpTimer_ += speed * elapsedTime;
-            lerpTimer_ = min(lerpTimer_, 1.0f);
-
-            const float radius = XMFloatLerp(0.0f, 0.65f, lerpTimer_);
-
-            constants_.radius_.y = radius;
-            if (lerpTimer_ == 1.0f)
-            {
-                lerpTimer_ = 0.0f;
-                state_ = 2;
-            }
-        }
-        else if (state_ == 2)
-        {
-            lerpTimer_ += speed * elapsedTime;
-            lerpTimer_ = min(lerpTimer_, 1.0f);
-
-            const float radius = XMFloatLerp(0.0f, 0.55f, lerpTimer_);
-
-            constants_.radius_.z = radius;
-            if (lerpTimer_ == 1.0f)
-            {
-                lerpTimer_ = 0.0f;
-                state_ = 3;
-            }
-        }
-        else
-        {
-            lerpTimer_ += speed * elapsedTime;
-            lerpTimer_ = min(lerpTimer_, 1.0f);
-
-            const float radius = XMFloatLerp(0.0f, 0.45f, lerpTimer_);
-
-            constants_.radius_.w = radius;
-        }
-    }
-
+    // 尻尾のパーティクル半径更新
+    UpdateTailRadius(elapsedTime);
 
     constants_.deltaTime_ = elapsedTime;
     constants_.tailTrailTimer_ += elapsedTime;
 
     GetParticleData()->Update(csUAVSlot_, cbSlot_, &constants_);
-
-    tailChargeParticle_.Update(csUAVSlot_, cbSlot_, &constants_);
-
     tailTrailParticle_.Update(csUAVSlot_, cbSlot_, &constants_);
+
+    // 消去準備
+    if (isRemove_)
+    {
+        for (int i = 0; i < maxPointLights_; ++i)
+        {
+            pointLights_[i].intensity_ -= fadeOutSpeed_ * elapsedTime;
+            //pointLights_[i].intensity_ -= 60 * elapsedTime;
+            pointLights_[i].intensity_ = max(pointLights_[i].intensity_, 0.0f);
+        }
+    }
+
+    // ポイントライト位置更新 & 設定
+    for (int i = 0; i < maxPointLights_; ++i)
+    {
+        pointLights_[i].position_ = constants_.jointPosition_[i + 2];
+
+        Graphics::Instance().SetPointLights(i, pointLights_[i]);
+    }
 }
 
 void TailParticle::Render()
 {
     GetParticleData()->Render(gsSRVSlot_, cbSlot_, &constants_);
 
-    tailChargeParticle_.Render(gsSRVSlot_, cbSlot_, &constants_);
-
     tailTrailParticle_.Render(gsSRVSlot_, cbSlot_, &constants_);
 }
 
 void TailParticle::DrawDebug()
 {
-    if (ImGui::BeginMenu("TailParticle"))
+    if (ImGui::TreeNode("TailParticle"))
     {
+        ImGui::DragFloat("LifeTimer", &lifeTimer_);
+
         ImGui::DragFloat4("Radius", &constants_.radius_.x, 0.01f, 0.0f, 1.0f);
 
-        ImGui::EndMenu();
+        ImGui::Text("---------- PointLights ----------");
+        ImGui::DragFloat("FadeOutSpeed", &fadeOutSpeed_);
+        ImGui::DragFloat("MaxIntensity", &maxIntensity_);
+
+        ImGui::TreePop();
     }
 }
 
@@ -120,11 +90,6 @@ void TailParticle::DrawDebug()
 void TailParticle::PlayTailParticle()
 {
     GetParticleData()->PlayParticle(csUAVSlot_, cbSlot_, &constants_);
-}
-
-void TailParticle::PlayChargeParticle()
-{
-    tailChargeParticle_.PlayParticle(csUAVSlot_, cbSlot_, &constants_);
 }
 
 void TailParticle::PlayTailTrailParticle()
@@ -157,6 +122,41 @@ void TailParticle::UpdateJointPosition(const std::vector<DirectX::XMFLOAT3>& joi
 
 void TailParticle::Remove()
 {
+    isRemove_ = true;
+
     lifeTimer_ = 1.0f;
     constants_.tailParticleState_ = 1;
+}
+
+// ----- 尻尾のパーティクル半径更新 -----
+void TailParticle::UpdateTailRadius(const float& elapsedTime)
+{
+    // 消去準備しているのでここは通らない
+    if (isRemove_) return;
+
+    // 尻尾のパーティクルが有効ではない
+    if (GetParticleData()->GetIsActive() == false) return;
+
+    const float maxRadius[4] = { 0.7f, 0.65f, 0.6f, 0.55f };
+    const float speed = 3.5f;
+
+    lerpTimer_ += speed * elapsedTime;
+    lerpTimer_ = min(lerpTimer_, 1.0f);
+
+    const float radius = XMFloatLerp(0.0f, maxRadius[state_], lerpTimer_);
+
+    if (state_ == 0) constants_.radius_.x = radius;
+    else if (state_ == 1)constants_.radius_.y = radius;
+    else if (state_ == 2)constants_.radius_.z = radius;
+    else if (state_ == 3)constants_.radius_.w = radius;    
+
+    // ポイントライト設定
+    pointLights_[state_].intensity_ = XMFloatLerp(0.0f, maxIntensity_, lerpTimer_);
+    //pointLights_[state_].intensity_ = XMFloatLerp(0.0f, 30.0f, lerpTimer_);
+
+    if (lerpTimer_ == 1.0f && state_ < 4)
+    {
+        lerpTimer_ = 0.0f;
+        ++state_; // 次に進む
+    }
 }

@@ -21,6 +21,22 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     }
     else
     {
+#if 1
+        float height[4] = { height_.x, height_.y, height_.z, height_.w };
+        float radius[4] = { radius_.x, radius_.y, radius_.z, radius_.w };
+    
+        p.randomOffset_ = GetCylindricalPosition(id, radius[p.tailIndex_], height[p.tailIndex_], direction_[p.tailIndex_].xyz);
+    
+        p.position_ = jointPosition_[p.tailIndex_ + 1].xyz + p.randomOffset_;
+        
+        p.color_.a -= deltaTime_ * 2.0;
+        p.color_.a = max(p.color_.a, 0.0);
+        
+        if (p.color_.a <= 0.0)
+        {
+            p.position_.y = -1.0;
+        }
+#else
         if (p.state_ == 0)
         {
             p.velocity_ += float3(0.0, -9.8, 0.0) * deltaTime_;
@@ -42,6 +58,7 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
                 p.position_.y = -1.0;
             }
         }
+#endif
     }
     
     particleBuffer[id] = p;

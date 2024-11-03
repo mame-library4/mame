@@ -1,6 +1,7 @@
 #pragma once
 #include "ParticleSystem.h"
 #include <vector>
+#include "Shader.h"
 
 class TailParticle : public ParticleSystem
 {
@@ -13,13 +14,16 @@ public:
     void DrawDebug()                          override;
 
     void PlayTailParticle();
-    void PlayChargeParticle();
     void PlayTailTrailParticle();
 
     // ---------- 尻尾の位置更新 ----------
     void UpdateJointPosition(const std::vector<DirectX::XMFLOAT3>& jointPosition);
 
     void Remove();
+
+private:
+    // ---------- 尻尾のパーティクル半径更新 ----------
+    void UpdateTailRadius(const float& elapsedTime);
 
 private:
 #pragma region ---------- ParticleData ----------
@@ -32,14 +36,6 @@ private:
         float               size_           = 0.0f;
         int                 tailIndex_      = 0;  // 尻尾の番号
         int                 state_          = 0;
-    };
-    struct ChargeParticleData
-    {
-        DirectX::XMFLOAT4   color_ = {};
-        DirectX::XMFLOAT3   position_ = {};
-        DirectX::XMFLOAT3   velocity_ = {};
-        float               size_ = 0.0f;
-        int                 tailIndex_ = 0;  // 尻尾の番号
     };
     struct TrailParticle
     {
@@ -75,17 +71,18 @@ private:
     const int csUAVSlot_ = 0;
     const int gsSRVSlot_ = 0;
 
-
-    ParticleData tailChargeParticle_;
-
     // ----- tailTrail -----
     ParticleData tailTrailParticle_;
 
-    float lifeTimer_ = 30.0f;
+    float   lifeTimer_  = 30.0f;  // 生存時間
+    float   lerpTimer_  = 0.0f;
+    int     state_      = 0;
+    bool    isRemove_   = false;  // 消去準備フラグ
 
-    float lerpTimer_ = 0.0f;
-    int state_ = 0;
-
-    bool isRemove_ = false;
+    // ----- ポイントライト -----
+    float fadeOutSpeed_ = 30.0f;
+    float maxIntensity_ = 15.0f;
+    static const int maxPointLights_ = 4;
+    Shader::PointLights pointLights_[maxPointLights_] = {};
 };
 

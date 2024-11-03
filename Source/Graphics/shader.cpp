@@ -264,6 +264,12 @@ HRESULT Shader::CreateHsFromCso(const char* csoName, ID3D11HullShader** hullShad
 
 #pragma endregion ---------- シェーダー作成関数 ----------
 
+// ----- ポイントライト -----
+void Shader::SetPointLight(const int& index, const PointLights& pointLights)
+{
+    lightConstants_.pointLights[index] = pointLights;
+}
+
 // ----- ブレンドステート設定 -----
 void Shader::SetBlendState(const BLEND_STATE& blendState)
 {

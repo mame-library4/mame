@@ -16,7 +16,7 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     float3 initialPosition = GetCylindricalPosition(id, radius[p.tailIndex_], height[p.tailIndex_], direction_[p.tailIndex_].xyz);
     p.randomOffset_ = initialPosition;
     
-    p.size_ = 0.05f;
+    p.size_ = 0.03f;
     p.color_ = float4(1.0, 0.42, 0.13, 1);
     p.state_ = 0;
     

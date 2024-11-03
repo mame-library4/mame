@@ -74,7 +74,9 @@ namespace ActionDragon
         bool isCreateChargeEffect_ = false;
         bool isPlayExplosionParticle_ = false;
 
-        float slowStartFrame_ = 0.0f; // スロー開始フレーム
+        float slowAnimationSpeed_   = 0.12f;
+        float slowStartFrame_       = 0.88f;  // スロー開始フレーム
+        float slowEndFrame_         = 0.93f; // スロー終了フレーム
     };
 
     // ----- TurnAttack -----

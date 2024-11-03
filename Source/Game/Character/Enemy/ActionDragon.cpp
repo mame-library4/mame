@@ -116,7 +116,6 @@ namespace ActionDragon
             slamAttackParticle_ = new SlamAttackParticle();
 
             // 変数初期化
-            slowStartFrame_ = 0.9f;
             isCreateChargeEffect_ = false;
             isPlayExplosionParticle_ = false;
 
@@ -174,6 +173,10 @@ namespace ActionDragon
     
     void SlamAttackAction::DrawDebug()
     {
+        ImGui::Text(u8"---------- スロー ----------");
+        ImGui::DragFloat("SlowAnimationSpeed", &slowAnimationSpeed_, 0.01f, 0.0f, 3.0f);
+        ImGui::DragFloat("SlowStartFrame", &slowStartFrame_, 0.01f, 0.0f, 3.0f);
+        ImGui::DragFloat("SlowEndFrame", &slowEndFrame_, 0.01f, 0.0f, 3.0f);
     }
 
     // ----- 終了化 -----
@@ -205,9 +208,9 @@ namespace ActionDragon
             animationSpeed = 0.8f;
         }
         // 攻撃を出す前の数フレーム感をスローにする
-        else if(animationSeconds > slowStartFrame_ && animationSeconds < 0.965f)
+        else if(animationSeconds > slowStartFrame_ && animationSeconds < slowEndFrame_)
         {
-            animationSpeed = 0.2f;
+            animationSpeed = slowAnimationSpeed_;
         }
         else
         {

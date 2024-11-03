@@ -1,5 +1,6 @@
 #pragma once
 #include "ParticleSystem.h"
+#include "Shader.h"
 
 class SlamAttackParticle : public ParticleSystem
 {
@@ -75,5 +76,8 @@ private:
     Constants               constants_;
 
     float lifeTimer_ = 5.0f;
+
+    // ----- ポイントライト -----
+    Shader::PointLights pointLights_ = {};
 };
 

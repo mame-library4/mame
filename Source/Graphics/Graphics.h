@@ -46,6 +46,9 @@ public:// ----- シェーダー関連 -----
 
     void LightConstantsActive(const int& slot) { shader_->LightConstantsActive(slot); }
 
+    // ----- ポイントライト -----
+    void SetPointLights(const int& index, const Shader::PointLights& pointLights) { shader_->SetPointLight(index, pointLights); }
+
 private:
     static Graphics* instance_;
 

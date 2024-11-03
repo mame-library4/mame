@@ -64,6 +64,9 @@ public:
     HRESULT CreateDsFromCso(const char* csoName, ID3D11DomainShader** domainShader);
     HRESULT CreateHsFromCso(const char* csoName, ID3D11HullShader** hullShader);
 
+    // ----- ポイントライト -----
+    void SetPointLight(const int& index, const PointLights& pointLights);
+
 public:
     void SetDepthStencileState(const DEPTH_STATE& depthStencileState);
     void SetBlendState(const BLEND_STATE& blendState);

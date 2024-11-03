@@ -810,9 +810,6 @@
     <Filter Include="Mame\Shader\Particle\TailParticle\TailParticle">
       <UniqueIdentifier>{cd38904b-16cb-43c0-acc8-6320690dd6ba}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Mame\Shader\Particle\TailParticle\TailChargeParticle">
-      <UniqueIdentifier>{91ddc1cb-5a55-41a9-8204-7e857465ea2a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Mame\Graphics\Particle\Core">
       <UniqueIdentifier>{149f59ef-c62a-47f8-9148-81af78ed1d71}</UniqueIdentifier>
     </Filter>
@@ -906,9 +903,6 @@
     </None>
     <None Include="Source\Shader\FireBallParticle.hlsli">
       <Filter>Mame\Shader\Particle\FireBallParticle</Filter>
-    </None>
-    <None Include="Source\Shader\TailChargeParticle.hlsli">
-      <Filter>Mame\Shader\Particle\TailParticle\TailChargeParticle</Filter>
     </None>
     <None Include="Source\Shader\SlamExplosionParticle.hlsli">
       <Filter>Mame\Shader\Particle\SlamAttackParticle\Explosion</Filter>
@@ -1058,15 +1052,6 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\TailParticleGS.hlsl">
       <Filter>Mame\Shader\Particle\TailParticle\TailParticle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\TailChargeInitializeCS.hlsl">
-      <Filter>Mame\Shader\Particle\TailParticle\TailChargeParticle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\TailChargeUpdateCS.hlsl">
-      <Filter>Mame\Shader\Particle\TailParticle\TailChargeParticle</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\TailChargeGS.hlsl">
-      <Filter>Mame\Shader\Particle\TailParticle\TailChargeParticle</Filter>
     </FxCompile>
     <FxCompile Include="Source\Shader\ToneMapPS.hlsl">
       <Filter>Mame\Shader\PostProcess</Filter>
