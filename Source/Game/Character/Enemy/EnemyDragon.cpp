@@ -264,8 +264,8 @@ void EnemyDragon::RegisterBehaviorNode()
 
     behaviorTree_->AddNode("Attack", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
     behaviorTree_->AddNode("Attack", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
-    
     behaviorTree_->AddNode("Attack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
+    
     
 
 #if 0
@@ -728,7 +728,24 @@ void EnemyDragon::SetKnockBackAttackActiveFalg(const bool& flag)
         GetAttackDetectionData(i).SetIsActive(flag);
     }
 }
+
 #pragma endregion ----- 攻撃判定 -----
+
+// ----- ジャスト回避判定設定 -----
+void EnemyDragon::SetJustDodgeActiveFlag(const AttackAction& type, const bool& flag)
+{
+    int data[][2] =
+    {
+        { static_cast<int>(JustDodgeData::SlamAttackStart), static_cast<int>(JustDodgeData::SlamAttackEnd) },
+    };
+    const int start = data[static_cast<int>(type)][0];
+    const int end = data[static_cast<int>(type)][1];
+
+    for (int i = start; i <= end; ++i)
+    {
+        GetJustDodgeDetectionData(i).SetIsActive(flag);
+    }
+}
 
 // ----- 押し出し判定 -----
 void EnemyDragon::SetDownCollisionActiveFlag(const bool& flag)

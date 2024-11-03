@@ -64,6 +64,9 @@ void CollisionManager::CheckJustDodgeCollision()
     for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetJustDodgeDetectionDataCount(); ++enemyDataIndex)
     {
         const JustDodgeDetectionData enemyData = enemy->GetJustDodgeDetectionData(enemyDataIndex);
+        
+        // 現在有効ではない
+        if (enemyData.GetIsActive() == false) continue;
 
         // 当たったかチェック
         if (IntersectSphereVsSphere(

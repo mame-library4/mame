@@ -235,6 +235,7 @@ public:// --- æ“¾Eİ’è ---
     std::vector<JustDodgeDetectionData> GetJustDodgeDetectionData() { return justDodgeDetectionData_; }
     JustDodgeDetectionData& GetJustDodgeDetectionData(const int& index) { return justDodgeDetectionData_.at(index); }
 
+    virtual void SetJustDodgeActiveFlag(const AttackAction& type, const bool& flag) = 0;
 
     // ---------- •”ˆÊ”j‰ó ----------
     [[nodiscard]] const bool GetIsPartDestruction(const PartName& partName) const { return isPartDestruction_[static_cast<int>(partName)]; }

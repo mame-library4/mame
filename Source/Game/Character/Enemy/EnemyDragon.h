@@ -32,6 +32,9 @@ private:
     void SetComboSlamAttackActiveFlag(const bool& flag = true)  override;
     void SetKnockBackAttackActiveFalg(const bool& flag = true)  override;
 
+    // ---------- ジャスト回避判定 ----------
+    void SetJustDodgeActiveFlag(const AttackAction& type, const bool& flag) override;
+
     // ---------- 押し出し判定 ----------
     void SetDownCollisionActiveFlag(const bool& flag = true) override;    
 
@@ -91,6 +94,11 @@ public:
         TailEnd = 21,
         Wings = 22,
         WingsEnd = 47,
+    };
+    enum class JustDodgeData
+    {
+        SlamAttackStart = 0,
+        SlamAttackEnd   = 5,
     };
 };
 

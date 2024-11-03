@@ -1,5 +1,6 @@
 #include "UINumber.h"
 #include "Easing.h"
+#include "Character/Player/PlayerManager.h"
 
 // ----- コンストラクタ -----
 UINumber::UINumber(const int& num, const DirectX::XMFLOAT3& hitPos) :
@@ -23,6 +24,8 @@ UINumber::UINumber(const int& num, const DirectX::XMFLOAT3& hitPos) :
         numSprite_[spriteIndex] = std::make_unique<Sprite>(L"./Resources/Image/UI/Number/numbers.png");
         numSprite_[spriteIndex]->GetTransform()->SetTexSize(256.0f);
         numSprite_[spriteIndex]->GetTransform()->SetSize(numSpriteSize_);
+
+        //numSprite_[spriteIndex]->GetTransform()->SetColorA(0.5f);
     }
 
     // どの数字を使用するか設定
@@ -41,6 +44,8 @@ void UINumber::Update(const float& elapsedTime)
 {
     // 位置設定
     SetNumSpritePosition();
+
+    if (PlayerManager::Instance().GetPlayer()->GetCurrentState() == Player::STATE::RushAttack) return;
 
     lifeTimer_ -= elapsedTime;
     if (lifeTimer_ < 0.0f)

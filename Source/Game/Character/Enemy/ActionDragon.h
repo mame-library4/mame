@@ -77,6 +77,11 @@ namespace ActionDragon
         float slowAnimationSpeed_   = 0.12f;
         float slowStartFrame_       = 0.88f;  // スロー開始フレーム
         float slowEndFrame_         = 0.93f; // スロー終了フレーム
+
+        // ----- ジャスト回避 -----
+        float justDodgeStartFrame_  = 0.93f;
+        float justDodgeEndFrame_    = 1.05f;
+        bool  isActiveJustDodge_    = false;
     };
 
     // ----- TurnAttack -----

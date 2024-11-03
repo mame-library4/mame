@@ -113,16 +113,31 @@ namespace ActionDragon
             // 攻撃力設定
             owner_->SetAttackPower(Enemy::AttackAction::TurnAttack);
 
+            // パーティクル生成
             slamAttackParticle_ = new SlamAttackParticle();
 
             // 変数初期化
             isCreateChargeEffect_ = false;
             isPlayExplosionParticle_ = false;
+            isActiveJustDodge_ = false;
 
             owner_->SetStep(1);
             
             break;
         case 1:
+
+            // ジャスト回避範囲を設定
+            if (owner_->GetAnimationSeconds() > justDodgeEndFrame_ && isActiveJustDodge_)
+            {
+                owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::SlamAttack, false);
+                isActiveJustDodge_ = false;
+            }
+            else if (owner_->GetAnimationSeconds() > justDodgeStartFrame_ &&
+                owner_->GetAnimationSeconds() < justDodgeEndFrame_ && isActiveJustDodge_ == false)
+            {
+                owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::SlamAttack, true);
+                isActiveJustDodge_ = true;
+            }
 
             PlayChargeEffect();
             slamAttackParticle_->UpdateHandPosition(owner_->GetJointPosition("Dragon15_l_hand"));
