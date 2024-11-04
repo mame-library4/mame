@@ -1146,7 +1146,6 @@ namespace PlayerState
         isRotating_ = false;
         isFirstTime_ = false;
 
-        justDodgeFrame_ = 0.5f;
         justDodgeTimer_ = 0.0f;
     }
 
@@ -1225,6 +1224,7 @@ namespace PlayerState
     void DodgeState::DrawDebug()
     {
         ImGui::Text(GetName());
+        ImGui::DragFloat("JustDodgeFrame", &justDodgeFrame_, 0.01f, 0.0f, 3.0f);
         ImGui::DragFloat("RootMotionMoveValue", &rootMotionMoveValue_, 0.1f, 0.0f, 10.0f);
     }
 
@@ -1644,7 +1644,7 @@ namespace PlayerState
         if (isFirstTime_ == false)
         {
             // 前方向のアニメーションを設定する
-            owner_->PlayBlendAnimation(Player::Animation::RollFront, false, 1.0f, 0.15f);
+            owner_->PlayBlendAnimation(Player::Animation::RollFront, false, 1.0f, animationStartFrame_);
             owner_->SetTransitionTime(0.05f);
             return;            
         }
@@ -1673,7 +1673,6 @@ namespace PlayerState
         // プレイヤーの姿勢に合わせてアニメーションの方向を設定する
         // ------------------------------------------------------------
         const float animationSpeed = 1.0f;
-        const float animationStartFrame = 0.15f;
         const float aLx = Input::Instance().GetGamePad().GetAxisLX();
         const float aLy = Input::Instance().GetGamePad().GetAxisLY();
         // 入力値がある場合
@@ -1703,19 +1702,19 @@ namespace PlayerState
                 // 回転角が４５度よりも小さければ 前方向
                 if (dot < DirectX::XM_PIDIV4)
                 {                    
-                    owner_->PlayBlendAnimation(Player::Animation::RollFront, false, animationSpeed, animationStartFrame);
+                    owner_->PlayBlendAnimation(Player::Animation::RollFront, false, animationSpeed, animationStartFrame_);
                     return;
                 }
 
                 // 右方向
                 if (cross < 0)
                 {
-                    owner_->PlayBlendAnimation(Player::Animation::RollRight, false, animationSpeed, animationStartFrame);
+                    owner_->PlayBlendAnimation(Player::Animation::RollRight, false, animationSpeed, animationStartFrame_);
                 }
                 // 左方向
                 else
                 {
-                    owner_->PlayBlendAnimation(Player::Animation::RollLeft, false, animationSpeed, animationStartFrame);
+                    owner_->PlayBlendAnimation(Player::Animation::RollLeft, false, animationSpeed, animationStartFrame_);
                 }
             }
             // 回転角が９０度よりも大きければ 後,右,左 の三択
@@ -1724,26 +1723,26 @@ namespace PlayerState
                 // 回転角が１３５度よりも大きければ 後方向
                 if (dot > DirectX::XM_PIDIV2 + DirectX::XM_PIDIV4)
                 {
-                    owner_->PlayBlendAnimation(Player::Animation::RollBack, false, animationSpeed, animationStartFrame);
+                    owner_->PlayBlendAnimation(Player::Animation::RollBack, false, animationSpeed, animationStartFrame_);
                     return;
                 }
 
                 // 右方向
                 if (cross < 0)
                 {
-                    owner_->PlayBlendAnimation(Player::Animation::RollRight, false, animationSpeed, animationStartFrame);
+                    owner_->PlayBlendAnimation(Player::Animation::RollRight, false, animationSpeed, animationStartFrame_);
                 }
                 // 左方向
                 else
                 {
-                    owner_->PlayBlendAnimation(Player::Animation::RollLeft, false, animationSpeed, animationStartFrame);
+                    owner_->PlayBlendAnimation(Player::Animation::RollLeft, false, animationSpeed, animationStartFrame_);
                 }
             }
         }
         // 入力値がない場合前方向のアニメーションを設定する
         else
         {
-            owner_->PlayBlendAnimation(Player::Animation::RollFront, false, animationSpeed, animationStartFrame);
+            owner_->PlayBlendAnimation(Player::Animation::RollFront, false, animationSpeed, animationStartFrame_);
             return;
         }
     }

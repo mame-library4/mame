@@ -8,5 +8,7 @@ float4 main(PSIn psIn) : SV_TARGET
     float4 color = psIn.color;
     color.rgb *= 3.0f;
     
+    return color;
+    
     return psIn.color;
 }

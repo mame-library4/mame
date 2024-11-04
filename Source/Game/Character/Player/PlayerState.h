@@ -265,11 +265,14 @@ namespace PlayerState
         bool isRotating_    = false;    // 回転処理をするか
         bool isInputStick_  = false;    // スティック入力があるか
 
+        // ----- Animation -----
+        float animationStartFrame_ = 0.15f;
+
         // ----- ルートモーション用 -----
         float rootMotionMoveValue_ = 1.2f;
 
         // ----- ジャスト回避用 -----
-        float justDodgeFrame_ = 0.0f;
+        float justDodgeFrame_ = 0.3f;
         float justDodgeTimer_ = 0.0f;
     };
       
