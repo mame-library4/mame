@@ -1,7 +1,6 @@
-#include "SuperNovaParticle.hlsli"
 #include "LavaCrawlerParticle.hlsli"
 
-RWStructuredBuffer<ParticleData> particleBuffer : register(u1);
+RWStructuredBuffer<ParticleData> particleBuffer : register(u0);
 
 float Rand(float n)
 {
@@ -31,6 +30,8 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     float f1 = Rand(f0);
     float f2 = Rand(f1);
     p.age_ = 3 * f2;
+    
+    p.size_ = 0.05f;
 
     particleBuffer[id] = p;
 }

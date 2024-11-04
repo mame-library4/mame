@@ -1,5 +1,5 @@
 #include "Particle.hlsli"
-#include "LavaCrawlerParticle.hlsli"
+#include "SuperNovaChargeParticle.hlsli"
 
 StructuredBuffer<ParticleData> particleBuffer : register(t0);
 

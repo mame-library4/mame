@@ -828,6 +828,9 @@
     <Filter Include="Mame\Shader\Particle\TailParticle\TailTrailParticle">
       <UniqueIdentifier>{5eff8ec6-db00-40a7-8eb0-c56b57cafd15}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mame\Shader\Particle\SuperNova\Charge">
+      <UniqueIdentifier>{289f7a37-b5f7-4502-8bb5-d58a32619a42}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -921,6 +924,9 @@
     </None>
     <None Include="Source\Shader\TailTrailParticle.hlsli">
       <Filter>Mame\Shader\Particle\TailParticle\TailTrailParticle</Filter>
+    </None>
+    <None Include="Source\Shader\SuperNovaChargeParticle.hlsli">
+      <Filter>Mame\Shader\Particle\SuperNova\Charge</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -1082,6 +1088,15 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\TailTrailGS.hlsl">
       <Filter>Mame\Shader\Particle\TailParticle\TailTrailParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SuperNovaChargeInitializeCS.hlsl">
+      <Filter>Mame\Shader\Particle\SuperNova\Charge</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SuperNovaChargeUpdateCS.hlsl">
+      <Filter>Mame\Shader\Particle\SuperNova\Charge</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SuperNovaChargeGS.hlsl">
+      <Filter>Mame\Shader\Particle\SuperNova\Charge</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

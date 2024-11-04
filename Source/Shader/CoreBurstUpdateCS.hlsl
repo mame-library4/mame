@@ -1,4 +1,3 @@
-#include "SuperNovaParticle.hlsli"
 #include "CoreBurstParticle.hlsli"
 
 RWStructuredBuffer<ParticleData> particleBuffer : register(u0);
@@ -12,7 +11,7 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     
     const float g = -0.5;
     p.velocity_.y += g * deltaTime_;
-    p.position_ += p.velocity_ * speed_ * deltaTime_;
+    p.position_ += p.velocity_ * coreBurstParticleSpeed_ * deltaTime_;
 
     if (p.position_.y < -1.0)
     {

@@ -6,7 +6,7 @@ SamplerState samplerStates[3] : register(s0);
 float4 main(GS_OUT psIn) : SV_TARGET
 {
     float4 color = psIn.color;
-    color.rgb *= 2.0f;
+    color.rgb *= 10.0f;
     
     return color;
     

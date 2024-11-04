@@ -1,4 +1,3 @@
-#include "SuperNovaParticle.hlsli"
 #include "CoreBurstParticle.hlsli"
 
 RWStructuredBuffer<ParticleData> particleBuffer : register(u0);
@@ -29,7 +28,9 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     
     p.velocity_ = float3(vx, vy, vz);
 
-    p.color_ = float4(1, 0, 0, 1);
+    p.color_ = float4(1.0, 0.42, 0.13, 1);
 
+    p.size_ = 0.25f;
+    
     particleBuffer[id] = p;
 }

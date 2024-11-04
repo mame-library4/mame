@@ -336,7 +336,7 @@ namespace ActionDragon
             // 移動処理
             if (addForceData_.Update(owner_->GetAnimationSeconds()))
             {
-                //owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+                owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
             }
 
             // 攻撃判定処理
@@ -431,7 +431,6 @@ namespace ActionDragon
 }
 #pragma endregion ---------- 攻撃のインパクトを考慮した行動 ----------
 
-
 // ----- SuperNova -----
 namespace ActionDragon
 {
@@ -512,6 +511,8 @@ namespace ActionDragon
         DirectX::XMFLOAT3 emitterPosition = owner_->GetJointPosition("Dragon15_neck_1");
         powerEffectHandle_ = EffectManager::Instance().GetEffect("Power")->Play(emitterPosition, 0.1f, 1.0f);
         
+        superNovaParticle_->PlayChargeParticle(emitterPosition);
+        
         emitterPosition.y = 0.3f;
         superNovaParticle_->PlayLavaCrawlerParticle(elapsedTime, emitterPosition);
 
@@ -589,6 +590,9 @@ namespace ActionDragon
 
         const float scale = XMFloatLerp(0.1f, 7.0f, scaleLerpTimer_);
         EffectManager::Instance().GetEffect("Power")->SetScale(powerEffectHandle_, scale);
+
+        const float radius = XMFloatLerp(0.0f, 5.0f, scaleLerpTimer_);
+        superNovaParticle_->SetChargeParticleRadius(radius);
     }
 
     // ----- ラジアルブラー更新 -----

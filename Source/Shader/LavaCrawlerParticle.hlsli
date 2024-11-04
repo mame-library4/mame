@@ -1,8 +1,11 @@
-cbuffer ParticleConstants : register(b11)
+#include "SuperNovaParticle.hlsli"
+
+struct ParticleData
 {
-    float3 emitterPosition_;
-    float particleSize_;
-    float time_;
-    float deltaTime_;
-    float speed_;
+    float4 color_;
+    float3 position_;
+    float3 velocity_;
+    float size_;
+    float age_;
+    int state_;
 };

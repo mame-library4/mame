@@ -1,7 +1,6 @@
-#include "SuperNovaParticle.hlsli"
 #include "LavaCrawlerParticle.hlsli"
 
-RWStructuredBuffer<ParticleData> particleBuffer : register(u1);
+RWStructuredBuffer<ParticleData> particleBuffer : register(u0);
 
 [numthreads(NUMTHREADS_X, 1, 1)]
 void main(uint3 dtid : SV_DISPATCHTHREADID)
@@ -12,7 +11,7 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     
     if (p.age_ > 3)
     {
-        p.position_ += p.velocity_ * speed_ * deltaTime_;
+        p.position_ += p.velocity_ * lavaCrawlerParticleSpeed_ * deltaTime_;
     }
     p.age_ += deltaTime_;
 

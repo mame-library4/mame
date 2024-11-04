@@ -5,38 +5,39 @@
 
 // ----- コンストラクタ -----
 SuperNovaParticle::SuperNovaParticle()
-	: ParticleSystem(1000), lavaCrawlerParticle_(3000)
+	: ParticleSystem(1000), lavaCrawlerParticle_(3000), chargeParticle_(3000)
 {
 	GetParticleData()->CreateParticleData(sizeof(Particle), sizeof(Constants), "./Resources/Shader/ParticleVS.cso", "./Resources/Shader/SuperNovaParticlePS.cso",
 		"./Resources/Shader/CoreBurstGS.cso", "./Resources/Shader/CoreBurstInitializeCS.cso", "./Resources/Shader/CoreBurstUpdateCS.cso");
 	lavaCrawlerParticle_.CreateParticleData(sizeof(Particle), sizeof(Constants), "./Resources/Shader/ParticleVS.cso", "./Resources/Shader/LavaCrawlerPS.cso",
 		"./Resources/Shader/LavaCrawlerGS.cso", "./Resources/Shader/LavaCrawlerInitializeCS.cso", "./Resources/Shader/LavaCrawlerUpdateCS.cso");
+	chargeParticle_.CreateParticleData(sizeof(ChargeParticle), sizeof(Constants), "./Resources/Shader/ParticleVS.cso", "./Resources/Shader/ParticlePS.cso",
+		"./Resources/Shader/SuperNovaChargeGS.cso", "./Resources/Shader/SuperNovaChargeInitializeCS.cso", "./Resources/Shader/SuperNovaChargeUpdateCS.cso");
 
-	constants_.speed_ = 20.0f;
-	constants_.particleSize_ = 0.25f;
-
-	lavaCrawlerParticleConstants_.speed_ = 10.0f;
-	lavaCrawlerParticleConstants_.particleSize_ = 0.05f;
+	constants_.coreBurstParticleSpeed_ = 20.0f;
+	constants_.lavaCrawlerParticleSpeed_ = 10.0f;
 }
 
 // ----- 更新 -----
 void SuperNovaParticle::Update(const float& elapsedTime)
 {
-    constants_.time_ += elapsedTime;
     constants_.deltaTime_ = elapsedTime;
-    GetParticleData()->Update(static_cast<int>(CSShaderSlot::CoreBurstParticle), static_cast<int>(CBSlot::CoreBurstParticle), &constants_);
+
+    GetParticleData()->Update(csSlot_, cbSlot_, &constants_);
 	
-    lavaCrawlerParticleConstants_.time_ += elapsedTime;
-    lavaCrawlerParticleConstants_.deltaTime_ = elapsedTime;
-    lavaCrawlerParticle_.Update(static_cast<int>(CSShaderSlot::LavaCrawlerParticle), static_cast<int>(CBSlot::LavaCrawlerParticle), &lavaCrawlerParticleConstants_);
+    lavaCrawlerParticle_.Update(csSlot_, cbSlot_, &constants_);
+
+	chargeParticle_.Update(csSlot_, cbSlot_, &constants_);
 }
 
 // ----- 描画 -----
 void SuperNovaParticle::Render()
 {	
-    GetParticleData()->Render(9, static_cast<int>(CBSlot::CoreBurstParticle), &constants_);
+    GetParticleData()->Render(gsSlot_, cbSlot_, &constants_);
 	
-    lavaCrawlerParticle_.Render(static_cast<int>(CBSlot::LavaCrawlerParticle), static_cast<int>(CBSlot::LavaCrawlerParticle), &lavaCrawlerParticleConstants_);
+    lavaCrawlerParticle_.Render(gsSlot_, cbSlot_, &constants_);
+    
+	chargeParticle_.Render(gsSlot_, cbSlot_, &constants_);
 }
 
 // ----- ImGui用 -----
@@ -44,21 +45,13 @@ void SuperNovaParticle::DrawDebug()
 {
 	if (ImGui::TreeNode("SuperNovaParticle"))
 	{
-		if (ImGui::TreeNode("LavaCrawlerParticle"))
-		{
-			ImGui::DragFloat("Speed", &lavaCrawlerParticleConstants_.speed_);
-			ImGui::DragFloat("Size", &lavaCrawlerParticleConstants_.particleSize_);
+		ImGui::DragFloat3("Center", &constants_.chargeParticleCenter_.x);
+		ImGui::DragFloat("Radius", &constants_.radius_);
+		ImGui::DragFloat3("RotationAxis", &constants_.rotationAxis_.x);
+		ImGui::DragFloat("RotationSpeed", &constants_.rotationSpeed_);
 
-			ImGui::TreePop();
-		}
-
-		if (ImGui::TreeNode("CoreBurstParticle"))
-		{
-			ImGui::DragFloat("Speed", &constants_.speed_);
-			ImGui::DragFloat("Size", &constants_.particleSize_);
-
-			ImGui::TreePop();
-		}
+        ImGui::DragFloat("CoreBurstParticleSpeed", &constants_.coreBurstParticleSpeed_);
+        ImGui::DragFloat("LavaCrawlerParticleSpeed", &constants_.lavaCrawlerParticleSpeed_);
 
 		ImGui::TreePop();
 	}
@@ -67,17 +60,21 @@ void SuperNovaParticle::DrawDebug()
 // ----- 再生 -----
 void SuperNovaParticle::PlayLavaCrawlerParticle(const float& elapsedTime, const DirectX::XMFLOAT3& emitterPosition)
 {
-	lavaCrawlerParticleConstants_.emitterPosition_ = emitterPosition;
-	lavaCrawlerParticleConstants_.time_ += elapsedTime;
-	lavaCrawlerParticleConstants_.deltaTime_ = elapsedTime;
-	lavaCrawlerParticle_.PlayParticle(static_cast<int>(CSShaderSlot::LavaCrawlerParticle), static_cast<int>(CBSlot::LavaCrawlerParticle), &lavaCrawlerParticleConstants_);
+	constants_.emitterPosition_ = emitterPosition;
+	constants_.deltaTime_ = elapsedTime;
+	lavaCrawlerParticle_.PlayParticle(csSlot_, cbSlot_, &constants_);
 }
 
 // ----- 再生 -----
 void SuperNovaParticle::PlayCoreBurstParticle(const float& elapsedTime, const DirectX::XMFLOAT3& emitterPosition)
 {
 	constants_.emitterPosition_ = emitterPosition;
-	constants_.time_ += elapsedTime;
 	constants_.deltaTime_ = elapsedTime;
-	GetParticleData()->PlayParticle(static_cast<int>(CSShaderSlot::CoreBurstParticle), static_cast<int>(CBSlot::CoreBurstParticle), &constants_);
+	GetParticleData()->PlayParticle(csSlot_, cbSlot_, &constants_);
+}
+
+void SuperNovaParticle::PlayChargeParticle(const DirectX::XMFLOAT3& emitterPosition)
+{
+	constants_.emitterPosition_ = emitterPosition;
+	chargeParticle_.PlayParticle(csSlot_, cbSlot_, &constants_);
 }
