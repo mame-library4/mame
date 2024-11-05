@@ -3,8 +3,6 @@
 #include <memory>
 #include "../Game/Stage/StageNormal.h"
 
-#include "Stone/Stone.h"
-
 #include "Effect/Effect.h"
 
 class GameScene : public BaseScene
@@ -42,8 +40,6 @@ private:
 
     bool isDebugRenderer_ = false;
     //bool isDebugRenderer_ = true;
-
-    std::unique_ptr<Stone> stone_;
 
     bool isDrawUI_ = false; // UI•`‰æ”»’è
 };

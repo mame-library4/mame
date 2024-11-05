@@ -5,6 +5,7 @@
 #include "Particle/TailParticle.h"
 #include "Particle/SuperNovaParticle.h"
 #include "Particle/SlamAttackParticle.h"
+#include "Particle/MeteorParticle.h"
 
 #include "Effect/EffectManager.h"
 
@@ -62,6 +63,8 @@ namespace ActionDragon
         void DrawDebug()                                      override;
 
     private:
+        void PlayAnimation();
+
         void Finalize();
         void UpdateAnimationSpeed(); // アニメーションの速度を調整する
 
@@ -82,6 +85,12 @@ namespace ActionDragon
         float justDodgeStartFrame_  = 0.93f;
         float justDodgeEndFrame_    = 1.05f;
         bool  isActiveJustDodge_    = false;
+
+        // ----- TransitionFrame -----
+        float transitionWalk_ = 0.2f;
+
+        // ----- BlendFrame -----
+        float blendFrameWalk_ = 0.3f;
     };
 
     // ----- TurnAttack -----
@@ -100,6 +109,8 @@ namespace ActionDragon
         };
 
     private:
+        void PlayAnimation();
+
         void Finalize(); // 終了化
         void UpdateAnimationSpeed(); // アニメーションの速度を調整する
 
@@ -120,9 +131,73 @@ namespace ActionDragon
         bool isPlayTailParticle_        = false;
         bool isPlayTailTrailParticle_   = false;
         bool isRemoveParticle_          = false;
+
+        // ----- TransitionFrame -----
+        float transitionWalk_ = 0.2f;
+
+        // ----- BlendFrame -----
+        float blendFrameWalk_ = 0.3f;
+    };
+
+    // ----- Meteor -----
+    class MeteorAction : public ActionBase
+    {
+    public:
+        MeteorAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
+
+    private:
+        void PlayAnimation();
+        void UpdateAnimationSpeed();
+        void Finalize();
+
+    private:
+        MeteorParticle* meteorParticle_ = nullptr;
+
+        float slowAnimationSpeed_ = 0.5f;
+    };
+
+    // ----- FireBreath -----
+    class FireBreathAction : public ActionBase
+    {
+    public:
+        FireBreathAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
     };
 
 #pragma endregion ---------- 攻撃のインパクトを考慮した行動 ----------
+
+    class WalkAction : public ActionBase
+    {
+    public:
+        WalkAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
+
+    private:
+        void PlayAnimation();
+
+    private:
+        DirectX::XMFLOAT3   initPosition_   = {};
+        DirectX::XMFLOAT3   targetPosition_ = {};
+        DirectX::XMFLOAT3   direction_      = {};
+        float               minMoveLength_  = 5.0f;
+        float               maxMoveLength_  = 20.0f;
+        float               moveLength_     = 0.0f;
+        float               targetLength_   = 0.0f;
+        float               offsetLength_   = 8.0f;
+
+        float               lerpTimer_      = 0.0f;
+        float               maxLerpSpeed_   = 2.0f;
+        float               minLerpSpeed_   = 1.0f;
+        float               lerpSpeed_      = 1.0f;
+
+        // ----- TransitionFrame -----
+        float transitionSlamAttack_ = 0.2f;
+        float transitionTurnAttack_ = 0.2f;
+    };
 
     class SuperNovaAction : public ActionBase
     {

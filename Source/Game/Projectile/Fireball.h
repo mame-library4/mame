@@ -6,7 +6,7 @@ class Fireball : public Projectile
 {
 public:
     Fireball();
-    ~Fireball();
+    ~Fireball() override {}
 
     void Initialize()                                   override;
     void Finalize()                                     override;

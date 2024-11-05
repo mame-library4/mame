@@ -6,10 +6,11 @@
 #include "Common.h"
 #include "../Player/PlayerManager.h"
 
+#include "Particle/ParticleManager.h"
+
 #include "Projectile/ProjectileManager.h"
 #include "Projectile/Fireball.h"
-
-#include "Particle/ParticleManager.h"
+#include "Projectile/Rock.h"
 
 #include "sprite.h"
 #include "Application.h"
@@ -105,7 +106,7 @@ namespace ActionDragon
         {
         case 0:
             // アニメーション設定
-            owner_->PlayAnimation(Enemy::DragonAnimation::AttackSlam0, false);
+            PlayAnimation();
 
             // カウンター有効範囲を設定する
             PlayerManager::Instance().GetPlayer()->SetCounterActiveRadius(6.0f);
@@ -188,10 +189,48 @@ namespace ActionDragon
     
     void SlamAttackAction::DrawDebug()
     {
-        ImGui::Text(u8"---------- スロー ----------");
-        ImGui::DragFloat("SlowAnimationSpeed", &slowAnimationSpeed_, 0.01f, 0.0f, 3.0f);
-        ImGui::DragFloat("SlowStartFrame", &slowStartFrame_, 0.01f, 0.0f, 3.0f);
-        ImGui::DragFloat("SlowEndFrame", &slowEndFrame_, 0.01f, 0.0f, 3.0f);
+        if (ImGui::TreeNodeEx("SlamAttack", ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- TransitionTime ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("Walk", &transitionWalk_, 0.01f, 0.0f, 0.5f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- BlendFrame ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("Walk", &blendFrameWalk_, 0.01f, 0.0f, 1.0f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- Slow ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("SlowAnimationSpeed", &slowAnimationSpeed_, 0.01f, 0.0f, 3.0f);
+                ImGui::DragFloat("SlowStartFrame", &slowStartFrame_, 0.01f, 0.0f, 3.0f);
+                ImGui::DragFloat("SlowEndFrame", &slowEndFrame_, 0.01f, 0.0f, 3.0f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- アニメーション再生 -----
+    void SlamAttackAction::PlayAnimation()
+    {
+        const Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(owner_->GetAnimationIndex());
+        float transitionTime = 0.1f;
+        float blendAnimationFrame = 0.0f;
+
+        if (animationIndex == Enemy::DragonAnimation::Run)
+        {
+            transitionTime = transitionWalk_;
+            blendAnimationFrame = blendFrameWalk_;
+        }
+
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackSlam0, false, 1.0f, blendAnimationFrame);
+        owner_->SetTransitionTime(transitionTime);
     }
 
     // ----- 終了化 -----
@@ -271,8 +310,8 @@ namespace ActionDragon
         switch (static_cast<STATE>(owner_->GetStep()))
         {
         case STATE::Initialize:// 初期設定
-            // アニメーション設定
-            owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurn, false);
+            // アニメーション再生
+            PlayAnimation();
 
             // 現時点ではルートモーションを使用しない
             owner_->SetUseRootMotion(false);
@@ -381,19 +420,61 @@ namespace ActionDragon
     // ----- ImGui用 -----
     void TurnAttackAction::DrawDebug()
     {
-        ImGui::Text(u8"---------- スロー ----------");
-        ImGui::DragFloat("SlowStartFrame", &slowStartFrame_, 0.01f, 0.0f, 3.5f);
-        ImGui::DragFloat("SlowEndFrame", &slowEndFrame_, 0.01f, 0.0f, 3.5f);
-        ImGui::DragFloat("SlowSpeed", &slowSpeed_, 0.01f, 0.0f, 1.0f);
+        if (ImGui::TreeNodeEx("Trun", ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- TransitionTime ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("Walk", &transitionWalk_, 0.01f, 0.0f, 0.5f);
 
-        ImGui::Text(u8"---------- 攻撃の後隙 ----------");
-        ImGui::DragFloat("RecoveryFrame", &recoveryFrame_, 0.01f, 0.0f, 3.5f);
-        ImGui::DragFloat("RecoverySpeed", &recoverySpeed_, 0.1f, 0.0f, 1.0f);
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- BlendFrame ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("Walk", &blendFrameWalk_, 0.01f, 0.0f, 1.0f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- Slow ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("StartFrame", &slowStartFrame_, 0.01f, 0.0f, 3.5f);
+                ImGui::DragFloat("EndFrame", &slowEndFrame_, 0.01f, 0.0f, 3.5f);
+                ImGui::DragFloat("SlowSpeed", &slowSpeed_, 0.01f, 0.0f, 1.0f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- AttackRecovery ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("RecoveryFrame", &recoveryFrame_, 0.01f, 0.0f, 3.5f);
+                ImGui::DragFloat("RecoverySpeed", &recoverySpeed_, 0.1f, 0.0f, 1.0f);
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- アニメーション再生 -----
+    void TurnAttackAction::PlayAnimation()
+    {
+        const Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(owner_->GetAnimationIndex());
+        float TransitionTime = 0.1f;
+        float blendAnimationFrame = 0.0f;
+
+        if (animationIndex == Enemy::DragonAnimation::Run)
+        {
+            TransitionTime = transitionWalk_;
+            blendAnimationFrame = blendFrameWalk_;
+        }
+
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurn, false, 1.0f, blendAnimationFrame);
+        owner_->SetTransitionTime(TransitionTime);
     }
 
     // ----- 終了化 -----
     void TurnAttackAction::Finalize()
     {
+        // ルートモーション使用終了
+        owner_->SetUseRootMotion(false);
+
         if (tailParticle_ != nullptr)
         {
             tailParticle_->Remove();
@@ -429,7 +510,232 @@ namespace ActionDragon
         owner_->SetAnimationSpeed(animationSpeed);
     }
 }
+
+// ----- Meteor -----
+namespace ActionDragon
+{
+    const ActionBase::State MeteorAction::Run(const float& elapsedTime)
+    {
+        switch (owner_->GetStep())
+        {
+        case 0:
+            // アニメーション再生
+            PlayAnimation();
+
+            meteorParticle_ = new MeteorParticle();
+
+            owner_->SetStep(1);
+
+            break;
+        case 1:
+
+            // アニメーションの速度を調整
+            UpdateAnimationSpeed();
+
+            if (owner_->GetAnimationSeconds() > 1.4f && meteorParticle_->GetIsPlayMeteorGlowEffect() == false)
+            {
+                DirectX::XMFLOAT3 targetPosition = PlayerManager::Instance().GetTransform()->GetPosition();
+                meteorParticle_->PlayMeteorGlowEffect(targetPosition);
+                
+                targetPosition.y = 0.0f;
+                DirectX::XMFLOAT3 createPosition = owner_->GetTransform()->GetPosition();
+                createPosition.y = 30.0f;
+                Rock* rock = new Rock(createPosition, targetPosition);
+            }
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+
+            break;
+        }
+
+        return ActionBase::State::Run;
+    }
+
+    // ----- ImGui用 -----
+    void MeteorAction::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx("Meteor", ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- Slow ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("SlowSpeed", &slowAnimationSpeed_, 0.01f, 0.0f, 1.0f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- アニメーション再生 -----
+    void MeteorAction::PlayAnimation()
+    {
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::Meteor, false);
+    }
+
+    // ----- アニメーションの速度を調整 -----
+    void MeteorAction::UpdateAnimationSpeed()
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+        float animationSpeed = 1.0f;
+
+        if (animationSeconds > 1.5f)
+        {
+            animationSpeed = slowAnimationSpeed_;
+        }
+
+        owner_->SetAnimationSpeed(animationSpeed);
+    }
+
+    // ----- 終了化 -----
+    void MeteorAction::Finalize()
+    {
+        if (meteorParticle_ != nullptr)
+        {
+            ParticleManager::Instance().Remove(meteorParticle_);
+            meteorParticle_ = nullptr;
+        }
+    }
+}
+
+// ----- FireBreathAction -----
+namespace ActionDragon
+{
+    const ActionBase::State FireBreathAction::Run(const float& elapsedTime)
+    {
+        return ActionBase::State::Run;
+    }
+
+    void FireBreathAction::DrawDebug()
+    {
+    }
+}
 #pragma endregion ---------- 攻撃のインパクトを考慮した行動 ----------
+
+// ----- WalkAction -----
+namespace ActionDragon
+{
+    const ActionBase::State WalkAction::Run(const float& elapsedTime)
+    {
+        switch (owner_->GetStep())
+        {
+        case 0:
+            {
+                // プレイヤーとの距離と方向を算出
+                direction_ = owner_->CalcDirectionToPlayerNoConsiderationY();
+
+                // プレイヤーとの距離を算出
+                targetLength_ = XMFloat3Length(direction_);
+
+                // プレイヤーからのオフセット距離を引いた距離が移動最低距離より小さかったら処理しない
+                moveLength_ = targetLength_ - offsetLength_;
+                if(moveLength_ < minMoveLength_)
+                {
+                    return ActionBase::State::Failed;
+                }
+
+                // 移動距離が最大移動距離より大きかったら丸める
+                if (moveLength_ > maxMoveLength_) moveLength_ = maxMoveLength_;                                
+                
+                initPosition_ = owner_->GetTransform()->GetPosition();
+                targetPosition_ = initPosition_ + XMFloat3Normalize(direction_) * moveLength_;
+
+                // 移動距離に応じて移動速度を調整
+                lerpSpeed_ = XMFloatInverseLerp(minMoveLength_, maxMoveLength_, moveLength_);
+                lerpSpeed_ = XMFloatLerp(maxLerpSpeed_, minLerpSpeed_, lerpSpeed_);
+            }
+
+            // アニメーション再生
+            PlayAnimation();
+
+            lerpTimer_ = 0.0f;
+
+            owner_->SetStep(1);
+
+            break;
+        case 1:
+            lerpTimer_ += lerpSpeed_ * elapsedTime;
+            lerpTimer_ = std::min(lerpTimer_, 1.0f);
+
+            owner_->GetTransform()->SetPosition(XMFloat3Lerp(initPosition_, targetPosition_, lerpTimer_));
+
+            owner_->Turn(elapsedTime, targetPosition_);
+
+            if (lerpTimer_ == 1.0f)
+            {
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+
+            break;
+        case 2:
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+            break;
+        }
+
+        return ActionBase::State::Run;
+    }
+
+
+    void WalkAction::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx("Walk", ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- Movement ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat(u8"プレイヤーまでの距離", &targetLength_);
+                ImGui::DragFloat(u8"プレイヤーからオフセット距離", &offsetLength_);
+                ImGui::DragFloat(u8"最大移動距離", &maxMoveLength_);
+                ImGui::DragFloat(u8"最小移動距離", &minMoveLength_);
+                ImGui::DragFloat(u8"移動距離", &moveLength_);
+                
+                ImGui::DragFloat("MaxLerpSpeed", &maxLerpSpeed_);
+                ImGui::DragFloat("MinLerpSpeed", &minLerpSpeed_);
+                ImGui::DragFloat("LerpSpeed", &lerpSpeed_);
+                ImGui::DragFloat("LerpTimer", &lerpTimer_);
+
+                ImGui::DragFloat3("TargetPosition", &targetPosition_.x);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- TransitionTime ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("SlamAttack", &transitionSlamAttack_, 0.01f, 0.0f, 0.5f);
+                ImGui::DragFloat("TurnAttack", &transitionTurnAttack_, 0.01f, 0.0f, 0.5f);
+                
+                ImGui::TreePop();
+            }
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- アニメーション再生 -----
+    void WalkAction::PlayAnimation()
+    {
+        const Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(owner_->GetAnimationIndex());
+        float transitionTime = 0.1f;
+
+        if (animationIndex == Enemy::DragonAnimation::AttackSlam0)
+        {
+            transitionTime = transitionSlamAttack_;
+        }
+        else if (animationIndex == Enemy::DragonAnimation::AttackTurn)
+        {
+            transitionTime = transitionTurnAttack_;
+        }
+
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::Run, true);
+        owner_->SetTransitionTime(transitionTime);
+    }
+}
 
 // ----- SuperNova -----
 namespace ActionDragon
@@ -648,7 +954,6 @@ namespace ActionDragon
     {
         if (superNovaParticle_ != nullptr)
         {
-            ParticleManager::Instance().Remove(superNovaParticle_);
             superNovaParticle_ = nullptr;
         }
         

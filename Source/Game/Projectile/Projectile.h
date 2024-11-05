@@ -1,11 +1,12 @@
 #pragma once
 #include "Object.h"
+#include <string>
 
 class Projectile : public Object
 {
 public:
-    Projectile(const std::string filename, const float& scaleFactor);
-    ~Projectile();
+    Projectile(const std::string filename, const float& scaleFactor, const std::string& name = "");
+    virtual ~Projectile() {}
 
     virtual void Initialize()                                   = 0;
     virtual void Finalize()                                     = 0;
@@ -28,6 +29,8 @@ public:// [Get, Set] Function
 
     [[nodiscard]] const int GetId() const { return id_; }
 
+    [[nodiscard]] const std::string GetName() const { return name_; }
+
 private:
 
     float damage_ = 0.0f;
@@ -37,8 +40,6 @@ private:
 
     int id_ = 0; // ìoò^î‘çÜ
 
-private:
-    // ìoò^î‘çÜêUÇËï™ÇØóp
-    static int idCounter_; 
+    std::string name_ = "";
 };
 

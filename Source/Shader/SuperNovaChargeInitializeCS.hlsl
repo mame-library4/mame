@@ -36,6 +36,7 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     
     p.size_ = 0.05f;
     p.color_ = float4(1.0, 0.42, 0.13, 1);
+    p.state_ = 0;
     
     particleBuffer[id] = p;
 }

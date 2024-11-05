@@ -226,10 +226,9 @@
     <ClCompile Include="Source\Game\Projectile\Fireball.cpp" />
     <ClCompile Include="Source\Game\Projectile\Projectile.cpp" />
     <ClCompile Include="Source\Game\Projectile\ProjectileManager.cpp" />
+    <ClCompile Include="Source\Game\Projectile\Rock.cpp" />
     <ClCompile Include="Source\Game\Stage\Stage.cpp" />
     <ClCompile Include="Source\Game\Stage\StageNormal.cpp" />
-    <ClCompile Include="Source\Game\Stone\Stone.cpp" />
-    <ClCompile Include="Source\Game\Stone\StoneManager.cpp" />
     <ClCompile Include="Source\Game\Sword\Sword.cpp" />
     <ClCompile Include="Source\Game\System\SystemManager.cpp" />
     <ClCompile Include="Source\Game\UI\UI.cpp" />
@@ -258,9 +257,11 @@
     <ClCompile Include="Source\Graphics\FullscreenQuad.cpp" />
     <ClCompile Include="Source\Graphics\Graphics.cpp" />
     <ClCompile Include="Source\Graphics\Particle\FireBallParticle.cpp" />
+    <ClCompile Include="Source\Graphics\Particle\MeteorParticle.cpp" />
     <ClCompile Include="Source\Graphics\Particle\ParticleData.cpp" />
     <ClCompile Include="Source\Graphics\Particle\ParticleManager.cpp" />
     <ClCompile Include="Source\Graphics\Particle\ParticleSystem.cpp" />
+    <ClCompile Include="Source\Graphics\Particle\RockParticle.cpp" />
     <ClCompile Include="Source\Graphics\Particle\SlamAttackParticle.cpp" />
     <ClCompile Include="Source\Graphics\Particle\SnowParticle.cpp" />
     <ClCompile Include="Source\Graphics\Particle\SuperNovaParticle.cpp" />
@@ -326,10 +327,9 @@
     <ClInclude Include="Source\Game\Projectile\Fireball.h" />
     <ClInclude Include="Source\Game\Projectile\Projectile.h" />
     <ClInclude Include="Source\Game\Projectile\ProjectileManager.h" />
+    <ClInclude Include="Source\Game\Projectile\Rock.h" />
     <ClInclude Include="Source\Game\Stage\Stage.h" />
     <ClInclude Include="Source\Game\Stage\StageNormal.h" />
-    <ClInclude Include="Source\Game\Stone\Stone.h" />
-    <ClInclude Include="Source\Game\Stone\StoneManager.h" />
     <ClInclude Include="Source\Game\Sword\Sword.h" />
     <ClInclude Include="Source\Game\System\SystemManager.h" />
     <ClInclude Include="Source\Game\UI\UI.h" />
@@ -358,9 +358,11 @@
     <ClInclude Include="Source\Graphics\FullscreenQuad.h" />
     <ClInclude Include="Source\Graphics\Graphics.h" />
     <ClInclude Include="Source\Graphics\Particle\FireBallParticle.h" />
+    <ClInclude Include="Source\Graphics\Particle\MeteorParticle.h" />
     <ClInclude Include="Source\Graphics\Particle\ParticleData.h" />
     <ClInclude Include="Source\Graphics\Particle\ParticleManager.h" />
     <ClInclude Include="Source\Graphics\Particle\ParticleSystem.h" />
+    <ClInclude Include="Source\Graphics\Particle\RockParticle.h" />
     <ClInclude Include="Source\Graphics\Particle\SlamAttackParticle.h" />
     <ClInclude Include="Source\Graphics\Particle\SnowParticle.h" />
     <ClInclude Include="Source\Graphics\Particle\SuperNovaParticle.h" />
@@ -422,6 +424,7 @@
     <None Include="Source\Shader\PostEffect.hlsli" />
     <None Include="Source\Shader\PostProcess.hlsli" />
     <None Include="Source\Shader\PrimitiveRenderer.hlsli" />
+    <None Include="Source\Shader\RockSmokeParticle.hlsli" />
     <None Include="Source\Shader\ShadingFunctions.hlsli" />
     <None Include="Source\Shader\SlamAttackParticle.hlsli" />
     <None Include="Source\Shader\SlamChargeParticle.hlsli" />
@@ -589,6 +592,42 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
+    <FxCompile Include="Source\Shader\RockSmokeGS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\RockSmokeInitializeCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\RockSmokePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\RockSmokeUpdateCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="Source\Shader\SlamChargeGS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
@@ -737,7 +776,7 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\SuperNovaChargeGS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geometry</ShaderType>
@@ -747,7 +786,7 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\SuperNovaChargeInitializeCS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
@@ -757,7 +796,7 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\SuperNovaChargeUpdateCS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>

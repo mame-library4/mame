@@ -55,12 +55,12 @@ void EnemyDragon::Initialize()
     SetDownCollisionActiveFlag(false);
 
     // •”ˆÊ‚²‚Æ‚Ì‘Ì—Í‚ğİ’è‚·‚é
-    partHealth_[static_cast<int>(PartName::Head)]  = 50.0f;
-    partHealth_[static_cast<int>(PartName::Chest)] = 50.0f;
-    partHealth_[static_cast<int>(PartName::Body)]  = 50.0f;
-    partHealth_[static_cast<int>(PartName::Leg)]   = 50.0f;
-    partHealth_[static_cast<int>(PartName::Tail)]  = 50.0f;
-    partHealth_[static_cast<int>(PartName::Wings)] = 50.0f;
+    partHealth_[static_cast<int>(PartName::Head)]  = 500.0f;
+    partHealth_[static_cast<int>(PartName::Chest)] = 500.0f;
+    partHealth_[static_cast<int>(PartName::Body)]  = 500.0f;
+    partHealth_[static_cast<int>(PartName::Leg)]   = 500.0f;
+    partHealth_[static_cast<int>(PartName::Tail)]  = 500.0f;
+    partHealth_[static_cast<int>(PartName::Wings)] = 500.0f;
 
     // •”ˆÊ”j‰óƒtƒ‰ƒO‚ğİ’è
     for (int partIndex = 0; partIndex < static_cast<int>(PartName::Max); ++partIndex)
@@ -120,6 +120,20 @@ void EnemyDragon::DrawDebug()
 {
     if (ImGui::BeginMenu("Dragon"))
     {
+        distanceToPlayer_ = CalcDistanceToPlayerNoConsiderationY();
+        
+        if (ImGui::TreeNodeEx("BehaviorTree", ImGuiTreeNodeFlags_Framed))
+        {
+            std::string nodeName = (activeNode_ != nullptr) ? activeNode_->GetName() : u8"‚È‚µ";
+            ImGui::Text(u8"Behavior:%s", nodeName.c_str());
+
+            behaviorTree_->DrawDebug();
+
+            ImGui::TreePop();
+        }
+
+        ImGui::DragFloat("DistanceToPlayer", &distanceToPlayer_);
+
         ImGui::Checkbox("EffekSeerEffect", &useEffekseerEffect_);
 
         if (ImGui::CollapsingHeader("AttackPower"))
@@ -153,18 +167,7 @@ void EnemyDragon::DrawDebug()
             ImGui::TreePop();
         }
 
-        if (ImGui::TreeNode("BehaviorTree"))
-        {
-            std::string nodeName = (activeNode_ != nullptr) ? activeNode_->GetName() : u8"‚È‚µ";
-            ImGui::Text(u8"Behavior:%s", nodeName.c_str());
 
-            if (activeNode_ != nullptr)
-            {
-                activeNode_->DrawDebug();
-            }
-
-            ImGui::TreePop();
-        }
 
         if (ImGui::TreeNode("PartDestruction"))
         {
@@ -262,12 +265,18 @@ void EnemyDragon::RegisterBehaviorNode()
 
     // Priority
     behaviorTree_->AddNode("Root", "Attack", 0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    // SequentialLooping
+    //behaviorTree_->AddNode("Root", "Attack", 0, BehaviorTree::SelectRule::SequentialLooping, nullptr, nullptr);
     // Random
-    behaviorTree_->AddNode("Root", "Attack", 0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
-
-    behaviorTree_->AddNode("Attack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
-    behaviorTree_->AddNode("Attack", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
+    //behaviorTree_->AddNode("Root", "Attack", 0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
+        
+    behaviorTree_->AddNode("Attack", "Meteor", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MeteorAction(this));
+    
     behaviorTree_->AddNode("Attack", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
+    behaviorTree_->AddNode("Attack", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
+    behaviorTree_->AddNode("Attack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
+    
+    behaviorTree_->AddNode("Attack", "Walk",       0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));    
     
     
 

@@ -98,12 +98,32 @@ const float Enemy::CalcDistanceToPlayer()
 
     return XMFloat3Length(playerPos - ownerPos);
 }
+// ----- Y考慮なし -----
+const float Enemy::CalcDistanceToPlayerNoConsiderationY()
+{
+    DirectX::XMFLOAT3 ownerPos = GetTransform()->GetPosition();
+    ownerPos.y = 0.0f;
+    DirectX::XMFLOAT3 playerPos = PlayerManager::Instance().GetTransform()->GetPosition();
+    playerPos.y = 0.0f;
+
+    return XMFloat3Length(playerPos - ownerPos);
+}
 
 // ----- 自分自身からプレイヤーへのベクトル -----
 const DirectX::XMFLOAT3 Enemy::CalcDirectionToPlayer()
 {
     DirectX::XMFLOAT3 ownerPos = GetTransform()->GetPosition();
     DirectX::XMFLOAT3 playerPos = PlayerManager::Instance().GetTransform()->GetPosition();
+
+    return playerPos - ownerPos;
+}
+// ----- Y考慮なし -----
+const DirectX::XMFLOAT3 Enemy::CalcDirectionToPlayerNoConsiderationY()
+{
+    DirectX::XMFLOAT3 ownerPos = GetTransform()->GetPosition();
+    ownerPos.y = 0.0f;
+    DirectX::XMFLOAT3 playerPos = PlayerManager::Instance().GetTransform()->GetPosition();
+    playerPos.y = 0.0f;
 
     return playerPos - ownerPos;
 }

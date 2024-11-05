@@ -1,22 +1,13 @@
 #include "Fireball.h"
-#include "ProjectileManager.h"
 #include "MathHelper.h"
 #include "Effect/EffectManager.h"
 #include "Particle/ParticleManager.h"
 
 // ----- コンストラクタ -----
 Fireball::Fireball()
-    : Projectile("./Resources/Model/Sphere.gltf", 1.0f)
+    : Projectile("./Resources/Model/Sphere.gltf", 1.0f, "FireBall")
 {
-    // Managerに自分自身を登録
-    ProjectileManager::Instance().Register(this);
-
     fireBallParticle_ = new FireBallParticle();
-}
-
-// ----- デストラクタ -----
-Fireball::~Fireball()
-{
 }
 
 // ----- 初期化 -----
@@ -77,10 +68,10 @@ void Fireball::Render(ID3D11PixelShader* psShader)
 // ----- ImGui用 -----
 void Fireball::DrawDebug()
 {
-    std::string name = "Fireball" + std::to_string(GetId());
-    if (ImGui::TreeNode(name.c_str()))
+    if (ImGui::TreeNode(GetName().c_str()))
     {
         Projectile::DrawDebug();
+
         ImGui::TreePop();
     }
 }

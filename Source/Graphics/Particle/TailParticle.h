@@ -81,7 +81,7 @@ private:
 
     // ----- ポイントライト -----
     float fadeOutSpeed_ = 30.0f;
-    float maxIntensity_ = 15.0f;
+    float maxIntensity_ = 10.0f;
     static const int maxPointLights_ = 4;
     Shader::PointLights pointLights_[maxPointLights_] = {};
 };

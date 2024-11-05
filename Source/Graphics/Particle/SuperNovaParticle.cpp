@@ -5,7 +5,7 @@
 
 // ----- コンストラクタ -----
 SuperNovaParticle::SuperNovaParticle()
-	: ParticleSystem(1000), lavaCrawlerParticle_(3000), chargeParticle_(3000)
+	: ParticleSystem(10000), lavaCrawlerParticle_(10000), chargeParticle_(10000)
 {
 	GetParticleData()->CreateParticleData(sizeof(Particle), sizeof(Constants), "./Resources/Shader/ParticleVS.cso", "./Resources/Shader/SuperNovaParticlePS.cso",
 		"./Resources/Shader/CoreBurstGS.cso", "./Resources/Shader/CoreBurstInitializeCS.cso", "./Resources/Shader/CoreBurstUpdateCS.cso");
@@ -13,9 +13,6 @@ SuperNovaParticle::SuperNovaParticle()
 		"./Resources/Shader/LavaCrawlerGS.cso", "./Resources/Shader/LavaCrawlerInitializeCS.cso", "./Resources/Shader/LavaCrawlerUpdateCS.cso");
 	chargeParticle_.CreateParticleData(sizeof(ChargeParticle), sizeof(Constants), "./Resources/Shader/ParticleVS.cso", "./Resources/Shader/ParticlePS.cso",
 		"./Resources/Shader/SuperNovaChargeGS.cso", "./Resources/Shader/SuperNovaChargeInitializeCS.cso", "./Resources/Shader/SuperNovaChargeUpdateCS.cso");
-
-	constants_.coreBurstParticleSpeed_ = 20.0f;
-	constants_.lavaCrawlerParticleSpeed_ = 10.0f;
 }
 
 // ----- 更新 -----
@@ -70,6 +67,7 @@ void SuperNovaParticle::PlayCoreBurstParticle(const float& elapsedTime, const Di
 {
 	constants_.emitterPosition_ = emitterPosition;
 	constants_.deltaTime_ = elapsedTime;
+	constants_.state_ = 1;
 	GetParticleData()->PlayParticle(csSlot_, cbSlot_, &constants_);
 }
 

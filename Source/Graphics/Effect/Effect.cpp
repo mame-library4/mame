@@ -63,6 +63,13 @@ void Effect::SetScale(const Effekseer::Handle& handle, const float& scale)
     effekseerManager->SetScale(handle, scale, scale, scale);
 }
 
+void Effect::SetSpeed(const Effekseer::Handle& handle, const float& speed)
+{
+    Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
+
+    effekseerManager->SetSpeed(handle, speed);
+}
+
 void Effect::DrawDebug()
 {
     if (ImGui::TreeNode(name_.c_str()))

@@ -8,4 +8,6 @@ struct ParticleData
     float size_;
     float age_;
     int state_;
+    
+    float3 dummy_;
 };

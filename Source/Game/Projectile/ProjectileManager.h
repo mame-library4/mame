@@ -31,9 +31,14 @@ public:
     std::vector<Projectile*> GetProjectiles() { return projectiles_; }
     Projectile* GetProjectile(const int& id);
 
+    // ----- ID“o˜^—p -----
+    [[nodiscard]] const int GetMyID() { return idCounter_++; }
+
 private:
     std::vector<Projectile*>    projectiles_;
     std::set<Projectile*>       generates_;
     std::set<Projectile*>       removes_;
+
+    int idCounter_ = 0;
 };
 

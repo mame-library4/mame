@@ -9,17 +9,29 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
 
     ParticleData p = particleBuffer[id];
     
-    const float g = -0.5;
-    p.velocity_.y += g * deltaTime_;
-    p.position_ += p.velocity_ * coreBurstParticleSpeed_ * deltaTime_;
-
-    if (p.position_.y < -1.0)
+    if(p.state_ == 0)
     {
-        p.velocity_ = 0;
-        p.position_.y = -1.0;
-            
-        p.color_.a = 0;
+        p.velocity_ += float3(0.0, -9.8, 0.0) * deltaTime_;
+        p.position_ += p.velocity_ * deltaTime_;
+        
+        if(p.position_.y <= 0.0)
+        {
+            p.position_.y = 0.0;
+            p.state_ = 1;
+        }
     }
+    else
+    {
+        if (p.color_.a == 0.0)
+        {
+            p.position_.y = -1;
+        }
+        else
+        {
+            p.color_.a -= 1.5 * deltaTime_;
+            p.color_.a = max(p.color_.a, 0.0f);
+        }
+    }   
 
     particleBuffer[id] = p;
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <DirectXMath.h>
+#include <algorithm>
 
 // ----- Zp‰‰Zq -----
 #pragma region XMFLOAT3
@@ -356,6 +357,16 @@ inline const float XMFloatLerp(
     const float& timer)
 {
     return start + timer * (end - start);
+}
+
+// Percentage of value between start and end.(0.0f~1.0f)
+inline const float XMFloatInverseLerp(
+    const float& start,
+    const float& end,
+    const float& value)
+{
+    float t = (value - start) / (end - start);
+    return std::clamp(t, 0.0f, 1.0f);
 }
 
 inline const int XMIntLerp(

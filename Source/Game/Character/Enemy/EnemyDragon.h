@@ -60,6 +60,8 @@ private:
     // テスト用
     bool isJustDodgeDetectionY_ = false;
 
+    float distanceToPlayer_ = 0.0f;
+
 public:
     enum CollisionData
     {

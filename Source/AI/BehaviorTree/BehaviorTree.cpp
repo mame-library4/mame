@@ -79,6 +79,24 @@ NodeBase* BehaviorTree::Run(NodeBase* actionNode, BehaviorData* data, float elap
     return actionNode;
 }
 
+inline void Traverse(NodeBase* nodeBase)
+{
+    nodeBase->DrawDebug();
+
+    for (int i = 0; i < nodeBase->children_.size(); ++i)
+    {
+        Traverse(nodeBase->children_.at(i));
+    }
+}
+
+void BehaviorTree::DrawDebug()
+{
+    for (int i = 0; i < root_->children_.size(); ++i)
+    {
+        Traverse(root_->children_.at(i));
+    }
+}
+
 // ----- “o˜^‚³‚ê‚½ƒm[ƒh‚ğ‘S‚Äíœ‚·‚é -----
 void BehaviorTree::NodeAllClear(NodeBase* delNode)
 {

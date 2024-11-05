@@ -12,4 +12,7 @@ cbuffer ParticleConstants : register(b2)
     
     float coreBurstParticleSpeed_;
     float lavaCrawlerParticleSpeed_;
+    
+    int state_;
+    float dummy_;
 };

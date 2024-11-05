@@ -1,4 +1,4 @@
-#include "CoreBurstParticle.hlsli"
+#include "RockSmokeParticle.hlsli"
 
 RWStructuredBuffer<ParticleData> particleBuffer : register(u0);
 
@@ -13,9 +13,7 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     uint id = dtid.x;
 
     ParticleData p = particleBuffer[id];
-
-    p.position_ = emitterPosition_;
-
+    
     float f0 = frac(sin(id) * 43758.5453123);
     float f1 = frac(sin(id * 1.2345) * 43758.5453123);
     
@@ -26,12 +24,23 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     float vy = cos(phi);
     float vz = sin(phi) * sin(theta);
     
-    p.velocity_ = float3(vx, vy, vz) * coreBurstParticleSpeed_;
-
-    p.color_ = float4(1.0, 0.42, 0.13, 1);
-
-    p.size_ = 0.1f;
-    p.state_ = 0;
+    p.position_ = float3(vx, vy, vz) * 10.0f;
+    
+    // 一枚のテクスチャを四分割する
+    // texPos, texSize
+    float2 texcoord[4][2] =
+    {        
+        { float2(0.0f, 0.0f), float2(0.5f, 0.5f) }, // 左上
+        { float2(0.0f, 0.5f), float2(0.5f, 0.5f) }, // 左下
+        { float2(0.5f, 0.0f), float2(0.5f, 0.5f) }, // 右上
+        { float2(0.5f, 0.5f), float2(0.5f, 0.5f) }, // 右下
+    };
+    
+    int texId = id % 4;
+    p.texPos_ = texcoord[texId][0];
+    p.texSize_ = texcoord[texId][1];
+    
+    p.size_ = 0.5f;
     
     particleBuffer[id] = p;
 }

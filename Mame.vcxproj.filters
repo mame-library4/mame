@@ -181,21 +181,6 @@
     <ClCompile Include="Source\Scene\DemoScene.cpp">
       <Filter>Mame\Scene\DemoScene</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Game\Stone\Stone.cpp">
-      <Filter>Mame\Game\Object\Stone</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Game\Stone\StoneManager.cpp">
-      <Filter>Mame\Game\Object\Stone</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Game\Projectile\Projectile.cpp">
-      <Filter>Mame\Game\Object\Projectile</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Game\Projectile\ProjectileManager.cpp">
-      <Filter>Mame\Game\Object\Projectile</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Game\Projectile\Fireball.cpp">
-      <Filter>Mame\Game\Object\Projectile</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Game\Collision\CollisionManager.cpp">
       <Filter>Mame\Game\Collision</Filter>
     </ClCompile>
@@ -222,9 +207,6 @@
     </ClCompile>
     <ClCompile Include="Source\Game\UI\UICrosshair.cpp">
       <Filter>Mame\Game\UI\UICrosshair</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Graphics\Particle\SnowParticle.cpp">
-      <Filter>Mame\Graphics\Particle</Filter>
     </ClCompile>
     <ClCompile Include="Source\Game\UI\UIHealth.cpp">
       <Filter>Mame\Game\UI\UIHealth</Filter>
@@ -279,6 +261,27 @@
     </ClCompile>
     <ClCompile Include="Source\Graphics\Particle\SlamAttackParticle.cpp">
       <Filter>Mame\Graphics\Particle\SlamAttackParticle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Particle\SnowParticle.cpp">
+      <Filter>Mame\Graphics\Particle\SnowParticle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Particle\MeteorParticle.cpp">
+      <Filter>Mame\Graphics\Particle\MeteorParticle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\Fireball.cpp">
+      <Filter>Mame\Game\Object\Projectile\FireBall</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\Rock.cpp">
+      <Filter>Mame\Game\Object\Projectile\Rock</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\Projectile.cpp">
+      <Filter>Mame\Game\Object\Projectile\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\ProjectileManager.cpp">
+      <Filter>Mame\Game\Object\Projectile\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Particle\RockParticle.cpp">
+      <Filter>Mame\Graphics\Particle\RockParticle</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -490,21 +493,6 @@
     <ClInclude Include="Source\Scene\DemoScene.h">
       <Filter>Mame\Scene\DemoScene</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\Stone\Stone.h">
-      <Filter>Mame\Game\Object\Stone</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Game\Stone\StoneManager.h">
-      <Filter>Mame\Game\Object\Stone</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Game\Projectile\Projectile.h">
-      <Filter>Mame\Game\Object\Projectile</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Game\Projectile\ProjectileManager.h">
-      <Filter>Mame\Game\Object\Projectile</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Game\Projectile\Fireball.h">
-      <Filter>Mame\Game\Object\Projectile</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Game\Collision\CollisionManager.h">
       <Filter>Mame\Game\Collision</Filter>
     </ClInclude>
@@ -531,9 +519,6 @@
     </ClInclude>
     <ClInclude Include="Source\Game\UI\UICrosshair.h">
       <Filter>Mame\Game\UI\UICrosshair</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Graphics\Particle\SnowParticle.h">
-      <Filter>Mame\Graphics\Particle</Filter>
     </ClInclude>
     <ClInclude Include="Source\Game\UI\UIHealth.h">
       <Filter>Mame\Game\UI\UIHealth</Filter>
@@ -588,6 +573,27 @@
     </ClInclude>
     <ClInclude Include="Source\Graphics\Particle\SlamAttackParticle.h">
       <Filter>Mame\Graphics\Particle\SlamAttackParticle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Particle\SnowParticle.h">
+      <Filter>Mame\Graphics\Particle\SnowParticle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Particle\MeteorParticle.h">
+      <Filter>Mame\Graphics\Particle\MeteorParticle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\Fireball.h">
+      <Filter>Mame\Game\Object\Projectile\FireBall</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\Rock.h">
+      <Filter>Mame\Game\Object\Projectile\Rock</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\Projectile.h">
+      <Filter>Mame\Game\Object\Projectile\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\ProjectileManager.h">
+      <Filter>Mame\Game\Object\Projectile\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Particle\RockParticle.h">
+      <Filter>Mame\Graphics\Particle\RockParticle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -714,9 +720,6 @@
     <Filter Include="Mame\Game\UI">
       <UniqueIdentifier>{97b50e7e-add6-46a7-b563-79e88cc68e70}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Mame\Game\Object\Stone">
-      <UniqueIdentifier>{3071a3f6-12dd-4737-8fb0-07bb33436a43}</UniqueIdentifier>
-    </Filter>
     <Filter Include="External">
       <UniqueIdentifier>{049396fd-0641-42b7-98c7-f0572ba20bd2}</UniqueIdentifier>
     </Filter>
@@ -831,6 +834,27 @@
     <Filter Include="Mame\Shader\Particle\SuperNova\Charge">
       <UniqueIdentifier>{289f7a37-b5f7-4502-8bb5-d58a32619a42}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mame\Graphics\Particle\SnowParticle">
+      <UniqueIdentifier>{dc6c70c0-2862-4b6a-b100-7f57e3c6225a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Graphics\Particle\MeteorParticle">
+      <UniqueIdentifier>{5e0ae988-d9c6-440f-a69e-5ef103bb19d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\Object\Projectile\FireBall">
+      <UniqueIdentifier>{46eb6935-fc80-42aa-a326-16eeaecc0c9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\Object\Projectile\Core">
+      <UniqueIdentifier>{34e48869-df04-4b06-abf3-460dc2e96073}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\Object\Projectile\Rock">
+      <UniqueIdentifier>{df67bfc8-966b-4e2d-a8e4-12bb6416315e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Graphics\Particle\RockParticle">
+      <UniqueIdentifier>{fbd64829-c842-4039-af94-3ed67557a164}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Shader\Particle\RockParticle">
+      <UniqueIdentifier>{06412af8-fc20-43b6-a2cc-d024acdf1083}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -927,6 +951,9 @@
     </None>
     <None Include="Source\Shader\SuperNovaChargeParticle.hlsli">
       <Filter>Mame\Shader\Particle\SuperNova\Charge</Filter>
+    </None>
+    <None Include="Source\Shader\RockSmokeParticle.hlsli">
+      <Filter>Mame\Shader\Particle\RockParticle</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -1097,6 +1124,18 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\SuperNovaChargeGS.hlsl">
       <Filter>Mame\Shader\Particle\SuperNova\Charge</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\RockSmokeInitializeCS.hlsl">
+      <Filter>Mame\Shader\Particle\RockParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\RockSmokeUpdateCS.hlsl">
+      <Filter>Mame\Shader\Particle\RockParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\RockSmokeGS.hlsl">
+      <Filter>Mame\Shader\Particle\RockParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\RockSmokePS.hlsl">
+      <Filter>Mame\Shader\Particle\RockParticle</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

@@ -26,7 +26,8 @@ private:
         float               size_           = 0.0f;
         float               angle_ = 0.0f;
         
-        float               dummy_[2] = {};
+        int state_ = 0;
+        float               dummy_ = {};
     };
     struct Constants
     {
@@ -40,11 +41,11 @@ private:
         float             rotationSpeed_        = 2.0f;
 
 
-        float coreBurstParticleSpeed_   = 1.0f;
-        float lavaCrawlerParticleSpeed_ = 1.0f;
+        float coreBurstParticleSpeed_   = 50.0f;
+        float lavaCrawlerParticleSpeed_ = 10.0f;
 
-        float dummy0_ = 0.0f;
-        float dummy1_ = 0.0f;
+        int state_ = 0;
+        float dummy_ = {};
     };
 #pragma endregion ----- íËêî -----
 

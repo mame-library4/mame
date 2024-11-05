@@ -55,9 +55,7 @@ void GameScene::CreateResource()
         iblTextures_[2].GetAddressOf(), &textureDesc); 
     Texture::Instance().LoadTexture(L"./Resources/SkyBox/RainSky/lut_ggx.dds",
         iblTextures_[3].GetAddressOf(), &textureDesc);
-#endif    
-
-    stone_ = std::make_unique<Stone>();
+#endif
 
 
     Effect* effect0 = new Effect("./Resources/Effect/Counter.efk", "Counter");
@@ -196,8 +194,6 @@ void GameScene::DeferredRender()
 
     // ”­ŽË•¨
     ProjectileManager::Instance().Render(gBufferPixelShader);
-
-    stone_->Render(gBufferPixelShader);
 }
 
 void GameScene::ForwardRender()
@@ -309,9 +305,6 @@ void GameScene::DrawDebug()
     ImGui::DragFloat("stageRadius", &stageRadius1_);
 
     ParticleManager::Instance().DrawDebug();
-
-    stone_->DrawDebug();
-
 
     if (ImGui::BeginMenu("stage"))
     {

@@ -53,7 +53,7 @@ public:// ----- 定数 -----
 
         FireBreathFront,
 
-        BackStepRoar,   // バックステップ後,咆哮
+        Meteor, // メテオ
 
 
         // ----- 吹き飛ばし攻撃 -----
@@ -153,9 +153,11 @@ public:
 
     // ---------- プレイヤーまでの距離を算出 ----------
     [[nodiscard]] const float CalcDistanceToPlayer();
+    [[nodiscard]] const float CalcDistanceToPlayerNoConsiderationY();
 
     // ---------- 自分自身からプレイヤーへのベクトル ----------
     [[nodiscard]] const DirectX::XMFLOAT3 CalcDirectionToPlayer();
+    [[nodiscard]] const DirectX::XMFLOAT3 CalcDirectionToPlayerNoConsiderationY();
 
     // ---------- ダメージ ----------
     void AddDamage(const float& damage, const int& dataIndex);

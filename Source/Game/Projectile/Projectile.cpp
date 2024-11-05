@@ -1,17 +1,18 @@
 #include "Projectile.h"
-
-int Projectile::idCounter_ = 0;
+#include "ProjectileManager.h"
 
 // ----- コンストラクタ -----
-Projectile::Projectile(const std::string filename, const float& scaleFactor)
+Projectile::Projectile(const std::string filename, const float& scaleFactor, const std::string& name)
     : Object(filename, scaleFactor)
 {
-    // 登録番号設定
-    id_ = idCounter_++;
-}
+    // マネージャーに登録
+    ProjectileManager::Instance().Register(this);
 
-Projectile::~Projectile()
-{
+    // 登録番号設定
+    id_ = ProjectileManager::Instance().GetMyID();
+
+    // 名前を設定
+    name_ = name + std::to_string(id_);
 }
 
 void Projectile::DrawDebug()

@@ -173,30 +173,36 @@ void Player::DrawDebug()
         ImGui::Checkbox("DodgeAttackCancel", &isDodgeAttackCancel_);
 
         // ----- ジャスト回避 -----
-        if (ImGui::CollapsingHeader("JustDodge"))
+        if (ImGui::TreeNodeEx("JustDodge", ImGuiTreeNodeFlags_Framed))
         {
             ImGui::DragFloat("Radius", &justDodgeRadius_);
             std::string text = isJustDodgeCheckEnabled_ ? "CheckEnabled : True" : "CheckEnabled : False";
             ImGui::Text(text.c_str());
             text = isJustDodgeSuccessful_ ? "JustDodge : True" : "JustDodge : False";
             ImGui::Text(text.c_str());
+
+            ImGui::TreePop();
         }
         // ----- ダッシュ -----
-        if (ImGui::CollapsingHeader("Dash"))
+        if (ImGui::TreeNodeEx("Dash", ImGuiTreeNodeFlags_Framed))
         {
             ImGui::DragFloat("DashSpeed", &dashSpeed_);
             ImGui::DragFloat("DashAnimationSpeed", &dashAnimationSpeed_);
+            
+            ImGui::TreePop();
         }
         // ----- スタミナ -----
-        if (ImGui::CollapsingHeader("Stamina"))
+        if (ImGui::TreeNodeEx("Stamina", ImGuiTreeNodeFlags_Framed))
         {
             ImGui::DragFloat("Stamina", &stamina_);
             ImGui::DragFloat("RecoverySpeed", &staminaRecoverySpeed_);
             ImGui::DragFloat("DodgeCost", &dodgeStaminaCost_);
             ImGui::DragFloat("DashCost", &dashStaminaCost_);
+
+            ImGui::TreePop();
         }
         // ----- ガードカウンター -----
-        if (ImGui::CollapsingHeader("GuardCounter"))
+        if (ImGui::TreeNodeEx("GuardCounter", ImGuiTreeNodeFlags_Framed))
         {
             ImGui::DragFloat("GuardCounterRadius", &guardCounterRadius_, 0.1f, 0.0f, 100.0f);
             ImGui::Checkbox("AutoCounterMode", &isAutoCounterModeEnabled_);
@@ -211,9 +217,11 @@ void Player::DrawDebug()
 
                 ImGui::TreePop();
             }
+
+            ImGui::TreePop();
         }
 
-        if (ImGui::CollapsingHeader("Sword"))
+        if (ImGui::TreeNodeEx("Sword", ImGuiTreeNodeFlags_Framed))
         {
             if (ImGui::TreeNode("SwordTrail"))
             {
@@ -230,6 +238,8 @@ void Player::DrawDebug()
             ImGui::DragFloat3("weaponLocation", &socketLocation_.x);
             ImGui::DragFloat3("weaponRotation", &socketRotation_.x);
             ImGui::DragFloat3("socketScale", &socketScale_.x);
+
+            ImGui::TreePop();
         }
 
         if (ImGui::TreeNode("RotationAdjustment"))

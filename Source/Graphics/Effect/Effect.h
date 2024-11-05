@@ -14,6 +14,7 @@ public:
 
     void SetPosition(const Effekseer::Handle& handle, const DirectX::XMFLOAT3& position); // ˆÊ’uİ’è
     void SetScale(const Effekseer::Handle& handle, const float& scale);                   // ‘å‚«‚³İ’è
+    void SetSpeed(const Effekseer::Handle& handle, const float& speed);
 
     void DrawDebug();
 

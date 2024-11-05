@@ -74,7 +74,7 @@ void Shader::DrawDebug()
                 std::string text = std::string("----- PointLight") + std::to_string(i) + std::string(" -----");
                 ImGui::Text(text.c_str());
                 std::string p = std::string("Position") + std::to_string(i);
-                ImGui::DragFloat3(p.c_str(), &lightConstants_.pointLights[i].position_.x, 0.1f, -10.0f, +10.0f);
+                ImGui::DragFloat3(p.c_str(), &lightConstants_.pointLights[i].position_.x, 0.1f, -100.0f, +100.0f);
                 std::string c = std::string("Color") + std::to_string(i);
                 ImGui::ColorEdit3(c.c_str(), &lightConstants_.pointLights[i].color_.x);
                 std::string r = std::string("Range") + std::to_string(i);

@@ -9,4 +9,8 @@ struct ParticleData
     float3 velocity_;
     float size_;
     float angle_;
+    
+    int state_;
+    
+    float dummy_;
 };
