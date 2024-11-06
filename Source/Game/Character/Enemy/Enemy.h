@@ -237,6 +237,7 @@ public:// --- æ“¾Eİ’è ---
     std::vector<JustDodgeDetectionData> GetJustDodgeDetectionData() { return justDodgeDetectionData_; }
     JustDodgeDetectionData& GetJustDodgeDetectionData(const int& index) { return justDodgeDetectionData_.at(index); }
 
+    virtual void ResetAllJustDodgeActiveFlag() = 0;
     virtual void SetJustDodgeActiveFlag(const AttackAction& type, const bool& flag) = 0;
 
     // ---------- •”ˆÊ”j‰ó ----------

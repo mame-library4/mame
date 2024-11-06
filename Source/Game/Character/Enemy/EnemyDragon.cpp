@@ -51,6 +51,9 @@ void EnemyDragon::Initialize()
     // UŒ‚”»’è –³Œø‰»
     ResetAllAttackActiveFlag();
 
+    // ƒWƒƒƒXƒg‰ñ”ð”»’è@–³Œø‰»
+    ResetAllJustDodgeActiveFlag();
+
     // ‰Ÿ‚µo‚µ”»’è
     SetDownCollisionActiveFlag(false);
 
@@ -270,13 +273,14 @@ void EnemyDragon::RegisterBehaviorNode()
     // Random
     //behaviorTree_->AddNode("Root", "Attack", 0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
         
-    behaviorTree_->AddNode("Attack", "Meteor", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MeteorAction(this));
     
-    behaviorTree_->AddNode("Attack", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
     behaviorTree_->AddNode("Attack", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
+    behaviorTree_->AddNode("Attack", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
+    behaviorTree_->AddNode("Attack", "Walk",       0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));    
+    
     behaviorTree_->AddNode("Attack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
     
-    behaviorTree_->AddNode("Attack", "Walk",       0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));    
+    //behaviorTree_->AddNode("Attack", "Meteor", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MeteorAction(this));
     
     
 
@@ -365,14 +369,11 @@ bool EnemyDragon::CheckStatusChange()
     // HP‚ª‚È‚­‚È‚Á‚½
     if (GetHealth() <= 0.0f)
     {
-        // ƒŠƒZƒbƒg
-        SetStep(0); 
-        ResetAllAttackActiveFlag();
-
-        SetUseRootMotion(false);
-
         // Ž€–Sƒtƒ‰ƒO‚ð—§‚Ä‚é
         SetIsDead(true);
+
+        // ƒŠƒZƒbƒg
+        SetStep(0);
 
         // Ž€–SŽžƒJƒƒ‰‚ðŽg—p‚·‚é
         Camera::Instance().SetUseEnemyDeathCamera();
@@ -557,26 +558,27 @@ void EnemyDragon::RegisterCollisionData()
     RegisterAttackDetectionData({ "TurnAttack_2", 1.0f, {}, "Dragon15_tail_02" });
     RegisterAttackDetectionData({ "TurnAttack_3", 1.0f, {}, "Dragon15_tail_03" });
     RegisterAttackDetectionData({ "TurnAttack_4", 1.0f, {}, "Dragon15_tail_04" });
-    RegisterAttackDetectionData({ "TurnAttack_5", 1.0f, {}, "Dragon15_tail_05" }); // 7
+    RegisterAttackDetectionData({ "TurnAttack_5", 1.0f, {}, "Dragon15_tail_05" });
+    RegisterAttackDetectionData({ "TurnAttack_6", 1.0f, { 1.0f,  0.0f, 0.0f }, "Dragon15_tail_05" }); // 8
 
     // ----- “ËiUŒ‚—p -----
-    RegisterAttackDetectionData({ "TackleAttack_0", 1.0f, {}, "Dragon15_neck_3" }); // 8
+    RegisterAttackDetectionData({ "TackleAttack_0", 1.0f, {}, "Dragon15_neck_3" }); // 9
     RegisterAttackDetectionData({ "TackleAttack_1", 1.0f, {}, "Dragon15_neck_1" }); 
     RegisterAttackDetectionData({ "TackleAttack_2", 1.0f, {}, "Dragon15_spine2" }); 
     RegisterAttackDetectionData({ "TackleAttack_3", 1.0f, {}, "Dragon15_spine0" }); 
-    RegisterAttackDetectionData({ "TackleAttack_4", 1.0f, {}, "Dragon15_tail_00"}); // 12
+    RegisterAttackDetectionData({ "TackleAttack_4", 1.0f, {}, "Dragon15_tail_00"}); // 13
 
     // ----- ‹ó’†‚©‚ç‚½‚½‚«‚Â‚¯UŒ‚ -----
-    RegisterAttackDetectionData({ "FlyAttack_0", 1.0f, {}, "Dragon15_r_hand" }); // 13
-    RegisterAttackDetectionData({ "FlyAttack_1", 1.0f, {}, "Dragon15_l_hand" }); // 14
+    RegisterAttackDetectionData({ "FlyAttack_0", 1.0f, {}, "Dragon15_r_hand" }); // 14
+    RegisterAttackDetectionData({ "FlyAttack_1", 1.0f, {}, "Dragon15_l_hand" }); // 15
     
     // ----- ƒRƒ“ƒ{‚½‚½‚«‚Â‚¯UŒ‚ -----
-    RegisterAttackDetectionData({ "ComboSlam_0", 0.8f, {}, "Dragon15_r_hand"     }); // 15
+    RegisterAttackDetectionData({ "ComboSlam_0", 0.8f, {}, "Dragon15_r_hand"     }); // 16
     RegisterAttackDetectionData({ "ComboSlam_1", 0.8f, {}, "Dragon15_r_forearm"  }); 
-    RegisterAttackDetectionData({ "ComboSlam_2", 0.7f, {}, "Dragon15_r_finger21" }); // 17
+    RegisterAttackDetectionData({ "ComboSlam_2", 0.7f, {}, "Dragon15_r_finger21" }); // 18
 
     // ----- ‚«”ò‚Î‚µUŒ‚ -----
-    RegisterAttackDetectionData({ "KnockBack_0",  0.55f, { 1.9f,  0.15f, 0.0f },  "Dragon15_r_wing_04" }); // 18
+    RegisterAttackDetectionData({ "KnockBack_0",  0.55f, { 1.9f,  0.15f, 0.0f },  "Dragon15_r_wing_04" }); // 19
     RegisterAttackDetectionData({ "KnockBack_1",  0.6f,  { 1.21f, 0.15f, 0.0f },  "Dragon15_r_wing_04" });
     RegisterAttackDetectionData({ "KnockBack_2",  0.65f, { 0.4f,  0.2f,  0.0f },  "Dragon15_r_wing_04" });
     RegisterAttackDetectionData({ "KnockBack_3",  0.45f, { 2.0f, 0.0f, 0.0f },    "Dragon15_r_wing_07" });
@@ -589,7 +591,7 @@ void EnemyDragon::RegisterCollisionData()
     RegisterAttackDetectionData({ "KnockBack_10", 0.6f,  { -0.3f, 0.0f, 0.0f },   "Dragon15_r_wing_10" });
     RegisterAttackDetectionData({ "KnockBack_11", 0.45f, { 2.25f, 0.0f, 0.0f },   "Dragon15_r_wing_12" });
     RegisterAttackDetectionData({ "KnockBack_12", 0.5f,  { 1.55f, 0.0f, 0.0f },   "Dragon15_r_wing_12" });
-    RegisterAttackDetectionData({ "KnockBack_13", 0.6f,  { 0.8f, 0.0f, 0.0f },    "Dragon15_r_wing_12" }); // 31
+    RegisterAttackDetectionData({ "KnockBack_13", 0.6f,  { 0.8f, 0.0f, 0.0f },    "Dragon15_r_wing_12" }); // 32
 
 #pragma endregion ---------- UŒ‚”»’è“o˜^ ----------
 
@@ -601,6 +603,16 @@ void EnemyDragon::RegisterCollisionData()
     RegisterJustDodgeDetectionData({ "SlamAttack_3", 2.0f, { 1.9f, 3.9f, 0.0f },  "Dragon15_spine2" }); 
     RegisterJustDodgeDetectionData({ "SlamAttack_4", 2.0f, { 3.5f, 0.5f, 0.0f },  "Dragon15_spine2" }); 
     RegisterJustDodgeDetectionData({ "SlamAttack_5", 2.0f, { 3.0f, 2.2f, 0.0f },  "Dragon15_spine2" }); // 5
+
+    // ----- ‰ñ“]UŒ‚ -----
+    RegisterJustDodgeDetectionData({ "TurnAttack_0", 2.0f, { 0.0f, 1.0f, 0.0f },  "Dragon15_tail_01" }); // 6
+    RegisterJustDodgeDetectionData({ "TurnAttack_1", 2.0f, { 0.0f, -1.0f, 0.0f }, "Dragon15_tail_01" }); 
+    RegisterJustDodgeDetectionData({ "TurnAttack_2", 2.0f, { 0.0f, 1.0f, 0.0f },  "Dragon15_tail_03" }); 
+    RegisterJustDodgeDetectionData({ "TurnAttack_3", 2.0f, { 0.0f, -1.0f, 0.0f }, "Dragon15_tail_03" }); 
+    RegisterJustDodgeDetectionData({ "TurnAttack_4", 2.0f, { 0.0f, 1.0f, 0.0f },  "Dragon15_tail_05" }); 
+    RegisterJustDodgeDetectionData({ "TurnAttack_5", 2.0f, { 0.0f, -1.0f, 0.0f }, "Dragon15_tail_05" }); // 11
+
+
 
 #pragma endregion ---------- ƒWƒƒƒXƒg‰ñ”ð”»’è“o˜^ ----------
 }
@@ -743,12 +755,22 @@ void EnemyDragon::SetKnockBackAttackActiveFalg(const bool& flag)
 
 #pragma endregion ----- UŒ‚”»’è -----
 
+// ----- ‘SƒWƒƒƒXƒg‰ñ”ð”»’è–³Œø‰» -----
+void EnemyDragon::ResetAllJustDodgeActiveFlag()
+{
+    for (JustDodgeDetectionData& data : justDodgeDetectionData_)
+    {
+        data.SetIsActive(false);
+    }
+}
+
 // ----- ƒWƒƒƒXƒg‰ñ”ð”»’èÝ’è -----
 void EnemyDragon::SetJustDodgeActiveFlag(const AttackAction& type, const bool& flag)
 {
     int data[][2] =
     {
         { static_cast<int>(JustDodgeData::SlamAttackStart), static_cast<int>(JustDodgeData::SlamAttackEnd) },
+        { static_cast<int>(JustDodgeData::TurnAttackStart), static_cast<int>(JustDodgeData::TurnAttackEnd) },
     };
     const int start = data[static_cast<int>(type)][0];
     const int end = data[static_cast<int>(type)][1];

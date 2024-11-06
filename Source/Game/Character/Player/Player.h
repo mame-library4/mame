@@ -26,15 +26,16 @@ public:// --- 定数 ---
 
         LightFlinch,
         Flinch,
-        Damage,         // ダメージ
-        Death,          // 死亡
-        Dodge,          // 回避
+        Damage,             // ダメージ
+        Death,              // 死亡
+        Dodge,              // 回避
         
-        JustDodge,      // ジャスト回避
-        RushAttack,     // ラッシュ攻撃
+        JustDodge,          // ジャスト回避
+        JustDodgeCancel,    // ジャスト回避キャンセル
+        RushAttack,         // ラッシュ攻撃
 
-        Counter,        // カウンター
-        CounterCombo,   // カウンターコンボ
+        Counter,            // カウンター
+        CounterCombo,       // カウンターコンボ
 
         RunAttack,
 

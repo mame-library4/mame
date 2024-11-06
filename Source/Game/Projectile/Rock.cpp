@@ -19,7 +19,7 @@ void Rock::Initialize()
     // サイズ設定
     GetTransform()->SetScaleFactor(15.0f);
 
-    //rockParticle_->PlaySmokeParticle();
+    rockParticle_->PlaySmokeParticle();
 }
 
 // ----- 終了化 -----

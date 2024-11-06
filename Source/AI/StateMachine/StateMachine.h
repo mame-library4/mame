@@ -47,10 +47,14 @@ inline void StateMachine<T>::Update(float elapsedTime)
 template<class T>
 inline void StateMachine<T>::DrawDebug()
 {
-    static int state = 0;
-    if (ImGui::TreeNode("stateMachine"))
+    if (ImGui::TreeNodeEx("StateMachine", ImGuiTreeNodeFlags_Framed))
     {
-        currentState->DrawDebug();
+        ImGui::BeginChild(ImGui::GetID((void*)0), ImVec2(450, 300), ImGuiWindowFlags_NoTitleBar);
+        for (T* state : statePool)
+        {
+            state->DrawDebug();
+        }
+        ImGui::EndChild();
 
         ImGui::TreePop();
     }

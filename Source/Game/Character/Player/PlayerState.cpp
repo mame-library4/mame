@@ -135,10 +135,8 @@ namespace PlayerState
     // ----- ImGui用 -----
     void IdleState::DrawDebug()
     {
-        if (ImGui::TreeNode(GetName()))
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
-            float a;
-            ImGui::DragFloat("a", &a);
 
             ImGui::TreePop();
         }
@@ -316,11 +314,10 @@ namespace PlayerState
     // ----- ImGui用 -----
     void RunState::DrawDebug()
     {
-        if (ImGui::BeginMenu(GetName()))
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
 
-
-            ImGui::EndMenu();
+            ImGui::TreePop();
         }
     }
 
@@ -614,10 +611,15 @@ namespace PlayerState
     // ----- ImGui用 -----
     void GuardCounterState::DrawDebug()
     {
-        ImGui::DragFloat("GuardEffectStartSize", &guardEffectStartSize_, 0.1f, 1.0f, 6.0f);
-        ImGui::DragFloat("GuardEffectEndSize",   &guardEffectEndSize_,   0.1f, 1.0f, 6.0f);
-        ImGui::DragFloat("LerpTimer", &guardEffectLerpTimer_);
-        ImGui::DragFloat("LerpSpeed", &guardEffectLerpSpeed_);
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::DragFloat("GuardEffectStartSize", &guardEffectStartSize_, 0.1f, 1.0f, 6.0f);
+            ImGui::DragFloat("GuardEffectEndSize", &guardEffectEndSize_, 0.1f, 1.0f, 6.0f);
+            ImGui::DragFloat("LerpTimer", &guardEffectLerpTimer_);
+            ImGui::DragFloat("LerpSpeed", &guardEffectLerpSpeed_);
+
+            ImGui::TreePop();
+        }
     }
 
     // ----- エフェクト更新 -----
@@ -698,6 +700,11 @@ namespace PlayerState
     // ----- ImGui用 -----
     void GuardCounterAttackState::DrawDebug()
     {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+
+            ImGui::TreePop();
+        }
     }
 }
 
@@ -752,6 +759,11 @@ namespace PlayerState
     // ----- ImGui用 -----
     void GuardBlockState::DrawDebug()
     {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+
+            ImGui::TreePop();
+        }
     }
 }
 
@@ -797,6 +809,11 @@ namespace PlayerState
     // ----- ImGui用 -----
     void GuardBrokenState::DrawDebug()
     {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+
+            ImGui::TreePop();
+        }
     }
 }
 
@@ -828,6 +845,11 @@ namespace PlayerState
     }
     void LightFlinchState::DrawDebug()
     {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+
+            ImGui::TreePop();
+        }
     }
 }
 
@@ -885,6 +907,11 @@ namespace PlayerState
     }
     void FlinchState::DrawDebug()
     {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+
+            ImGui::TreePop();
+        }
     }
 }
 
@@ -994,6 +1021,11 @@ namespace PlayerState
 
     void DamageState::DrawDebug()
     {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+
+            ImGui::TreePop();
+        }
     }
 
     // ----- アニメーションの速度設定 -----
@@ -1108,6 +1140,11 @@ namespace PlayerState
     }
     void DeathState::DrawDebug()
     {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+
+            ImGui::TreePop();
+        }
     }
 }
 
@@ -1123,9 +1160,6 @@ namespace PlayerState
         // アニメーション設定
         SetAnimation();
 
-        // 移動方向を算出
-        CalcMoveDirection();
-
         // 無敵状態にする
         owner_->SetIsInvincible(true);
 
@@ -1140,18 +1174,15 @@ namespace PlayerState
             UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 0.0f);
 
         // 変数初期化
-        addForceData_.Initialize(0.15f, 0.27f, 0.4f);
-        invincibleTimer_ = 0.0f;
-
         isRotating_ = false;
         isFirstTime_ = false;
-
-        justDodgeTimer_ = 0.0f;
     }
 
     // ----- 更新 -----
     void DodgeState::Update(const float& elapsedTime)
     {
+        currentAnimationFrame_ = owner_->GetAnimationSeconds();
+
         // RootMotionの設定
         if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
         {
@@ -1161,10 +1192,8 @@ namespace PlayerState
         }
 
         // ジャスト回避判定
-        if (justDodgeTimer_ < justDodgeFrame_)
+        if (currentAnimationFrame_ < justDodgeFrame_)
         {
-            justDodgeTimer_ += elapsedTime;
-
             // TODO:ジャスト回避
             // ジャスト回避が成功したら遷移する
             if (owner_->GetIsJustDodgeSuccessful())
@@ -1191,15 +1220,8 @@ namespace PlayerState
         // アニメーションの速度設定
         SetAnimationSpeed();
 
-        // 移動処理
-        if (addForceData_.Update(owner_->GetAnimationSeconds()))
-        {
-            //owner_->AddForce(moveDirection_, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
-        }
-
-        // 無敵時間処理
-        invincibleTimer_ += elapsedTime;
-        if (invincibleTimer_ >= 0.4f)
+        // 無敵判定更新
+        if (owner_->GetIsInvincible() && currentAnimationFrame_ > invincibleFrame_)
         {
             owner_->SetIsInvincible(false);
         }
@@ -1223,9 +1245,30 @@ namespace PlayerState
 
     void DodgeState::DrawDebug()
     {
-        ImGui::Text(GetName());
-        ImGui::DragFloat("JustDodgeFrame", &justDodgeFrame_, 0.01f, 0.0f, 3.0f);
-        ImGui::DragFloat("RootMotionMoveValue", &rootMotionMoveValue_, 0.1f, 0.0f, 10.0f);
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::DragFloat("AnimationFrame", &currentAnimationFrame_, 0.01f, 0.0f, 1.0f);
+            if (ImGui::TreeNodeEx("---------- JustDodge ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("JustDodgeFrame", &justDodgeFrame_, 0.01f, 0.0f, 3.0f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- Invincible ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("InvincibleFrame", &invincibleFrame_, 0.01f, 0.0f, 3.0f);
+                
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- Movement ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("RootMotionMoveValue", &rootMotionMoveValue_, 0.1f, 0.0f, 10.0f);
+                
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
     }
 
     // ----- 回転処理 -----
@@ -1278,9 +1321,6 @@ namespace PlayerState
         // アニメーション設定
         SetAnimation();
 
-        // 移動方向を算出
-        CalcMoveDirection();
-
         // フラグをリセットする
         owner_->ResetFlags();
 
@@ -1289,22 +1329,15 @@ namespace PlayerState
 
         // ルートモーションリセット
         owner_->SetUseRootMotion(false);
-
-        // 変数初期化
-        addForceData_.Initialize(0.15f, 0.27f, 0.4f);
-        invincibleTimer_ = 0.0f;
     }
 
     // ----- 先行入力処理 -----
     const bool DodgeState::CheckNextInput()
     {
-        const float animationSeconds = owner_->GetAnimationSeconds();
-
-
 #if 1
         const float nextInputStartFrame = 0.5f; // 先行入力開始フレーム
 
-        if (animationSeconds > nextInputStartFrame)
+        if (currentAnimationFrame_ > nextInputStartFrame)
         {
             if (owner_->IsComboAttack0KeyDown())
             {
@@ -1428,7 +1461,7 @@ namespace PlayerState
             if (owner_->GetNextInput() == Player::NextInput::Dodge)
             {
                 const float avoidanceFrame = 0.92f; // 回避に遷移できるフレーム
-                if (animationSeconds > avoidanceFrame)
+                if (currentAnimationFrame_ > avoidanceFrame)
                 {
                     //回避は現在と同じステートなので、初期化を呼ぶ
                     ResetState();
@@ -1439,7 +1472,7 @@ namespace PlayerState
             else if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
             {
                 const float comboAttack0Frame = 0.9f; // コンボ攻撃0に遷移できるフレーム
-                if (animationSeconds > comboAttack0Frame)
+                if (currentAnimationFrame_ > comboAttack0Frame)
                 {
                     owner_->ChangeState(Player::STATE::ComboAttack0_0);
                     return true;
@@ -1449,7 +1482,7 @@ namespace PlayerState
             else
             {
                 const float moveFrame = 0.8f;// 移動に遷移できるフレーム
-                if (animationSeconds > moveFrame)
+                if (currentAnimationFrame_ > moveFrame)
                 {
                     // 移動値があるか判定
                     const float aLx = Input::Instance().GetGamePad().GetAxisLX();
@@ -1469,7 +1502,7 @@ namespace PlayerState
             if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
             {
                 const float comboAttack0Frame = 0.85f; // コンボ攻撃0に遷移できるフレーム
-                if (animationSeconds > comboAttack0Frame)
+                if (currentAnimationFrame_ > comboAttack0Frame)
                 {
                     owner_->ChangeState(Player::STATE::ComboAttack0_0);
                     return true;
@@ -1479,7 +1512,7 @@ namespace PlayerState
             else
             {
                 const float moveFrame = 1.0f;// 移動に遷移できるフレーム
-                if (animationSeconds > moveFrame)
+                if (currentAnimationFrame_ > moveFrame)
                 {
                     // 移動値があるか判定
                     const float aLx = Input::Instance().GetGamePad().GetAxisLX();
@@ -1499,7 +1532,7 @@ namespace PlayerState
             if (owner_->GetNextInput() == Player::NextInput::Dodge)
             {
                 const float avoidanceFrame = 0.92f; // 回避に遷移できるフレーム
-                if (animationSeconds > avoidanceFrame)
+                if (currentAnimationFrame_ > avoidanceFrame)
                 {
                     //回避は現在と同じステートなので、初期化を呼ぶ
                     ResetState();
@@ -1510,7 +1543,7 @@ namespace PlayerState
             else if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
             {
                 const float comboAttack0Frame = 0.9f; // コンボ攻撃0に遷移できるフレーム
-                if (animationSeconds > comboAttack0Frame)
+                if (currentAnimationFrame_ > comboAttack0Frame)
                 {
                     owner_->ChangeState(Player::STATE::ComboAttack0_0);
                     return true;
@@ -1520,7 +1553,7 @@ namespace PlayerState
             else
             {
                 const float moveFrame = 0.8f;// 移動に遷移できるフレーム
-                if (animationSeconds > moveFrame)
+                if (currentAnimationFrame_ > moveFrame)
                 {
                     // 移動値があるか判定
                     const float aLx = Input::Instance().GetGamePad().GetAxisLX();
@@ -1540,7 +1573,7 @@ namespace PlayerState
             if (owner_->GetNextInput() == Player::NextInput::Dodge)
             {
                 const float avoidanceFrame = 0.92f; // 回避に遷移できるフレーム
-                if (animationSeconds > avoidanceFrame)
+                if (currentAnimationFrame_ > avoidanceFrame)
                 {
                     //回避は現在と同じステートなので、初期化を呼ぶ
                     ResetState();
@@ -1551,7 +1584,7 @@ namespace PlayerState
             else if (owner_->GetNextInput() == Player::NextInput::ComboAttack0)
             {
                 const float comboAttack0Frame = 0.9f; // コンボ攻撃0に遷移できるフレーム
-                if (animationSeconds > comboAttack0Frame)
+                if (currentAnimationFrame_ > comboAttack0Frame)
                 {
                     owner_->ChangeState(Player::STATE::ComboAttack0_0);
                     return true;
@@ -1561,7 +1594,7 @@ namespace PlayerState
             else
             {
                 const float moveFrame = 0.8f;// 移動に遷移できるフレーム
-                if (animationSeconds > moveFrame)
+                if (currentAnimationFrame_ > moveFrame)
                 {
                     // 移動値があるか判定
                     const float aLx = Input::Instance().GetGamePad().GetAxisLX();
@@ -1746,44 +1779,6 @@ namespace PlayerState
             return;
         }
     }
-
-    // ----- 移動方向算出 -----
-    void DodgeState::CalcMoveDirection()
-    {
-        if (isFirstTime_ == false)
-        {
-            if (isInputStick_)
-            {
-                moveDirection_ = { inputDirection_.x, 0.0f, inputDirection_.y };
-            }
-            else
-            {
-                moveDirection_ = owner_->GetTransform()->CalcForward();
-            }
-            return;
-        }
-
-        // ----------------------------------------
-        // 自分自身から見た前後左右のベクトルを用意する
-        // ----------------------------------------        
-        const DirectX::XMFLOAT3 ownerFront = owner_->GetTransform()->CalcForward();
-        const DirectX::XMFLOAT3 ownerRight = owner_->GetTransform()->CalcRight();
-        const DirectX::XMFLOAT3 moveDirection[4] =
-        {
-            ownerFront,
-            ownerFront * -1,
-            ownerRight,
-            ownerRight * -1,
-        };
-        
-        // ----------------------------------------
-        // アニメーションに応じて移動方向を設定する
-        // ----------------------------------------
-        const int animationIndex = owner_->GetAnimationIndex();
-        const int differenceNum = static_cast<int>(Player::Animation::RollFront);
-
-        moveDirection_  = moveDirection[animationIndex - differenceNum];
-    }
 }
 
 // ----- ジャスト回避 -----
@@ -1877,7 +1872,12 @@ namespace PlayerState
             }
         }
 
-
+        // キャンセルボタンを押された
+        if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_X)
+        {
+            owner_->ChangeState(Player::STATE::JustDodgeCancel);
+            return;
+        }
     }
 
     // ----- 終了化 -----
@@ -1900,13 +1900,53 @@ namespace PlayerState
     // ----- ImGui用 -----
     void JustDodgeState::DrawDebug()
     {
-        ImGui::Text(GetName());
-        ImGui::DragFloat("SlowTimer", &slowTimer_);
-        ImGui::DragFloat("SlowStartFrame", &slowStartFrame_, 0.1f, 0.0f, 1.0f);
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::DragFloat("SlowTimer", &slowTimer_);
+            ImGui::DragFloat("SlowStartFrame", &slowStartFrame_, 0.1f, 0.0f, 1.0f);
 
-        ImGui::DragFloat("LerpTimer", &lerpTimer_);
-        ImGui::DragFloat("LerpSpeed", &lerpSpeed_);
-        ImGui::DragFloat("MaxLerpStrength", &maxLerpStrength_, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat("LerpTimer", &lerpTimer_);
+            ImGui::DragFloat("LerpSpeed", &lerpSpeed_);
+            ImGui::DragFloat("MaxLerpStrength", &maxLerpStrength_, 0.01f, 0.0f, 1.0f);
+
+            ImGui::TreePop();
+        }
+    }
+}
+
+// ----- ジャスト回避キャンセル -----
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void JustDodgeCancelState::Initialize()
+    {
+        owner_->SetUseRootMotion(true);
+    }
+
+    // ----- 更新 -----
+    void JustDodgeCancelState::Update(const float& elapsedTime)
+    {
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+    }
+
+    // ----- 終了化 -----
+    void JustDodgeCancelState::Finalize()
+    {
+        owner_->SetUseRootMotion(false);
+    }
+
+    // ----- ImGui用 -----
+    void JustDodgeCancelState::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+
+            ImGui::TreePop();
+        }
     }
 }
 
@@ -2145,11 +2185,15 @@ namespace PlayerState
     // ----- ImGui用 -----
     void RushAttackState::DrawDebug()
     {
-        ImGui::Text(GetName());
-        ImGui::DragFloat("RotationSpeed", &rotationSpeed_);
-        ImGui::DragFloat3("TargetPosition", &targetPosition_.x);
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::DragFloat("RotationSpeed", &rotationSpeed_);
+            ImGui::DragFloat3("TargetPosition", &targetPosition_.x);
 
-        ImGui::DragInt("CurrentAttackNum", &currentAttackNum_);
+            ImGui::DragInt("CurrentAttackNum", &currentAttackNum_);
+
+            ImGui::TreePop();
+        }
     }
 
     // ----- 旋回処理 -----
@@ -2196,7 +2240,10 @@ namespace PlayerState
         if (animationIndex == Enemy::DragonAnimation::AttackSlam0)
         {
             targetJointName_ = "Dragon15_r_hand";
-
+        }
+        else if (animationIndex == Enemy::DragonAnimation::AttackTurn)
+        {
+            targetJointName_ = "Dragon15_l_horselink";
         }
         
         targetPosition_ = enemy->GetJointPosition(targetJointName_.c_str());
@@ -2347,6 +2394,11 @@ namespace PlayerState
 
     void CounterState::DrawDebug()
     {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+
+            ImGui::TreePop();
+        }
     }
 
     // ----- アニメーション設定 -----
@@ -2621,6 +2673,11 @@ namespace PlayerState
     }
     void CounterComboState::DrawDebug()
     {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+
+            ImGui::TreePop();
+        }
     }
 }
 
@@ -2641,6 +2698,9 @@ namespace PlayerState
         owner_->SetNextInputStartFrame(0.0f, 0.3f, 0.3f, 0.8f);
         owner_->SetNextInputEndFrame(1.8f, 1.8f, 1.8f);
         owner_->SetNextInputTransitionFrame(0.6f, 0.6f, 0.6f);
+
+        // ルートモーションを使用しない
+        owner_->SetUseRootMotion(false);
 
         // 操作UI設定
         UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 350.0f);
@@ -2680,6 +2740,11 @@ namespace PlayerState
 
     void RunAttackState::DrawDebug()
     {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+
+            ImGui::TreePop();
+        }
     }
 
     // ----- 先行入力処理 -----
@@ -2812,6 +2877,7 @@ namespace PlayerState
         {
             // RootMotionを使用する
             owner_->SetUseRootMotion(true);
+            owner_->SetRootMotionValue(1.0f);
         }
         
         // アニメーションの速度設定
@@ -2838,7 +2904,7 @@ namespace PlayerState
     // ----- ImGui用 -----
     void ComboAttack0_0::DrawDebug()
     {
-        if (ImGui::TreeNode(GetName()))
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
 
             ImGui::TreePop();
@@ -3036,6 +3102,7 @@ namespace PlayerState
         {
             // RootMotionを使用する
             owner_->SetUseRootMotion(true);
+            owner_->SetRootMotionValue(1.0f);
         }
 
         // アニメーションの速度設定
@@ -3062,7 +3129,7 @@ namespace PlayerState
     // ----- ImGui用 -----
     void ComboAttack0_1::DrawDebug()
     {
-        if (ImGui::TreeNode(GetName()))
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
 
             ImGui::TreePop();
@@ -3237,6 +3304,7 @@ namespace PlayerState
         {
             // RootMotionを使用する
             owner_->SetUseRootMotion(true);
+            owner_->SetRootMotionValue(1.0f);
         }
 
         // アニメーションの速度設定
@@ -3265,7 +3333,7 @@ namespace PlayerState
     // ----- ImGui用 -----
     void ComboAttack0_2::DrawDebug()
     {
-        if (ImGui::TreeNode(GetName()))
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
 
             ImGui::TreePop();
@@ -3430,6 +3498,7 @@ namespace PlayerState
         {
             // RootMotionを使用する
             owner_->SetUseRootMotion(true);
+            owner_->SetRootMotionValue(1.0f);
         }
 
         // 攻撃判定処理
@@ -3462,9 +3531,8 @@ namespace PlayerState
     // ----- ImGui用 -----
     void ComboAttack0_3::DrawDebug()
     {
-        if (ImGui::TreeNode(GetName()))
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
-
 
             ImGui::TreePop();
         }

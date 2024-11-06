@@ -33,6 +33,7 @@ private:
     void SetKnockBackAttackActiveFalg(const bool& flag = true)  override;
 
     // ---------- ジャスト回避判定 ----------
+    void ResetAllJustDodgeActiveFlag() override;
     void SetJustDodgeActiveFlag(const AttackAction& type, const bool& flag) override;
 
     // ---------- 押し出し判定 ----------
@@ -58,7 +59,8 @@ private:
     float oldHealth_ = 0.0f;
 
     // テスト用
-    bool isJustDodgeDetectionY_ = false;
+    bool isJustDodgeDetectionY_ = true;
+    //bool isJustDodgeDetectionY_ = false;
 
     float distanceToPlayer_ = 0.0f;
 
@@ -73,15 +75,16 @@ public:
         SlamAttackStart         = 0,
         SlamAttackEnd           = 1,
         TrunAttackStart         = 2,
-        TrunAttackEnd           = 7,
-        TackleAttackStart       = 8,
-        TackleAttackEnd         = 12,
-        FlyAttackStart          = 13,
-        FlyAttackEnd            = 14,
-        ComboSlamAttackStart    = 15,
-        ComboSlamAttackEnd      = 17,
-        KnockBackAttackStart    = 18,
-        KnockBackAttackEnd      = 31,
+        TrunAttackEnd           = 8,
+
+        TackleAttackStart       = 9,
+        TackleAttackEnd         = 13,
+        FlyAttackStart          = 14,
+        FlyAttackEnd            = 15,
+        ComboSlamAttackStart    = 16,
+        ComboSlamAttackEnd      = 18,
+        KnockBackAttackStart    = 19,
+        KnockBackAttackEnd      = 32,
     };
     enum class DamageData
     {
@@ -101,6 +104,8 @@ public:
     {
         SlamAttackStart = 0,
         SlamAttackEnd   = 5,
+        TurnAttackStart = 6,
+        TurnAttackEnd   = 11,
     };
 };
 

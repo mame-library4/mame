@@ -30,6 +30,7 @@ Player::Player()
         
         GetStateMachine()->RegisterState(new PlayerState::DodgeState(this));            // 回避
         GetStateMachine()->RegisterState(new PlayerState::JustDodgeState(this));            // 回避
+        GetStateMachine()->RegisterState(new PlayerState::JustDodgeCancelState(this));            // 回避
         GetStateMachine()->RegisterState(new PlayerState::RushAttackState(this));            // 回避
 
         GetStateMachine()->RegisterState(new PlayerState::CounterState(this));          // カウンター

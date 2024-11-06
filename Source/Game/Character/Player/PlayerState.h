@@ -252,13 +252,12 @@ namespace PlayerState
         void SetAnimationSpeed();
 
         void SetAnimation();        // アニメーション設定
-        void CalcMoveDirection();   // 移動方向算出
 
     private:
-        DirectX::XMFLOAT3   moveDirection_  = {};
-        float invincibleTimer_ = 0.0f;
-
-        AddForceData addForceData_;
+        float currentAnimationFrame_    = 0.0f;     // 現在のフレーム
+        float invincibleFrame_          = 0.45f;    // 無敵時間フレーム
+        float justDodgeFrame_           = 0.3f;     // ジャスト回避フレーム
+        float rootMotionMoveValue_      = 1.2f;     // ルートモーション移動値
 
         DirectX::XMFLOAT2 inputDirection_ = {};
         bool isFirstTime_   = true;     // このステートに入るのが初めてかどうか
@@ -267,13 +266,6 @@ namespace PlayerState
 
         // ----- Animation -----
         float animationStartFrame_ = 0.15f;
-
-        // ----- ルートモーション用 -----
-        float rootMotionMoveValue_ = 1.2f;
-
-        // ----- ジャスト回避用 -----
-        float justDodgeFrame_ = 0.3f;
-        float justDodgeTimer_ = 0.0f;
     };
       
     // ----- ジャスト回避 -----
@@ -301,6 +293,19 @@ namespace PlayerState
 
         // ----- ルートモーション用 -----
         float rootMotionMoveValue_ = 1.2f;
+    };
+
+    // ----- ジャスト回避キャンセル -----
+    class JustDodgeCancelState : public State<Player>
+    {
+    public:
+        JustDodgeCancelState(Player* player) : State(player, "JustDodgeCancelState") {}
+        ~JustDodgeCancelState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
     };
 
     // ----- ラッシュ攻撃 -----

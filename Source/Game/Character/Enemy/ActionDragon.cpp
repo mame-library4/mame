@@ -14,6 +14,7 @@
 
 #include "sprite.h"
 #include "Application.h"
+#include "System/SystemManager.h"
 
 #include "UI/UIFlashOut.h"
 
@@ -77,12 +78,26 @@ namespace ActionDragon
     {
         if (owner_->GetStep() == 0)
         {
+            // 攻撃判定を無効化する
+            owner_->ResetAllAttackActiveFlag();
+            // ジャスト回避判定を無効化する
+            owner_->ResetAllJustDodgeActiveFlag();
+            
+            // ルートモーションを使用しない
+            owner_->SetUseRootMotion(false);
+
+            SystemManager::Instance().SetAllSlowSpeed(1.0f);
+            SystemManager::Instance().SetPlayerSlowSpeed(1.0f);
+
+            PlayerManager::Instance().GetPlayer()->ChangeState(Player::STATE::Idle);
+
 
             owner_->SetStep(1);
         }
 
         return ActionBase::State::Run;
     }
+
     void DeathAction::DrawDebug()
     {
     }
@@ -321,8 +336,6 @@ namespace ActionDragon
 
             // カウンター有効範囲を設定
 
-            // ジャスト回避範囲を設定
-
             // パーティクル生成
             tailParticle_ = new TailParticle();
             {
@@ -373,18 +386,22 @@ namespace ActionDragon
             }
 
             // 移動処理
-            if (addForceData_.Update(owner_->GetAnimationSeconds()))
+            if (isAbleMove_ && addForceData_.Update(owner_->GetAnimationSeconds()))
             {
                 owner_->AddForce(owner_->GetTransform()->CalcForward(), addForceData_.GetForce(), addForceData_.GetDecelerationForce());
             }
-
-            // 攻撃判定処理
+            
+            // 攻撃判定 & ジャスト回避判定 更新
             if (owner_->GetAnimationSeconds() > 1.85f)
             {
+                owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::TurnAttack, false);
+            
                 if (owner_->GetIsAttackActive()) owner_->SetTurnAttackActiveFlag(false);
             }
             else if (owner_->GetAnimationSeconds() > 1.55f)
             {
+                owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::TurnAttack, true);
+                
                 if (owner_->GetIsAttackActive() == false) owner_->SetTurnAttackActiveFlag();
             }
 
@@ -446,6 +463,13 @@ namespace ActionDragon
             {
                 ImGui::DragFloat("RecoveryFrame", &recoveryFrame_, 0.01f, 0.0f, 3.5f);
                 ImGui::DragFloat("RecoverySpeed", &recoverySpeed_, 0.1f, 0.0f, 1.0f);
+                
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- Movement ----------"))
+            {
+                ImGui::Checkbox("AbleMove", &isAbleMove_);
+                ImGui::TreePop();
             }
 
             ImGui::TreePop();

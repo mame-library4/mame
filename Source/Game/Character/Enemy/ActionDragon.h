@@ -90,7 +90,7 @@ namespace ActionDragon
         float transitionWalk_ = 0.2f;
 
         // ----- BlendFrame -----
-        float blendFrameWalk_ = 0.3f;
+        float blendFrameWalk_ = 0.3f;;
     };
 
     // ----- TurnAttack -----
@@ -116,7 +116,6 @@ namespace ActionDragon
 
         void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
     private:
-        AddForceData addForceData_;
         TailParticle* tailParticle_ = nullptr;
 
         float slowStartFrame_   = 0.5f;   // スロー開始フレーム
@@ -137,6 +136,10 @@ namespace ActionDragon
 
         // ----- BlendFrame -----
         float blendFrameWalk_ = 0.3f;
+
+        // ----- Movement -----
+        AddForceData addForceData_;
+        bool         isAbleMove_ = true;
     };
 
     // ----- Meteor -----
