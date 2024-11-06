@@ -5,7 +5,6 @@
 #include "Character/Enemy/EnemyDragon.h"
 #include "Projectile/ProjectileManager.h"
 #include "UI/UINumber.h"
-#include "Effect/EffectManager.h"
 
 void CollisionManager::Initialize()
 {
@@ -23,6 +22,16 @@ void CollisionManager::Update(const float& elapsedTime)
 
     // Player と Projectile の判定
     UpdatePlayerVsProjectile();
+
+    if (PlayerManager::Instance().GetPlayer()->GetCurrentState() == Player::STATE::RushAttack) return;
+    for (int i = 0; i < maxEffectHandle_; ++i)
+    {
+        const std::string effectName = effectHandle_[i].name_;
+
+        if (effectName == "") continue;
+
+        EffectManager::Instance().GetEffect(effectName)->SetSpeed(effectHandle_[i].effectHandle_, 1.0f);
+    }
 }
 
 // ----- PlayerとEnemyの判定 -----
@@ -123,10 +132,21 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                 }
 
                 // ヒットエフェクトを再生 ( 弱点部位は違うエフェクトを再生する )
-                const std::string hitEffectName = isWeakPoint ? "Attack1" : "Attack";
-                Effect* hitEffect = EffectManager::Instance().GetEffect(hitEffectName.c_str());
-                const float hitEffectSize = isWeakPoint ? 0.4f : 0.3f;
-                hitEffect->Play(enemyData.GetPosition(), hitEffectSize, 1.0f);
+                {
+                    const std::string hitEffectName = isWeakPoint ? "Attack1" : "Attack";
+                    Effect* hitEffect = EffectManager::Instance().GetEffect(hitEffectName.c_str());
+                    const float hitEffectSize = isWeakPoint ? 0.4f : 0.3f;
+
+                    // 生成位置を決める
+                    DirectX::XMFLOAT3 emitterPosition = playerData.GetPosition() + XMFloat3Normalize(enemyData.GetPosition() - playerData.GetPosition()) * playerData.GetRadius();
+
+                    // 再生速度を決める
+                    const float effectSpeed = (player->GetCurrentState() == Player::STATE::RushAttack) ? 0.01f : 1.0f;
+
+                    effectHandle_[handleCounter_].name_ = hitEffectName;
+                    effectHandle_[handleCounter_++].effectHandle_ = hitEffect->Play(emitterPosition, hitEffectSize, effectSpeed);
+                    if (handleCounter_ >= maxEffectHandle_) handleCounter_ = 0;
+                }
 
                 // 敵が死んでいなかったらダメージ処理をする
                 if (enemy->GetIsDead() == false)

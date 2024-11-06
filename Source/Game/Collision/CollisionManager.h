@@ -1,5 +1,7 @@
 #pragma once
 #include <DirectXMath.h>
+#include <string>
+#include "Effect/EffectManager.h"
 
 class CollisionManager
 {
@@ -67,5 +69,15 @@ private:// ”»’è—pŠÖ”
         const float length, const float capsuleRadius);
 
 #pragma endregion ---------- ”»’è—pŠÖ” ----------
+
+private:
+    struct EffectHandle
+    {
+        Effekseer::Handle   effectHandle_ = {};
+        std::string         name_;
+    };
+    static const int maxEffectHandle_ = 10;
+    EffectHandle effectHandle_[maxEffectHandle_] = {};
+    int handleCounter_ = 0;
 };
 
