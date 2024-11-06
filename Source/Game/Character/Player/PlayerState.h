@@ -404,6 +404,12 @@ namespace PlayerState
     private:
         AddForceData        addForceData_;
         AttackData          attackData_;
+
+        float currentAnimationFrame_ = 0.0f;
+
+        // ----- SwordTrail -----
+        float swordTrailStartFrame_ = 0.45f;
+        float swordTrailEndFrame_   = 0.8f;
     };
 
     class RunAttackState : public State<Player>

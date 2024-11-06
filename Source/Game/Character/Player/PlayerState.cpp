@@ -2644,16 +2644,29 @@ namespace PlayerState
     // ----- 更新 -----
     void CounterComboState::Update(const float& elapsedTime)
     {
+        currentAnimationFrame_ = owner_->GetAnimationSeconds();
+
         // RootMotionの設定
         if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
         {
             // RootMotionを使用する
             owner_->SetUseRootMotion(true);
+            owner_->SetRootMotionValue(1.0f);
         }
 
         // 攻撃判定処理
-        const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAttackHit());
+        const bool attackFlag = attackData_.Update(currentAnimationFrame_, owner_->GetIsAttackHit());
         owner_->SetIsAttackValid(attackFlag);
+
+        // 剣の軌跡更新
+        if (currentAnimationFrame_ > swordTrailEndFrame_)
+        {
+            if(owner_->GetIsDrawSwordTrail()) owner_->SetIsDrawSwordTrail(false);
+        }
+        else if (currentAnimationFrame_ > swordTrailStartFrame_ && owner_->GetIsDrawSwordTrail() == false)
+        {
+            owner_->SetIsDrawSwordTrail(true);
+        }
 
         // アニメーション終了
         if (!owner_->IsPlayAnimation())
@@ -2671,10 +2684,20 @@ namespace PlayerState
 
         owner_->SetUseRootMotion(false);
     }
+
+    // ----- ImGui用 -----
     void CounterComboState::DrawDebug()
     {
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
+            ImGui::DragFloat("AnimationFrame", &currentAnimationFrame_);
+            if (ImGui::TreeNodeEx("---------- SwordTrail ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("StartFrame", &swordTrailStartFrame_, 0.01f, 0.0f, 3.0f);
+                ImGui::DragFloat("EndFrame", &swordTrailEndFrame_, 0.01f, 0.0f, 3.0f);
+
+                ImGui::TreePop();
+            }
 
             ImGui::TreePop();
         }
