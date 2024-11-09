@@ -144,18 +144,8 @@ namespace ActionDragon
             break;
         case 1:
 
-            // ジャスト回避範囲を設定
-            if (owner_->GetAnimationSeconds() > justDodgeEndFrame_ && isActiveJustDodge_)
-            {
-                owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::SlamAttack, false);
-                isActiveJustDodge_ = false;
-            }
-            else if (owner_->GetAnimationSeconds() > justDodgeStartFrame_ &&
-                owner_->GetAnimationSeconds() < justDodgeEndFrame_ && isActiveJustDodge_ == false)
-            {
-                owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::SlamAttack, true);
-                isActiveJustDodge_ = true;
-            }
+            // ジャスト回避判定更新
+            UpdateJustDodgeStatus();
 
             PlayChargeEffect();
             slamAttackParticle_->UpdateHandPosition(owner_->GetJointPosition("Dragon15_l_hand"));
@@ -300,6 +290,32 @@ namespace ActionDragon
         }
 
         owner_->SetAnimationSpeed(animationSpeed);
+    }
+
+    // ----- ジャスト回避判定更新 -----
+    void SlamAttackAction::UpdateJustDodgeStatus()
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+
+        // 判定開始フレームに達していない
+        if (animationSeconds < justDodgeStartFrame_) return;
+        // 判定終了フレームを越している
+        if (animationSeconds > justDodgeEndFrame_)
+        {
+            if (isActiveJustDodge_ == false) return;
+
+            // ジャスト回避判定を無くす
+            owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::SlamAttack, false);
+            isActiveJustDodge_ = false;
+
+            return;
+        }
+
+        // 既に判定を設定している
+        if (isActiveJustDodge_) return;
+
+        owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::SlamAttack, true);
+        isActiveJustDodge_ = true;
     }
 
     // ----- チャージエフェクト再生 -----

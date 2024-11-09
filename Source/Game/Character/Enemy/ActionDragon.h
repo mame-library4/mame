@@ -68,6 +68,8 @@ namespace ActionDragon
         void Finalize();
         void UpdateAnimationSpeed(); // アニメーションの速度を調整する
 
+        void UpdateJustDodgeStatus(); // ジャスト回避判定更新
+
         void PlayChargeEffect();
 
         void Move(const float& elapsedTime); // 移動処理
