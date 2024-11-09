@@ -1888,11 +1888,13 @@ namespace PlayerState
         // ビネットリセット
         PostProcess::Instance().SetUseVignette(false);
 
-
         SystemManager::Instance().SetAllSlowSpeed(1.0f);
         SystemManager::Instance().SetPlayerSlowSpeed(1.0f);
 
         owner_->SetUseRootMotion(false);
+
+        // 無敵状態無効化
+        owner_->SetIsInvincible(false);
     }
 
     // ----- ImGui用 -----
@@ -1991,9 +1993,10 @@ namespace PlayerState
         if (animationIndex == Player::Animation::RollFront || animationIndex == Player::Animation::RollBack ||
             animationIndex == Player::Animation::RollRight || animationIndex == Player::Animation::RollLeft)
         {
-            if(owner_->GetAnimationSeconds() > 0.85f)
+            if(owner_->GetAnimationSeconds() > 0.85f/*脚が地面に着くフレーム*/)
             {
                 owner_->PlayBlendAnimation(Player::Animation::DodgeFront, false, 1.0f, 0.3f);
+                owner_->SetTransitionTime(0.05f);
 
                 // 敵のアニメーションに合わせてターゲットを設定する
                 SetTargetPosition();
@@ -2011,7 +2014,6 @@ namespace PlayerState
                 owner_->SetUseRootMotion(true);
 
                 owner_->SetRootMotionValue(3.0f);
-                //owner_->SetRootMotionValue(5.0f);
             }
 
             // 移動判定
@@ -2027,8 +2029,8 @@ namespace PlayerState
             // 回転処理
             Turn(elapsedTime);
 
-
-            if (owner_->GetAnimationSeconds() > 0.45f)
+            // 移動のアニメーションが終わったら一撃目を繰り出す
+            if (owner_->GetAnimationSeconds() > 0.45f/*移動のアニメーション終了フレーム*/)
             {
                 owner_->PlayBlendAnimation(Player::Animation::AttackRush0, false, 1.0f, 0.18f);
                 owner_->SetUseRootMotion(false);

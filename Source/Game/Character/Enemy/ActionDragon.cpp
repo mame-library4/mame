@@ -137,7 +137,9 @@ namespace ActionDragon
             isPlayExplosionParticle_ = false;
             isActiveJustDodge_ = false;
 
-            isRotation_ = true; // 旋回する
+            isSetTarget_ = false;
+            isMovement_ = true;
+            moveTimer_ = 0.0f;
 
             owner_->SetStep(1);
             
@@ -146,6 +148,7 @@ namespace ActionDragon
 
             // ジャスト回避判定更新
             UpdateJustDodgeStatus();
+
 
             PlayChargeEffect();
             slamAttackParticle_->UpdateHandPosition(owner_->GetJointPosition("Dragon15_l_hand"));
@@ -177,6 +180,12 @@ namespace ActionDragon
                 if (owner_->GetIsAttackActive() == false) owner_->SetSlamAttackActiveFlag();
             }
 
+            // ターゲット位置設定
+            SetTargetPosition();
+
+            // 移動処理
+            Move(elapsedTime);
+
             // 旋回処理
             Turn(elapsedTime);
 
@@ -201,19 +210,19 @@ namespace ActionDragon
     {
         if (ImGui::TreeNodeEx("SlamAttack", ImGuiTreeNodeFlags_Framed))
         {
-            if (ImGui::TreeNodeEx("---------- TransitionTime ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::TreeNodeEx("---------- TransitionTime ----------"))
             {
                 ImGui::DragFloat("Walk", &transitionWalk_, 0.01f, 0.0f, 0.5f);
 
                 ImGui::TreePop();
             }
-            if (ImGui::TreeNodeEx("---------- BlendFrame ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::TreeNodeEx("---------- BlendFrame ----------"))
             {
                 ImGui::DragFloat("Walk", &blendFrameWalk_, 0.01f, 0.0f, 1.0f);
 
                 ImGui::TreePop();
             }
-            if (ImGui::TreeNodeEx("---------- Slow ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::TreeNodeEx("---------- Slow ----------"))
             {
                 ImGui::DragFloat("SlowAnimationSpeed", &slowAnimationSpeed_, 0.01f, 0.0f, 3.0f);
                 ImGui::DragFloat("SlowStartFrame", &slowStartFrame_, 0.01f, 0.0f, 3.0f);
@@ -221,14 +230,28 @@ namespace ActionDragon
 
                 ImGui::TreePop();
             }
+            if (ImGui::TreeNodeEx("---------- Movement ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("StartPosition", &startPosition_.x);
+                ImGui::DragFloat("TargetPosition", &targetPosition_.x);
+                ImGui::DragFloat("TargetSetFrame", &targetSetFrame_);
+                ImGui::Checkbox("IsSetTarget", &isSetTarget_);
+                ImGui::Checkbox("IsMovement", &isMovement_);
+                ImGui::DragFloat("MoveLength", &moveLength_);
+                ImGui::DragFloat("MinMoveLength", &minMoveLength_);
+                ImGui::DragFloat("MaxMoveLength", &maxMoveLength_);
+                ImGui::DragFloat("MoveTimer", &moveTimer_);
+                ImGui::DragFloat("MoveSpeed", &moveSpeed_);
+
+                ImGui::TreePop();
+            }
             if (ImGui::TreeNodeEx("---------- Rotation ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                ImGui::Checkbox("IsRotation", &isRotation_);
-                ImGui::DragFloat("StartFrame", &rotationStartFrame_, 0.01f, 0.0f, 3.0f);
                 ImGui::DragFloat("EndFrame", &rotationEndFrame_, 0.01f, 0.0f, 3.0f);
 
                 ImGui::TreePop();
             }
+             
 
             ImGui::TreePop();
         }
@@ -338,24 +361,58 @@ namespace ActionDragon
         isCreateChargeEffect_ = true;
     }
 
+    // ----- 目標地点設定 -----
+    void SlamAttackAction::SetTargetPosition()
+    {
+        // 既に目標地点を設定している
+        if (isSetTarget_) return;
+        // 目標地点を設定するフレームに達していない
+        if (owner_->GetAnimationSeconds() < targetSetFrame_) return;
+
+        // スタート地点を設定
+        startPosition_ = owner_->GetTransform()->GetPosition();
+
+        // 距離が近ければ移動処理をしない
+        float distance = owner_->CalcDistanceToPlayer();
+        if (distance <= minMoveLength_)
+        {
+            isMovement_ = false;
+            isSetTarget_ = true;
+            return;
+        }
+
+        // 移動量を求める
+        moveLength_ = distance - minMoveLength_;
+        // 移動量が最大移動量よりも大きかったら丸める
+        if (moveLength_ > maxMoveLength_) moveLength_ = maxMoveLength_;
+
+        // 目標地点を設定する
+        DirectX::XMFLOAT3 direction = XMFloat3Normalize(owner_->CalcDirectionToPlayer());        
+        targetPosition_ = startPosition_ + direction * moveLength_;
+
+        isSetTarget_ = true;
+    }
+
     // ----- 移動処理 -----
     void SlamAttackAction::Move(const float& elapsedTime)
     {
+        // 移動処理をしない
+        if (isMovement_ == false) return;
+        // 移動フレームに達していない
+        if (owner_->GetAnimationSeconds() < targetSetFrame_) return;
+
+        moveTimer_ += moveSpeed_ * elapsedTime;
+        moveTimer_ = std::min(moveTimer_, 1.0f);
+
+        owner_->GetTransform()->SetPosition(XMFloat3Lerp(startPosition_, targetPosition_, moveTimer_));
     }
 
     // ----- 旋回処理 -----
     void SlamAttackAction::Turn(const float& elapsedTime)
     {
-        // プレイヤーがジャスト回避したら回転処理をしない
-        if (PlayerManager::Instance().GetPlayer()->GetCurrentState() == Player::STATE::JustDodge) isRotation_ = false;
-
-        // 旋回処理しない
-        if (isRotation_ == false) return;
-
         const float animationSeconds = owner_->GetAnimationSeconds();
 
-        // 旋回フレームではないので処理しない
-        if (animationSeconds < rotationStartFrame_ || animationSeconds > rotationEndFrame_) return;
+        if (animationSeconds < targetSetFrame_ || animationSeconds > rotationEndFrame_) return;
 
         owner_->Turn(elapsedTime, PlayerManager::Instance().GetTransform()->GetPosition());
     }

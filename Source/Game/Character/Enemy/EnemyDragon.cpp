@@ -549,8 +549,8 @@ void EnemyDragon::RegisterCollisionData()
 
 #pragma region ---------- UŒ‚”»’è“o˜^ ----------
     // ----- ‚½‚½‚«‚Â‚¯UŒ‚ -----
-    RegisterAttackDetectionData({ "SlamAttack_0", 1.0f, {}, "Dragon15_l_hand" });     // 0
-    RegisterAttackDetectionData({ "SlamAttack_1", 1.0f, {}, "Dragon15_l_forearm" });  // 1
+    RegisterAttackDetectionData({ "SlamAttack_0", 1.5f, {}, "Dragon15_l_hand" });     // 0
+    RegisterAttackDetectionData({ "SlamAttack_1", 1.5f, {}, "Dragon15_l_forearm" });  // 1
 
     // ----- ‰ñ“]UŒ‚—p -----
     RegisterAttackDetectionData({ "TurnAttack_0", 1.0f, {}, "Dragon15_tail_00" }); // 2

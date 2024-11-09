@@ -72,6 +72,7 @@ namespace ActionDragon
 
         void PlayChargeEffect();
 
+        void SetTargetPosition();            // 目標地点設定
         void Move(const float& elapsedTime); // 移動処理
         void Turn(const float& elapsedTime); // 旋回処理
 
@@ -97,10 +98,19 @@ namespace ActionDragon
         // ----- BlendFrame -----
         float blendFrameWalk_ = 0.3f;;
 
-        // ----- Rotation -----
-        bool isRotation_            = false;
-        float rotationStartFrame_   = 0.7f;
-        float rotationEndFrame_     = 1.3f;
+        // ---------- Movement & Rotation ----------
+        DirectX::XMFLOAT3   startPosition_      = {};   // スタート地点
+        DirectX::XMFLOAT3   targetPosition_     = {};   // 目標位置
+        float               targetSetFrame_     = 0.5f; // 目標をセットするフレーム
+        bool                isSetTarget_        = false;// 目標をセットしたか
+        bool                isMovement_         = false;// 移動処理をするか
+        float               moveLength_         = 0.0f; // 移動量
+        float               minMoveLength_      = 5.0f; // 最小移動量
+        float               maxMoveLength_      = 10.0f;// 最大移動量
+        float               moveTimer_          = 0.0f; // 移動用
+        float               moveSpeed_          = 2.0f; // 移動速度
+        float               rotationEndFrame_   = 0.9f; // 回転終了フレーム
+
     };
 
     // ----- TurnAttack -----
