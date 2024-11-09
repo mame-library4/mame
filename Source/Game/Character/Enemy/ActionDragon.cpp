@@ -137,6 +137,8 @@ namespace ActionDragon
             isPlayExplosionParticle_ = false;
             isActiveJustDodge_ = false;
 
+            isRotation_ = true; // 旋回する
+
             owner_->SetStep(1);
             
             break;
@@ -185,6 +187,9 @@ namespace ActionDragon
                 if (owner_->GetIsAttackActive() == false) owner_->SetSlamAttackActiveFlag();
             }
 
+            // 旋回処理
+            Turn(elapsedTime);
+
             // アニメーションの速度を調整する
             UpdateAnimationSpeed();
 
@@ -223,6 +228,14 @@ namespace ActionDragon
                 ImGui::DragFloat("SlowAnimationSpeed", &slowAnimationSpeed_, 0.01f, 0.0f, 3.0f);
                 ImGui::DragFloat("SlowStartFrame", &slowStartFrame_, 0.01f, 0.0f, 3.0f);
                 ImGui::DragFloat("SlowEndFrame", &slowEndFrame_, 0.01f, 0.0f, 3.0f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- Rotation ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::Checkbox("IsRotation", &isRotation_);
+                ImGui::DragFloat("StartFrame", &rotationStartFrame_, 0.01f, 0.0f, 3.0f);
+                ImGui::DragFloat("EndFrame", &rotationEndFrame_, 0.01f, 0.0f, 3.0f);
 
                 ImGui::TreePop();
             }
@@ -307,6 +320,28 @@ namespace ActionDragon
         }
 
         isCreateChargeEffect_ = true;
+    }
+
+    // ----- 移動処理 -----
+    void SlamAttackAction::Move(const float& elapsedTime)
+    {
+    }
+
+    // ----- 旋回処理 -----
+    void SlamAttackAction::Turn(const float& elapsedTime)
+    {
+        // プレイヤーがジャスト回避したら回転処理をしない
+        if (PlayerManager::Instance().GetPlayer()->GetCurrentState() == Player::STATE::JustDodge) isRotation_ = false;
+
+        // 旋回処理しない
+        if (isRotation_ == false) return;
+
+        const float animationSeconds = owner_->GetAnimationSeconds();
+
+        // 旋回フレームではないので処理しない
+        if (animationSeconds < rotationStartFrame_ || animationSeconds > rotationEndFrame_) return;
+
+        owner_->Turn(elapsedTime, PlayerManager::Instance().GetTransform()->GetPosition());
     }
 }
 
@@ -466,7 +501,7 @@ namespace ActionDragon
                 
                 ImGui::TreePop();
             }
-            if (ImGui::TreeNodeEx("---------- Movement ----------"))
+            if (ImGui::TreeNodeEx("---------- Movement ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::Checkbox("AbleMove", &isAbleMove_);
                 ImGui::TreePop();
@@ -2291,132 +2326,7 @@ namespace ActionDragon
 }
 
 // ----- コンボたたきつけ攻撃(軸合わせしてくる) -----
-namespace ActionDragon
-{
-    const ActionBase::State ComboFlySlamAction::Run(const float& elapsedTime)
-    {
-        switch(static_cast<STATE>(owner_->GetStep()))
-        {
-        case STATE::Initialize:// 初期化
-            // アニメーション再生
-            owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackComboSlam0, false);
 
-            // ダメージ設定
-            owner_->SetAttackDamage(50.0f);
-
-            // 最初の段階ではルートモーションを使用しない
-            owner_->SetUseRootMotion(false);
-
-            // 変数初期化
-            addForceData_.Initialize(1.0f, 0.4f, 1.0f);
-            comboNum_ = 0;
-
-            // ステート変更
-            SetState(STATE::Attack);
-
-            break;
-        case STATE::Attack:
-
-            if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == true)
-            {
-                owner_->SetUseRootMotion(true);
-            }
-
-            // 移動処理
-            if (addForceData_.Update(owner_->GetAnimationSeconds()))
-            {
-                DirectX::XMFLOAT3 vec = owner_->CalcDirectionToPlayer();
-                vec = XMFloat3Normalize({ vec.x, 0.0f, vec.z });
-                owner_->AddForce(vec, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
-            }
-
-            // 回転処理
-            if (owner_->GetAnimationSeconds() > 0.7f &&
-                owner_->GetAnimationSeconds() < 1.3f)
-            {
-                owner_->Turn(elapsedTime, PlayerManager::Instance().GetTransform()->GetPosition());
-            }
-
-            // 攻撃判定処理
-            if (owner_->GetAnimationSeconds() > 1.55f)
-            {
-                if (owner_->GetIsAttackActive())
-                    owner_->SetComboSlamAttackActiveFlag(false);
-            }
-            else if (owner_->GetAnimationSeconds() > 1.4f)
-            {
-                if (owner_->GetIsAttackActive() == false)
-                    owner_->SetComboSlamAttackActiveFlag();
-            }
-
-            // アニメーション再生終了したらステート変更
-            if (comboNum_ < maxComboNum_)
-            {
-                if(owner_->GetAnimationSeconds() > 1.9f)
-                {
-                    // ステート変更
-                    SetState(STATE::ComboJudge);
-                }
-            }
-            else
-            {
-                if (owner_->IsPlayAnimation() == false)
-                {
-                    // ステート変更
-                    SetState(STATE::ComboJudge);
-                }
-            }
-            
-
-            break;
-        case STATE::ComboJudge:
-
-            if (comboNum_ < maxComboNum_)
-            {
-                ++comboNum_;
-
-                owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackComboSlam0, false, 1.0f, 0.75f);
-                owner_->SetTransitionTime(0.25f);
-
-                owner_->SetUseRootMotion(false);
-
-                addForceData_.Initialize(1.0f, 0.4f, 1.0f);
-
-                // ステート変更
-                SetState(STATE::Attack);
-            }
-            else
-            {
-                owner_->PlayAnimation(Enemy::DragonAnimation::AttackComboSlamEnd, false);
-                owner_->SetTransitionTime(0.1f);
-
-                // ステート変更
-                SetState(STATE::Recovery);
-            }
-
-            break;
-        case STATE::Recovery:
-        {
-            // 指定したフレームを超えたら終了
-            const float animationEndFrame = 1.1f;
-            if (owner_->GetAnimationSeconds() > animationEndFrame)
-            {
-                owner_->SetStep(0);
-
-                owner_->SetUseRootMotion(false);
-
-                return ActionBase::State::Complete;
-            }
-        }
-            break;
-        }
-
-        return ActionBase::State::Run;
-    }
-    void ComboFlySlamAction::DrawDebug()
-    {
-    }
-}
 
 namespace ActionDragon
 {

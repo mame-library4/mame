@@ -282,9 +282,13 @@ namespace PlayerState
 
     private:
         // ----- スロー用 -----
+        float allSlowSpeed_     = 0.01f;
+        float playerSlowSpeed_  = 0.4f;
+
         float slowStartFrame_ = 0.1f;
         float mostSlowStartFrame_ = 1.0f;
         float slowTimer_ = 0.0f;
+
 
         // ----- ポストエフェクト用 -----
         float lerpTimer_ = 0.0f;

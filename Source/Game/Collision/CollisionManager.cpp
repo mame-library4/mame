@@ -185,7 +185,10 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                 }
 
                 // プレイヤーのルートの移動値を無くす
-                PlayerManager::Instance().GetPlayer()->SetRootMotionValue(0.0f);
+                if (player->GetCurrentState() != Player::STATE::CounterCombo)
+                {
+                    PlayerManager::Instance().GetPlayer()->SetRootMotionValue(0.0f);
+                }
 
                 // 当たったので判定をここで終了する
                 return;

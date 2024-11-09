@@ -1802,7 +1802,6 @@ namespace PlayerState
         PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteRoundness_ = 1.0f;
 
         slowTimer_ = 0.0f;
-
         lerpTimer_ = 0.0f;
     }
 
@@ -1818,7 +1817,6 @@ namespace PlayerState
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = strength;
 
         const float intensity = XMFloatLerp(0.0f, 1.0f, lerpTimer_);
-        //const float intensity = XMFloatLerp(0.0f, 0.5f, lerpTimer_);
         PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteIntensity_ = intensity;
 
         // ÉXÉçÅ[ÇÃê›íË
@@ -1836,8 +1834,8 @@ namespace PlayerState
             }
             else
             {
-                SystemManager::Instance().SetPlayerSlowSpeed(0.4f);
-                SystemManager::Instance().SetAllSlowSpeed(0.05f);
+                SystemManager::Instance().SetPlayerSlowSpeed(playerSlowSpeed_);
+                SystemManager::Instance().SetAllSlowSpeed(allSlowSpeed_);
             }
         }
 
@@ -1902,8 +1900,17 @@ namespace PlayerState
     {
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
-            ImGui::DragFloat("SlowTimer", &slowTimer_);
-            ImGui::DragFloat("SlowStartFrame", &slowStartFrame_, 0.1f, 0.0f, 1.0f);
+            if (ImGui::TreeNodeEx("---------- Slow ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("AllSlowSpeed", &allSlowSpeed_, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("PlayerSlowSpeed", &playerSlowSpeed_, 0.01f, 0.0f, 1.0f);
+
+                ImGui::DragFloat("SlowTimer", &slowTimer_);
+                ImGui::DragFloat("SlowStartFrame", &slowStartFrame_, 0.1f, 0.0f, 1.0f);
+
+                ImGui::TreePop();
+            }
+
 
             ImGui::DragFloat("LerpTimer", &lerpTimer_);
             ImGui::DragFloat("LerpSpeed", &lerpSpeed_);

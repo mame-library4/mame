@@ -70,6 +70,9 @@ namespace ActionDragon
 
         void PlayChargeEffect();
 
+        void Move(const float& elapsedTime); // 移動処理
+        void Turn(const float& elapsedTime); // 旋回処理
+
     private:
         SlamAttackParticle* slamAttackParticle_ = nullptr;
 
@@ -91,6 +94,11 @@ namespace ActionDragon
 
         // ----- BlendFrame -----
         float blendFrameWalk_ = 0.3f;;
+
+        // ----- Rotation -----
+        bool isRotation_            = false;
+        float rotationStartFrame_   = 0.7f;
+        float rotationEndFrame_     = 1.3f;
     };
 
     // ----- TurnAttack -----
@@ -113,6 +121,8 @@ namespace ActionDragon
 
         void Finalize(); // 終了化
         void UpdateAnimationSpeed(); // アニメーションの速度を調整する
+
+        
 
         void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
     private:

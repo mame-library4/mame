@@ -2,8 +2,9 @@
 
 // ----- コンストラクタ -----
 UITitle::UITitle()
-    : UI(UIManager::UIType::UITitle, L"./Resources/Image/Emma.png")
+    : UI(UIManager::UIType::UITitle, L"./Resources/Image/UI/Title/TitleLogo.png")
 {
+    UI::GetTransform()->SetPosition(50.0f, 350.0f);
 }
 
 // ----- 更新 -----
@@ -20,6 +21,7 @@ void UITitle::Render()
 // ----- ImGui用 -----
 void UITitle::DrawDebug()
 {
+    UI::DrawDebug();
 }
 
 // ----- 全てのUIを一括で変更 -----
