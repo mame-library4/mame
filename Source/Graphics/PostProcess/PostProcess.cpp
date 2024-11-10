@@ -131,6 +131,7 @@ void PostProcess::DrawDebug()
 
             if (ImGui::TreeNode("RadialBlur"))
             {
+                ImGui::Checkbox("UseRadialBlur", &useRadialBlur_);
                 ImGui::DragFloat2("UVOffset", &radialBlurConstants_->GetData()->uvOffset_.x, 0.01f, 0.0f, 1.0f);
                 ImGui::DragFloat("Strength", &radialBlurConstants_->GetData()->strength_, 0.1f, 0.0f, 2.0f);
                 ImGui::DragInt("SampleCount", &radialBlurConstants_->GetData()->sampleCount_, 1, 1, 5);

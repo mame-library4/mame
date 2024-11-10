@@ -71,6 +71,7 @@ namespace ActionDragon
     }
 }
 
+#pragma region ---------- 攻撃以外の重要行動 ----------
 // ----- 死亡行動 -----
 namespace ActionDragon
 {
@@ -102,6 +103,140 @@ namespace ActionDragon
     {
     }
 }
+
+// ----- DownAction -----
+namespace ActionDragon
+{
+    const ActionBase::State DownAction::Run(const float& elapsedTime)
+    {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange())
+        {
+
+            return ActionBase::State::Failed;
+        }
+
+        switch (owner_->GetStep())
+        {
+        case 0:// 初期化
+            // アニメーション再生
+            PlayAnimation();
+
+            // 怯み時押し出し判定設定
+            owner_->SetDownCollisionActiveFlag();
+
+            loopCounter_ = 0;
+
+            owner_->SetStep(1);
+
+            break;
+        case 1:
+
+            if (owner_->GetAnimationSeconds() > 1.0f)
+            {
+                owner_->PlayBlendAnimation(Enemy::DragonAnimation::CriticalLoop, false);
+                owner_->SetTransitionTime(0.1f);
+
+                owner_->SetStep(2);
+            }
+
+            break;
+        case 2:
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                if (loopCounter_ >= maxLoopNum_)
+                {
+                    owner_->PlayAnimation(Enemy::DragonAnimation::CriticalEnd, false);
+                    // ステート変更
+                    owner_->SetStep(3);
+                    
+                    return ActionBase::State::Run;
+                }
+                else
+                {
+                    owner_->PlayAnimation(Enemy::DragonAnimation::CriticalLoop, false);
+                }
+
+                ++loopCounter_;
+            }
+
+            break;
+        case 3:
+            if (owner_->IsPlayAnimation() == false)
+            {
+                // フラグをリセット
+                owner_->SetIsFlinch(false);
+                owner_->SetDownCollisionActiveFlag(false);
+
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+
+            break;
+        }
+
+        return ActionBase::State::Run;
+    }
+
+    // ----- ImGui用 -----
+    void DownAction::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx("Down", ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- TransitionTime ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragInt("LoopCounter", &loopCounter_);
+                ImGui::DragInt("MaxLoopNum", &maxLoopNum_);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- アニメーション再生 -----
+    void DownAction::PlayAnimation()
+    {
+        const Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(owner_->GetAnimationIndex());
+        float transitionTime = 0.1f;
+        float blendAnimationFrame = 0.0f;
+
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::CriticalStart, false, 1.0f, blendAnimationFrame);
+        owner_->SetTransitionTime(transitionTime);
+    }
+}
+
+// ----- KnockDownAction -----
+namespace ActionDragon
+{
+    const ActionBase::State KnockDownAction::Run(const float& elapsedTime)
+    {
+        switch (owner_->GetStep())
+        {
+        case 0:
+            break;
+        case 1:
+            break;
+        }
+
+        return ActionBase::State::Run;
+    }
+
+    // ----- ImGui用 -----
+    void KnockDownAction::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx("KnockDown", ImGuiTreeNodeFlags_Framed))
+        {
+
+
+            ImGui::TreePop();
+        }
+    }
+}
+
+#pragma endregion ---------- 攻撃以外の重要行動 ----------
 
 #pragma region ---------- 攻撃のインパクトを考慮した行動 ----------
 // ----- SlamAttackAction -----
@@ -206,6 +341,7 @@ namespace ActionDragon
         return ActionBase::State::Run;
     }
     
+    // ----- ImGui用 ----- 
     void SlamAttackAction::DrawDebug()
     {
         if (ImGui::TreeNodeEx("SlamAttack", ImGuiTreeNodeFlags_Framed))
@@ -238,8 +374,8 @@ namespace ActionDragon
                 ImGui::Checkbox("IsSetTarget", &isSetTarget_);
                 ImGui::Checkbox("IsMovement", &isMovement_);
                 ImGui::DragFloat("MoveLength", &moveLength_);
-                ImGui::DragFloat("MinMoveLength", &minMoveLength_);
-                ImGui::DragFloat("MaxMoveLength", &maxMoveLength_);
+                ImGui::DragFloat("MinMoveLength", &minMoveLength_, 0.01f, 0.0f, 10.0f);
+                ImGui::DragFloat("MaxMoveLength", &maxMoveLength_, 0.01f, 0.0f, 20.0f);
                 ImGui::DragFloat("MoveTimer", &moveTimer_);
                 ImGui::DragFloat("MoveSpeed", &moveSpeed_);
 

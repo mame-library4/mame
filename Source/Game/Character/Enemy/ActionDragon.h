@@ -44,11 +44,37 @@ namespace ActionDragon
 
 namespace ActionDragon
 {
-    // 死亡行動
+    // ----- DeathAction -----
     class DeathAction : public ActionBase
     {
     public:
         DeathAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
+    };
+
+    // ----- DownAction -----
+    class DownAction : public ActionBase
+    {
+    public:
+        DownAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
+
+    private:
+        void PlayAnimation();
+
+    private:
+        int loopCounter_ = 0;
+        int maxLoopNum_ = 3;
+
+    };
+
+    // ----- KnockDownAction -----
+    class KnockDownAction : public ActionBase
+    {
+    public:
+        KnockDownAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
         void DrawDebug()                                      override;
     };
@@ -106,7 +132,7 @@ namespace ActionDragon
         bool                isMovement_         = false;// 移動処理をするか
         float               moveLength_         = 0.0f; // 移動量
         float               minMoveLength_      = 5.0f; // 最小移動量
-        float               maxMoveLength_      = 10.0f;// 最大移動量
+        float               maxMoveLength_      = 7.0f; // 最大移動量
         float               moveTimer_          = 0.0f; // 移動用
         float               moveSpeed_          = 2.0f; // 移動速度
         float               rotationEndFrame_   = 0.9f; // 回転終了フレーム

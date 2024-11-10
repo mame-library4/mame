@@ -1791,6 +1791,7 @@ namespace PlayerState
         PostProcess::Instance().SetUseRadialBlur();
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 5;
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->uvOffset_ = { 0.5f, 0.5f };
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = 1.5f;
 
         // ビネット設定
         PostProcess::Instance().SetUseVignette();
@@ -1801,6 +1802,9 @@ namespace PlayerState
         PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteRounded_ = 1.0f;
         PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteRoundness_ = 1.0f;
 
+        // コントローラー振動を入れる
+        Input::Instance().GetGamePad().Vibration(vibrationTime_, 1.0f);
+
         slowTimer_ = 0.0f;
         lerpTimer_ = 0.0f;
     }
@@ -1809,15 +1813,18 @@ namespace PlayerState
     void JustDodgeState::Update(const float& elapsedTime)
     {
         // ----------------------------------------
-        //  ラジアルブラーとビネットを徐々に強くする
+        //  ラジアルブラーとビネット更新
         // ----------------------------------------
         lerpTimer_ += lerpSpeed_ * elapsedTime;
         lerpTimer_ = std::min(lerpTimer_, 1.0f);
-        const float strength = XMFloatLerp(0.0f, maxLerpStrength_, lerpTimer_);
+        const float strength = XMFloatLerp(1.5f, maxLerpStrength_, lerpTimer_);
+        
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = strength;
 
-        const float intensity = XMFloatLerp(0.0f, 1.0f, lerpTimer_);
+        const float intensity = XMFloatLerp(1.5f, 1.0f, lerpTimer_);
         PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteIntensity_ = intensity;
+        const float color = XMFloatLerp(0.3f, 0.65f, lerpTimer_);
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteColor_ = { color, color, color, 1.0f };
 
         // スローの設定
         if (owner_->GetAnimationSeconds() > 0.78f)
@@ -1902,7 +1909,13 @@ namespace PlayerState
     {
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
-            if (ImGui::TreeNodeEx("---------- Slow ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::TreeNodeEx("---------- GamePad ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("VibrationTime", &vibrationTime_, 0.01f, 0.0f, 1.0f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- Slow ----------"))
             {
                 ImGui::DragFloat("AllSlowSpeed", &allSlowSpeed_, 0.01f, 0.0f, 1.0f);
                 ImGui::DragFloat("PlayerSlowSpeed", &playerSlowSpeed_, 0.01f, 0.0f, 1.0f);
@@ -1973,18 +1986,28 @@ namespace PlayerState
         // ラジアルブラー設定
         PostProcess::Instance().SetUseRadialBlur();
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 5;
-        PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = 0.1f;
         // ビネット設定
         PostProcess::Instance().SetUseVignette();
 
+        // 無敵状態にしておく
+        owner_->SetIsInvincible(true);
+
         // 変数初期化
         currentAttackNum_ = 0;
+        radialBlurLerpTimer_ = 0.0f;
+        startRadialBlurStrength_ = PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_;
     }
 
     // ----- 更新 -----
     void RushAttackState::Update(const float& elapsedTime)
     {
         Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+
+        // ラジアルブラー更新
+        radialBlurLerpTimer_ += radialBlurLerpSpeed_ * elapsedTime;
+        radialBlurLerpTimer_ = std::min(radialBlurLerpTimer_, 1.0f);
+        const float strength = XMFloatLerp(startRadialBlurStrength_, 0.1f, radialBlurLerpTimer_);
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = strength;
 
         // -----------------------------------------------------------------
         //  回避モーションの場合脚が地面につくまで再生する。
@@ -2187,6 +2210,9 @@ namespace PlayerState
 
         SystemManager::Instance().SetAllSlowSpeed(1.0f);
         SystemManager::Instance().SetPlayerSlowSpeed(1.0f);
+
+        // 無敵状態解除
+        owner_->SetIsInvincible(false);
 
         owner_->SetUseRootMotion(false);
     }

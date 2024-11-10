@@ -152,8 +152,12 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                 if (enemy->GetIsDead() == false)
                 {
                     // TODO:攻撃によってダメージ倍率を変える
+                    const float attackPower = player->GetAttackPower();
+                    const float damage = attackPower * enemyData.GetDamage();
 
-                    enemy->AddDamage(enemyData.GetDamage(), enemyDataIndex);
+                    enemy->AddDamage(damage, enemyDataIndex);
+
+                    UINumber* ui = new UINumber(damage, enemyData.GetPosition());
                 }
                 
                 // Playerの攻撃判定を無くす
@@ -162,7 +166,7 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                 // 敵が生きていたらDamageUIを生成する
                 if (PlayerManager::Instance().GetUseCollisionDetection())
                 {
-                    UINumber* ui = new UINumber(enemyData.GetDamage(), enemyData.GetPosition());
+                    //UINumber* ui = new UINumber(enemyData.GetDamage(), enemyData.GetPosition());
                 }
 
                 // ヒットストップ ( 弱点部位はヒットストップを長くする )
@@ -178,10 +182,25 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                 }
                 else
                 {
-                    if (isWeakPoint) Input::Instance().GetGamePad().Vibration(0.2f, 0.4f);
-                    else Input::Instance().GetGamePad().Vibration(0.1f, 0.3f);
-
-                    
+                    // プレイヤーが現在ラッシュ攻撃中ならコントローラー振動を強くする
+                    if (player->GetCurrentState() == Player::STATE::RushAttack)
+                    {
+                        const Player::Animation playerAnimationIndex = static_cast<Player::Animation>(player->GetAnimationIndex());
+                        if (playerAnimationIndex == Player::Animation::AttackRush0 ||
+                            playerAnimationIndex == Player::Animation::AttackRush2)
+                        {
+                            Input::Instance().GetGamePad().Vibration(0.2f, 0.7f, 1.0f);
+                        }
+                        else
+                        {
+                            Input::Instance().GetGamePad().Vibration(0.2f, 1.0f, 0.7f);
+                        }
+                    }
+                    else
+                    {
+                        if (isWeakPoint) Input::Instance().GetGamePad().Vibration(0.2f, 0.4f);
+                        else Input::Instance().GetGamePad().Vibration(0.1f, 0.3f);
+                    }                    
                 }
 
                 // プレイヤーのルートの移動値を無くす

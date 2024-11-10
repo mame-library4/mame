@@ -266,14 +266,16 @@ void EnemyDragon::RegisterBehaviorNode()
     // --------------- éÄñS ---------------
     behaviorTree_->AddNode("Root", "Death", 0, BehaviorTree::SelectRule::None, new DeathJudgment(this), new ActionDragon::DeathAction(this));
 
+    // --------------- É_ÉEÉì ---------------
+    behaviorTree_->AddNode("Root", "Down", 0, BehaviorTree::SelectRule::None, new DownJudgment(this), new ActionDragon::DownAction(this));
+
     // Priority
     behaviorTree_->AddNode("Root", "Attack", 0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
     // SequentialLooping
-    behaviorTree_->AddNode("Root", "Attack", 0, BehaviorTree::SelectRule::SequentialLooping, nullptr, nullptr);
+    //behaviorTree_->AddNode("Root", "Attack", 0, BehaviorTree::SelectRule::SequentialLooping, nullptr, nullptr);
     // Random
     //behaviorTree_->AddNode("Root", "Attack", 0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
-        
-    
+
     behaviorTree_->AddNode("Attack", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
     behaviorTree_->AddNode("Attack", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
     behaviorTree_->AddNode("Attack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
@@ -480,68 +482,68 @@ void EnemyDragon::RegisterCollisionData()
 #pragma endregion ---------- âüÇµèoÇµîªíËìoò^ ----------
 
 #pragma region ---------- Ç≠ÇÁÇ¢îªíËìoò^ ----------
-    // { name, radius, damage, offset, updateName }
+    // { name, radius, damageî{ó¶, offset, updateName }
     // ---------- ì™ ----------
-    RegisterDamageDetectionData({ "Dragon15_head",      1.2f, 65.0f, {} }); // 0
+    RegisterDamageDetectionData({ "Dragon15_head",          1.2f,   2.0f, {} }); // 0
     
     // ---------- ãπ ----------
-    RegisterDamageDetectionData({ "Dragon15_neck_1",    1.4f, 27.0f, {} }); // 1
+    RegisterDamageDetectionData({ "Dragon15_neck_1",        1.4f,   1.2f, {} }); // 1
 
     // ---------- ì∑ëÃ ----------
-    RegisterDamageDetectionData({ "Dragon15_spine1",    1.3f, 25.0f, {} }); // 2
+    RegisterDamageDetectionData({ "Dragon15_spine1",        1.3f,   1.2f, {} }); // 2
 
     // ---------- ëOë´ ----------
-    RegisterDamageDetectionData({ "Dragon15_r_hand",    1.0f, 35.0f, {} }); // 3
-    RegisterDamageDetectionData({ "Dragon15_r_forearm", 1.0f, 35.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_l_hand",    1.0f, 35.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_l_forearm", 1.0f, 35.0f, {} }); // 6
+    RegisterDamageDetectionData({ "Dragon15_r_hand",        1.0f,   1.5f, {} }); // 3
+    RegisterDamageDetectionData({ "Dragon15_r_forearm",     1.0f,   1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_l_hand",        1.0f,   1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_l_forearm",     1.0f,   1.5f, {} }); // 6
     
     // ---------- å„ÇÎë´ ----------
-    RegisterDamageDetectionData({ "Dragon15_r_thigh",     0.65f, 35.0f, { 0.15f, 0.0f, 0.0f } }); // 7
-    RegisterDamageDetectionData({ "Dragon15_r_calf",      0.6f,  35.0f, { 0.0f, 0.0f, 0.2f } });
-    RegisterDamageDetectionData({ "Dragon15_r_horselink", 0.5f,  35.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_r_foot",      0.45f, 35.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_r_toe11",     0.4f,  35.0f, { 0.06f, 0.0f, 0.0f } });
-    RegisterDamageDetectionData({ "Dragon15_l_thigh",     0.65f, 35.0f, { 0.15f, 0.0f, 0.0f } });
-    RegisterDamageDetectionData({ "Dragon15_l_calf",      0.6f,  35.0f, { 0.0f, 0.0f, 0.2f } });
-    RegisterDamageDetectionData({ "Dragon15_l_horselink", 0.5f,  35.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_l_foot",      0.45f, 35.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_l_toe11",     0.4f,  35.0f, { 0.06f, 0.0f, 0.0f } }); // 16
+    RegisterDamageDetectionData({ "Dragon15_r_thigh",       0.65f,  1.5f, { 0.15f, 0.0f, 0.0f } }); // 7
+    RegisterDamageDetectionData({ "Dragon15_r_calf",        0.6f,   1.5f, { 0.0f, 0.0f, 0.2f } });
+    RegisterDamageDetectionData({ "Dragon15_r_horselink",   0.5f,   1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_r_foot",        0.45f,  1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_r_toe11",       0.4f,   1.5f, { 0.06f, 0.0f, 0.0f } });
+    RegisterDamageDetectionData({ "Dragon15_l_thigh",       0.65f,  1.5f, { 0.15f, 0.0f, 0.0f } });
+    RegisterDamageDetectionData({ "Dragon15_l_calf",        0.6f,   1.5f, { 0.0f, 0.0f, 0.2f } });
+    RegisterDamageDetectionData({ "Dragon15_l_horselink",   0.5f,   1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_l_foot",        0.45f,  1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_l_toe11",       0.4f,   1.5f, { 0.06f, 0.0f, 0.0f } }); // 16
 
     // ---------- êKîˆ ----------
-    RegisterDamageDetectionData({ "Dragon15_tail_00", 1.10f, 45.0f, {} });                    // 17
-    RegisterDamageDetectionData({ "Dragon15_tail_01", 1.00f, 45.0f, { 0.30f, 0.0f, 0.0f } });
-    RegisterDamageDetectionData({ "Dragon15_tail_03", 0.90f, 45.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_tail_04", 0.80f, 45.0f, { 0.07f, 0.0f, 0.0f } });
-    RegisterDamageDetectionData({ "Dragon15_tail_05", 0.75f, 45.0f, { 0.30f, 0.0f, 0.0f } }); // 21
+    RegisterDamageDetectionData({ "Dragon15_tail_00",       1.10f,  1.7f, {} });                    // 17
+    RegisterDamageDetectionData({ "Dragon15_tail_01",       1.00f,  1.7f, { 0.30f, 0.0f, 0.0f } });
+    RegisterDamageDetectionData({ "Dragon15_tail_03",       0.90f,  1.7f, {} });
+    RegisterDamageDetectionData({ "Dragon15_tail_04",       0.80f,  1.7f, { 0.07f, 0.0f, 0.0f } });
+    RegisterDamageDetectionData({ "Dragon15_tail_05",       0.75f,  1.7f, { 0.30f, 0.0f, 0.0f } }); // 21
     
     // ---------- óÉ ----------
-    RegisterDamageDetectionData({ "Dragon15_l_wing_01", 1.0f,  50.0f, {} });                    // 22
-    RegisterDamageDetectionData({ "Dragon15_l_wing_03", 1.3f,  50.0f, { 0.2f, 0.0f, 0.0f } });
-    RegisterDamageDetectionData({ "Dragon15_l_wing_04", 1.2f,  50.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_l_wing_06", 1.0f,  50.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_l_wing_07", 1.25f, 50.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_l_wing_08", 1.25f, 50.0f, { 0.0f, -0.3f, 0.0f } });
-    RegisterDamageDetectionData({ "Dragon15_l_wing_09", 1.0f,  50.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_l_wing_10", 1.0f,  50.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_l_wing_12", 1.0f,  50.0f, {} });                    
-    RegisterDamageDetectionData({ "Dragon15_l_wing_add_0", 1.1f, 50.0f, { 1.6f, 0.0f, 0.0f } , "Dragon15_l_wing_04" });
-    RegisterDamageDetectionData({ "Dragon15_l_wing_add_1", 1.0f, 50.0f, { 1.2f, 0.0f, 0.0f }  , "Dragon15_l_wing_07" });
-    RegisterDamageDetectionData({ "Dragon15_l_wing_add_2", 1.0f, 50.0f, { 1.0f, 0.0f, 0.0f }  , "Dragon15_l_wing_10" });
-    RegisterDamageDetectionData({ "Dragon15_l_wing_add_3", 1.0f, 50.0f, { 1.25f, 0.0f, 0.0f } , "Dragon15_l_wing_12" });    
-    RegisterDamageDetectionData({ "Dragon15_r_wing_01", 1.0f, 50.0f, {} }); 
-    RegisterDamageDetectionData({ "Dragon15_r_wing_03", 1.0f, 50.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_r_wing_04", 1.0f, 50.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_r_wing_06", 1.0f, 50.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_r_wing_07", 1.0f, 50.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_r_wing_08", 1.0f, 50.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_r_wing_09", 1.0f, 50.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_r_wing_10", 1.0f, 50.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_r_wing_12", 1.0f, 50.0f, {} });
-    RegisterDamageDetectionData({ "Dragon15_r_wing_add_0", 1.1f, 50.0f, { 1.6f, 0.0f, 0.0f }  , "Dragon15_r_wing_04" });
-    RegisterDamageDetectionData({ "Dragon15_r_wing_add_1", 1.0f, 50.0f, { 1.2f, 0.0f, 0.0f }  , "Dragon15_r_wing_07" });
-    RegisterDamageDetectionData({ "Dragon15_r_wing_add_2", 1.0f, 50.0f, { 1.0f, 0.0f, 0.0f }  , "Dragon15_r_wing_10" });
-    RegisterDamageDetectionData({ "Dragon15_r_wing_add_3", 1.0f, 50.0f, { 1.25f, 0.0f, 0.0f } , "Dragon15_r_wing_12" });  //47
+    RegisterDamageDetectionData({ "Dragon15_l_wing_01",     1.0f,   1.5f, {} });                    // 22
+    RegisterDamageDetectionData({ "Dragon15_l_wing_03",     1.3f,   1.5f, { 0.2f, 0.0f, 0.0f } });
+    RegisterDamageDetectionData({ "Dragon15_l_wing_04",     1.2f,   1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_l_wing_06",     1.0f,   1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_l_wing_07",     1.25f,  1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_l_wing_08",     1.25f,  1.5f, { 0.0f, -0.3f, 0.0f } });
+    RegisterDamageDetectionData({ "Dragon15_l_wing_09",     1.0f,   1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_l_wing_10",     1.0f,   1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_l_wing_12",     1.0f,   1.5f, {} });                    
+    RegisterDamageDetectionData({ "Dragon15_l_wing_add_0",  1.1f,   1.5f, { 1.6f, 0.0f, 0.0f } , "Dragon15_l_wing_04" });
+    RegisterDamageDetectionData({ "Dragon15_l_wing_add_1",  1.0f,   1.5f, { 1.2f, 0.0f, 0.0f }  , "Dragon15_l_wing_07" });
+    RegisterDamageDetectionData({ "Dragon15_l_wing_add_2",  1.0f,   1.5f, { 1.0f, 0.0f, 0.0f }  , "Dragon15_l_wing_10" });
+    RegisterDamageDetectionData({ "Dragon15_l_wing_add_3",  1.0f,   1.5f, { 1.25f, 0.0f, 0.0f } , "Dragon15_l_wing_12" });    
+    RegisterDamageDetectionData({ "Dragon15_r_wing_01",     1.0f,   1.5f, {} }); 
+    RegisterDamageDetectionData({ "Dragon15_r_wing_03",     1.0f,   1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_r_wing_04",     1.0f,   1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_r_wing_06",     1.0f,   1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_r_wing_07",     1.0f,   1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_r_wing_08",     1.0f,   1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_r_wing_09",     1.0f,   1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_r_wing_10",     1.0f,   1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_r_wing_12",     1.0f,   1.5f, {} });
+    RegisterDamageDetectionData({ "Dragon15_r_wing_add_0",  1.1f,   1.5f, { 1.6f, 0.0f, 0.0f }  , "Dragon15_r_wing_04" });
+    RegisterDamageDetectionData({ "Dragon15_r_wing_add_1",  1.0f,   1.5f, { 1.2f, 0.0f, 0.0f }  , "Dragon15_r_wing_07" });
+    RegisterDamageDetectionData({ "Dragon15_r_wing_add_2",  1.0f,   1.5f, { 1.0f, 0.0f, 0.0f }  , "Dragon15_r_wing_10" });
+    RegisterDamageDetectionData({ "Dragon15_r_wing_add_3",  1.0f,   1.5f, { 1.25f, 0.0f, 0.0f } , "Dragon15_r_wing_12" });  //47
 
 
     //RegisterDamageDetectionData({ "Dragon15_neck_2",    1.1f, 35.0f, {} }); // éÒ

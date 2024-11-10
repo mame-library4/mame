@@ -91,6 +91,9 @@ void Player::Initialize()
 
     // âÒì]ë¨ìxê›íË
     SetRotateSpeed(10.0f);
+
+    // çUåÇóÕê›íË
+    SetAttackPower();
 }
 
 void Player::Finalize()
@@ -171,6 +174,29 @@ void Player::DrawDebug()
 {
     if (ImGui::BeginMenu("Player"))
     {
+        GetStateMachine()->DrawDebug();
+
+        if (ImGui::TreeNodeEx("AttackPower", ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::BeginChild(ImGui::GetID((void*)0), ImVec2(450, 300), ImGuiWindowFlags_NoTitleBar);
+
+            std::string attackName[] =
+            {
+                "Attack0_0", "Attack0_1", "Attack0_2", "Attack0_3",
+                "RunAttack", "CounterAttack", "CounterComboAttack",
+                "RushAttack0", "RushAttack1", "RushAttack2", "RushAttack3"
+            };
+
+            for (int i = 0; i < static_cast<int>(AttackType::Max); ++i)
+            {
+                ImGui::DragFloat(attackName[i].c_str(), &attackPower_[i]);
+            }
+
+            ImGui::EndChild();
+
+            ImGui::TreePop();
+        }
+
         ImGui::Checkbox("DodgeAttackCancel", &isDodgeAttackCancel_);
 
         // ----- ÉWÉÉÉXÉgâÒî -----
@@ -255,7 +281,7 @@ void Player::DrawDebug()
             ImGui::TreePop();
         }
 
-        GetStateMachine()->DrawDebug();
+        
 
         Character::DrawDebug();
         Object::DrawDebug();
@@ -678,6 +704,22 @@ void Player::RegisterCollisionData()
     }
 }
 
+// ----- çUåÇóÕê›íË -----
+void Player::SetAttackPower()
+{
+    attackPower_[static_cast<int>(AttackType::Attack0_0)]           = 15.0f;
+    attackPower_[static_cast<int>(AttackType::Attack0_1)]           = 16.0f;
+    attackPower_[static_cast<int>(AttackType::Attack0_2)]           = 18.0f;
+    attackPower_[static_cast<int>(AttackType::Attack0_3)]           = 25.0f;
+    attackPower_[static_cast<int>(AttackType::RunAttack)]           = 16.0f;
+    attackPower_[static_cast<int>(AttackType::CounterAttack)]       = 18.0f;
+    attackPower_[static_cast<int>(AttackType::CounterComboAttack)]  = 30.0f;
+    attackPower_[static_cast<int>(AttackType::RushAttack0)]         = 15.0f;
+    attackPower_[static_cast<int>(AttackType::RushAttack1)]         = 16.0f;
+    attackPower_[static_cast<int>(AttackType::RushAttack2)]         = 17.0f;
+    attackPower_[static_cast<int>(AttackType::RushAttack3)]         = 18.0f;
+}
+
 // ----- åïÇÃç¿ïWçXêV -----
 void Player::UpdateSwordTransform()
 {
@@ -695,6 +737,29 @@ void Player::UpdateSwordTransform()
     DirectX::XMMATRIX dxUE5 = DirectX::XMMatrixSet(-1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1); // LHS Y-Up Z-Forward(DX) -> LHS Z-Up Y-Forward(UE5) 
     DirectX::XMMATRIX UE5Gltf = DirectX::XMMatrixSet(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1); // LHS Z-Up Y-Forward(UE5) -> RHS Y-Up Z-Forward(glTF) 
     DirectX::XMStoreFloat4x4(&weaponWorld_, dxUE5 * socketTransform * UE5Gltf * boneTransform * GetTransform()->CalcWorldMatrix(GetScaleFactor()));
+}
+
+// ----- çUåÇóÕéÊìæ -----
+const float Player::GetAttackPower() const
+{
+    const int animationData[] =
+    {
+        static_cast<int>(Player::Animation::Attack0_0), static_cast<int>(Player::Animation::Attack0_1),
+        static_cast<int>(Player::Animation::Attack0_2), static_cast<int>(Player::Animation::Attack0_3),
+        static_cast<int>(Player::Animation::RunAttack1), static_cast<int>(Player::Animation::Counter),
+        static_cast<int>(Player::Animation::CounterAttack1), static_cast<int>(Player::Animation::AttackRush0),
+        static_cast<int>(Player::Animation::AttackRush1), static_cast<int>(Player::Animation::AttackRush2),
+        static_cast<int>(Player::Animation::AttackRush3),
+    };
+    const int animationIndex = GetAnimationIndex();
+    for (int i = 0; i < static_cast<int>(AttackType::Max); ++i)
+    {
+        if (animationData[i] != animationIndex) continue;
+
+        return attackPower_[i];
+    }
+
+    return 0.0f;
 }
 
 void Player::UpdateCollisions(const float& elapsedTime)

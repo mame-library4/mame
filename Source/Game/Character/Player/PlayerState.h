@@ -281,6 +281,9 @@ namespace PlayerState
         void DrawDebug()                        override;
 
     private:
+        // ----- コントローラー振動 -----
+        float vibrationTime_ = 0.3f;
+
         // ----- スロー用 -----
         float allSlowSpeed_     = 0.01f;
         float playerSlowSpeed_  = 0.4f;
@@ -289,10 +292,9 @@ namespace PlayerState
         float mostSlowStartFrame_ = 1.0f;
         float slowTimer_ = 0.0f;
 
-
         // ----- ポストエフェクト用 -----
         float lerpTimer_ = 0.0f;
-        float lerpSpeed_ = 10.0f;
+        float lerpSpeed_ = 3.0f;
         float maxLerpStrength_ = 0.1f;
 
         // ----- ルートモーション用 -----
@@ -343,6 +345,11 @@ namespace PlayerState
         bool isNextInput_ = false;
 
         int currentAttackNum_ = 0;
+
+        // ----- ラジアルブラー -----
+        float startRadialBlurStrength_ = 0.0f;
+        float radialBlurLerpTimer_ = 0.0f;
+        float radialBlurLerpSpeed_ = 3.0f;
     };
 
 

@@ -90,7 +90,7 @@ void Camera::Update(const float& elapsedTime)
     //if (UpdateRiseAttackCamera(elapsedTime)) return;
 
     // カウンター攻撃のカメラ更新
-    if (UpdateCounterAttackCamera(elapsedTime)) return;
+    //if (UpdateCounterAttackCamera(elapsedTime)) return;
 
     // ロックオンカメラ
     UpdateLockonCamera(elapsedTime);
@@ -496,9 +496,6 @@ void Camera::UpdateLockonCamera(const float& elapsedTime)
     }
 
 
-    // プレイヤーと敵のジョイントの間をtargetに設定する
-
-
     DirectX::XMFLOAT3 cameraPosition = GetTransform()->GetPosition();
     DirectX::XMFLOAT3 playerPosition = PlayerManager::Instance().GetTransform()->GetPosition();
     DirectX::XMFLOAT3 playerHeadPosition = playerPosition;
@@ -536,12 +533,6 @@ void Camera::UpdateLockonCamera(const float& elapsedTime)
         float angle = DirectX::XMVectorGetX(DirectX::XMVector2AngleBetweenNormals(DirectX::XMLoadFloat2(&vec0), DirectX::XMLoadFloat2(&vec1)));
 
 
-
-        ////if (fabsf(angle) > DirectX::XM_PIDIV2)
-        ////{
-        ////    angle = (angle > 0.0f) ? angle - DirectX::XM_PI : angle + DirectX::XM_PI;
-        ////}
-
         float cross = XMFloat2Cross(vec0, vec1);
 
         if (cross < 0)
@@ -554,93 +545,6 @@ void Camera::UpdateLockonCamera(const float& elapsedTime)
         }
     }
 
-    // length 6.05
-    {
-#if 0
-        const float targetLengthY = fabsf(groundNearest_ - targetPosition.y);
-        const float currentLengthY = fabsf(view_.eye_.y - targetPosition.y);
-
-        DirectX::XMFLOAT3 vec = XMFloat3Normalize(view_.eye_ - view_.focus_) * minLength_;
-        vec = view_.focus_ + vec;
-
-        if (vec.y < groundNearest_)
-        {
-            // 地面に埋まっているため
-            length_ = (length_ * targetLengthY) / currentLengthY;
-        }
-        else
-        {
-            if (length_ < minLength_)
-            {
-                length_ = XMFloatLerp(length_, maxLength_, 0.5f);
-            }
-        }
-#endif
-
-        //float rotationX = GetTransform()->GetRotationX();
-
-        //if (rotationX > maxXRotation_)
-        //{
-        //    float minRotation = maxXRotation_;
-        //    constexpr float maxRotate = DirectX::XMConvertToRadians(40);
-
-        //    //const float addAmountSpeed = 2.0f;
-        //    const float rotateAmount = (maxRotate - minRotation);
-        //    const float lengthAmount = (minLength_ - 2.5f);
-        //    
-        //    float value = (rotationX - minRotation) / rotateAmount;
-
-        //    float lenght = lengthAmount * value;
-
-        //    length_ = lenght;            
-        //}
-
-
-    }
-
-#if 0
-    // 横移動は制限なし
-    rotate.y += aRx * horizontalRotationSpeed_ * elapsedTime;
-
-    // length制御
-    float deltaLength = maxLength_ - minLength_;
-    float deltaRotate = fabs(maxXRotation_) + fabs(minXRotation_);
-    float addLength = deltaLength / deltaRotate;
-
-    // 理不尽な縦回転を入れないように閾値以上なら入力を取得する
-    if (fabs(aRy) >= inputThreshold_)
-    {
-        // 上下入力反転を判定
-        const float aRyValue = invertVertical_ ? aRy * -1 * elapsedTime : aRy * elapsedTime;
-
-        if (rotate.x > maxXRotation_)
-        {
-            isAdjustCameraLength_ = true;
-
-            constexpr float maxRotate = DirectX::XMConvertToRadians(40);
-            const float addAmountSpeed = 2.0f;
-            const float rotateAmount = (maxRotate - maxXRotation_) * addAmountSpeed;
-            const float lengthAmount = (minLength_ - 2.5f) * addAmountSpeed;
-
-            rotate.x -= rotateAmount * aRyValue;
-
-            if (rotate.x > maxRotate) rotate.x = maxRotate;
-
-            length_ += lengthAmount * aRyValue;
-            if (length_ < 2.5f) length_ = 2.5f;
-        }
-        else
-        {
-            isAdjustCameraLength_ = false;
-
-            rotate.x -= verticalRotationSpeed_ * aRyValue;
-
-            length_ += addLength * aRyValue;
-        }
-    }
-
-    if (length_ > maxLength_) length_ = maxLength_;
-#endif
 
     // 角度調整
     DirectX::XMFLOAT3 rotation = GetTransform()->GetRotation();

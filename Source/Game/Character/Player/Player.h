@@ -114,6 +114,24 @@ public:// --- 定数 ---
         Counter,        // カウンター
     };
 
+    // 攻撃の種類
+    enum class AttackType
+    {
+        Attack0_0,
+        Attack0_1,
+        Attack0_2,
+        Attack0_3,
+        RunAttack,
+        CounterAttack,
+        CounterComboAttack,
+        RushAttack0,
+        RushAttack1,
+        RushAttack2,
+        RushAttack3,
+
+        Max,
+    };
+
 #pragma endregion ----- 定数 -----
 
 public:
@@ -153,6 +171,9 @@ public:
 
     // ---------- 剣の座標更新 ----------
     void UpdateSwordTransform();
+
+    // ---------- 攻撃力取得 ----------
+    [[nodiscard]] const float GetAttackPower() const;
 
 public:// --- 取得・設定 ---
 #pragma region [Get, Set] Function
@@ -286,6 +307,9 @@ private:
     // ---------- Collision ----------
     void RegisterCollisionData();
 
+    // ---------- 攻撃力 ----------
+    void SetAttackPower();
+
 private:
     // ---------- 武器 ----------
     GltfModel weapon_;
@@ -390,4 +414,7 @@ private:
     float   justDodgeRadius_            = 1.0f;  // 判定範囲
     bool    isJustDodgeCheckEnabled_    = false; // ジャスト回避判定をするか
     bool    isJustDodgeSuccessful_      = false; // ジャスト回避が成功したか
+
+    // ---------- 攻撃 ----------
+    float attackPower_[static_cast<int>(AttackType::Max)] = {};
 };

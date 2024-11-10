@@ -250,17 +250,42 @@ void GamePad::Vibration(float time, float power)
 	if (vibrationTimer_ <= 0)
 	{
 		vibrationTime_ = time;
-		vibrationValue_ = power;
+		rightVibrationValue_ = power;
+		leftVibrationValue_ = power;
 		vibrationTimer_ = vibrationTime_;
 	}
 	else
 	{
+		const float curretValue = max(rightVibrationValue_, leftVibrationValue_);
 		//U“®’†‚Ìê‡‚Í‚æ‚è‹­‚¢U“®‚ª—Dæ‚³‚ê‚é
-		if (vibrationValue_ <= power)
+		if (curretValue <= power)
 		{
 			vibrationTime_ = time;
-			vibrationValue_ = power;
+			rightVibrationValue_ = power;
+			leftVibrationValue_ = power;
 			vibrationTimer_ = vibrationTime_;
+		}
+	}
+}
+
+void GamePad::Vibration(const float& time, const float& rightPower, const float& leftPower)
+{
+	if (vibrationTimer_ <= 0)
+	{
+		vibrationTime_			= time;
+		vibrationTimer_			= vibrationTime_;
+		rightVibrationValue_	= rightPower;
+		leftVibrationValue_		= leftPower;
+	}
+	else
+	{
+		// Ä¶’†‚Ìê‡‚Í¶‰E‚Ç‚¿‚ç‚©‚ªŒ»Ý‚æ‚è‚àÝ’è’l‚ª‘å‚«‚©‚Á‚½‚çÝ’è‚·‚é
+		if (rightPower > rightVibrationValue_ || leftPower > leftVibrationValue_)
+		{
+			vibrationTime_ = time;
+			vibrationTimer_ = vibrationTime_;
+			rightVibrationValue_ = rightPower;
+			leftVibrationValue_ = leftPower;
 		}
 	}
 }
@@ -280,24 +305,12 @@ void GamePad::VibrationUpdate(const float& elapsedTime)
 	XINPUT_VIBRATION vibration;
 	ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
 
-#if 0
-	//vibration.wLeftMotorSpeed = static_cast<WORD>(Easing::InSine(vibrationTime, vibrationTimer, 65535.0f * vibrationValue, 0.0f));
-	vibration.wLeftMotorSpeed = static_cast<WORD>(Easing::InCubic(vibrationTime, vibrationTimer, 65535.0f * vibrationValue, 0.0f));
-	vibration.wRightMotorSpeed = vibration.wLeftMotorSpeed /2.0f;// use any value between 0-65535 here
-#else
-	vibration.wLeftMotorSpeed = 65535.0f * vibrationValue_;
-	vibration.wRightMotorSpeed = 65535.0f * vibrationValue_;
 
-	//vibration.wLeftMotorSpeed = 65535.0f;
-	//vibration.wRightMotorSpeed = 65535.0f;
-	//vibration.wRightMotorSpeed = 32000.0f;
-	
-	//vibration.wLeftMotorSpeed = 32000.0f;
-	//vibration.wRightMotorSpeed = 16000.0f;
-#endif
+	vibration.wLeftMotorSpeed = 65535.0f * leftVibrationValue_;
+	vibration.wRightMotorSpeed = 65535.0f * rightVibrationValue_;
+
 	
 	XInputSetState(0, &vibration);
 
-	//vibrationTimer -= 0.001f;
 	vibrationTimer_ -= elapsedTime;
 }

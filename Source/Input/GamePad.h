@@ -67,6 +67,7 @@ public:
 	float GetTriggerR() const { return triggerR_; }
 
 	void Vibration(float time, float power/*power min:0,max:1*/);
+	void Vibration(const float& time, const float& rightPower, const float& leftPower);
 
 private:
 	void VibrationUpdate(const float& elapsedTime);
@@ -85,5 +86,7 @@ private:
 
 	float				vibrationTime_;
 	float				vibrationTimer_;
-	float				vibrationValue_;
+
+	float rightVibrationValue_	= 0.0f;
+	float leftVibrationValue_	= 0.0f;
 };

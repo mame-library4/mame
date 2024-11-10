@@ -2,7 +2,7 @@
 #include "BehaviorTree/JudgmentBase.h"
 #include "Enemy.h"
 
-// Ž€–S”»’è
+// ----- DeathJudgment -----
 class DeathJudgment : public JudgmentBase
 {
 public:
@@ -10,6 +10,14 @@ public:
     const bool Judgment() override;
 };
 
+class DownJudgment : public JudgmentBase
+{
+public:
+    DownJudgment(Enemy* owner) : JudgmentBase(owner) {}
+    const bool Judgment() override;
+};
+
+#if 0
 // ‚Ð‚é‚Ý”»’è
 class FlinchJudgment : public JudgmentBase
 {
@@ -86,3 +94,4 @@ public:
     ComboFlySlamJudgment(Enemy* owner) : JudgmentBase(owner) {}
     const bool Judgment() override;
 };
+#endif  
