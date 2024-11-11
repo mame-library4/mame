@@ -256,6 +256,7 @@
     <ClCompile Include="Source\Graphics\FrameBuffer.cpp" />
     <ClCompile Include="Source\Graphics\FullscreenQuad.cpp" />
     <ClCompile Include="Source\Graphics\Graphics.cpp" />
+    <ClCompile Include="Source\Graphics\Particle\AfterimageParticle.cpp" />
     <ClCompile Include="Source\Graphics\Particle\FireBallParticle.cpp" />
     <ClCompile Include="Source\Graphics\Particle\MeteorParticle.cpp" />
     <ClCompile Include="Source\Graphics\Particle\ParticleData.cpp" />
@@ -357,6 +358,7 @@
     <ClInclude Include="Source\Graphics\FrameBuffer.h" />
     <ClInclude Include="Source\Graphics\FullscreenQuad.h" />
     <ClInclude Include="Source\Graphics\Graphics.h" />
+    <ClInclude Include="Source\Graphics\Particle\AfterimageParticle.h" />
     <ClInclude Include="Source\Graphics\Particle\FireBallParticle.h" />
     <ClInclude Include="Source\Graphics\Particle\MeteorParticle.h" />
     <ClInclude Include="Source\Graphics\Particle\ParticleData.h" />
@@ -406,6 +408,7 @@
     <Image Include="icon1.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Source\Shader\AfterimageParticle.hlsli" />
     <None Include="Source\Shader\bidirectionalReflectanceDistributionFunction.hlsli" />
     <None Include="Source\Shader\Bloom.hlsli" />
     <None Include="Source\Shader\Common.hlsli" />
@@ -438,6 +441,36 @@
     <None Include="Source\Shader\TailTrailParticle.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Source\Shader\AfterimageGS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\AfterimageInitializeCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\AfterimageUpdateCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="Source\Shader\BloomPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>

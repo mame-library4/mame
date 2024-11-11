@@ -1996,12 +1996,36 @@ namespace PlayerState
         currentAttackNum_ = 0;
         radialBlurLerpTimer_ = 0.0f;
         startRadialBlurStrength_ = PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_;
+
+        afterimageParticle_ = new AfterimageParticle();
+        afterimageParticle_->Play();
     }
 
     // ----- 更新 -----
     void RushAttackState::Update(const float& elapsedTime)
     {
         Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+
+        // 残像
+        std::vector<DirectX::XMFLOAT3> jointPosition;
+        std::string jointName[] =
+        {
+            "foot_r", "foot_l"
+        };
+#if 0
+        {
+            "head", "upperarm_r", "upperarm_l", "lowerarm_r", "lowerarm_l",
+            "hand_r", "hand_l", "spine_03", "spine_02", "spine_01",
+            "pelvis", "thigh_r", "thigh_l", "thigh_twist_01_r", "thigh_twist_01_l",
+            "calf_r", "calf_l", "foot_r", "foot_l",
+        };
+#endif
+        for (int i = 0; i < _countof(jointName); ++i)
+        {
+            jointPosition.emplace_back(owner_->GetJointPosition(jointName[i].c_str()));
+        }
+        afterimageParticle_->UpdateJointPosition(jointPosition);
+
 
         // ラジアルブラー更新
         radialBlurLerpTimer_ += radialBlurLerpSpeed_ * elapsedTime;
@@ -2201,6 +2225,11 @@ namespace PlayerState
     // ----- 終了化 -----
     void RushAttackState::Finalize()
     {
+        if (afterimageParticle_ != nullptr)
+        {
+            afterimageParticle_ = nullptr;
+        }
+
         // ラジアルブラーリセット
         PostProcess::Instance().SetUseRadialBlur(false);
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 1;

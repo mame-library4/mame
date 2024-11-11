@@ -2,6 +2,7 @@
 #include "StateMachine/State.h"
 #include "Player.h"
 
+#include "Particle/AfterimageParticle.h"
 
 namespace PlayerState
 {
@@ -350,6 +351,9 @@ namespace PlayerState
         float startRadialBlurStrength_ = 0.0f;
         float radialBlurLerpTimer_ = 0.0f;
         float radialBlurLerpSpeed_ = 3.0f;
+
+        // ----- Žc‘œ -----
+        AfterimageParticle* afterimageParticle_ = nullptr;
     };
 
 

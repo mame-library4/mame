@@ -283,6 +283,9 @@
     <ClCompile Include="Source\Graphics\Particle\RockParticle.cpp">
       <Filter>Mame\Graphics\Particle\RockParticle</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Particle\AfterimageParticle.cpp">
+      <Filter>Mame\Graphics\Particle\AfterimageParticle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -595,6 +598,9 @@
     <ClInclude Include="Source\Graphics\Particle\RockParticle.h">
       <Filter>Mame\Graphics\Particle\RockParticle</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Graphics\Particle\AfterimageParticle.h">
+      <Filter>Mame\Graphics\Particle\AfterimageParticle</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -855,6 +861,12 @@
     <Filter Include="Mame\Shader\Particle\RockParticle">
       <UniqueIdentifier>{06412af8-fc20-43b6-a2cc-d024acdf1083}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mame\Shader\Particle\AfterimageParticle">
+      <UniqueIdentifier>{bc75293b-02ed-4e46-94b4-0b57c466d5b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Graphics\Particle\AfterimageParticle">
+      <UniqueIdentifier>{3afbe110-56f2-4c49-ba21-35fafddba489}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -954,6 +966,9 @@
     </None>
     <None Include="Source\Shader\RockSmokeParticle.hlsli">
       <Filter>Mame\Shader\Particle\RockParticle</Filter>
+    </None>
+    <None Include="Source\Shader\AfterimageParticle.hlsli">
+      <Filter>Mame\Shader\Particle\AfterimageParticle</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -1136,6 +1151,15 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\RockSmokePS.hlsl">
       <Filter>Mame\Shader\Particle\RockParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\AfterimageInitializeCS.hlsl">
+      <Filter>Mame\Shader\Particle\AfterimageParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\AfterimageUpdateCS.hlsl">
+      <Filter>Mame\Shader\Particle\AfterimageParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\AfterimageGS.hlsl">
+      <Filter>Mame\Shader\Particle\AfterimageParticle</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
