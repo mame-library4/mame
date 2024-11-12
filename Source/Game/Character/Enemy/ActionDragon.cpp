@@ -166,7 +166,7 @@ namespace ActionDragon
             if (owner_->IsPlayAnimation() == false)
             {
                 // フラグをリセット
-                owner_->SetIsFlinch(false);
+                owner_->SetIsStagger(false);
                 owner_->SetDownCollisionActiveFlag(false);
 
                 owner_->SetStep(0);
@@ -260,9 +260,6 @@ namespace ActionDragon
 
             // カウンター有効範囲を設定する
             PlayerManager::Instance().GetPlayer()->SetCounterActiveRadius(6.0f);
-
-            // 攻撃力設定
-            owner_->SetAttackPower(Enemy::AttackAction::TurnAttack);
 
             // パーティクル生成
             slamAttackParticle_ = new SlamAttackParticle();
@@ -574,9 +571,6 @@ namespace ActionDragon
 
             // 現時点ではルートモーションを使用しない
             owner_->SetUseRootMotion(false);
-
-            // 攻撃力設定
-            owner_->SetAttackPower(Enemy::AttackAction::TurnAttack);
 
             // カウンター有効範囲を設定
 

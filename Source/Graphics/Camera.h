@@ -213,4 +213,7 @@ private:
     float               resetLerpTimer_         = 0.0f;  // lerpに使用
     float               resetLerpSpeed_         = 15.0f; // lerpの速度
     bool                cameraResetFlag_        = false; // カメラリセットをするかのフラグ
+
+    // ---------- カメラ補間 ----------
+    float lerpWeight_ = 0.12f;
 };

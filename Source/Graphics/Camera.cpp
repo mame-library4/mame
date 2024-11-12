@@ -57,9 +57,20 @@ void Camera::Update(const float& elapsedTime)
     if (UpdateEnemyDeathCamera(elapsedTime))  return; // EnemyŽ€–SƒJƒƒ‰
 
     const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
-    
+
+    target_ = XMFloat3Lerp(target_, cameraTargetPosition, lerpWeight_);
+
+    if (PlayerManager::Instance().GetPlayer()->GetCurrentState() == Player::STATE::CounterCombo)
+    {
+        lerpWeight_ = 0.0f;
+    }
+    else
+    {
+        lerpWeight_ = 0.12f;
+    }
+
 #if 1
-    if (isCounterDelay_ == false) target_ = cameraTargetPosition;
+    //if (isCounterDelay_ == false) target_ = cameraTargetPosition;
 
 #else
     if (lerpTimer_ >= 1.0f)
@@ -217,6 +228,8 @@ void Camera::DrawDebug()
 {
     if (ImGui::BeginMenu("Camera"))
     {
+        ImGui::DragFloat("LerpWegith", &lerpWeight_, 0.01f, 0.0f, 1.0f);
+
         ImGui::DragFloat("GroundNearest", &groundNearest_, 0.01f);
 
         ImGui::DragFloat("NearZ", &nearZ_);

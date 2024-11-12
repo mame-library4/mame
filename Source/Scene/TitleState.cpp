@@ -1,5 +1,6 @@
 #include "TitleState.h"
 #include "Input.h"
+#include "System/SystemManager.h"
 
 // ----- IdleState -----
 namespace TitleState
@@ -11,7 +12,7 @@ namespace TitleState
         owner_->GetUITitle()->SetIsDrawAllUI(false);
 
         // タイトルロゴ表示
-        owner_->GetUITitle()->SetIsDrawTitleLogo(true);
+        owner_->GetUITitle()->SetIsDraw(UITitle::Type::TitleLogo, true);
     } 
 
     // ----- 更新 -----
@@ -45,6 +46,9 @@ namespace TitleState
     {
         // 全UI非表示(リセット)
         owner_->GetUITitle()->SetIsDrawAllUI(false);
+
+        // タイトルロゴ表示
+        owner_->GetUITitle()->SetIsDraw(UITitle::Type::TitleLogo, true);
     }
 
     // ----- 更新 -----
@@ -64,6 +68,34 @@ namespace TitleState
 
     // ----- ImGui用 -----
     void SelectState::DrawDebug()
+    {
+    }
+}
+
+// ----- OptionState -----
+namespace TitleState
+{
+    // ----- 初期化 -----
+    void OptionState::Initialize()
+    {
+        // 全UI非表示(リセット)
+        owner_->GetUITitle()->SetIsDrawAllUI(false);
+
+
+    }
+
+    // ----- 更新 -----
+    void OptionState::Update(const float& elapsedTime)
+    {
+    }
+
+    // ----- 終了化 -----
+    void OptionState::Finalize()
+    {
+    }
+
+    // ----- ImGui用 -----
+    void OptionState::DrawDebug()
     {
     }
 }

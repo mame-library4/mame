@@ -152,6 +152,8 @@ public:// æ“¾Eİ’è
     const char* GetName() { return name_.c_str(); }
     void SetName(const char* n) { name_ = n; }
 
+    void SetIsDraw(const bool& flag) { isDraw_ = flag; }
+
 private:
     void Rotate(float& x, float& y, const float& centerX, const float& centerY, const float& angle);
 
@@ -159,6 +161,8 @@ private:
 private:
     // ---------- Transform ----------
     Transform transform_;
+
+    bool isDraw_ = true;
 
     // ---------- Animation ----------
     float   animationTime_ = 0.0f;

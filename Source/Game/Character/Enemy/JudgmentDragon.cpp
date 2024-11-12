@@ -14,7 +14,10 @@ const bool DeathJudgment::Judgment()
 // ----- DownJudgment -----
 const bool DownJudgment::Judgment()
 {
-    return false;
+    if (owner_->GetIsStagger() == false) return false;
+
+
+    return true;
 }
 
 

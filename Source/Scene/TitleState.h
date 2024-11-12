@@ -27,5 +27,17 @@ namespace TitleState
         void Finalize()                         override;
         void DrawDebug()                        override;
     };
+
+    class OptionState : public State<TitleScene>
+    {
+    public:
+        OptionState(TitleScene* titleScene) : State(titleScene, "OptionState") {}
+        ~OptionState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+    };
 }
 

@@ -11,6 +11,8 @@
 #include "System/SystemManager.h"
 #include "PostProcess/PostProcess.h"
 
+#include "Application.h"
+
 // ----- AddForceData -----
 namespace PlayerState
 {
@@ -1815,6 +1817,13 @@ namespace PlayerState
         // ----------------------------------------
         //  ラジアルブラーとビネット更新
         // ----------------------------------------
+        DirectX::XMFLOAT3 jointPosition_float3 = owner_->GetJointPosition("pelvis");
+        DirectX::XMFLOAT2 jointPosition_float2 = Sprite::ConvertToScreenPos(jointPosition_float3);
+        jointPosition_float2.x /= SCREEN_WIDTH;
+        jointPosition_float2.y /= SCREEN_HEIGHT;
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->uvOffset_ = jointPosition_float2;
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteCenter_ = jointPosition_float2;
+
         lerpTimer_ += lerpSpeed_ * elapsedTime;
         lerpTimer_ = std::min(lerpTimer_, 1.0f);
         const float strength = XMFloatLerp(1.5f, maxLerpStrength_, lerpTimer_);
@@ -1997,13 +2006,20 @@ namespace PlayerState
         radialBlurLerpTimer_ = 0.0f;
         startRadialBlurStrength_ = PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_;
 
-        afterimageParticle_ = new AfterimageParticle();
-        afterimageParticle_->Play();
+        //afterimageParticle_ = new AfterimageParticle();
+        //afterimageParticle_->Play();
     }
 
     // ----- 更新 -----
     void RushAttackState::Update(const float& elapsedTime)
     {
+        DirectX::XMFLOAT3 jointPosition_float3 = owner_->GetJointPosition("pelvis");
+        DirectX::XMFLOAT2 jointPosition_float2 = Sprite::ConvertToScreenPos(jointPosition_float3);
+        jointPosition_float2.x /= SCREEN_WIDTH;
+        jointPosition_float2.y /= SCREEN_HEIGHT;
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->uvOffset_ = jointPosition_float2;
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteCenter_ = jointPosition_float2;
+
         Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
 
         // 残像
@@ -2024,7 +2040,7 @@ namespace PlayerState
         {
             jointPosition.emplace_back(owner_->GetJointPosition(jointName[i].c_str()));
         }
-        afterimageParticle_->UpdateJointPosition(jointPosition);
+        //afterimageParticle_->UpdateJointPosition(jointPosition);
 
 
         // ラジアルブラー更新

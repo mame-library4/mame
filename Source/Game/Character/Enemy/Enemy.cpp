@@ -157,7 +157,7 @@ void Enemy::CheckPartDestruction()
         if (isPartDestruction_[partIndex] == false)
         {
             // •”ˆÊ‚Ì‘Ì—Í‚ª‚È‚­‚È‚Á‚½‚çUI‚ğ¶¬‚µ‚Äƒtƒ‰ƒO‚ğ—§‚Ä‚é
-            if (partHealth_[partIndex] <= 0.0f)
+            if (staggerValue_[partIndex] <= 0.0f)
             {
                 // •”ˆÊ”j‰óUI¶¬
                 UIPartDestruction* ui = new UIPartDestruction();
@@ -166,4 +166,22 @@ void Enemy::CheckPartDestruction()
             }
         }
     }
+}
+
+const float Enemy::GetAttackPower() const
+{
+    const int animationData[] =
+    {
+        static_cast<int>(DragonAnimation::AttackSlam0), static_cast<int>(DragonAnimation::AttackTurn),
+    };
+    const int animationIndex = GetAnimationIndex();
+
+    for (int i = 0; i < static_cast<int>(AttackAction::Max); ++i)
+    {
+        if (animationData[i] != animationIndex) continue;
+
+        return attackPower_[i];
+    }
+
+    return 0.0f;
 }

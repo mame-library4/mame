@@ -42,6 +42,8 @@ private:
     // ---------- •”ˆÊ‚²‚Æ‚Ìƒ_ƒ[ƒWˆ— ----------
     void AddDamagePart(const float& damage, const int& dataIndex) override;
 
+    void SetAttackPower();
+
 private:
     Object circle_;
 

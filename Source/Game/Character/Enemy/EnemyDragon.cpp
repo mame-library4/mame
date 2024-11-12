@@ -57,19 +57,28 @@ void EnemyDragon::Initialize()
     // 押し出し判定
     SetDownCollisionActiveFlag(false);
 
-    // 部位ごとの体力を設定する
-    partHealth_[static_cast<int>(PartName::Head)]  = 500.0f;
-    partHealth_[static_cast<int>(PartName::Chest)] = 500.0f;
-    partHealth_[static_cast<int>(PartName::Body)]  = 500.0f;
-    partHealth_[static_cast<int>(PartName::Leg)]   = 500.0f;
-    partHealth_[static_cast<int>(PartName::Tail)]  = 500.0f;
-    partHealth_[static_cast<int>(PartName::Wings)] = 500.0f;
+    // 部位ごとに怯み値を決める
+    staggerValue_[static_cast<int>(PartName::Head)]  = 500.0f;
+    staggerValue_[static_cast<int>(PartName::Chest)] = 500.0f;
+    staggerValue_[static_cast<int>(PartName::Body)]  = 500.0f;
+    staggerValue_[static_cast<int>(PartName::Leg)]   = 500.0f;
+    staggerValue_[static_cast<int>(PartName::Tail)]  = 500.0f;
+    staggerValue_[static_cast<int>(PartName::Wings)] = 500.0f;
+
+    // 部位ごとの怯み値カウンターをリセットする
+    for (int i = 0; i < static_cast<int>(PartName::Max); ++i)
+    {
+        staggerValueCounter_[i] = 0.0f;
+    }
 
     // 部位破壊フラグを設定
     for (int partIndex = 0; partIndex < static_cast<int>(PartName::Max); ++partIndex)
     {
         isPartDestruction_[partIndex] = false;
     }
+
+    // 攻撃力設定
+    SetAttackPower();
 }
 
 // ----- 終了化 -----
@@ -146,14 +155,14 @@ void EnemyDragon::DrawDebug()
             { 
                 "SlamAttack",
                 "TurnAttack",
-                "KnockBackAttack",
-                "TackleAttack",
-                "FireBreath",
+                //"KnockBackAttack",
+                //"TackleAttack",
+                //"FireBreath",
             };
 
             for (int i = 0; i < static_cast<int>(AttackAction::Max); ++i)
             {
-                ImGui::DragFloat(name[i], &attackPowerList_[i]);
+                ImGui::DragFloat(name[i], &attackPower_[i]);
             }
 
             ImGui::EndChild();
@@ -170,17 +179,30 @@ void EnemyDragon::DrawDebug()
             ImGui::TreePop();
         }
 
-
-
-        if (ImGui::TreeNode("PartDestruction"))
+        if (ImGui::TreeNodeEx("StaggerValue", ImGuiTreeNodeFlags_Framed))
         {
-            ImGui::DragFloat("Head", &partHealth_[static_cast<int>(PartName::Head)]);
-            ImGui::DragFloat("Chest", &partHealth_[static_cast<int>(PartName::Chest)]);
-            ImGui::DragFloat("Body", &partHealth_[static_cast<int>(PartName::Body)]);
-            ImGui::DragFloat("Leg", &partHealth_[static_cast<int>(PartName::Leg)]);
-            ImGui::DragFloat("Tail", &partHealth_[static_cast<int>(PartName::Tail)]);
-            ImGui::DragFloat("Wings", &partHealth_[static_cast<int>(PartName::Wings)]);
+            std::string name[] =
+            {
+               "Head", "Chest", "Body", "Leg", "Tail", "Wings"
+            };
+            std::string tenten = "----------";
 
+            ImGui::BeginChild(ImGui::GetID((void*)0), ImVec2(350, 400), ImGuiWindowFlags_NoTitleBar);
+            
+            for (int i = 0; i < static_cast<int>(PartName::Max); ++i)
+            {
+                std::string nodeName = tenten + name[i] + tenten;
+
+                if (ImGui::TreeNodeEx(nodeName.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    ImGui::DragFloat("StaggerValue", &staggerValue_[i]);
+                    ImGui::DragFloat("Counter", &staggerValueCounter_[i]);
+
+                    ImGui::TreePop();
+                }
+            }
+
+            ImGui::EndChild();
             ImGui::TreePop();
         }
 
@@ -389,30 +411,24 @@ bool EnemyDragon::CheckStatusChange()
     // --------------------
     //      怯み判定
     // --------------------
-    // 既に怯み中
-    // TODO:怯み時にも判定通るようにしたけど、バグらないか確認してない
-    //if (GetIsFlinch()) return false;
-    // 初回時などに通る
-    if (oldHealth_ <= 0.0f)
+    for (int i = 0; i < static_cast<int>(Enemy::PartName::Max); ++i)
     {
-        oldHealth_ = GetHealth();
-        return false;
-    }
-    const float damage = oldHealth_ - GetHealth();
-    oldHealth_ = GetHealth();
+        if (staggerValueCounter_[i] > staggerValue_[i])
+        {
+            staggerValueCounter_[i] = 0;
+            ++staggerCount_[i];
 
-    // damageが 30 より大きければ怯み
-    //if (damage > 30.0f)
-    if (damage > 100.0f)
-    {
-        SetIsFlinch(true);
-        // リセット
-        SetStep(0); 
-        ResetAllAttackActiveFlag();
+            // 怯みフラグを立てる
+            SetIsStagger(true);
 
-        SetUseRootMotion(false);
+            // リセット
+            SetStep(0);
+            ResetAllAttackActiveFlag();
+            SetUseRootMotion(false);
 
-        return true;
+
+            return true;
+        }
     }
 
     return false;
@@ -808,36 +824,42 @@ void EnemyDragon::AddDamagePart(const float& damage, const int& dataIndex)
     // 頭
     if (partIndex == DamageData::Head)
     {
-        partHealth_[static_cast<int>(PartName::Head)] -= damage;
+        staggerValueCounter_[static_cast<int>(PartName::Head)] += damage;
     }
     // 胸
     else if (partIndex == DamageData::Chest)
     {
-        partHealth_[static_cast<int>(PartName::Chest)] -= damage;
+        staggerValueCounter_[static_cast<int>(PartName::Chest)] += damage;
     }
     // 体
     else if (partIndex == DamageData::Body)
     {
-        partHealth_[static_cast<int>(PartName::Body)] -= damage;
+        staggerValueCounter_[static_cast<int>(PartName::Body)] += damage;
     }
     // 前足
     else if (partIndex >= DamageData::FrontLeg && partIndex <= DamageData::FrontLegEnd)
     {
-        partHealth_[static_cast<int>(PartName::Leg)] -= damage;
+        staggerValueCounter_[static_cast<int>(PartName::Leg)] += damage;
     }
     // 後ろ足
     else if (partIndex >= DamageData::BackLeg && partIndex <= DamageData::BackLegEnd)
     {
-        partHealth_[static_cast<int>(PartName::Leg)] -= damage;
+        staggerValueCounter_[static_cast<int>(PartName::Leg)] += damage;
     }
     // 尻尾
     else if (partIndex >= DamageData::Tail && partIndex <= DamageData::TailEnd)
     {
-        partHealth_[static_cast<int>(PartName::Tail)] -= damage;
+        staggerValueCounter_[static_cast<int>(PartName::Tail)] += damage;
     }
     // 翼
     else if (partIndex >= DamageData::Wings && partIndex <= DamageData::WingsEnd)
     {
-        partHealth_[static_cast<int>(PartName::Wings)] -= damage;
+        staggerValueCounter_[static_cast<int>(PartName::Wings)] += damage;
     }
+}
+
+void EnemyDragon::SetAttackPower()
+{
+    attackPower_[static_cast<int>(AttackAction::SlamAttack)] = 50.0f;
+    attackPower_[static_cast<int>(AttackAction::TurnAttack)] = 50.0f;
 }

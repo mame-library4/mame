@@ -117,9 +117,9 @@ public:// ----- 定数 -----
         SlamAttack,
         TurnAttack,
 
-        KnockBackAttack,
-        TackleAttack,
-        FireBreath,
+        //KnockBackAttack,
+        //TackleAttack,
+        //FireBreath,
 
         Max,
     };
@@ -172,8 +172,8 @@ public:// --- 取得・設定 ---
     void SetStep(const int& step) { step_ = step; }
 
     // ----- ひるみ判定 -----
-    [[nodiscard]] const bool GetIsFlinch() const { return isFlinch_; }
-    void SetIsFlinch(const bool& flinch) { isFlinch_ = flinch; }
+    [[nodiscard]] const bool GetIsStagger() const { return isStagger_; }
+    void SetIsStagger(const bool& flag) { isStagger_ = flag; }
 
     // ----- 戦闘開始範囲 -----
     [[nodiscard]] const float GetBattleRadius() const { return battleRadius_; }
@@ -209,9 +209,7 @@ public:// --- 取得・設定 ---
 #pragma endregion [Get, Set] Function
 
     // ---------- 攻撃力 ----------
-    [[noidscard]] const float GetAttackPower() const { return attackPower_; }
-    void SetAttackPower(const AttackAction& type) { attackPower_ = attackPowerList_[static_cast<int>(type)]; }
-
+    [[noidscard]] const float GetAttackPower() const;
 
     [[nodiscard]] const std::string GetActiveNodeName() const { return (activeNode_ != nullptr) ? activeNode_->GetName() : ""; }
 
@@ -258,8 +256,7 @@ protected:
 
     std::vector<JustDodgeDetectionData> justDodgeDetectionData_;
 
-    int     step_       = 0;        // 行動ステップ
-    bool    isFlinch_   = false;    // ひるみフラグ
+    int     step_       = 0;        // 行動ステップ    
 
     // ---------- 戦闘判定範囲変数 ----------
     float               battleRadius_       = 20.0f;// 戦闘開始範囲
@@ -279,8 +276,13 @@ protected:
 
     bool isStageCollisionJudgement_ = false; // ステージとの判定をするか
 
+    // ---------- 怯み ----------
+    bool isStagger_ = false; 
+    float   staggerValue_[static_cast<int>(PartName::Max)]          = {};
+    float   staggerValueCounter_[static_cast<int>(PartName::Max)]   = {};
+    int     staggerCount_[static_cast<int>(PartName::Max)]          = {};
+
     // ---------- 部位破壊 ----------
-    float partHealth_[static_cast<int>(PartName::Max)]        = {}; // 部位ごとの体力
     bool  isPartDestruction_[static_cast<int>(PartName::Max)] = {}; // 部位破壊判定フラグ
 
     // ---------- ヒットストップ ----------
@@ -291,8 +293,7 @@ protected:
     bool    isHitStopActive_ = false;
 
     // ---------- 攻撃力 ----------
-    float attackPower_ = 0.0f;
-    float attackPowerList_[static_cast<int>(AttackAction::Max)] = {};
+    float attackPower_[static_cast<int>(AttackAction::Max)] = {};
 
     bool useEffekseerEffect_ = false;
 };

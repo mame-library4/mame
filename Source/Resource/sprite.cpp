@@ -171,6 +171,8 @@ DirectX::XMFLOAT2 Sprite::ConvertToScreenPos(
 // •`‰æ
 void Sprite::Render(ID3D11PixelShader* psShader)
 {
+    if (isDraw_ == false) return;
+
     HRESULT result = S_OK;
     ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
     D3D11_VIEWPORT viewport = {};

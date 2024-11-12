@@ -101,7 +101,8 @@ void GameScene::Initialize()
     ProjectileManager::Instance().Initialize();
 
     // ƒJƒƒ‰‰Šú‰»
-    Camera::Instance().SetTarget({ PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() });
+    //Camera::Instance().SetTarget({ PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() });
+    Camera::Instance().SetTarget({});
 
     // •Ï”‰Šú‰»
     isDrawUI_ = false;
