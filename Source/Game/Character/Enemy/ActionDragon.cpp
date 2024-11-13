@@ -1022,13 +1022,9 @@ namespace ActionDragon
         DirectX::XMFLOAT2 centerPosition = Sprite::ConvertToScreenPos(dragonNeckPosition);
         centerPosition.x /= SCREEN_WIDTH;
         centerPosition.y /= SCREEN_HEIGHT;
-
-        // 画面外にいるときは発生地点を画面中央にする
-        if (centerPosition.x > 1.0f || centerPosition.y > 1.0f ||
-            centerPosition.x < 0.0f || centerPosition.y < 0.0f)
-        {
-            centerPosition = { 0.5f, 0.5f };
-        }
+        // 中心点を 0.0 ~ 1.0 の間に収める
+        centerPosition.x = std::clamp(centerPosition.x, 0.0f, 1.0f);
+        centerPosition.y = std::clamp(centerPosition.y, 0.0f, 1.0f);
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->uvOffset_ = centerPosition;
 
         // エフェクトのサイズを徐々に大きくする
@@ -1058,13 +1054,10 @@ namespace ActionDragon
         DirectX::XMFLOAT2 centerPosition = Sprite::ConvertToScreenPos(dragonNeckPosition);
         centerPosition.x /= SCREEN_WIDTH;
         centerPosition.y /= SCREEN_HEIGHT;
+        // 中心点を 0.0 ~ 1.0 の間に収める
+        centerPosition.x = std::clamp(centerPosition.x, 0.0f, 1.0f);
+        centerPosition.y = std::clamp(centerPosition.y, 0.0f, 1.0f);
 
-        // ブラーの開始点が 0.0 ~ 1.0 を超えていた場合真ん中に補正する
-        if (centerPosition.x > 1.0f || centerPosition.y > 1.0f ||
-            centerPosition.x < 0.0f || centerPosition.y < 0.0f)
-        {
-            centerPosition = { 0.5f, 0.5f };
-        }
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->uvOffset_ = centerPosition;
 
         // ブラー開始の数フレームを最大強度のブラーをかける

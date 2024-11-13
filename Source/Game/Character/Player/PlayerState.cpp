@@ -1818,10 +1818,15 @@ namespace PlayerState
         // ----------------------------------------
         //  ラジアルブラーとビネット更新
         // ----------------------------------------
+        // 中心点をプレイヤーの腰に合わせる
         DirectX::XMFLOAT3 jointPosition_float3 = owner_->GetJointPosition("pelvis");
         DirectX::XMFLOAT2 jointPosition_float2 = Sprite::ConvertToScreenPos(jointPosition_float3);
         jointPosition_float2.x /= SCREEN_WIDTH;
         jointPosition_float2.y /= SCREEN_HEIGHT;
+        // 中心点を 0.0 ~ 1.0 の間に収める
+        jointPosition_float2.x = std::clamp(jointPosition_float2.x, 0.0f, 1.0f);
+        jointPosition_float2.y = std::clamp(jointPosition_float2.y, 0.0f, 1.0f);
+
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->uvOffset_ = jointPosition_float2;
         PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteCenter_ = jointPosition_float2;
 
@@ -2018,6 +2023,9 @@ namespace PlayerState
         DirectX::XMFLOAT2 jointPosition_float2 = Sprite::ConvertToScreenPos(jointPosition_float3);
         jointPosition_float2.x /= SCREEN_WIDTH;
         jointPosition_float2.y /= SCREEN_HEIGHT;
+        // 中心点を 0.0 ~ 1.0 の間に収める
+        jointPosition_float2.x = std::clamp(jointPosition_float2.x, 0.0f, 1.0f);
+        jointPosition_float2.y = std::clamp(jointPosition_float2.y, 0.0f, 1.0f);
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->uvOffset_ = jointPosition_float2;
         PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteCenter_ = jointPosition_float2;
 
