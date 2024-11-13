@@ -621,20 +621,16 @@ void EnemyDragon::RegisterCollisionData()
 
 #pragma region ---------- ÉWÉÉÉXÉgâÒîîªíËìoò^ ----------
     // ----- ÇΩÇΩÇ´Ç¬ÇØçUåÇ -----
-    RegisterJustDodgeDetectionData({ "SlamAttack_0", 2.2f, { 1.34f, 1.5f, 0.0f }, "Dragon15_spine2" }); // 0
-    RegisterJustDodgeDetectionData({ "SlamAttack_1", 2.2f, { 0.0f, 4.0f, 0.0f },  "Dragon15_spine2" }); 
-    RegisterJustDodgeDetectionData({ "SlamAttack_2", 2.2f, { 2.5f, -1.5f, 0.0f }, "Dragon15_spine2" }); 
-    RegisterJustDodgeDetectionData({ "SlamAttack_3", 2.0f, { 1.9f, 3.9f, 0.0f },  "Dragon15_spine2" }); 
-    RegisterJustDodgeDetectionData({ "SlamAttack_4", 2.0f, { 3.5f, 0.5f, 0.0f },  "Dragon15_spine2" }); 
-    RegisterJustDodgeDetectionData({ "SlamAttack_5", 2.0f, { 3.0f, 2.2f, 0.0f },  "Dragon15_spine2" }); // 5
+    RegisterJustDodgeDetectionData({ "SlamAttack_0", 2.0f, { 1.34f, 1.3f, 0.0f }, "Dragon15_spine2" }); // 0
+    RegisterJustDodgeDetectionData({ "SlamAttack_1", 2.0f, { 1.7f, 0.5f, 0.0f },  "Dragon15_spine2" }); // 1
 
     // ----- âÒì]çUåÇ -----
-    RegisterJustDodgeDetectionData({ "TurnAttack_0", 2.0f, { 0.0f, 1.0f, 0.0f },  "Dragon15_tail_01" }); // 6
+    RegisterJustDodgeDetectionData({ "TurnAttack_0", 2.0f, { 0.0f, 1.0f, 0.0f },  "Dragon15_tail_01" }); // 2
     RegisterJustDodgeDetectionData({ "TurnAttack_1", 2.0f, { 0.0f, -1.0f, 0.0f }, "Dragon15_tail_01" }); 
     RegisterJustDodgeDetectionData({ "TurnAttack_2", 2.0f, { 0.0f, 1.0f, 0.0f },  "Dragon15_tail_03" }); 
     RegisterJustDodgeDetectionData({ "TurnAttack_3", 2.0f, { 0.0f, -1.0f, 0.0f }, "Dragon15_tail_03" }); 
     RegisterJustDodgeDetectionData({ "TurnAttack_4", 2.0f, { 0.0f, 1.0f, 0.0f },  "Dragon15_tail_05" }); 
-    RegisterJustDodgeDetectionData({ "TurnAttack_5", 2.0f, { 0.0f, -1.0f, 0.0f }, "Dragon15_tail_05" }); // 11
+    RegisterJustDodgeDetectionData({ "TurnAttack_5", 2.0f, { 0.0f, -1.0f, 0.0f }, "Dragon15_tail_05" }); // 7
 
 
 

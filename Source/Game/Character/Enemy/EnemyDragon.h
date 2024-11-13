@@ -105,9 +105,9 @@ public:
     enum class JustDodgeData
     {
         SlamAttackStart = 0,
-        SlamAttackEnd   = 5,
-        TurnAttackStart = 6,
-        TurnAttackEnd   = 11,
+        SlamAttackEnd   = 1,
+        TurnAttackStart = 2,
+        TurnAttackEnd   = 7,
     };
 };
 
