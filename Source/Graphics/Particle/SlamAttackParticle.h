@@ -12,6 +12,8 @@ public:
     void Render()                             override;
     void DrawDebug()                          override;
 
+    void Remove(); // 削除
+
     // ----- パーティクル再生 -----
     void PlayChargeParticle(const DirectX::XMFLOAT3& handPosition);
     void PlayExplosionParticle(const DirectX::XMFLOAT3& emitterPosition);
@@ -79,5 +81,8 @@ private:
 
     // ----- ポイントライト -----
     Shader::PointLights pointLights_ = {};
+
+    // ----- 削除用 -----
+    bool isRemove_ = false;
 };
 

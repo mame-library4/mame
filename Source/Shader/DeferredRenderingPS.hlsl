@@ -82,6 +82,6 @@ PS_OUT main(VS_OUT psIn) : SV_TARGET
     PS_OUT output = (PS_OUT) 0;
     output.color = float4(color, data.baseColor_.a);
     //output.depth = data.depth_;
- 
+    
     return output;
 }

@@ -45,7 +45,7 @@ void SlamAttackParticle::Update(const float& elapsedTime)
     explosionParticle_.Update(csSlot_, cbSlot_, &constants_);
 
     // ポイントライト設定
-    if (chargeParticleData_.GetIsActive())
+    if (isRemove_ == false && chargeParticleData_.GetIsActive())
     {
         pointLights_.intensity_ += 30 * elapsedTime;
         pointLights_.intensity_ = min(pointLights_.intensity_, 15.0f);
@@ -65,6 +65,15 @@ void SlamAttackParticle::Render()
 void SlamAttackParticle::DrawDebug()
 {
     ImGui::DragFloat("Speed", &constants_.speed_);
+}
+
+// ----- 削除 -----
+void SlamAttackParticle::Remove()
+{
+    // 削除命令が出たので、削除する準備をする
+    isRemove_ = true;
+
+    pointLights_.intensity_ = 0.0f;
 }
 
 // ----- 再生 -----

@@ -198,3 +198,17 @@ float3 SpecularIBL(float3 normal, float3 eyeVector, float roughness, float3 f0, 
     
     return specularLight * (f0 * enyBrdf.x + enyBrdf.y);
 }
+
+//--------------------------------------------
+// リムライト
+//--------------------------------------------
+// N:法線(正規化済み)
+// E:視点方向ベクトル(正規化済み)
+// L:入射ベクトル(正規化済み)
+// C :ライト色
+// RimPower : リムライトの強さ(初期値はテキトーなので自分で設定するが吉)
+float3 CalcRimLight(float3 N, float3 E, float3 L, float3 C, float RimPower = 3.0f)
+{
+    float rim = 1.0f - saturate(dot(N, -E));
+    return C * pow(rim, RimPower) * saturate(dot(L, -E));
+}

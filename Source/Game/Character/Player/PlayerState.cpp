@@ -1065,7 +1065,8 @@ namespace PlayerState
         DirectX::XMFLOAT2 addForceDirection = XMFloat2Normalize(DirectX::XMFLOAT2(addForceDirection_.x, addForceDirection_.z) * -1.0f);
         
         float cross = XMFloat2Cross(addForceDirection, ownerFront);
-        float angle = acosf(XMFloat2Dot(addForceDirection, ownerFront));
+        float dot = std::clamp(XMFloat2Dot(addForceDirection, ownerFront), -1.0f, 1.0f);
+        float angle = acosf(dot);
 
         if (cross > 0)
         {
