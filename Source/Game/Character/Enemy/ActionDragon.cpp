@@ -213,11 +213,38 @@ namespace ActionDragon
 {
     const ActionBase::State KnockDownAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange())
+        {
+
+            return ActionBase::State::Failed;
+        }
+
         switch (owner_->GetStep())
         {
-        case 0:
+        case 0:// 初期化
+            // アニメーション再生
+            if (PlayAnimation())
+            {
+
+                // 次に進む
+                owner_->SetStep(1);
+            }
+
             break;
         case 1:
+
+            UpdateAnimationSpeed();
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                // フラグをリセット
+                owner_->SetIsStagger(false);
+
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+
             break;
         }
 
@@ -229,10 +256,63 @@ namespace ActionDragon
     {
         if (ImGui::TreeNodeEx("KnockDown", ImGuiTreeNodeFlags_Framed))
         {
+            if (ImGui::TreeNodeEx("---------- Slow ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("StartFrame", &slowStartFrame_, 0.01f, 0.0f, 5.0f);
+                ImGui::DragFloat("EndFrame", &slowEndFrame_, 0.01f, 0.0f, 5.0f);
+                ImGui::DragFloat("SlowSpeed", &slowAnimationSpeed_, 0.01f, 0.0f, 3.0f);
+                ImGui::DragFloat("MostSlowSpeed", &mostSlowAnimationSpeed_, 0.01f, 0.0f, 3.0f);
 
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- TransitionTime ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("SlamAttack", &transitionSlamAttack_, 0.01f, 0.0f, 0.5f);
+
+                ImGui::TreePop();
+            }
 
             ImGui::TreePop();
         }
+    }
+
+    // ----- アニメーション再生 -----
+    const bool KnockDownAction::PlayAnimation()
+    {
+        const Player::STATE playerState = PlayerManager::Instance().GetPlayer()->GetCurrentState();
+        // 現在プレイヤーがラッシュ攻撃中なので待機する
+        if (playerState == Player::STATE::RushAttack) return false;
+       
+        const Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(owner_->GetAnimationIndex());
+        float translationTime = 0.1f;
+        
+        if (animationIndex == Enemy::DragonAnimation::AttackSlam0)
+        {
+            translationTime = transitionSlamAttack_;
+        }
+
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::Damage, false, 1.0f, 0.3f);
+        owner_->SetTransitionTime(translationTime);
+
+        return true;
+    }
+
+    // ----- アニメーション速度更新 -----
+    void KnockDownAction::UpdateAnimationSpeed()
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+        float animationSpeed = 1.0f;
+
+        if (animationSeconds > slowStartFrame_ && animationSeconds < slowEndFrame_)
+        {
+            animationSpeed = slowAnimationSpeed_;
+        }
+        else if (animationSeconds > slowEndFrame_)
+        {
+            animationSpeed = mostSlowAnimationSpeed_;
+        }
+
+        owner_->SetAnimationSpeed(animationSpeed);
     }
 }
 

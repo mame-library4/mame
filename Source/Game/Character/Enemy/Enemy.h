@@ -171,9 +171,10 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const int GetStep() const { return step_; }
     void SetStep(const int& step) { step_ = step; }
 
-    // ----- ひるみ判定 -----
+    // ----- ひるみ -----
     [[nodiscard]] const bool GetIsStagger() const { return isStagger_; }
     void SetIsStagger(const bool& flag) { isStagger_ = flag; }
+    [[nodiscard]] const int GetStaggerPartIndex() const { return staggerPartIndex_; }
 
     // ----- 戦闘開始範囲 -----
     [[nodiscard]] const float GetBattleRadius() const { return battleRadius_; }
@@ -277,10 +278,11 @@ protected:
     bool isStageCollisionJudgement_ = false; // ステージとの判定をするか
 
     // ---------- 怯み ----------
-    bool isStagger_ = false; 
-    float   staggerValue_[static_cast<int>(PartName::Max)]          = {};
-    float   staggerValueCounter_[static_cast<int>(PartName::Max)]   = {};
-    int     staggerCount_[static_cast<int>(PartName::Max)]          = {};
+    float   staggerValue_[static_cast<int>(PartName::Max)]          = {}; // 怯み値
+    float   staggerValueCounter_[static_cast<int>(PartName::Max)]   = {}; // 怯み値カウント用
+    int     staggerCount_[static_cast<int>(PartName::Max)]          = {}; // 怯み回数カウント用
+    int     staggerPartIndex_                                       = 0;  // 怯んだ場所保存用
+    bool    isStagger_                                              = false; // 怯んだかのフラグ
 
     // ---------- 部位破壊 ----------
     bool  isPartDestruction_[static_cast<int>(PartName::Max)] = {}; // 部位破壊判定フラグ

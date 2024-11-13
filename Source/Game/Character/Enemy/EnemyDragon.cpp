@@ -289,10 +289,13 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Root", "Death", 0, BehaviorTree::SelectRule::None, new DeathJudgment(this), new ActionDragon::DeathAction(this));
 
     // --------------- ダウン ---------------
-    behaviorTree_->AddNode("Root", "Down", 0, BehaviorTree::SelectRule::None, new DownJudgment(this), new ActionDragon::DownAction(this));
+    behaviorTree_->AddNode("Root", "Down", 1, BehaviorTree::SelectRule::Priority, new DownJudgment(this), nullptr);
+    behaviorTree_->AddNode("Down", "KnockDown",  0, BehaviorTree::SelectRule::None, new KnockDownJudgment(this), new ActionDragon::KnockDownAction(this));
+    behaviorTree_->AddNode("Down", "NormalDown", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::DownAction(this));
+    
 
     // Priority
-    behaviorTree_->AddNode("Root", "Attack", 0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
     // SequentialLooping
     //behaviorTree_->AddNode("Root", "Attack", 0, BehaviorTree::SelectRule::SequentialLooping, nullptr, nullptr);
     // Random
@@ -417,6 +420,9 @@ bool EnemyDragon::CheckStatusChange()
         {
             staggerValueCounter_[i] = 0;
             ++staggerCount_[i];
+
+            // 怯んだ部位を保存
+            staggerPartIndex_ = i;
 
             // 怯みフラグを立てる
             SetIsStagger(true);

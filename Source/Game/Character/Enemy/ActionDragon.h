@@ -77,6 +77,20 @@ namespace ActionDragon
         KnockDownAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
         void DrawDebug()                                      override;
+
+    private:
+        [[nodiscard]] const bool PlayAnimation();
+        void UpdateAnimationSpeed();
+
+    private:
+        // ----- TransitionTime -----
+        float transitionSlamAttack_ = 0.2f;
+
+        // ----- AnimationSpeed -----
+        float slowStartFrame_           = 1.4f;
+        float slowEndFrame_             = 1.6f;
+        float slowAnimationSpeed_       = 0.7f;
+        float mostSlowAnimationSpeed_   = 0.6f;
     };
 
 #pragma region ---------- 攻撃のインパクトを考慮した行動 ----------
@@ -245,7 +259,7 @@ namespace ActionDragon
         float               minLerpSpeed_   = 1.0f;
         float               lerpSpeed_      = 1.0f;
 
-        // ----- TransitionFrame -----
+        // ----- TransitionTime -----
         float transitionSlamAttack_ = 0.2f;
         float transitionTurnAttack_ = 0.2f;
     };

@@ -10,10 +10,19 @@ public:
     const bool Judgment() override;
 };
 
+// ----- DownJudgment -----
 class DownJudgment : public JudgmentBase
 {
 public:
     DownJudgment(Enemy* owner) : JudgmentBase(owner) {}
+    const bool Judgment() override;
+};
+
+// ----- KnockDownJudgment -----
+class KnockDownJudgment : public JudgmentBase
+{
+public:
+    KnockDownJudgment(Enemy* owner) : JudgmentBase(owner) {}
     const bool Judgment() override;
 };
 

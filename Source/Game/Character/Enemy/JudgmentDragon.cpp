@@ -11,15 +11,30 @@ const bool DeathJudgment::Judgment()
     return false;
 }
 
+#pragma region ---------- Down ----------
 // ----- DownJudgment -----
 const bool DownJudgment::Judgment()
 {
     if (owner_->GetIsStagger() == false) return false;
 
-
     return true;
 }
 
+// ----- KnockDownJudgment -----
+const bool KnockDownJudgment::Judgment()
+{
+    const Player::STATE currentState = PlayerManager::Instance().GetPlayer()->GetCurrentState();
+
+    if (currentState == Player::STATE::RushAttack &&
+        owner_->GetStaggerPartIndex() == static_cast<int>(Enemy::PartName::Leg))
+    {
+        return true;
+    }
+
+    return false;
+}
+
+#pragma endregion ---------- Down ----------
 
 #if 0
 // ----- ‚Ð‚é‚Ý”»’è -----
@@ -141,3 +156,4 @@ const bool ComboFlySlamJudgment::Judgment()
     return false;
 }
 #endif
+
