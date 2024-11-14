@@ -27,10 +27,7 @@ private:
     void ResetAllAttackActiveFlag()                             override;
     void SetSlamAttackActiveFlag(const bool& flag = true)       override;
     void SetTurnAttackActiveFlag(const bool& flag = true)       override;
-    void SetTackleAttackActiveFlag(const bool& flag = true)     override;
-    void SetFlyAttackActiveFlag(const bool& flag = true)        override;
-    void SetComboSlamAttackActiveFlag(const bool& flag = true)  override;
-    void SetKnockBackAttackActiveFalg(const bool& flag = true)  override;
+    void SetGuardAttackActiveFalg(const bool& flag = true)      override;
 
     // ---------- ƒWƒƒƒXƒg‰ñ”ð”»’è ----------
     void ResetAllJustDodgeActiveFlag() override;
@@ -78,15 +75,16 @@ public:
         SlamAttackEnd           = 1,
         TrunAttackStart         = 2,
         TrunAttackEnd           = 8,
+        GuardAttackStart        = 9,
+        GuardAttackEnd          = 11,
 
-        TackleAttackStart       = 9,
-        TackleAttackEnd         = 13,
-        FlyAttackStart          = 14,
-        FlyAttackEnd            = 15,
-        ComboSlamAttackStart    = 16,
-        ComboSlamAttackEnd      = 18,
-        KnockBackAttackStart    = 19,
-        KnockBackAttackEnd      = 32,
+
+        //TackleAttackStart       = 9,
+        //TackleAttackEnd         = 13,
+        //FlyAttackStart          = 14,
+        //FlyAttackEnd            = 15,
+        //ComboSlamAttackStart    = 16,
+        //ComboSlamAttackEnd      = 18,
     };
     enum class DamageData
     {
@@ -104,10 +102,12 @@ public:
     };
     enum class JustDodgeData
     {
-        SlamAttackStart = 0,
-        SlamAttackEnd   = 1,
-        TurnAttackStart = 2,
-        TurnAttackEnd   = 7,
+        SlamAttackStart     = 0,
+        SlamAttackEnd       = 1,
+        TurnAttackStart     = 2,
+        TurnAttackEnd       = 7,
+        GuardAttackStart    = 8,
+        GuardAttackEnd      = 10,
     };
 };
 

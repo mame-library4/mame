@@ -21,7 +21,7 @@ private:
     const int               num_;           // 数字
     const DirectX::XMFLOAT3 hitPos_;        // 当たったところの位置
     DirectX::XMFLOAT3       addPos_;        // 散らばらせる用
-    const float             numSpriteSize_ = 32.0f; // 画像サイズ
+    float                   numSpriteSize_ = 24.0f; // 画像サイズ
     std::unique_ptr<Sprite> numSprite_[MaxDigit_];
 
     float lifeTimer_    = 0.0f; // 生存時間

@@ -34,8 +34,8 @@ UINumber::UINumber(const int& num, const DirectX::XMFLOAT3& hitPos, const Direct
     // •`‰æƒtƒ‰ƒO‚ğ—§‚Ä‚é
     SetIsDraw();
 
-    // •Ï”‰Šú‰»    
-    lifeTimer_ = 0.5f;
+    // •Ï”‰Šú‰»
+    lifeTimer_ = 0.25f;
     easingTimer_ = 0.0f;
 }
 

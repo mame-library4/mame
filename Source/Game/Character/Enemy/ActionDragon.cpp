@@ -112,6 +112,7 @@ namespace ActionDragon
         // 実行中ノードを中断するか
         if (owner_->CheckStatusChange())
         {
+            Finalize();
 
             return ActionBase::State::Failed;
         }
@@ -170,9 +171,7 @@ namespace ActionDragon
         case 3:
             if (owner_->IsPlayAnimation() == false)
             {
-                // フラグをリセット
-                owner_->SetIsStagger(false);
-                owner_->SetDownCollisionActiveFlag(false);
+                Finalize();
 
                 owner_->SetStep(0);
                 return ActionBase::State::Complete;
@@ -199,6 +198,13 @@ namespace ActionDragon
 
             ImGui::TreePop();
         }
+    }
+
+    // ----- 終了化 -----
+    void DownAction::Finalize()
+    {
+        owner_->SetIsStagger(false);
+        owner_->SetDownCollisionActiveFlag(false);
     }
 
     // ----- アニメーション再生 -----
@@ -1247,7 +1253,6 @@ namespace ActionDragon
 
             break;
         case 1:
-
             if (owner_->IsPlayAnimation() == false)
             {
                 owner_->PlayAnimation(Enemy::DragonAnimation::AttackKnockBackLoop, false);
@@ -1306,13 +1311,17 @@ namespace ActionDragon
             // 攻撃判定処理
             if (owner_->GetAnimationSeconds() > 1.0f)
             {
+                owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::GuardAttack, false);
+
                 if (owner_->GetIsAttackActive())
-                    owner_->SetKnockBackAttackActiveFalg(false);
+                    owner_->SetGuardAttackActiveFalg(false);
             }
             else if (owner_->GetAnimationSeconds() > 0.36f)
             {
+                owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::GuardAttack, true);
+
                 if (owner_->GetIsAttackActive() == false)
-                    owner_->SetKnockBackAttackActiveFalg();
+                    owner_->SetGuardAttackActiveFalg();
             }
 
             if (owner_->GetAnimationSeconds() > 1.75f)

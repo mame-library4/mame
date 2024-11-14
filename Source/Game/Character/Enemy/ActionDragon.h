@@ -62,6 +62,8 @@ namespace ActionDragon
         void DrawDebug()                                      override;
 
     private:
+        void Finalize();
+
         void PlayAnimation();
 
     private:

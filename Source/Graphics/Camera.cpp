@@ -128,10 +128,16 @@ void Camera::SetPerspectiveFov()
 {
     DirectX::XMFLOAT3 front = GetTransform()->CalcForward();
     DirectX::XMFLOAT3 rot = GetTransform()->GetRotation();
-    view_.eye_.x = target_.x + cameraOffset_.x + front.x - length_ * cosf(rot.x) * sinf(rot.y);
-    view_.eye_.y = target_.y + cameraOffset_.y + front.y - length_ * sinf(rot.x);
-    view_.eye_.z = target_.z + cameraOffset_.z + front.z - length_ * cosf(rot.x) * cosf(rot.y);
-    view_.focus_ = target_ + cameraOffset_ + targetOffset_;
+
+    DirectX::XMFLOAT3 worldOffset = {};
+    DirectX::XMStoreFloat3(&worldOffset, DirectX::XMVector3Transform(
+        DirectX::XMLoadFloat3(&localOffset_), GetTransform()->CalcWorldMatrix(1.0f)));
+    worldOffset = worldOffset - GetTransform()->GetPosition();
+
+    view_.eye_.x = target_.x + cameraOffset_.x + worldOffset.x + front.x - length_ * cosf(rot.x) * sinf(rot.y);
+    view_.eye_.y = target_.y + cameraOffset_.y + worldOffset.y + front.y - length_ * sinf(rot.x);
+    view_.eye_.z = target_.z + cameraOffset_.z + worldOffset.z + front.z - length_ * cosf(rot.x) * cosf(rot.y);
+    view_.focus_ = target_ + cameraOffset_ + targetOffset_ + worldOffset;
 
     GetTransform()->SetPosition(view_.eye_);
 
@@ -281,6 +287,7 @@ void Camera::DrawDebug()
         
         ImGui::DragFloat3("FocusOffset", &targetOffset_.x);
         ImGui::DragFloat3("CameraOffset", &cameraOffset_.x);
+        ImGui::DragFloat3("LocalOffset", &localOffset_.x);
 
         ImGui::DragFloat("VerticalRotationSpeed", &verticalRotationSpeed_);
         ImGui::DragFloat("HorizontalRotationSpeed", &horizontalRotationSpeed_);

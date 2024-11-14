@@ -2325,14 +2325,23 @@ namespace PlayerState
         Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
         Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(enemy->GetAnimationIndex());
 
-        // ÇΩÇΩÇ´Ç¬ÇØçUåÇ
-        if (animationIndex == Enemy::DragonAnimation::AttackSlam0)
+        const int animationData[] =
         {
-            targetJointName_ = "Dragon15_r_hand";
-        }
-        else if (animationIndex == Enemy::DragonAnimation::AttackTurn)
+            static_cast<int>(Enemy::DragonAnimation::AttackSlam0), static_cast<int>(Enemy::DragonAnimation::AttackTurn),
+            static_cast<int>(Enemy::DragonAnimation::AttackKnockBackEnd0),
+        };
+        const char* jointName[] =
         {
-            targetJointName_ = "Dragon15_l_horselink";
+            "Dragon15_r_hand", "Dragon15_l_horselink",
+            "Dragon15_l_foot",
+        };
+        
+        for (int i = 0; i < _countof(animationData); ++i)
+        {
+            if (animationData[i] != owner_->GetAnimationIndex()) continue;
+
+            targetJointName_ = jointName[i];
+            break;
         }
         
         targetPosition_ = enemy->GetJointPosition(targetJointName_.c_str());

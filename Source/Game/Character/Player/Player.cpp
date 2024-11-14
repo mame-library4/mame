@@ -9,7 +9,6 @@
 Player::Player()
     : Character("./Resources/Model/Character/Player/SwordGirl.gltf", 0.01f),
     weapon_("./Resources/Model/Character/Sword1/Sword.gltf")
-    //weapon_("./Resources/Model/Character/Sword/Sword.gltf")
 {
     // --- ステートマシン ---
     {
