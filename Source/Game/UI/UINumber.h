@@ -4,7 +4,7 @@
 class UINumber : public UI
 {
 public:
-    UINumber(const int& num, const DirectX::XMFLOAT3& hitPos);
+    UINumber(const int& num, const DirectX::XMFLOAT3& hitPos, const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f });
     ~UINumber() override {}
 
     void Update(const float& elapsedTime)   override; // çXêV

@@ -3,7 +3,7 @@
 #include "Character/Player/PlayerManager.h"
 
 // ----- コンストラクタ -----
-UINumber::UINumber(const int& num, const DirectX::XMFLOAT3& hitPos) :
+UINumber::UINumber(const int& num, const DirectX::XMFLOAT3& hitPos, const DirectX::XMFLOAT4& color) :
     UI(UIManager::UIType::UINumber, nullptr, "UINumber"),
     num_(num), hitPos_(hitPos)
 {
@@ -25,7 +25,7 @@ UINumber::UINumber(const int& num, const DirectX::XMFLOAT3& hitPos) :
         numSprite_[spriteIndex]->GetTransform()->SetTexSize(256.0f);
         numSprite_[spriteIndex]->GetTransform()->SetSize(numSpriteSize_);
 
-        //numSprite_[spriteIndex]->GetTransform()->SetColorA(0.5f);
+        numSprite_[spriteIndex]->GetTransform()->SetColor(color);
     }
 
     // どの数字を使用するか設定
@@ -82,6 +82,11 @@ void UINumber::DrawDebug()
     if (ImGui::TreeNode(GetName().c_str()))
     {
         ImGui::DragFloat("LifeTimer", &lifeTimer_);
+
+        for (int i = 0; i < digit_; ++i)
+        {
+            numSprite_[i]->DrawDebug();
+        }
 
         ImGui::TreePop();
     }

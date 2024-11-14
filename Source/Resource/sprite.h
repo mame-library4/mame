@@ -55,7 +55,7 @@ public:
         [[nodiscard]] const float GetColorG() const { return color_.y; }
         [[nodiscard]] const float GetColorB() const { return color_.z; }
         [[nodiscard]] const float GetColorA() const { return color_.w; }
-        void SetColor(const DirectX::XMFLOAT4& color) { color_ = color_; }
+        void SetColor(const DirectX::XMFLOAT4& color) { color_ = color; }
         void SetColor(const DirectX::XMFLOAT3& color) { color_ = { color.x, color.y, color.z, color_.w }; }
         void SetColor(const float& r, const float& g, const float& b, const float& a) { color_ = { r, g, b, a }; }
         void SetColor(const float& r, const float& g, const float& b) { color_ = { r, g, b, color_.w }; }

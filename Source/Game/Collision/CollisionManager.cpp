@@ -157,7 +157,11 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
 
                     enemy->AddDamage(damage, enemyDataIndex);
 
-                    UINumber* ui = new UINumber(damage, enemyData.GetPosition());
+                    const DirectX::XMFLOAT4 defaultColor = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+                    const DirectX::XMFLOAT4 weakPointColor = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+                    DirectX::XMFLOAT4 color = isWeakPoint ? weakPointColor : defaultColor;
+
+                    UINumber* ui = new UINumber(damage, enemyData.GetPosition(), color);
                 }
                 
                 // PlayerÇÃçUåÇîªíËÇñ≥Ç≠Ç∑
