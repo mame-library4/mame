@@ -166,6 +166,39 @@ namespace ActionDragon
 
     };
 
+    // ----- ComboSlamAttackAction -----
+    class ComboSlamAttackAction : public ActionBase
+    {
+    public:
+        ComboSlamAttackAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
+
+    private:
+        void Finalize();        // 終了化 
+        void PlayAnimation();   // アニメーション再生
+        
+        void UpdateAnimationSpeed(); // アニメーション速度調整
+
+    private:
+        // ---------- パーティクル ----------
+        static const int maxParticleData_ = 3;
+        SlamAttackParticle* slamAttackParticle_[maxParticleData_] = { nullptr, nullptr, nullptr };
+        bool isPlayChargeParticle_      = false;
+        bool isPlayExplosionParticle_   = false;
+
+        // ---------- Animation ----------
+        float changeAnimationFrame_ = 1.9f;
+        float animationStartFrame_  = 0.75f;
+        float transitionSlamAttack_ = 0.25f;
+
+        // ---------- Slow ----------
+        float slowAnimationSpeed_   = 0.30f; // スロー速度
+        float slowStartFrame_       = 1.25f; // スロー開始フレーム
+        float slowEndFrame_         = 1.35f; // スロー終了フレーム
+
+    };
+
     // ----- TurnAttackAction -----
     class TurnAttackAction : public ActionBase
     {

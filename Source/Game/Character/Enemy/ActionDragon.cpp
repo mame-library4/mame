@@ -663,6 +663,128 @@ namespace ActionDragon
     }
 }
 
+// ----- ComboSlam -----
+namespace ActionDragon
+{
+    const ActionBase::State ComboSlamAttackAction::Run(const float& elapsedTime)
+    {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange())
+        {
+            Finalize();
+
+            return ActionBase::State::Failed;
+        }
+
+        switch (owner_->GetStep())
+        {
+        case 0:// 初期化
+            // アニメーション再生
+            PlayAnimation();
+
+            // パーティクル生成
+            for (int i = 0; i < maxParticleData_; ++i)
+            {
+                slamAttackParticle_[i] = new SlamAttackParticle();
+            }
+
+            owner_->SetStep(1);
+
+            break;
+        case 1:
+
+            UpdateAnimationSpeed();
+
+            if(owner_->GetAnimationSeconds() > changeAnimationFrame_)
+            {
+                owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackComboSlam0, false, 1.0f, animationStartFrame_);
+                owner_->SetTransitionTime(transitionSlamAttack_);
+                owner_->SetStep(2);
+            }
+
+            break;
+        case 2:
+
+            UpdateAnimationSpeed();
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+
+            break;
+        }
+
+        return ActionBase::State::Run;
+    }
+
+    // ----- ImGui用 -----
+    void ComboSlamAttackAction::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx("ComboSlamAttack", ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- Animation ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("ChangeAnimationFrame", &changeAnimationFrame_, 0.01f, 0.0f, 2.0f);
+                ImGui::DragFloat("AnimationStartFrame", &animationStartFrame_, 0.01f, 0.0f, 2.0f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- Slow ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("SlowAnimationSpeed", &slowAnimationSpeed_, 0.01f, 0.0f, 3.0f);
+                ImGui::DragFloat("SlowStartFrame", &slowStartFrame_, 0.01f, 0.0f, 2.0f);
+                ImGui::DragFloat("SlowEndFrame", &slowEndFrame_, 0.01f, 0.0f, 2.0f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- TransitionTime ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("SlamAttack", &transitionSlamAttack_, 0.01f, 0.0f, 1.0f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- 終了化 -----
+    void ComboSlamAttackAction::Finalize()
+    {
+        for (int i = 0; i < maxParticleData_; ++i)
+        {
+            if (slamAttackParticle_[i] != nullptr)
+            {
+                slamAttackParticle_[i]->Remove();
+                slamAttackParticle_[i] = nullptr;
+            }
+        }
+
+    }
+
+    // ----- アニメーション再生 -----
+    void ComboSlamAttackAction::PlayAnimation()
+    {
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackComboSlam0, false);
+    }
+
+    // ----- アニメーション速度調整 -----
+    void ComboSlamAttackAction::UpdateAnimationSpeed()
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+        float animationSpeed = 1.0f;
+
+        if (animationSeconds > slowStartFrame_ && animationSeconds < slowEndFrame_)
+        {
+            animationSpeed = slowAnimationSpeed_;
+        }
+
+        owner_->SetAnimationSpeed(animationSpeed);
+    }
+}
+
 // ----- TurnAttackAction -----
 namespace ActionDragon
 {
