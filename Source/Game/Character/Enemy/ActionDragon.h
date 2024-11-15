@@ -180,12 +180,20 @@ namespace ActionDragon
         
         void UpdateAnimationSpeed(); // アニメーション速度調整
 
+        void PlayChargeEffect(const DirectX::XMFLOAT3& color);
+        void PlayExplosionEffect(const DirectX::XMFLOAT3& color);
+
     private:
         // ---------- パーティクル ----------
-        static const int maxParticleData_ = 3;
-        SlamAttackParticle* slamAttackParticle_[maxParticleData_] = { nullptr, nullptr, nullptr };
+        SlamAttackParticle* slamAttackParticle_ = nullptr;
         bool isPlayChargeParticle_      = false;
         bool isPlayExplosionParticle_   = false;
+        DirectX::XMFLOAT3 particleColor_[3] = 
+        {
+            DirectX::XMFLOAT3(1.0, 0.42, 0.13),
+            DirectX::XMFLOAT3(1.0, 0.1, 0.1),
+            DirectX::XMFLOAT3(1.0, 0.3, 0.2)
+        };
 
         // ---------- Animation ----------
         float changeAnimationFrame_ = 1.9f;
@@ -197,6 +205,8 @@ namespace ActionDragon
         float slowStartFrame_       = 1.25f; // スロー開始フレーム
         float slowEndFrame_         = 1.35f; // スロー終了フレーム
 
+
+        bool isLoop_ = false;
     };
 
     // ----- TurnAttackAction -----
@@ -248,6 +258,42 @@ namespace ActionDragon
         // ----- Movement -----
         AddForceData addForceData_;
         bool         isAbleMove_ = true;
+    };
+
+    // ----- GuardAction -----
+    class GuardAction : public ActionBase
+    {
+    public:
+        GuardAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
+
+    private:
+        float oldHealth_ = 0.0f;
+
+        int loopCounter_ = 0;
+        int loopMax_ = 2;
+    };
+
+    // ----- TackleAction -----
+    class TackleAction : public ActionBase
+    {
+    public:
+        TackleAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
+
+    private:
+        void PlayAnimation(); // アニメーション再生
+
+        void Turn(const float& elapsedTime); // 旋回処理
+
+    private:
+        AddForceData addForceData_ = {};
+
+        float rotationStartFrame_ = 0.3f;
+        float rotationEndFrame_ = 0.16f;
+
     };
 
     // ----- SuperNovaAction -----
@@ -319,20 +365,6 @@ namespace ActionDragon
 
 #pragma endregion ---------- 攻撃 ----------
 
-    // ----- GuardAction -----
-    class GuardAction : public ActionBase
-    {
-    public:
-        GuardAction(Enemy* owner) : ActionBase(owner) {}
-        const ActionBase::State Run(const float& elapsedTime) override;
-        void DrawDebug()                                      override;
-
-    private:
-        float oldHealth_ = 0.0f;
-        
-        int loopCounter_ = 0;
-        int loopMax_ = 2;
-    };
 
 #pragma region ---------- 未完成 ----------
     // ----- Meteor -----

@@ -73,19 +73,23 @@ void SlamAttackParticle::Remove()
     // çÌèúñΩóﬂÇ™èoÇΩÇÃÇ≈ÅAçÌèúÇ∑ÇÈèÄîıÇÇ∑ÇÈ
     isRemove_ = true;
 
+    lifeTimer_ = 1.0f;
+
     pointLights_.intensity_ = 0.0f;
 }
 
 // ----- çƒê∂ -----
-void SlamAttackParticle::PlayChargeParticle(const DirectX::XMFLOAT3& handPosition)
+void SlamAttackParticle::PlayChargeParticle(const DirectX::XMFLOAT3& handPosition, const DirectX::XMFLOAT3& color)
 {
     constants_.handPosition_ = handPosition;
+    constants_.color_ = color;
     chargeParticleData_.PlayParticle(csSlot_, cbSlot_, &constants_);
 }
 
-void SlamAttackParticle::PlayExplosionParticle(const DirectX::XMFLOAT3& emitterPosition)
+void SlamAttackParticle::PlayExplosionParticle(const DirectX::XMFLOAT3& emitterPosition, const DirectX::XMFLOAT3& color)
 {
     constants_.emitterPosition_ = emitterPosition;
+    constants_.color_ = color;
     explosionParticle_.PlayParticle(csSlot_, cbSlot_, &constants_);
 }
 

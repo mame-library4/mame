@@ -15,8 +15,8 @@ public:
     void Remove(); // 削除
 
     // ----- パーティクル再生 -----
-    void PlayChargeParticle(const DirectX::XMFLOAT3& handPosition);
-    void PlayExplosionParticle(const DirectX::XMFLOAT3& emitterPosition);
+    void PlayChargeParticle(const DirectX::XMFLOAT3& handPosition, const DirectX::XMFLOAT3& color);
+    void PlayExplosionParticle(const DirectX::XMFLOAT3& emitterPosition, const DirectX::XMFLOAT3& color);
 
     void UpdateHandPosition(const DirectX::XMFLOAT3& handPosition);
 
@@ -56,8 +56,8 @@ private:
         float               deltaTime_          = 0.0f;
         DirectX::XMFLOAT3   emitterPosition_    = {};
         float               speed_              = 15.0f;
+        DirectX::XMFLOAT3   color_              = {};
         float               size_               = 0.04f; 
-        DirectX::XMFLOAT3   dummy_        = {};
     };
 
 #pragma endregion ---------- ParticleData ----------
@@ -77,7 +77,7 @@ private:
     
     Constants               constants_;
 
-    float lifeTimer_ = 5.0f;
+    float lifeTimer_ = 20.0f;
 
     // ----- ポイントライト -----
     Shader::PointLights pointLights_ = {};

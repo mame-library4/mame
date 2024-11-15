@@ -2323,7 +2323,7 @@ namespace PlayerState
     void RushAttackState::SetTargetPosition()
     {
         Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
-        Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(enemy->GetAnimationIndex());
+        const int animationIndex = enemy->GetAnimationIndex();
 
         const int animationData[] =
         {
@@ -2338,7 +2338,7 @@ namespace PlayerState
         
         for (int i = 0; i < _countof(animationData); ++i)
         {
-            if (animationData[i] != owner_->GetAnimationIndex()) continue;
+            if (animationData[i] != animationIndex) continue;
 
             targetJointName_ = jointName[i];
             break;

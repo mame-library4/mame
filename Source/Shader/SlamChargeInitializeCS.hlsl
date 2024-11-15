@@ -34,7 +34,7 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     p.velocity_ = normalize(p.velocity_ - vec) * speed;
     
     p.size_ = size_;
-    p.color_ = float4(1.0, 0.42, 0.13, 0);
+    p.color_ = float4(color_.rgb, 0);
     p.offsetPosition_ = vec * 3.0f;
     if (speed > 15.0f)
     {

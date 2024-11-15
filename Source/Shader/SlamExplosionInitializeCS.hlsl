@@ -26,7 +26,7 @@ void main(uint3 dtid : SV_DISPATCHTHREADID)
     p.velocity_ = normalize(direction) * adjustSpeed;
     p.position_ = emitterPosition_ + float3(0.0, ringHeight, 0.0);
     
-    p.color_ = float4(1.0, 0.42, 0.13, 1.0);
+    p.color_ = float4(color_.rgb, 1.0);
     
     float maxSize = 0.03;
     float size = pow(0.1, radiusFactor);

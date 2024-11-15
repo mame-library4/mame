@@ -301,12 +301,14 @@ void EnemyDragon::RegisterBehaviorNode()
     // Random
     //behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Random, nullptr, nullptr);
 
-    behaviorTree_->AddNode("Attack", "ComboSlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAttackAction(this));
-    behaviorTree_->AddNode("Attack", "Guard",           0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::GuardAction(this));
     behaviorTree_->AddNode("Attack", "SlamAttack",      0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
-    behaviorTree_->AddNode("Attack", "SuperNova",       0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
+    behaviorTree_->AddNode("Attack", "TackleAttack",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));  
 
     behaviorTree_->AddNode("Attack", "TurnAttack",      0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
+    behaviorTree_->AddNode("Attack", "Guard",           0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::GuardAction(this));
+    behaviorTree_->AddNode("Attack", "ComboSlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAttackAction(this));
+    behaviorTree_->AddNode("Attack", "SuperNova",       0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
+
     behaviorTree_->AddNode("Attack", "Walk",            0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));    
     
     

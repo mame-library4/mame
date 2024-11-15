@@ -6,5 +6,6 @@ cbuffer Constants : register(b2)
     float  deltaTime_;
     float3 emitterPosition_;
     float  speed_;
+    float3 color_;
     float  size_;
 }
