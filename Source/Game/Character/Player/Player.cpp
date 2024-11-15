@@ -362,8 +362,7 @@ void Player::Turn(const float& elapsedTime)
         float forwardCross = XMFloat2Cross(cameraForward, playerForward);
 
         // 内積で回転幅を算出
-        float dot = XMFloat2Dot(cameraForward, playerForward);
-        dot = std::clamp(dot, -1.0f, 1.0f);
+        float dot = std::clamp(XMFloat2Dot(cameraForward, playerForward), -1.0f, 1.0f);
 
         float angle = acosf(dot);
         if (angle < DirectX::XMConvertToRadians(1)) return;
@@ -454,7 +453,8 @@ void Player::CalculateRotationAdjustment()
     DirectX::XMFLOAT2 playerForward = XMFloat2Normalize({forward.x, forward.z });
 
     // 回転角を算出
-    float angle = acosf(XMFloat2Dot(stickDirection, playerForward));
+    float dot = std::clamp(XMFloat2Dot(stickDirection, playerForward), -1.0f, 1.0f);
+    float angle = acosf(dot);
 
     // 回転角が大きくないので回転補正を行わない
     if (fabsf(angle) < rotateAngleThreshold_)
@@ -503,7 +503,9 @@ void Player::UpdateStaminaRecovery(const float& elapsedTime)
 
     // 特定のステート時はスタミナを回復しない
     const STATE currentState = GetCurrentState();
-    if (currentState == STATE::Dodge || currentState == STATE::Counter || currentState == STATE::CounterCombo)
+    if (currentState == STATE::Dodge || currentState == STATE::Counter ||
+        currentState == STATE::CounterCombo || currentState == STATE::JustDodge ||
+        currentState == STATE::RushAttack)
     {
         return;
     }

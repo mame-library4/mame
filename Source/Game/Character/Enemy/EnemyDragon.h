@@ -27,7 +27,8 @@ private:
     void ResetAllAttackActiveFlag()                             override;
     void SetSlamAttackActiveFlag(const bool& flag = true)       override;
     void SetTurnAttackActiveFlag(const bool& flag = true)       override;
-    void SetGuardAttackActiveFalg(const bool& flag = true)      override;
+    void SetGuardAttackActiveFlag(const bool& flag = true)      override;
+    void SetTackleAttackActiveFlag(const bool& flag = true)     override;
 
     // ---------- ƒWƒƒƒXƒg‰ñ”ð”»’è ----------
     void ResetAllJustDodgeActiveFlag() override;
@@ -77,10 +78,10 @@ public:
         TrunAttackEnd           = 8,
         GuardAttackStart        = 9,
         GuardAttackEnd          = 11,
+        TackleAttackStart       = 12,
+        TackleAttackEnd         = 13,
 
 
-        //TackleAttackStart       = 9,
-        //TackleAttackEnd         = 13,
         //FlyAttackStart          = 14,
         //FlyAttackEnd            = 15,
         //ComboSlamAttackStart    = 16,
@@ -108,6 +109,8 @@ public:
         TurnAttackEnd       = 7,
         GuardAttackStart    = 8,
         GuardAttackEnd      = 10,
+        TackleAttackStart   = 11,
+        TackleAttackEnd     = 13,
     };
 };
 

@@ -24,7 +24,6 @@ const bool DownJudgment::Judgment()
 const bool KnockDownJudgment::Judgment()
 {
     const Player::STATE currentState = PlayerManager::Instance().GetPlayer()->GetCurrentState();
-
     if (currentState == Player::STATE::RushAttack &&
         owner_->GetStaggerPartIndex() == static_cast<int>(Enemy::PartName::Leg))
     {

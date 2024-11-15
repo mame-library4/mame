@@ -560,7 +560,10 @@ namespace PlayerState
                 const DirectX::XMFLOAT3 playerFront_float3 = owner_->GetTransform()->CalcForward();
                 const DirectX::XMFLOAT2 knockBackDirection = XMFloat2Normalize({ knockBackDirection_float3.x, knockBackDirection_float3.z });
                 const DirectX::XMFLOAT2 playerFront = XMFloat2Normalize({ playerFront_float3.x, playerFront_float3.z });
-                float angle = acosf(XMFloat2Dot(knockBackDirection, playerFront));
+                
+                float dot = std::clamp(XMFloat2Dot(knockBackDirection, playerFront), -1.0f, 1.0f);
+                float angle = acosf(dot);
+
                 float cross = XMFloat2Cross(knockBackDirection, playerFront);
                 if (cross > 0)  owner_->GetTransform()->AddRotationY(-angle);
                 else            owner_->GetTransform()->AddRotationY(angle);
@@ -1727,16 +1730,17 @@ namespace PlayerState
             ownerFront = XMFloat2Normalize(ownerFront);
             
             // ì‡êœÇ≈äpìxÇéZèo
-            float dot = acosf(XMFloat2Dot(cameraInput, ownerFront));
+            float dot = std::clamp(XMFloat2Dot(cameraInput, ownerFront), -1.0f, 1.0f);
+            float angle = acosf(dot);
 
             // ç∂âEîªíË
             float cross = XMFloat2Cross(cameraInput, ownerFront);
 
             // âÒì]äpÇ™ÇXÇOìxÇÊÇËÇ‡è¨Ç≥ÇØÇÍÇŒ ëO,âE,ç∂ ÇÃéOë
-            if (dot < DirectX::XM_PIDIV2)
+            if (angle < DirectX::XM_PIDIV2)
             {
                 // âÒì]äpÇ™ÇSÇTìxÇÊÇËÇ‡è¨Ç≥ÇØÇÍÇŒ ëOï˚å¸
-                if (dot < DirectX::XM_PIDIV4)
+                if (angle < DirectX::XM_PIDIV4)
                 {                    
                     owner_->PlayBlendAnimation(Player::Animation::RollFront, false, animationSpeed, animationStartFrame_);
                     return;
@@ -1757,7 +1761,7 @@ namespace PlayerState
             else
             {
                 // âÒì]äpÇ™ÇPÇRÇTìxÇÊÇËÇ‡ëÂÇ´ÇØÇÍÇŒ å„ï˚å¸
-                if (dot > DirectX::XM_PIDIV2 + DirectX::XM_PIDIV4)
+                if (angle > DirectX::XM_PIDIV2 + DirectX::XM_PIDIV4)
                 {
                     owner_->PlayBlendAnimation(Player::Animation::RollBack, false, animationSpeed, animationStartFrame_);
                     return;
@@ -2300,7 +2304,7 @@ namespace PlayerState
         float cross = XMFloat2Cross(vec, ownerFront);
 
         // ì‡êœÇ≈âÒì]ïùÇéZèo
-        float dot = XMFloat2Dot(vec, ownerFront);
+        float dot = std::clamp(XMFloat2Dot(vec, ownerFront), -1.0f, 1.0f);
         float angle = acosf(dot);
 
         if (angle < DirectX::XMConvertToRadians(1)) return;
@@ -2328,12 +2332,13 @@ namespace PlayerState
         const int animationData[] =
         {
             static_cast<int>(Enemy::DragonAnimation::AttackSlam0), static_cast<int>(Enemy::DragonAnimation::AttackTurn),
-            static_cast<int>(Enemy::DragonAnimation::AttackKnockBackEnd0),
+            static_cast<int>(Enemy::DragonAnimation::AttackKnockBackEnd0), static_cast<int>(Enemy::DragonAnimation::AttackTackle1),
+            static_cast<int>(Enemy::DragonAnimation::AttackTackle3),
         };
         const char* jointName[] =
         {
             "Dragon15_r_hand", "Dragon15_l_horselink",
-            "Dragon15_l_foot",
+            "Dragon15_l_foot", "Dragon15_l_calf", "Dragon15_r_calf"
         };
         
         for (int i = 0; i < _countof(animationData); ++i)
@@ -2625,10 +2630,11 @@ namespace PlayerState
                 ownerFront = XMFloat2Normalize(ownerFront);
 
                 // ì‡êœÇ≈äpìxÇéZèo
-                float dot = acosf(XMFloat2Dot(addForceDirection_, ownerFront));
+                float dot = std::clamp(XMFloat2Dot(addForceDirection_, ownerFront), -1.0f, 1.0f);
+                float angle = acosf(dot);
 
                 // 90ìxà»è„âÒì]äpÇ™Ç†ÇÈ
-                if (dot > DirectX::XM_PIDIV2)
+                if (angle > DirectX::XM_PIDIV2)
                 {
                     // ç∂âEîªíË
                     float cross = XMFloat2Cross(addForceDirection_, ownerFront);
@@ -2674,29 +2680,25 @@ namespace PlayerState
         ownerForward = XMFloat2Normalize(ownerForward);
 
         // äOêœÇÇµÇƒÇ«ÇøÇÁÇ…âÒì]Ç∑ÇÈÇÃÇ©ÇîªíËÇ∑ÇÈ
-        float forwardCross = XMFloat2Cross(addForceDirection_, ownerForward);
+        float corss = XMFloat2Cross(addForceDirection_, ownerForward);
 
         // ì‡êœÇ≈âÒì]ïùÇéZèo
-        float forwardDot = XMFloat2Dot(addForceDirection_, ownerForward) - 1.0f;
-
-        if (forwardDot > -0.01f)
-        {
-            isRotating_ = false;
-        }
+        float dot = std::clamp(XMFloat2Dot(addForceDirection_, ownerForward), -1.0f, 1.0f);
+        float angle = acosf(dot);
+        if (angle < DirectX::XMConvertToRadians(1)) return;
 
         // TODO:âÒì]ë¨ìxÇå≈íËílÇ≈ì¸ÇÍÇøÇ·Ç¡ÇƒÇÈ
         //const float speed = owner_->GetRotateSpeed() * elapsedTime;
         const float speed = 8.0f * elapsedTime;
-        float rotateY = forwardDot * speed;
-        rotateY = std::min(rotateY, -0.7f * speed);
+        float rotateY = angle * speed;
 
-        if (forwardCross > 0)
+        if (corss > 0)
         {
-            owner_->GetTransform()->AddRotationY(rotateY);
+            owner_->GetTransform()->AddRotationY(-rotateY);
         }
         else
         {
-            owner_->GetTransform()->AddRotationY(-rotateY);
+            owner_->GetTransform()->AddRotationY(rotateY);
         }
     }
 

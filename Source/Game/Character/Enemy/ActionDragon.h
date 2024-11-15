@@ -63,8 +63,7 @@ namespace ActionDragon
 
     private:
         void Finalize();
-
-        void PlayAnimation();
+        [[nodiscard]] const bool PlayAnimation();
 
     private:
         int loopCounter_ = 0;
@@ -284,9 +283,13 @@ namespace ActionDragon
         void DrawDebug()                                      override;
 
     private:
-        void PlayAnimation(); // アニメーション再生
+        void Finalize();        // 終了化
+        void PlayAnimation();   // アニメーション再生
 
         void Turn(const float& elapsedTime); // 旋回処理
+
+        // 前足が地面に埋まらないようにする
+        void AdjustForGroundPenetration(const float& elapsedTime);
 
     private:
         AddForceData addForceData_ = {};
@@ -294,6 +297,9 @@ namespace ActionDragon
         float rotationStartFrame_ = 0.3f;
         float rotationEndFrame_ = 0.16f;
 
+        float easingTimer_ = 0.0f;
+
+        bool isCurrentNodeCancelled_ = false;
     };
 
     // ----- SuperNovaAction -----

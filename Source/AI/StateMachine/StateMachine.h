@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include "State.h"
 
 template <class T>
@@ -49,6 +50,10 @@ inline void StateMachine<T>::DrawDebug()
 {
     if (ImGui::TreeNodeEx("StateMachine", ImGuiTreeNodeFlags_Framed))
     {
+        std::string text = "CurrentState : ";
+        std::string stateName = currentState->GetName();
+        text = text + stateName;
+        ImGui::Text(text.c_str());
         ImGui::BeginChild(ImGui::GetID((void*)0), ImVec2(450, 300), ImGuiWindowFlags_NoTitleBar);
         for (T* state : statePool)
         {

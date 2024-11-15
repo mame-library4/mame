@@ -23,7 +23,7 @@ void Enemy::Turn(const float& elapsedTime, const DirectX::XMFLOAT3& targetPos)
     float cross = XMFloat2Cross(vec, ownerFront);
 
     // “àÏ‚Å‰ñ“]•‚ğZo
-    float dot = XMFloat2Dot(vec, ownerFront);
+    float dot = std::clamp(XMFloat2Dot(vec, ownerFront), -1.0f, 1.0f);
     float angle = acosf(dot);
 
     if (angle < DirectX::XMConvertToRadians(1)) return;

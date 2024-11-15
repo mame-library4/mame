@@ -47,12 +47,11 @@ void EnemyDragon::Initialize()
 
     PlayAnimation(Enemy::DragonAnimation::Idle0, true);
 
-
     // UŒ‚”»’è –³Œø‰»
     ResetAllAttackActiveFlag();
 
     // ƒWƒƒƒXƒg‰ñ”ğ”»’è@–³Œø‰»
-    ResetAllJustDodgeActiveFlag();
+    ResetAllJustDodgeActiveFlag();    
 
     // ‰Ÿ‚µo‚µ”»’è
     SetDownCollisionActiveFlag(false);
@@ -155,8 +154,9 @@ void EnemyDragon::DrawDebug()
             { 
                 "SlamAttack",
                 "TurnAttack",
+                "GuardAttack",
+                "TackleAttack",
                 //"KnockBackAttack",
-                //"TackleAttack",
                 //"FireBreath",
             };
 
@@ -301,8 +301,8 @@ void EnemyDragon::RegisterBehaviorNode()
     // Random
     //behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Random, nullptr, nullptr);
 
-    behaviorTree_->AddNode("Attack", "SlamAttack",      0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
     behaviorTree_->AddNode("Attack", "TackleAttack",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));  
+    behaviorTree_->AddNode("Attack", "SlamAttack",      0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
 
     behaviorTree_->AddNode("Attack", "TurnAttack",      0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
     behaviorTree_->AddNode("Attack", "Guard",           0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::GuardAction(this));
@@ -593,7 +593,13 @@ void EnemyDragon::RegisterCollisionData()
     // ----- ƒK[ƒhUŒ‚ -----
     RegisterAttackDetectionData({ "GuardAttack_0",  1.5f, { 2.5f, 0.0f, 0.0f },   "Dragon15_r_wing_12" }); // 9
     RegisterAttackDetectionData({ "GuardAttack_1",  1.5f, { 0.0f, -0.3f, 0.7f },   "Dragon15_r_wing_10" });
-    RegisterAttackDetectionData({ "GuardAttack_2",  1.5f, { 0.0f, -0.3f, -0.5f },  "Dragon15_r_wing_04" }); // 12
+    RegisterAttackDetectionData({ "GuardAttack_2",  1.5f, { 0.0f, -0.3f, -0.5f },  "Dragon15_r_wing_04" }); // 11
+
+    // ----- “ËiUŒ‚ -----
+    RegisterAttackDetectionData({ "TackleAttack_0",  2.0f, { 1.0f, 0.0f, 0.0f },   "Dragon15_neck_1" });    // 12
+    RegisterAttackDetectionData({ "TackleAttack_1",  2.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_spine0" });    // 13
+
+    // ----- ’@‚«•t‚¯ƒRƒ“ƒ{UŒ‚ -----
 
 #pragma endregion ---------- UŒ‚”»’è“o˜^ ----------
 
@@ -615,6 +621,11 @@ void EnemyDragon::RegisterCollisionData()
     RegisterJustDodgeDetectionData({ "GuardAttack_1", 2.5f, { 0.0f, -0.3f, 0.7f }, "Dragon15_r_wing_10" });
     RegisterJustDodgeDetectionData({ "GuardAttack_2", 2.5f, { 0.0f, -0.3f, -0.5f }, "Dragon15_r_wing_04" }); // 10
 
+    // ----- “ËiUŒ‚ -----
+    RegisterJustDodgeDetectionData({ "TackleAttack_0", 3.0f, { 1.5f, 0.0f, 0.0f }, "Dragon15_neck_1" }); // 11
+    RegisterJustDodgeDetectionData({ "TackleAttack_1", 3.0f, { 0.0f, 0.0f, 0.0f }, "Dragon15_spine0" }); // 12
+    RegisterJustDodgeDetectionData({ "TackleAttack_2", 3.0f, { -2.0f, 0.0f, 0.0f }, "Dragon15_spine0" }); // 13
+
 #pragma endregion ---------- ƒWƒƒƒXƒg‰ñ”ğ”»’è“o˜^ ----------
 }
 
@@ -635,7 +646,7 @@ void EnemyDragon::UpdateCollisions(const float& elapsedTime)
         data.SetJointPosition(GetJointPosition(data.GetUpdateName(), data.GetOffsetPosition()));
     }
 
-    for(int i = AttackData::GuardAttackStart; i <= AttackData::GuardAttackEnd; ++i)
+    for(int i = AttackData::GuardAttackStart; i <= AttackData::TackleAttackEnd; ++i)
     {
         AttackDetectionData& data = GetAttackDetectionData(i);
         DirectX::XMFLOAT3 pos = data.GetPosition();
@@ -706,12 +717,24 @@ void EnemyDragon::SetTurnAttackActiveFlag(const bool& flag)
 }
 
 // ----- ƒK[ƒhUŒ‚”»’èİ’è -----
-void EnemyDragon::SetGuardAttackActiveFalg(const bool& flag)
+void EnemyDragon::SetGuardAttackActiveFlag(const bool& flag)
 {
     // UŒ‚”»’èƒtƒ‰ƒO‚ğƒZƒbƒg‚·‚é
     SetIsAttackActive(flag);
 
     for (int i = AttackData::GuardAttackStart; i <= AttackData::GuardAttackEnd; ++i)
+    {
+        GetAttackDetectionData(i).SetIsActive(flag);
+    }
+}
+
+// ----- “ËiUŒ‚”»’èİ’è -----
+void EnemyDragon::SetTackleAttackActiveFlag(const bool& flag)
+{
+    // UŒ‚”»’èƒtƒ‰ƒO‚ğƒZƒbƒg‚·‚é
+    SetIsAttackActive(flag);
+
+    for (int i = AttackData::TackleAttackStart; i <= AttackData::TackleAttackEnd; ++i)
     {
         GetAttackDetectionData(i).SetIsActive(flag);
     }
@@ -736,6 +759,7 @@ void EnemyDragon::SetJustDodgeActiveFlag(const AttackAction& type, const bool& f
         { static_cast<int>(JustDodgeData::SlamAttackStart), static_cast<int>(JustDodgeData::SlamAttackEnd) },
         { static_cast<int>(JustDodgeData::TurnAttackStart), static_cast<int>(JustDodgeData::TurnAttackEnd) },
         { static_cast<int>(JustDodgeData::GuardAttackStart), static_cast<int>(JustDodgeData::GuardAttackEnd) },
+        { static_cast<int>(JustDodgeData::TackleAttackStart), static_cast<int>(JustDodgeData::TackleAttackEnd) },
     };
     const int start = data[static_cast<int>(type)][0];
     const int end = data[static_cast<int>(type)][1];

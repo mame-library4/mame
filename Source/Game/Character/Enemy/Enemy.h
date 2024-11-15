@@ -117,8 +117,8 @@ public:// ----- ’è” -----
         SlamAttack,
         TurnAttack,
         GuardAttack,
+        TackleAttack,
 
-        //TackleAttack,
         //FireBreath,
 
         Max,
@@ -218,7 +218,8 @@ public:// --- æ“¾Eİ’è ---
     virtual void ResetAllAttackActiveFlag()                             = 0; // ‘SUŒ‚”»’è–³Œø‰»
     virtual void SetSlamAttackActiveFlag(const bool& flag = true)       = 0; // ‚½‚½‚«‚Â‚¯UŒ‚
     virtual void SetTurnAttackActiveFlag(const bool& flag = true)       = 0; // ‰ñ“]UŒ‚
-    virtual void SetGuardAttackActiveFalg(const bool& flag = true)      = 0; // ƒK[ƒhUŒ‚
+    virtual void SetGuardAttackActiveFlag(const bool& flag = true)      = 0; // ƒK[ƒhUŒ‚
+    virtual void SetTackleAttackActiveFlag(const bool& flag = true)     = 0; // “ËiUŒ‚
 
     // ---------- ‰Ÿ‚µo‚µ”»’è ----------
     virtual void SetDownCollisionActiveFlag(const bool& flag = true) = 0;

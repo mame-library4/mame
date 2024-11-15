@@ -121,19 +121,20 @@ namespace ActionDragon
         {
         case 0:// 初期化
             // アニメーション再生
-            PlayAnimation();
+            if (PlayAnimation())
+            {
+                // 怯み時押し出し判定設定
+                owner_->SetDownCollisionActiveFlag();
 
-            // 怯み時押し出し判定設定
-            owner_->SetDownCollisionActiveFlag();
+                // 攻撃判定を無効化する
+                owner_->ResetAllAttackActiveFlag();
+                // ジャスト回避判定を無効化する
+                owner_->ResetAllJustDodgeActiveFlag();
 
-            // 攻撃判定を無効化する
-            owner_->ResetAllAttackActiveFlag();
-            // ジャスト回避判定を無効化する
-            owner_->ResetAllJustDodgeActiveFlag();
+                loopCounter_ = 0;
 
-            loopCounter_ = 0;
-
-            owner_->SetStep(1);
+                owner_->SetStep(1);
+            }
 
             break;
         case 1:
@@ -172,6 +173,7 @@ namespace ActionDragon
             if (owner_->IsPlayAnimation() == false)
             {
                 Finalize();
+                owner_->SetIsStagger(false);
 
                 owner_->SetStep(0);
                 return ActionBase::State::Complete;
@@ -203,19 +205,24 @@ namespace ActionDragon
     // ----- 終了化 -----
     void DownAction::Finalize()
     {
-        owner_->SetIsStagger(false);
         owner_->SetDownCollisionActiveFlag(false);
     }
 
     // ----- アニメーション再生 -----
-    void DownAction::PlayAnimation()
+    const bool  DownAction::PlayAnimation()
     {
+        const Player::STATE playerState = PlayerManager::Instance().GetPlayer()->GetCurrentState();
+        // 現在プレイヤーがラッシュ攻撃中なので待機する
+        if (playerState == Player::STATE::RushAttack) return false;
+
         const Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(owner_->GetAnimationIndex());
         float transitionTime = 0.1f;
         float blendAnimationFrame = 0.0f;
 
         owner_->PlayBlendAnimation(Enemy::DragonAnimation::CriticalStart, false, 1.0f, blendAnimationFrame);
         owner_->SetTransitionTime(transitionTime);
+
+        return true;
     }
 }
 
@@ -1167,14 +1174,14 @@ namespace ActionDragon
                 owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::GuardAttack, false);
 
                 if (owner_->GetIsAttackActive())
-                    owner_->SetGuardAttackActiveFalg(false);
+                    owner_->SetGuardAttackActiveFlag(false);
             }
             else if (owner_->GetAnimationSeconds() > 0.36f)
             {
                 owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::GuardAttack, true);
 
                 if (owner_->GetIsAttackActive() == false)
-                    owner_->SetGuardAttackActiveFalg();
+                    owner_->SetGuardAttackActiveFlag();
             }
 
             if (owner_->GetAnimationSeconds() > 1.75f)
@@ -1207,15 +1214,24 @@ namespace ActionDragon
     }
 }
 
-// ----- GuardAction -----
+// ----- TackleAction -----
 namespace ActionDragon
 {
     const ActionBase::State TackleAction::Run(const float& elapsedTime)
     {    
         // 実行中ノードを中断するか
-        if (owner_->CheckStatusChange())
+        if (owner_->CheckStatusChange()) isCurrentNodeCancelled_ = true;
+        if (isCurrentNodeCancelled_)
         {
-            return ActionBase::State::Failed;
+            if (PlayerManager::Instance().GetPlayer()->GetCurrentState() != Player::STATE::RushAttack)
+            {                
+                Finalize();
+
+                return ActionBase::State::Failed;
+            }
+
+            // ノード中断待機中なのでここで終了
+            return ActionBase::State::Run;
         }
 
         switch (owner_->GetStep())
@@ -1226,6 +1242,8 @@ namespace ActionDragon
 
             // 変数初期化
             addForceData_.Initialize(rotationEndFrame_, 0.6f, 0.6f);
+            easingTimer_ = 0.0f;
+            isCurrentNodeCancelled_ = false;
 
             owner_->SetStep(1);
             break;
@@ -1260,9 +1278,18 @@ namespace ActionDragon
             // 旋回処理
             if (owner_->GetAnimationSeconds() < rotationEndFrame_) Turn(elapsedTime);
 
-            // 攻撃判定有効化
+            // 攻撃判定&ジャスト回避判定 有効化
+            if (owner_->GetIsAttackActive() == false)
+            {
+                if (owner_->GetAnimationSeconds() > 0.2f)
+                {
+                    owner_->SetTackleAttackActiveFlag();
+                    owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::TackleAttack, true);
+                }
+            }
 
             // 前足が地面に埋まらないようにする
+            AdjustForGroundPenetration(elapsedTime);
 
             // アニメーション再生終了
             if (owner_->IsPlayAnimation() == false)
@@ -1288,9 +1315,20 @@ namespace ActionDragon
             }
 
             // 攻撃判定無効化
+            if (owner_->GetIsAttackActive())
+            {
+                if (owner_->GetAnimationSeconds() > 0.6f)
+                {
+                    owner_->SetTackleAttackActiveFlag(false);
+                    owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::TackleAttack, false);
+                }
+            }
 
+            // アニメーション再生終了
             if (owner_->IsPlayAnimation() == false)
             {
+                Finalize();
+
                 owner_->SetStep(0);
 
                 return ActionBase::State::Complete;
@@ -1320,6 +1358,21 @@ namespace ActionDragon
         }
     }
 
+    // ----- 終了化 -----
+    void TackleAction::Finalize()
+    {
+        // ルートモーションの使用終了
+        owner_->SetUseRootMotion(false);
+
+        // Y座標をリセットする
+        owner_->GetTransform()->SetPositionY(0.0f);
+
+        // X軸回転をリセットする
+        owner_->GetTransform()->SetRotationX(0.0f);
+
+        isCurrentNodeCancelled_ = false;
+    }
+
     // ----- アニメーション再生 -----
     void TackleAction::PlayAnimation()
     {
@@ -1331,6 +1384,30 @@ namespace ActionDragon
     {
         DirectX::XMFLOAT3 targetPosition = PlayerManager::Instance().GetTransform()->GetPosition();
         owner_->Turn(elapsedTime, targetPosition);
+    }
+    
+    // ----- 前足が地面に埋まらないようにする -----
+    void TackleAction::AdjustForGroundPenetration(const float& elapsedTime)
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+        if (animationSeconds <= 0.45f) return;
+
+        const float maxAngle = -10.0f;
+        const float totalFrame = 0.1f;
+
+        if (animationSeconds > 0.65f)
+        {
+            easingTimer_ -= elapsedTime;
+            easingTimer_ = std::max(easingTimer_, 0.0f);
+        }
+        else if (animationSeconds > 0.45f)
+        {
+            easingTimer_ += elapsedTime;
+            easingTimer_ = std::min(easingTimer_, totalFrame);
+        }
+
+        float angle = Easing::InSine(easingTimer_, totalFrame, maxAngle, 0.0f);
+        owner_->GetTransform()->SetRotationX(DirectX::XMConvertToRadians(angle));
     }
 }
 
