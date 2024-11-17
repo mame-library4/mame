@@ -141,8 +141,6 @@ public:
 
     void Turn(const float& elapsedTime, const DirectX::XMFLOAT3& targetPos);
 
-    [[nodiscard]] const bool SearchPlayer();
-
     // ---------- BehaviorTree ----------
     void UpdateNode(const float& elapsedTime);
     virtual bool CheckStatusChange() = 0;
@@ -176,16 +174,8 @@ public:// --- 取得・設定 ---
     void SetIsStagger(const bool& flag) { isStagger_ = flag; }
     [[nodiscard]] const int GetStaggerPartIndex() const { return staggerPartIndex_; }
 
-    // ----- 戦闘開始範囲 -----
-    [[nodiscard]] const float GetBattleRadius() const { return battleRadius_; }
-    void SetBattleRadius(const float& radius) { battleRadius_ = radius; }
-
-    // ----- 攻撃開始範囲 -----
-    [[nodiscard]] const float GetNearAttackRadius() const { return nearAttackRadius_; }
-    void SetNearAttackRadius(const float& radius) { nearAttackRadius_ = radius; }
-
-    [[nodiscard]] const float GetComboFlyAttackRadius() const { return comboFlyAttackRadius_; }
-    void SetComboFlyAttackRadius(const float& radius) { comboFlyAttackRadius_ = radius; }
+    // ----- 遠距離戦闘範囲 -----
+    [[nodiscard]] const float GetLongRangeRadius() const { return longRangeRadius_; }
 
     // ----- 移動先位置 -----
     [[nodiscard]] const DirectX::XMFLOAT3 GetMovePosition() const { return movePosition_; }
@@ -257,10 +247,7 @@ protected:
     int     step_       = 0;        // 行動ステップ    
 
     // ---------- 戦闘判定範囲変数 ----------
-    float               battleRadius_       = 20.0f;// 戦闘開始範囲
-    
-    float               nearAttackRadius_       = 15.0f; // 近距離攻撃開始範囲
-    float               comboFlyAttackRadius_   = 8.5f;  // ３連続たたきつけ攻撃   
+    float longRangeRadius_ = 15.0f; // 遠距離攻撃範囲
 
     DirectX::XMFLOAT3 movePosition_ = {}; // 移動先位置
 

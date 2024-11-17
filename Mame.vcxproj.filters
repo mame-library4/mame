@@ -286,6 +286,9 @@
     <ClCompile Include="Source\Graphics\Particle\AfterimageParticle.cpp">
       <Filter>Mame\Graphics\Particle\AfterimageParticle</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\UI\UILoading.cpp">
+      <Filter>Mame\Game\UI\UILoading</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -601,6 +604,9 @@
     <ClInclude Include="Source\Graphics\Particle\AfterimageParticle.h">
       <Filter>Mame\Graphics\Particle\AfterimageParticle</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\UI\UILoading.h">
+      <Filter>Mame\Game\UI\UILoading</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -866,6 +872,12 @@
     </Filter>
     <Filter Include="Mame\Graphics\Particle\AfterimageParticle">
       <UniqueIdentifier>{3afbe110-56f2-4c49-ba21-35fafddba489}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\UI\UILoading">
+      <UniqueIdentifier>{09610242-e050-4ab6-9370-e25a803330d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\UI\UIGame">
+      <UniqueIdentifier>{8b55316f-a41c-4b45-a7a3-2143bccb1890}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

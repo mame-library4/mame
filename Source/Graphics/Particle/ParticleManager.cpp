@@ -53,17 +53,13 @@ void ParticleManager::Render()
 // ----- ImGui—p -----
 void ParticleManager::DrawDebug()
 {
-    if (ImGui::BeginMainMenuBar())
+    if (ImGui::BeginMenu("ParticleManager"))
     {
-        if (ImGui::BeginMenu("ParticleManager"))
+        for (ParticleSystem*& particleSystem : particleSystems_)
         {
-            for (ParticleSystem*& particleSystem : particleSystems_)
-            {
-                particleSystem->DrawDebug();
-            }
-            ImGui::EndMenu();
+            particleSystem->DrawDebug();
         }
-        ImGui::EndMainMenuBar();
+        ImGui::EndMenu();
     }
 }
 

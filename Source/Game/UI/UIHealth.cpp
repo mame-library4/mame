@@ -6,22 +6,55 @@
 UIHealth::UIHealth()
     : UI(UIManager::UIType::UIHealth, L"./Resources/Image/white.png", "UIHealth")
 {
-    healthFrame_ = std::make_unique<Sprite>(L"./Resources/Image/white.png");
-    healthFrame_->SetName("HealthFrame");
-    healthFrame_->GetTransform()->SetPosition(50.0f, 50.0f);
-    healthFrame_->GetTransform()->SetSize(maxHealthSizeX_, 10.0f);
-    healthFrame_->GetTransform()->SetColor(0.0f, 0.0f, 0.0f, 0.4f);
+    // 初期位置を保存しておく
+    healthPosition_ = DirectX::XMFLOAT2(68.0f, 33.0f);
+    healthFramePosition_ = DirectX::XMFLOAT2(68.0f, 30.0f);
+    healthRhombusPosition_ = DirectX::XMFLOAT2(60.0f, 31.0f);
+    healthRhombusFramePosition_ = DirectX::XMFLOAT2(57.0f, 28.0f);
+
+    const DirectX::XMFLOAT3 colorGreen = DirectX::XMFLOAT3(0.12f, 0.43f, 0.12f);
+    const DirectX::XMFLOAT4 colorBlack = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 0.4f);
+    const float sizeY = 6.0f;
+
+    // 体力アイコン
+    healthIcon_ = std::make_unique<Sprite>(L"./Resources/Image/UI/Health.png");
+    healthIcon_->SetName("HealthIcon");
+    healthIcon_->GetTransform()->SetPosition(20.0f, 20.0f);
+    healthIcon_->GetTransform()->SetSize(32.0f);
+    healthIcon_->GetTransform()->SetColor(0.59f, 0.59f, 0.59f);
+
+    healthRhombus_ = std::make_unique<Sprite>(L"./Resources/Image/white.png");
+    healthRhombus_->SetName("HealthRhombus");
+    healthRhombus_->GetTransform()->SetPosition(healthRhombusPosition_);
+    healthRhombus_->GetTransform()->SetSize(10.0f);
+    healthRhombus_->GetTransform()->SetAngle(45.0f);
+    healthRhombus_->GetTransform()->SetColor(colorGreen);
 
     autoRecoveryBar_ = std::make_unique<Sprite>(L"./Resources/Image/white.png");
     autoRecoveryBar_->SetName("AutoRepairBar");
-    autoRecoveryBar_->GetTransform()->SetPosition(50.0f, 50.0f);
-    autoRecoveryBar_->GetTransform()->SetSize(maxHealthSizeX_, 10.0f);
-    autoRecoveryBar_->GetTransform()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+    autoRecoveryBar_->GetTransform()->SetPosition(healthPosition_);
+    autoRecoveryBar_->GetTransform()->SetSize(maxHealthSizeX_, sizeY);
+    autoRecoveryBar_->GetTransform()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);    
+    
+    // 体力の枠(黒色)
+    healthFrame_ = std::make_unique<Sprite>(L"./Resources/Image/white.png");
+    healthFrame_->SetName("HealthFrame");
+    healthFrame_->GetTransform()->SetPosition(healthFramePosition_);
+    healthFrame_->GetTransform()->SetSize(453.0f, 12.0f);
+    healthFrame_->GetTransform()->SetColor(colorBlack);
+
+    // ひし形の枠
+    healthRhombusFrame_ = std::make_unique<Sprite>(L"./Resources/Image/white.png");
+    healthRhombusFrame_->SetName("HealthRhombusFrame");
+    healthRhombusFrame_->GetTransform()->SetPosition(healthRhombusFramePosition_);
+    healthRhombusFrame_->GetTransform()->SetSize(16.0f);
+    healthRhombusFrame_->GetTransform()->SetAngle(45.0f);
+    healthRhombusFrame_->GetTransform()->SetColor(colorBlack);
 
     SetSpriteName("Health");
-    GetTransform()->SetPosition(50.0f, 50.0f);
-    GetTransform()->SetSize(maxHealthSizeX_, 10.0f);
-    GetTransform()->SetColor(0.0f, 1.0f, 0.0f);
+    GetTransform()->SetPosition(healthPosition_);
+    GetTransform()->SetSize(maxHealthSizeX_, sizeY);
+    GetTransform()->SetColor(colorGreen);
 
     oldHealth_ = 300.0f;
     autoRecoveryHealth_ = 300.0f;
@@ -67,10 +100,14 @@ void UIHealth::Render()
     if (GetIsDraw() == false) return;
 
     healthFrame_->Render();
+    healthRhombusFrame_->Render();
 
     autoRecoveryBar_->Render();
 
     UI::Render();
+    healthRhombus_->Render();
+
+    healthIcon_->Render();
 }
 
 // ----- ImGui用 -----
@@ -78,13 +115,19 @@ void UIHealth::DrawDebug()
 {
     if (ImGui::TreeNode(GetName().c_str())) 
     {
+        ImGui::DragFloat("maxHealthSizeX", &maxHealthSizeX_);
+
         ImGui::DragFloat("HealSpeed", &healSpeed_);
 
         UI::DrawDebug();
 
         autoRecoveryBar_->DrawDebug();
+        healthRhombus_->DrawDebug();
 
         healthFrame_->DrawDebug();
+        healthRhombusFrame_->DrawDebug();
+
+        healthIcon_->DrawDebug();
 
         ImGui::TreePop();
     }
@@ -120,7 +163,8 @@ void UIHealth::UpdateVibration(const float& elapsedTime)
     // 振動の更新時間が終了していたらUIを元の位置に戻して終了する
     if (vibrationTimer_ <= 0.0f)
     {
-        SetUIPosition(healthPosition_);
+        // リセット
+        SetUIPosition({});
 
         isVibration_ = false;
 
@@ -131,7 +175,7 @@ void UIHealth::UpdateVibration(const float& elapsedTime)
     vibrationVec = XMFloat2Normalize(vibrationVec);
 
     const float vibrationVolume = Easing::InSine(vibrationTimer_, vibrationTimer_, vibrationVolume_, 0.0f);
-    const DirectX::XMFLOAT2 uiPosition = vibrationVec * vibrationVolume + healthPosition_;
+    const DirectX::XMFLOAT2 uiPosition = vibrationVec * vibrationVolume;
     
     SetUIPosition(uiPosition);
 }
@@ -171,7 +215,12 @@ void UIHealth::UpdateSpriteSize()
 // ----- 一括でUIの位置を設定する -----
 void UIHealth::SetUIPosition(const DirectX::XMFLOAT2& position)
 {
-    GetTransform()->SetPosition(position);
-    healthFrame_->GetTransform()->SetPosition(position);
-    autoRecoveryBar_->GetTransform()->SetPosition(position);
+    GetTransform()->SetPosition(healthPosition_ + position);
+    autoRecoveryBar_->GetTransform()->SetPosition(healthPosition_ + position);
+
+    healthFrame_->GetTransform()->SetPosition(healthFramePosition_ + position);
+
+    healthRhombus_->GetTransform()->SetPosition(healthRhombusPosition_ + position);
+
+    healthRhombusFrame_->GetTransform()->SetPosition(healthRhombusFramePosition_ + position);
 }

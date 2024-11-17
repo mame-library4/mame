@@ -86,6 +86,7 @@ namespace PlayerState
         void UpdateDash(const float& elapsedTime);
 
     private:
+        int dashSENum_ = 0;
         float changeStateTimer_ = 0.0f;
     };
     
@@ -300,6 +301,9 @@ namespace PlayerState
 
         // ----- ルートモーション用 -----
         float rootMotionMoveValue_ = 1.2f;
+
+        // ----- SE -----
+        int slowSENum_ = 0;
     };
 
     // ----- ジャスト回避キャンセル -----
@@ -508,6 +512,10 @@ namespace PlayerState
 
     private:
         AttackData      attackData_;
+
+        // ----- SE -----
+        float   swordSlashSEPlayFrame_  = 0.7f;
+        bool    isPlaySwordSlashSE_     = false;
     };
 
     // ----- コンボ0_3 -----
@@ -529,5 +537,9 @@ namespace PlayerState
     private:
         AttackData      attackData_;
         bool isVibration_ = false;
+
+        // ----- SE -----
+        float   swordSlashSEPlayFrame_ = 0.65f;
+        bool    isPlaySwordSlashSE_ = false;
     };
 }

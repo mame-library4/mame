@@ -22,8 +22,11 @@ private:
 private:
     bool isAllUICreated = false;
 
+    std::unique_ptr<Sprite> healthRhombus_;
+    std::unique_ptr<Sprite> healthRhombusFrame_;
     std::unique_ptr<Sprite> healthFrame_;
     std::unique_ptr<Sprite> autoRecoveryBar_;
+    std::unique_ptr<Sprite> healthIcon_;
 
     float oldHealth_        = 0.0f;
     float autoRecoveryHealth_ = 0.0f;
@@ -34,7 +37,11 @@ private:
     float             vibrationTimer_  = 0.0f;
     bool              isVibration_     = false;
 
-    const DirectX::XMFLOAT2 healthPosition_ = { 50.0f, 50.0f };
+    // ----- èâä˙à íuï€ë∂óp -----
+    DirectX::XMFLOAT2 healthPosition_ = {};
+    DirectX::XMFLOAT2 healthFramePosition_ = {};
+    DirectX::XMFLOAT2 healthRhombusPosition_ = {};
+    DirectX::XMFLOAT2 healthRhombusFramePosition_ = {};    
 
     float maxHealthSizeX_ = 450.0f;
 

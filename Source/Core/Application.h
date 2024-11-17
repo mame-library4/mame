@@ -24,7 +24,7 @@ CONST LONG SCREEN_HEIGHT{ 720 };
 //CONST LONG SCREEN_WIDTH{ 1920 };
 //CONST LONG SCREEN_HEIGHT{ 1080 };
 CONST BOOL FULLSCREEN{ FALSE };
-CONST LPCWSTR APPLICATION_NAME{ L"Mame" };
+CONST LPCWSTR APPLICATION_NAME{ L"DragonHunter" };
 
 class Application
 {
@@ -39,6 +39,8 @@ public:
 	int Run();
 	LRESULT CALLBACK HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 	void CalculateFrameStats();
+
+	static void GameEnd() { isGameEnd_ = true; }
 
 private:
 	bool Initialize();
@@ -74,4 +76,6 @@ private:
 
 	// --- シーン定数バッファー ---
 	ConstantBuffer<SceneConstants> sceneConstants_;
+
+	static bool isGameEnd_;
 };

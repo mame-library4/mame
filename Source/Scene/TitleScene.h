@@ -11,6 +11,9 @@ public:
     {
         Idle,
         Select,
+        GameStart,
+        Options,
+        Quit,
     };
 
 public:// Šî–{“I‚ÈŠÖ”

@@ -94,67 +94,63 @@ void PostProcess::Draw()
 // ----- ImGui—p -----
 void PostProcess::DrawDebug()
 {
-    if (ImGui::BeginMainMenuBar())
+    if (ImGui::BeginMenu("PostProcess"))
     {
-        if (ImGui::BeginMenu("PostProcess"))
+        if (ImGui::TreeNode("ToneMap"))
         {
-            if (ImGui::TreeNode("ToneMap"))
-            {
-                ImGui::ColorEdit3("Colrize", &postEffectConstants_->GetData()->colorize_.x);
-                ImGui::DragFloat("Exposure", &postEffectConstants_->GetData()->exposure_, 0.01f, 0.0f, 10.0f);
-                
-                ImGui::DragFloat("Brightness",  &postEffectConstants_->GetData()->brightness_, 0.01f, -1.0f, 1.0f);
-                ImGui::DragFloat("Contrast",    &postEffectConstants_->GetData()->contrast_, 0.01f, -1.0f, 1.0f);
-                ImGui::DragFloat("Hue",         &postEffectConstants_->GetData()->hue_, 0.01f, -1.0f, 1.0f);
-                ImGui::DragFloat("Saturation",  &postEffectConstants_->GetData()->saturation_, 0.01f, -1.0f, 1.0f);
+            ImGui::ColorEdit3("Colrize", &postEffectConstants_->GetData()->colorize_.x);
+            ImGui::DragFloat("Exposure", &postEffectConstants_->GetData()->exposure_, 0.01f, 0.0f, 10.0f);
 
-                ImGui::TreePop();
-            }
+            ImGui::DragFloat("Brightness", &postEffectConstants_->GetData()->brightness_, 0.01f, -1.0f, 1.0f);
+            ImGui::DragFloat("Contrast", &postEffectConstants_->GetData()->contrast_, 0.01f, -1.0f, 1.0f);
+            ImGui::DragFloat("Hue", &postEffectConstants_->GetData()->hue_, 0.01f, -1.0f, 1.0f);
+            ImGui::DragFloat("Saturation", &postEffectConstants_->GetData()->saturation_, 0.01f, -1.0f, 1.0f);
 
-
-            ImGui::DragFloat("CriticalDepthValue", &criticalDepthValue_);
-
-            ImGui::SliderFloat("ShadowColor", &constant_->GetData()->shadowColor_, 0.0f, 1.0f);
-            ImGui::DragFloat("ShadowDepthBias", &constant_->GetData()->shadowDepthBias_, 0.00001f, 0.0f, 0.01f, "%.8f");
-            ImGui::Checkbox("ColorizeCascadedLayer", &constant_->GetData()->colorizeCascadedLayer_);
-
-            cascadedShadowMap_.DrawDebug();
-
-            if (ImGui::TreeNode("Bloom_"))
-            {
-                ImGui::Image(reinterpret_cast<ImTextureID>(postProcess_->GetColorMap().Get()), ImVec2(256.0, 256.0));
-
-                bloom_.DrawDebug();
-
-                ImGui::TreePop();
-            }
-
-            if (ImGui::TreeNode("RadialBlur"))
-            {
-                ImGui::Checkbox("UseRadialBlur", &useRadialBlur_);
-                ImGui::DragFloat2("UVOffset", &radialBlurConstants_->GetData()->uvOffset_.x, 0.01f, 0.0f, 1.0f);
-                ImGui::DragFloat("Strength", &radialBlurConstants_->GetData()->strength_, 0.1f, 0.0f, 2.0f);
-                ImGui::DragInt("SampleCount", &radialBlurConstants_->GetData()->sampleCount_, 1, 1, 5);
-
-                ImGui::TreePop();
-            }
-
-            if (ImGui::TreeNode("Vignette"))
-            {
-                ImGui::Checkbox("UseVignette", &useVignette_);
-                ImGui::ColorEdit4("Color", &vignetteConstants_->GetData()->vignetteColor_.x);
-                ImGui::DragFloat2("Center", &vignetteConstants_->GetData()->vignetteCenter_.x);
-                ImGui::DragFloat("Intensity", &vignetteConstants_->GetData()->vignetteIntensity_, 0.1f, 0.0f, 10.0f);
-                ImGui::DragFloat("Smoothness", &vignetteConstants_->GetData()->vignetteSmoothness_, 0.1f, 0.0f, 10.0f);
-                ImGui::DragFloat("Rounded", &vignetteConstants_->GetData()->vignetteRounded_, 0.1f, 0.0f, 10.0f);
-                ImGui::DragFloat("Roundness", &vignetteConstants_->GetData()->vignetteRoundness_, 0.1f, 0.0f, 10.0f);
-
-                ImGui::TreePop();
-            }
-
-            ImGui::EndMenu();
+            ImGui::TreePop();
         }
-        ImGui::EndMainMenuBar();
+
+
+        ImGui::DragFloat("CriticalDepthValue", &criticalDepthValue_);
+
+        ImGui::SliderFloat("ShadowColor", &constant_->GetData()->shadowColor_, 0.0f, 1.0f);
+        ImGui::DragFloat("ShadowDepthBias", &constant_->GetData()->shadowDepthBias_, 0.00001f, 0.0f, 0.01f, "%.8f");
+        ImGui::Checkbox("ColorizeCascadedLayer", &constant_->GetData()->colorizeCascadedLayer_);
+
+        cascadedShadowMap_.DrawDebug();
+
+        if (ImGui::TreeNode("Bloom_"))
+        {
+            ImGui::Image(reinterpret_cast<ImTextureID>(postProcess_->GetColorMap().Get()), ImVec2(256.0, 256.0));
+
+            bloom_.DrawDebug();
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("RadialBlur"))
+        {
+            ImGui::Checkbox("UseRadialBlur", &useRadialBlur_);
+            ImGui::DragFloat2("UVOffset", &radialBlurConstants_->GetData()->uvOffset_.x, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat("Strength", &radialBlurConstants_->GetData()->strength_, 0.1f, 0.0f, 2.0f);
+            ImGui::DragInt("SampleCount", &radialBlurConstants_->GetData()->sampleCount_, 1, 1, 5);
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Vignette"))
+        {
+            ImGui::Checkbox("UseVignette", &useVignette_);
+            ImGui::ColorEdit4("Color", &vignetteConstants_->GetData()->vignetteColor_.x);
+            ImGui::DragFloat2("Center", &vignetteConstants_->GetData()->vignetteCenter_.x);
+            ImGui::DragFloat("Intensity", &vignetteConstants_->GetData()->vignetteIntensity_, 0.1f, 0.0f, 10.0f);
+            ImGui::DragFloat("Smoothness", &vignetteConstants_->GetData()->vignetteSmoothness_, 0.1f, 0.0f, 10.0f);
+            ImGui::DragFloat("Rounded", &vignetteConstants_->GetData()->vignetteRounded_, 0.1f, 0.0f, 10.0f);
+            ImGui::DragFloat("Roundness", &vignetteConstants_->GetData()->vignetteRoundness_, 0.1f, 0.0f, 10.0f);
+
+            ImGui::TreePop();
+        }
+
+        ImGui::EndMenu();
     }
 }
 

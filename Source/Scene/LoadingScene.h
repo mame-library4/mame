@@ -2,6 +2,7 @@
 #include "BaseScene.h"
 #include <thread>
 #include <memory>
+#include "UI/UILoading.h"
 
 class LoadingScene : public BaseScene
 {
@@ -26,5 +27,8 @@ private:// ƒXƒŒƒbƒhŠÖŒW
     static void LoadingThread(LoadingScene* scene);
     BaseScene*      nextScene_   = nullptr;
     std::thread*    thread_      = nullptr;
+
+private:
+    UILoading* uiLoading_ = nullptr;
 };
 

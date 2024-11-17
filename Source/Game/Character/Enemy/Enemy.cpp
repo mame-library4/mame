@@ -42,39 +42,6 @@ void Enemy::Turn(const float& elapsedTime, const DirectX::XMFLOAT3& targetPos)
     }
 }
 
-// ----- プレイヤーを探す ( 戦闘状態に移行できるか ) -----
-const bool Enemy::SearchPlayer()
-{
-    DirectX::XMFLOAT2 ownerPos = { GetTransform()->GetPositionX(), GetTransform()->GetPositionZ() };
-    DirectX::XMFLOAT2 playerPos = { PlayerManager::Instance().GetTransform()->GetPositionX(), PlayerManager::Instance().GetTransform()->GetPositionZ() };
-
-    DirectX::XMFLOAT2 vec = ownerPos - playerPos;
-    float dist = sqrtf(vec.x * vec.x + vec.y * vec.y);
-
-    // 近距離攻撃範囲以内にいるので強制的に戦闘状態にする
-    if (dist < nearAttackRadius_) return true;
-
-    // 戦闘範囲にいる
-    if (dist < battleRadius_)
-    {
-        // 単位ベクトル化
-        vec = vec / dist;
-        
-        // 方向ベクトル化
-        DirectX::XMFLOAT2 frontVec = { GetTransform()->CalcForward().x, GetTransform()->CalcForward().z };
-        frontVec = XMFloat2Normalize(frontVec);
-
-        // 前後判定
-        float dot = XMFloat2Dot(frontVec, vec);
-        if (dot < 0.0f)
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 // ----- ノード更新 -----
 void Enemy::UpdateNode(const float& elapsedTime)
 {

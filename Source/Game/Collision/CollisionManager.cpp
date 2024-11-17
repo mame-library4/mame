@@ -5,6 +5,7 @@
 #include "Character/Enemy/EnemyDragon.h"
 #include "Projectile/ProjectileManager.h"
 #include "UI/UINumber.h"
+#include "AudioManager.h"
 
 void CollisionManager::Initialize()
 {
@@ -148,6 +149,39 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                     if (handleCounter_ >= maxEffectHandle_) handleCounter_ = 0;
                 }
 
+                // 効果音を鳴らす
+                {
+#if 0
+                    const Player::STATE playerState = player->GetCurrentState();
+                    const Player::STATE attackData[] =
+                    {
+                        Player::STATE::ComboAttack0_0, Player::STATE::ComboAttack0_1,
+                        Player::STATE::ComboAttack0_2, //Player::STATE::ComboAttack0_3,
+                    };
+                    const SE seData[] =
+                    {
+                        SE::Attack0, SE::Attack0, SE::Attack0,
+                    };
+                    for (int i = 0; i < _countof(attackData); ++i)
+                    {
+                        if (playerState != attackData[i]) continue;
+
+                        AudioManager::Instance().PlaySE(seData[i]);
+                        break;
+                    }
+#else
+
+                    if (player->GetCurrentState() != Player::STATE::RushAttack)
+                    {
+                        AudioManager::Instance().PlaySE(SE::Attack0);
+                    }
+                    else
+                    {
+                        AudioManager::Instance().PlaySE(SE::Attack0);
+                    }
+#endif
+                }
+
                 // 敵が死んでいなかったらダメージ処理をする
                 if (enemy->GetIsDead() == false)
                 {
@@ -166,12 +200,6 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                 
                 // Playerの攻撃判定を無くす
                 player->SetIsAttackHit(true);
-
-                // 敵が生きていたらDamageUIを生成する
-                if (PlayerManager::Instance().GetUseCollisionDetection())
-                {
-                    //UINumber* ui = new UINumber(enemyData.GetDamage(), enemyData.GetPosition());
-                }
 
                 // ヒットストップ ( 弱点部位はヒットストップを長くする )
                 if (player->GetCurrentState() != Player::STATE::RushAttack)

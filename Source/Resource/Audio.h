@@ -7,12 +7,6 @@
 
 class Audio
 {
-private:
-    WAVEFORMATEXTENSIBLE wfx         = { 0 };
-    XAUDIO2_BUFFER       buffer      = { 0 };
-
-    IXAudio2SourceVoice* sourceVoice = nullptr;
-
 public:
     Audio(IXAudio2* xaudio2, const wchar_t* filename);
     virtual ~Audio();
@@ -22,5 +16,12 @@ public:
     void Stop(bool playTails = true, size_t afterSamplesPlayed = 0);
     void Volume(float volume);
     bool Queuing();
+
+private:
+    WAVEFORMATEXTENSIBLE wfx = { 0 };
+    XAUDIO2_BUFFER       buffer = { 0 };
+
+    IXAudio2SourceVoice* sourceVoice = nullptr;
+
 };
 

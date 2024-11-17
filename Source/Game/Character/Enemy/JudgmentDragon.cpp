@@ -35,6 +35,18 @@ const bool KnockDownJudgment::Judgment()
 
 #pragma endregion ---------- Down ----------
 
+// ----- LongRangeJudgment -----
+const bool LongRangeJudgment::Judgment()
+{
+    if (owner_->CalcDistanceToPlayerNoConsiderationY() > owner_->GetLongRangeRadius())
+    {
+        return true;
+    }
+
+    return false;
+}
+
+
 #if 0
 // ----- ‚Ð‚é‚Ý”»’è -----
 const bool FlinchJudgment::Judgment()
@@ -155,4 +167,3 @@ const bool ComboFlySlamJudgment::Judgment()
     return false;
 }
 #endif
-

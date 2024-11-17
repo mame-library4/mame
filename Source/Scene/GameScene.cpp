@@ -20,6 +20,9 @@
 #include "Particle/ParticleManager.h"
 #include "System/SystemManager.h"
 
+#include "PostProcess/PostProcess.h"
+#include "AudioManager.h"
+
 // ----- ステージの真ん中位置 -----
 DirectX::XMFLOAT3 GameScene::stageCenter_ = {};
 
@@ -106,6 +109,8 @@ void GameScene::Initialize()
 
     // 変数初期化
     isDrawUI_ = false;
+
+    AudioManager::Instance().PlayBGM(BGM::Game);
 }
 
 // ----- 終了化 -----
@@ -122,6 +127,8 @@ void GameScene::Finalize()
 
     // パーティクル
     ParticleManager::Instance().Finalize();
+
+    AudioManager::Instance().StopBGM(BGM::Game);
 }
 
 // ----- 更新 -----
@@ -287,7 +294,35 @@ void GameScene::Render()
 // ----- ImGui用 -----
 void GameScene::DrawDebug()
 {
-    if (ImGui::BeginMainMenuBar())
+    ImGui::Checkbox("UseMainMenuBar", &isUseMainMenuBar_);
+
+    if (isUseMainMenuBar_)
+    {
+        if (ImGui::BeginMainMenuBar())
+        {
+            ImGui::DragFloat("bgmVolume", &bgmVolume_, 0.01f, 0.0f, 1.0f);
+            if (ImGui::Button("SetVolume")) AudioManager::Instance().SetBGMVolume(BGM::Game, bgmVolume_);
+
+            SystemManager::Instance().DrawDebug();
+
+            // プレイヤーImGui
+            PlayerManager::Instance().DrawDebug();
+
+            // 敵ImGui
+            EnemyManager::Instance().DrawDebug();
+
+            ProjectileManager::Instance().DrawDebug();
+
+            ParticleManager::Instance().DrawDebug();
+
+            UIManager::Instance().DrawDebug();
+
+            PostProcess::Instance().DrawDebug();
+
+            ImGui::EndMainMenuBar();
+        }
+    }
+    else
     {
         SystemManager::Instance().DrawDebug();
 
@@ -299,13 +334,15 @@ void GameScene::DrawDebug()
 
         ProjectileManager::Instance().DrawDebug();
 
-        ImGui::EndMainMenuBar();
+        ParticleManager::Instance().DrawDebug();
+
+        UIManager::Instance().DrawDebug();
+
+        PostProcess::Instance().DrawDebug();
     }
-
+    
     ImGui::Checkbox("Debug", &isDebugRenderer_);
-    ImGui::DragFloat("stageRadius", &stageRadius1_);
-
-    ParticleManager::Instance().DrawDebug();
+    ImGui::DragFloat("stageRadius", &stageRadius1_);    
 
     if (ImGui::BeginMenu("stage"))
     {

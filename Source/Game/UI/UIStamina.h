@@ -12,12 +12,16 @@ public:
     void DrawDebug()                        override; // ImGui用
 
 private:
+    std::unique_ptr<Sprite> staminaRhombus_;
+    std::unique_ptr<Sprite> staminaRhombusFrame_;
     std::unique_ptr<Sprite> staminaFrame_;
     std::unique_ptr<Sprite> staminaWarning_;
+    std::unique_ptr<Sprite> staminaIcon_;
 
     bool isAllUICreated = false; // 全てのリソースが生成されたか
 
-    const float maxStaminaSizeX_ = 450.0f;
+    const float maxStaminaSizeX_ = 350.0f;
+    //const float maxStaminaSizeX_ = 450.0f;
 
     float warningFlashTimer_ = 0.0f;
     float warningFlashTime_  = 0.3f;

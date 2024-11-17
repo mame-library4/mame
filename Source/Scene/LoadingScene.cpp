@@ -1,9 +1,9 @@
 #include "LoadingScene.h"
 #include "SceneManager.h"
+#include "Graphics.h"
+#include "Misc.h"
+#include "UI/UIManager.h"
 
-#include "../Graphics/Graphics.h"
-
-#include "../Other/misc.h"
 
 // ----- コンストラクタ -----
 LoadingScene::LoadingScene(BaseScene* nextScene) 
@@ -14,6 +14,7 @@ LoadingScene::LoadingScene(BaseScene* nextScene)
 // ----- リソース生成 -----
 void LoadingScene::CreateResource()
 {
+    uiLoading_ = new UILoading();
 }
 
 // ----- 初期化 -----
@@ -23,6 +24,9 @@ void LoadingScene::Initialize()
     // std::thread(LoadingThread, this);
     // 二個目の引数はLoadingThreadの引数になる
     thread_ = new std::thread(LoadingThread, this);
+
+    // 現在のSceneを設定
+    SceneManager::Instance().SetCurrentSceneName(SceneManager::SceneName::Loading);
 }
 
 // ----- 終了化 -----
@@ -34,6 +38,12 @@ void LoadingScene::Finalize()
     {
         delete thread_;
         thread_ = nullptr;
+    }
+
+    if (uiLoading_ != nullptr)
+    {
+        UIManager::Instance().Remove(uiLoading_);
+        uiLoading_ = nullptr;
     }
 }
 

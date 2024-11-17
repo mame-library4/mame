@@ -239,6 +239,7 @@
     <ClCompile Include="Source\Game\UI\UIGuardGauge.cpp" />
     <ClCompile Include="Source\Game\UI\UIHealth.cpp" />
     <ClCompile Include="Source\Game\UI\UIHuntComplete.cpp" />
+    <ClCompile Include="Source\Game\UI\UILoading.cpp" />
     <ClCompile Include="Source\Game\UI\UIManager.cpp" />
     <ClCompile Include="Source\Game\UI\UINotifications.cpp" />
     <ClCompile Include="Source\Game\UI\UINumber.cpp" />
@@ -341,6 +342,7 @@
     <ClInclude Include="Source\Game\UI\UIGuardGauge.h" />
     <ClInclude Include="Source\Game\UI\UIHealth.h" />
     <ClInclude Include="Source\Game\UI\UIHuntComplete.h" />
+    <ClInclude Include="Source\Game\UI\UILoading.h" />
     <ClInclude Include="Source\Game\UI\UIManager.h" />
     <ClInclude Include="Source\Game\UI\UINotifications.h" />
     <ClInclude Include="Source\Game\UI\UINumber.h" />

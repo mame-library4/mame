@@ -1,13 +1,12 @@
 #include "TitleScene.h"
 #include "TitleState.h"
 #include "SceneManager.h"
-#include "LoadingScene.h"
-#include "GameScene.h"
 #include "Graphics.h"
 #include "Texture.h"
 #include "Camera.h"
 #include "Input.h"
 
+#include "PostProcess/PostProcess.h"
 
 // ----- リソース生成 -----
 void TitleScene::CreateResource()
@@ -35,6 +34,9 @@ void TitleScene::CreateResource()
         // ステートを登録する
         GetStateMachine()->RegisterState(new TitleState::IdleState(this));
         GetStateMachine()->RegisterState(new TitleState::SelectState(this));
+        GetStateMachine()->RegisterState(new TitleState::GameStartState(this));
+        GetStateMachine()->RegisterState(new TitleState::OptionState(this));
+        GetStateMachine()->RegisterState(new TitleState::QuitState(this));
 
         // 一番初めのステートを設定する
         GetStateMachine()->SetState(static_cast<UINT>(STATE::Idle));
@@ -50,7 +52,6 @@ void TitleScene::Initialize()
 
     Camera::Instance().SetTitleCamera();
 
-    //dragonObject_->PlayAnimation(1, true, 1.0f);
     dragonObject_->PlayAnimation(0, true, 1.0f);
     dragonObject_->GetTransform()->SetScaleFactor(1.5f);
     playerObject_->PlayAnimation(0, true, 1.0f);
@@ -73,8 +74,6 @@ void TitleScene::Update(const float& elapsedTime)
 {
     // ステートマシン更新
     GetStateMachine()->Update(elapsedTime);
-
-    SceneManager::Instance().ChangeScene(new LoadingScene(new GameScene));
 
     dragonObject_->Update(elapsedTime);
     playerObject_->Update(elapsedTime);
@@ -106,6 +105,11 @@ void TitleScene::ForwardRender()
 // ----- ImGui用 -----
 void TitleScene::DrawDebug()
 {
+    GetStateMachine()->DrawDebug();
+
+    UIManager::Instance().DrawDebug();
+    PostProcess::Instance().DrawDebug();
+
     if (ImGui::TreeNode("Dragon"))
     {
         dragonObject_->DrawDebug();

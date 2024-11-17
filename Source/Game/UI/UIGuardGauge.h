@@ -12,12 +12,15 @@ public:
     void DrawDebug()                        override; // ImGui用
 
 private:
+    std::unique_ptr<Sprite> guardGaugeRhombus_;
+    std::unique_ptr<Sprite> guardGaugeRhombusFrame_;
     std::unique_ptr<Sprite> guardGaugeFrame_;
     std::unique_ptr<Sprite> guardGaugeWarning_;
+    std::unique_ptr<Sprite> guardGaugeIcon_;
 
     bool isAllUICreated = false; // 全てのリソースが生成されたか
     
-    const float maxGuardGaugeSizeX = 450.0f;
+    const float maxGuardGaugeSizeX = 300.0f;
 
     float warningFlashTimer_    = 0.0f;
     float warningFlashTime_     = 0.3f;

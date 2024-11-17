@@ -514,6 +514,8 @@ void Player::UpdateStaminaRecovery(const float& elapsedTime)
     if (isDash_) return;
 
     stamina_ += staminaRecoverySpeed_ * elapsedTime;
+
+    stamina_ = std::min(stamina_, maxStamina_);
 }
 
 // ----- ガードゲージ回復更新 -----

@@ -1,11 +1,9 @@
 #pragma once
-
+#include "Audio.h"
 #include <wrl.h>
 #include <memory>
 #include <xaudio2.h>
-
-#include "Audio.h"
-
+#include <vector>
 
 enum class BGM
 {
@@ -18,6 +16,35 @@ enum class BGM
 enum class SE
 {
     Lockon,
+
+    Dash,
+    JustDodge,
+    Slow,
+    RushAttackMove0,
+    RushAttackMove1,
+
+    SowrdSlash0,
+    SowrdSlash1,
+    SowrdSlash2,
+
+    Mikiri,
+
+    Attack0,
+
+    // ---------- Dragon ----------
+    // ----- SlamAttack -----
+    Explosion0,
+    Explosion1,
+    Charge0,    
+    Breath0,
+    // ----- TurnAttack -----
+    Turn0,
+    TailCharge,
+    // ----- GuardAttack -----
+    Guard,
+    GuardAttack,
+    // ----- TackleAttack -----
+    FootSteps,
 
     Max,
 };
@@ -51,23 +78,16 @@ public:
         const bool isIgnoreQueue = false
     );    
 
-    // SEçƒê∂
-    void PlaySE(
-        const SE& se, 
-        const bool isLoop = false, 
-        const bool isIgnoreQueue = false
-    );
+    const int PlaySE(const SE& se); // SEçƒê∂
 
     void StopBGM(const BGM& bgm);                   // BGMí‚é~
-    void StopSE(const SE& se);                      // SEí‚é~
+    void StopSE(const SE& se, const int& num);      // SEí‚é~
 
     void StopAllBGM();                              // ëSBGMí‚é~
     void StopAllSE();                               // ëSSEí‚é~
     void StopAllAudio();                            // ëSâπäyí‚é~
 
-public:
-    std::unique_ptr<Audio>& GetBGM(const BGM& bgm); //Å@BGMéÊìæ
-    std::unique_ptr<Audio>& GetSE(const SE& se);    //  SEéÊìæ
+    void SetBGMVolume(const BGM& bgm, const float& volume);
 
 public:
     Microsoft::WRL::ComPtr<IXAudio2> xAudio2_;
@@ -75,13 +95,21 @@ public:
 
 private:
     std::unique_ptr<Audio> bgm_[static_cast<int>(BGM::Max)] = {};
-    std::unique_ptr<Audio> se_[static_cast<int>(SE::Max)]= {};
 
+    struct SEData
+    {
+    public:
+        SEData(IXAudio2* xaudio2, const wchar_t* filename, const int& loadNum = 1);
+        [[nodiscard]] const int Play();
+        void Stop(const int& num);
+        void AllStop();
+        void Volume(const float& volume);
 
-public:// âΩâÒÇ‡çƒê∂Ç∑ÇÈÇΩÇﬂÇ…Ç¢ÇÈÇ‚Ç¬
-    void PlaySE(SE_NAME who, SE startIndex, SE endIndex);
-
-private:// âΩâÒÇ‡çƒê∂Ç∑ÇÈÇΩÇﬂÇ…Ç¢ÇÈÇ‚Ç¬
-    int countIndex[static_cast<UINT>(SE_NAME::Max)] = {};
+    private:
+        std::vector<std::unique_ptr<Audio>> se_;
+        int     counter_    = 0;
+        float   volume_     = 0.0f;
+    };
+    std::vector<SEData> se_;
 };
 

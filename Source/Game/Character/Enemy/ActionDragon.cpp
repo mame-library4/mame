@@ -18,6 +18,12 @@
 
 #include "UI/UIFlashOut.h"
 
+#include "AudioManager.h"
+
+#include "SceneManager.h"
+#include "LoadingScene.h"
+#include "TitleScene.h"
+
 // ----- GamePadVibration -----
 namespace ActionDragon
 {
@@ -92,8 +98,21 @@ namespace ActionDragon
 
             PlayerManager::Instance().GetPlayer()->ChangeState(Player::STATE::Idle);
 
+            // 移動させない
+            owner_->AddForce({}, 0.0f, 0.0f);
+            // 全オーディオ停止
+            AudioManager::Instance().StopAllAudio();
 
             owner_->SetStep(1);
+        }
+        if (owner_->GetStep() == 1)
+        {
+            timer_ -= elapsedTime;
+            if (timer_ <= 0.0f)
+            {
+                AudioManager::Instance().StopAllAudio();
+                SceneManager::Instance().ChangeScene(new LoadingScene(new TitleScene));
+            }
         }
 
         return ActionBase::State::Run;
@@ -391,6 +410,10 @@ namespace ActionDragon
             isMovement_ = true;
             moveTimer_ = 0.0f;
 
+            isPlayBreathSE_ = false;    
+            isPlayChargeSE_ = false;
+            isPlayExplosionSE_ = false;
+
             owner_->SetStep(1);
             
             break;
@@ -410,7 +433,37 @@ namespace ActionDragon
                 DirectX::XMFLOAT3 color = DirectX::XMFLOAT3(1.0, 0.42, 0.13);
                 slamAttackParticle_->PlayExplosionParticle(emitterPosition, color);
 
+                
+
                 isPlayExplosionParticle_ = true;
+            }
+
+            // チャージSEを再生する
+            if (owner_->GetAnimationSeconds() > 0.4f && isPlayChargeSE_ == false)
+            {
+                chargeSENum_ = AudioManager::Instance().PlaySE(SE::Charge0);
+
+                isPlayChargeSE_ = true;
+            }
+            if (owner_->GetAnimationSeconds() > 0.3f && isPlayBreathSE_ == false)
+            {
+                AudioManager::Instance().PlaySE(SE::Breath0);
+
+                isPlayBreathSE_ = true;
+            }
+            if (owner_->GetAnimationSeconds() > 0.9f)
+            {
+                AudioManager::Instance().StopSE(SE::Charge0, chargeSENum_);
+            }
+            // 爆発SEを再生する
+            if (owner_->GetAnimationSeconds() > 1.03f && isPlayExplosionSE_ == false)
+            {
+                AudioManager::Instance().PlaySE(SE::Explosion0);
+                AudioManager::Instance().PlaySE(SE::Explosion1);
+
+                if (owner_->CalcDistanceToPlayer() < 10.0f) Camera::Instance().ScreenVibrate(0.3f, 0.2f);
+
+                isPlayExplosionSE_ = true;
             }
 
             if (isCreateChargeEffect_)
@@ -907,6 +960,8 @@ namespace ActionDragon
             isPlayTailTrailParticle_ = false;
             isRemoveParticle_ = false;
 
+            isPlayTurnSE_ = false;
+
             // Attackステートへ
             SetState(STATE::Attack);
 
@@ -928,6 +983,14 @@ namespace ActionDragon
             {
                 isPlayTailTrailParticle_ = true;
                 tailParticle_->PlayTailTrailParticle();
+            }
+
+            // 回転攻撃SE再生
+            if (owner_->GetAnimationSeconds() > 1.5f && isPlayTurnSE_ == false)
+            {
+                AudioManager::Instance().PlaySE(SE::Turn0);
+
+                isPlayTurnSE_ = true;
             }
 
             // 回転攻撃の終わりに、尻尾についているパーティクルを落とす
@@ -1109,10 +1172,21 @@ namespace ActionDragon
 
             loopCounter_ = 0;
 
+            isPlayGuardSE_ = false;
+            isPlayGuardAttackSE_ = false;
+
             owner_->SetStep(1);
 
             break;
         case 1:
+
+            if (owner_->GetAnimationSeconds() > guardSEPlayFrame_ && isPlayGuardSE_ == false)
+            {
+                AudioManager::Instance().PlaySE(SE::Guard);
+
+                isPlayGuardSE_ = true;
+            }
+
             if (owner_->IsPlayAnimation() == false)
             {
                 owner_->PlayAnimation(Enemy::DragonAnimation::AttackKnockBackLoop, false);
@@ -1167,7 +1241,16 @@ namespace ActionDragon
 
             owner_->SetStep(2);
             break;
-        case 4:
+        case 4:// 攻撃
+
+            // 攻撃SEを再生
+            if (owner_->GetAnimationSeconds() > guardAttackSEPlayFrame_ && isPlayGuardAttackSE_ == false)
+            {
+                AudioManager::Instance().PlaySE(SE::GuardAttack);
+
+                isPlayGuardAttackSE_ = true;
+            }
+
             // 攻撃判定処理
             if (owner_->GetAnimationSeconds() > 1.0f)
             {
@@ -1211,6 +1294,21 @@ namespace ActionDragon
     // ----- ImGui用 -----
     void GuardAction::DrawDebug()
     {
+        if (ImGui::TreeNodeEx("Guard", ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- SE ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("GuardSEPlayFrame", &guardSEPlayFrame_, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("GuardAttackSEPlayFrame", &guardSEPlayFrame_, 0.01f, 0.0f, 1.0f);
+
+                ImGui::Checkbox("IsPlayGuardSE", &isPlayGuardSE_);
+                ImGui::Checkbox("IsPlayGuardAttackSE", &isPlayGuardAttackSE_);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
     }
 }
 
@@ -1223,6 +1321,13 @@ namespace ActionDragon
         if (owner_->CheckStatusChange()) isCurrentNodeCancelled_ = true;
         if (isCurrentNodeCancelled_)
         {
+            if (owner_->GetIsDead())
+            {
+                Finalize();
+
+                return ActionBase::State::Failed;
+            }
+
             if (PlayerManager::Instance().GetPlayer()->GetCurrentState() != Player::STATE::RushAttack)
             {                
                 Finalize();
@@ -1244,6 +1349,11 @@ namespace ActionDragon
             addForceData_.Initialize(rotationEndFrame_, 0.6f, 0.6f);
             easingTimer_ = 0.0f;
             isCurrentNodeCancelled_ = false;
+
+            for (int i = 0; i < maxFootSteps_; ++i)
+            {
+                isPlayFootSteps_[i] = false;
+            }
 
             owner_->SetStep(1);
             break;
@@ -1267,6 +1377,20 @@ namespace ActionDragon
 
             break;
         case 2:
+            // 足音SE再生
+            if (owner_->GetAnimationSeconds() > 0.1f && isPlayFootSteps_[0] == false)
+            {
+                AudioManager::Instance().PlaySE(SE::FootSteps);
+
+                isPlayFootSteps_[0] = true;
+            }
+            if (owner_->GetAnimationSeconds() > 0.65f && isPlayFootSteps_[1] == false)
+            {
+                AudioManager::Instance().PlaySE(SE::FootSteps);
+
+                isPlayFootSteps_[1] = true;
+            }
+
             // 移動処理
             if (addForceData_.Update(owner_->GetAnimationSeconds()))
             {
@@ -1307,6 +1431,14 @@ namespace ActionDragon
             }
             break;
         case 3:
+
+            // 足音SE再生
+            if (owner_->GetAnimationSeconds() > 0.34f && isPlayFootSteps_[2] == false)
+            {
+                AudioManager::Instance().PlaySE(SE::FootSteps);
+
+                isPlayFootSteps_[2] = true;
+            }
 
             // 移動処理
             if (addForceData_.Update(owner_->GetAnimationSeconds()))

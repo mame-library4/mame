@@ -4,6 +4,7 @@
 #include "Texture.h"
 #include "Misc.h"
 #include "MathHelper.h"
+#include "AudioManager.h"
 
 // ----- コンストラクタ -----
 TailParticle::TailParticle()
@@ -137,8 +138,16 @@ void TailParticle::UpdateTailRadius(const float& elapsedTime)
     // 尻尾のパーティクルが有効ではない
     if (GetParticleData()->GetIsActive() == false) return;
 
+    if (state_ >= 4) return;
+
     const float maxRadius[4] = { 0.7f, 0.65f, 0.6f, 0.55f };
     const float speed = 3.5f;
+
+    // チャージSEを再生する
+    if (lerpTimer_ == 0.0f)
+    {
+        AudioManager::Instance().PlaySE(SE::TailCharge);
+    }
 
     lerpTimer_ += speed * elapsedTime;
     lerpTimer_ = min(lerpTimer_, 1.0f);

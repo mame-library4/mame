@@ -42,5 +42,9 @@ private:
     //bool isDebugRenderer_ = true;
 
     bool isDrawUI_ = false; // UI•`‰æ”»’è
+
+    // ----- Debug—p -----
+    bool isUseMainMenuBar_ = true;
+    float bgmVolume_ = 0.2f;
 };
 

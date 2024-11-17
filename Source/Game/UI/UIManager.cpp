@@ -50,24 +50,18 @@ void UIManager::Render()
 void UIManager::DrawDebug()
 {
 #ifdef _DEBUG
-    if (ImGui::BeginMainMenuBar())
+    if (ImGui::BeginMenu("UIManager"))
     {
-
-        if (ImGui::BeginMenu("UIManager"))
+        for (int i = 0; i < userInterface_.size(); ++i)
         {
-            for (int i = 0; i < userInterface_.size(); ++i)
-            {
-                userInterface_.at(i)->DrawDebug();
-            }
-
-            //for (UI*& ui : userInterface_)
-            //{
-            //    ui->DrawDebug();
-            //}
-            ImGui::EndMenu();
+            userInterface_.at(i)->DrawDebug();
         }
 
-        ImGui::EndMainMenuBar();
+        //for (UI*& ui : userInterface_)
+        //{
+        //    ui->DrawDebug();
+        //}
+        ImGui::EndMenu();
     }
 #endif
 }

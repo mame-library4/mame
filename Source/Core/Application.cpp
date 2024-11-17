@@ -14,6 +14,8 @@
 #include "Effect/EffectManager.h"
 #include "UI/UIManager.h"
 
+bool Application::isGameEnd_ = false;
+
 // ----- コンストラクタ -----
 Application::Application(HWND hwnd)
     : hwnd_(hwnd),
@@ -93,6 +95,8 @@ void Application::Update(const float& elapsedTime)
     EffectManager::Instance().Update(elapsedTime);
 
     UIManager::Instance().Update(elapsedTime);
+
+    if (isGameEnd_) PostMessage(hwnd_, WM_CLOSE, 0, 0);
 }
 
 // ----- 描画 -----
@@ -229,7 +233,6 @@ void Application::Render()
 void Application::DrawDebug()
 {
 #ifdef USE_IMGUI
-    PostProcess::Instance().DrawDebug();
 
     Camera::Instance().DrawDebug();
 
@@ -239,7 +242,6 @@ void Application::DrawDebug()
 
     graphics_.GetShader()->DrawDebug();
 
-    UIManager::Instance().DrawDebug();
 
     EffectManager::Instance().DrawDebug();
     
@@ -336,7 +338,7 @@ LRESULT Application::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
     case WM_KEYDOWN:
         if (wparam == VK_ESCAPE)
         {      
-            PostQuitMessage(0);
+            //isGameEnd_ = true;
         }
         break;
     case WM_ENTERSIZEMOVE:

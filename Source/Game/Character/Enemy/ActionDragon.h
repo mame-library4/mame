@@ -51,6 +51,9 @@ namespace ActionDragon
         DeathAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
         void DrawDebug()                                      override;
+
+    private:
+        float timer_ = 10.0f;
     };
 
     // ----- DownAction -----
@@ -163,6 +166,11 @@ namespace ActionDragon
         float               moveSpeed_          = 2.0f; // 移動速度
         float               rotationEndFrame_   = 0.9f; // 回転終了フレーム
 
+        // ---------- SE ----------
+        int chargeSENum_ = 0;
+        bool isPlayBreathSE_ = false;
+        bool isPlayChargeSE_ = false;
+        bool isPlayExplosionSE_ = false;
     };
 
     // ----- ComboSlamAttackAction -----
@@ -257,6 +265,9 @@ namespace ActionDragon
         // ----- Movement -----
         AddForceData addForceData_;
         bool         isAbleMove_ = true;
+
+        // ---------- SE ----------
+        bool isPlayTurnSE_ = false;
     };
 
     // ----- GuardAction -----
@@ -272,6 +283,12 @@ namespace ActionDragon
 
         int loopCounter_ = 0;
         int loopMax_ = 2;
+
+        // ---------- SE ----------
+        float guardSEPlayFrame_         = 0.6f;
+        float guardAttackSEPlayFrame_   = 0.45f;
+        bool isPlayGuardSE_ = false;
+        bool isPlayGuardAttackSE_ = false;
     };
 
     // ----- TackleAction -----
@@ -300,6 +317,10 @@ namespace ActionDragon
         float easingTimer_ = 0.0f;
 
         bool isCurrentNodeCancelled_ = false;
+
+        // ----- SE -----
+        static const int maxFootSteps_ = 3;
+        bool isPlayFootSteps_[maxFootSteps_] = {};
     };
 
     // ----- SuperNovaAction -----

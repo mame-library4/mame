@@ -26,6 +26,16 @@ public:
     const bool Judgment() override;
 };
 
+// ----- KnockDownJudgment -----
+class LongRangeJudgment : public JudgmentBase
+{
+public:
+    LongRangeJudgment(Enemy* owner) : JudgmentBase(owner) {}
+    const bool Judgment() override;
+};
+
+
+
 #if 0
 // ‚Ð‚é‚Ý”»’è
 class FlinchJudgment : public JudgmentBase

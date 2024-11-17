@@ -50,7 +50,8 @@ void Camera::Initialize()
 void Camera::Update(const float& elapsedTime)
 {
     // タイトル画面はとりあえずここで終了
-    if (SceneManager::Instance().GetCurrentSceneName() == SceneManager::SceneName::Title) return;
+    if (SceneManager::Instance().GetCurrentSceneName() == SceneManager::SceneName::Title ||
+        SceneManager::Instance().GetCurrentSceneName() == SceneManager::SceneName::Loading) return;
 
     // 死亡カメラ使用時はここで終了
     if (UpdatePlayerDeathCamera(elapsedTime)) return; // Player死亡カメラ
@@ -126,7 +127,7 @@ void Camera::Update(const float& elapsedTime)
 
 void Camera::SetPerspectiveFov()
 {
-    DirectX::XMFLOAT3 front = GetTransform()->CalcForward();
+    DirectX::XMFLOAT3 front = XMFloat3Normalize(GetTransform()->CalcForward());
     DirectX::XMFLOAT3 rot = GetTransform()->GetRotation();
 
     DirectX::XMFLOAT3 worldOffset = {};
@@ -234,6 +235,7 @@ void Camera::DrawDebug()
 {
     if (ImGui::BeginMenu("Camera"))
     {
+        ImGui::DragFloat3("Target", &target_.x);
         ImGui::DragFloat("LerpWegith", &lerpWeight_, 0.01f, 0.0f, 1.0f);
 
         ImGui::DragFloat("GroundNearest", &groundNearest_, 0.01f);
@@ -310,6 +312,7 @@ void Camera::SetTitleCamera()
     GetTransform()->SetRotationX(DirectX::XMConvertToRadians(16.0f));
     GetTransform()->SetRotationY(DirectX::XMConvertToRadians(180.0f));
 
+    target_ = {};
     targetOffset_ = { 0, -1, 0 };
     cameraOffset_ = { 0, 2.5f, 0 };
     length_ = 6.0f;

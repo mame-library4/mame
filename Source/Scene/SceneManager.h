@@ -19,6 +19,7 @@ public:
     {
         Title,
         Game,
+        Loading,
     };
 
     void Initialize();

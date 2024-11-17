@@ -13,6 +13,8 @@
 
 #include "Application.h"
 
+#include "AudioManager.h"
+
 // ----- AddForceData -----
 namespace PlayerState
 {
@@ -274,6 +276,9 @@ namespace PlayerState
         if (UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide) != nullptr)
             UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 0.0f);
 
+        // 足音の効果音再生
+        dashSENum_ = AudioManager::Instance().PlaySE(SE::Dash);
+
         // 変数初期化
         changeStateTimer_ = 0.0f;
     }
@@ -311,6 +316,9 @@ namespace PlayerState
         owner_->SetVelocity({});
 
         owner_->SetIsDash(false);
+
+        // 効果音停止
+        AudioManager::Instance().StopSE(SE::Dash, dashSENum_);
     }
 
     // ----- ImGui用 -----
@@ -1812,6 +1820,12 @@ namespace PlayerState
         // コントローラー振動を入れる
         Input::Instance().GetGamePad().Vibration(vibrationTime_, 1.0f);
 
+        // 現在鳴っているSEを全て停止させる
+        AudioManager::Instance().StopAllSE();
+        // ジャスト回避のSEを鳴らす
+        AudioManager::Instance().PlaySE(SE::JustDodge);
+        slowSENum_ = AudioManager::Instance().PlaySE(SE::Slow);
+
         slowTimer_ = 0.0f;
         lerpTimer_ = 0.0f;
     }
@@ -1921,6 +1935,9 @@ namespace PlayerState
 
         // 無敵状態無効化
         owner_->SetIsInvincible(false);
+
+        // SEを止める
+        AudioManager::Instance().StopSE(SE::Slow, slowSENum_);
     }
 
     // ----- ImGui用 -----
@@ -2010,6 +2027,10 @@ namespace PlayerState
 
         // 無敵状態にしておく
         owner_->SetIsInvincible(true);
+
+        // ラッシュ攻撃(移動)SEを再生
+        AudioManager::Instance().PlaySE(SE::RushAttackMove0);
+        AudioManager::Instance().PlaySE(SE::RushAttackMove1);
 
         // 変数初期化
         currentAttackNum_ = 0;
@@ -2114,6 +2135,8 @@ namespace PlayerState
                 attackData_.Initialize(0.18f, 0.28f);
                 owner_->ResetFlags();
 
+                AudioManager::Instance().PlaySE(SE::SowrdSlash2);
+
                 ++currentAttackNum_;
             }
         }
@@ -2139,6 +2162,8 @@ namespace PlayerState
                 {
                     owner_->PlayBlendAnimation(Player::Animation::AttackRush1, false, 1.0f, 0.15f);
                     isNextInput_ = false;
+
+                    AudioManager::Instance().PlaySE(SE::SowrdSlash2);
 
                     attackData_.Initialize(0.15f, 0.3f);
                     owner_->ResetFlags();
@@ -2168,6 +2193,8 @@ namespace PlayerState
                     owner_->PlayBlendAnimation(Player::Animation::AttackRush2, false, 1.0f, 0.15f);
                     isNextInput_ = false;
 
+                    AudioManager::Instance().PlaySE(SE::SowrdSlash2);
+
                     attackData_.Initialize(0.15f, 0.25f);
                     owner_->ResetFlags();
 
@@ -2196,6 +2223,8 @@ namespace PlayerState
                     owner_->PlayBlendAnimation(Player::Animation::AttackRush3, false, 1.0f, 0.15f);
                     isNextInput_ = false;
 
+                    AudioManager::Instance().PlaySE(SE::SowrdSlash2);
+
                     attackData_.Initialize(0.15f, 0.35f);
                     owner_->ResetFlags();
 
@@ -2223,6 +2252,8 @@ namespace PlayerState
                 {
                     owner_->PlayBlendAnimation(Player::Animation::AttackRush0, false, 1.0f, 0.18f);
                     isNextInput_ = false;
+
+                    AudioManager::Instance().PlaySE(SE::SowrdSlash2);
 
                     attackData_.Initialize(0.18f, 0.28f);
                     owner_->ResetFlags();
@@ -2374,7 +2405,8 @@ namespace PlayerState
         // 変数初期化
         addForceBack_.Initialize(0.16f, 0.2f, 0.5f);
         addForceFront_.Initialize(0.66f, 0.30f, 1.0f);
-        gamePadVibration_.Initialize(0.3f, 0.2f, 0.5f);
+        gamePadVibration_.Initialize(0.3f, 0.4f, 1.0f);
+        //gamePadVibration_.Initialize(0.3f, 0.2f, 0.5f);
         attackData_.Initialize(0.75f, 1.0f);
 
         isNextInput_ = false;
@@ -2436,6 +2468,7 @@ namespace PlayerState
                 }
 
                 // TODO: 効果音を鳴らす
+                AudioManager::Instance().PlaySE(SE::Mikiri);
 
                 isCounterReaction = true;
             }
@@ -2987,6 +3020,8 @@ namespace PlayerState
         // 変数初期化
         attackData_.Initialize(0.1f, 0.35f);      
 
+        // SE再生
+        AudioManager::Instance().PlaySE(SE::SowrdSlash0);
     }
 
     // ----- 更新 -----
@@ -3212,6 +3247,9 @@ namespace PlayerState
 
         // 変数初期化
         attackData_.Initialize(0.06f, 0.3f);
+
+        // SE再生
+        AudioManager::Instance().PlaySE(SE::SowrdSlash1);
     }
 
     // ----- 更新 -----
@@ -3413,7 +3451,7 @@ namespace PlayerState
 
         // 変数初期化
         attackData_.Initialize(0.7f, 0.9f);
-
+        isPlaySwordSlashSE_ = false;
     }
 
     // ----- 更新 -----
@@ -3437,7 +3475,12 @@ namespace PlayerState
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAttackHit());
         owner_->SetIsAttackValid(attackFlag);
 
-
+        // SE再生
+        if (isPlaySwordSlashSE_ == false && owner_->GetAnimationSeconds() > swordSlashSEPlayFrame_)
+        {
+            AudioManager::Instance().PlaySE(SE::SowrdSlash0);
+            isPlaySwordSlashSE_ = true;
+        }
 
 
         if (owner_->IsPlayAnimation() == false)
@@ -3458,6 +3501,14 @@ namespace PlayerState
     {
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
+            if(ImGui::TreeNodeEx("---------- SE ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::Text("SwordSlash");
+                ImGui::Checkbox("IsPlay", &isPlaySwordSlashSE_);
+                ImGui::DragFloat("PlayFrame", &swordSlashSEPlayFrame_);
+
+                ImGui::TreePop();
+            }
 
             ImGui::TreePop();
         }
@@ -3603,8 +3654,7 @@ namespace PlayerState
         // 変数初期化
         attackData_.Initialize(0.65f, 0.8f);
         isVibration_ = false;
-
- 
+        isPlaySwordSlashSE_ = false;
     }
 
     // ----- 更新 -----
@@ -3628,6 +3678,12 @@ namespace PlayerState
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAttackHit());
         owner_->SetIsAttackValid(attackFlag);
 
+        // SE再生
+        if (isPlaySwordSlashSE_ == false && owner_->GetAnimationSeconds() > swordSlashSEPlayFrame_)
+        {
+            AudioManager::Instance().PlaySE(SE::SowrdSlash1);
+            isPlaySwordSlashSE_ = true;
+        }
 
         // コントローラー＆カメラ 振動
         if (owner_->GetAnimationSeconds() > 0.8f && isVibration_ == false)
@@ -3656,6 +3712,14 @@ namespace PlayerState
     {
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
+            if (ImGui::TreeNodeEx("---------- SE ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::Text("SwordSlash");
+                ImGui::Checkbox("IsPlay", &isPlaySwordSlashSE_);
+                ImGui::DragFloat("PlayFrame", &swordSlashSEPlayFrame_);
+
+                ImGui::TreePop();
+            }
 
             ImGui::TreePop();
         }
