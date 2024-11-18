@@ -315,11 +315,11 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("PowerAttack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
 #else
     behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    behaviorTree_->AddNode("Attack", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
     behaviorTree_->AddNode("Attack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
     //behaviorTree_->AddNode("Root", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
     //behaviorTree_->AddNode("Root", "TackleAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
     //behaviorTree_->AddNode("Root", "Walk", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));
-    //behaviorTree_->AddNode("Root", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
     //behaviorTree_->AddNode("Root", "Guard", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::GuardAction(this));
 
 #endif

@@ -45,6 +45,13 @@ enum class SE
     GuardAttack,
     // ----- TackleAttack -----
     FootSteps,
+    // ----- SuperNova -----
+    Flap0,
+    Wind0,
+    Wind1,
+    Fire0,
+    Explosion2,
+    Explosion3,
 
     Max,
 };

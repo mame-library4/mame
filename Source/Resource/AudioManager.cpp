@@ -64,6 +64,14 @@ void AudioManager::LoadAudio()
             
             // SE::FootSteps
             se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Dragon/TackleAttack/FootSteps.wav", 4));
+            
+            // SE::Flap0, SE::Wind0, SE::Wind1, SE::Fire0, SE::Explosion2
+            se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Dragon/SuperNova/Flap.wav", 8));
+            se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Dragon/SuperNova/Wind0.wav", 2));
+            se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Dragon/SuperNova/Wind1.wav", 2));
+            se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Dragon/SuperNova/Fire.wav", 2));
+            se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Dragon/SuperNova/Explosion0.wav", 2));
+            se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Dragon/SuperNova/Explosion1.wav", 2));
         }
     }
 
@@ -102,6 +110,13 @@ void AudioManager::LoadAudio()
             se_[static_cast<int>(SE::GuardAttack)].Volume(0.4f);
             
             se_[static_cast<int>(SE::FootSteps)].Volume(0.2f);
+            
+            se_[static_cast<int>(SE::Flap0)].Volume(0.2f);
+            se_[static_cast<int>(SE::Wind0)].Volume(0.2f);
+            se_[static_cast<int>(SE::Wind1)].Volume(0.3f);
+            se_[static_cast<int>(SE::Fire0)].Volume(0.1f);
+            se_[static_cast<int>(SE::Explosion2)].Volume(0.5f);
+            se_[static_cast<int>(SE::Explosion3)].Volume(0.5f);
         }
     }
 

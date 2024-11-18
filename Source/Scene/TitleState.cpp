@@ -31,6 +31,11 @@ namespace TitleState
     // ----- çXêV -----
     void IdleState::Update(const float& elapsedTime)
     {
+#ifdef _DEBUG
+        SceneManager::Instance().ChangeScene(new LoadingScene(new GameScene));
+        return;
+#endif
+
         lerpTimer_ += lerpSpeed_ * elapsedTime;
         lerpTimer_ = min(lerpTimer_, 1.0f);
         const float rotationY = XMFloatLerp(startRotationY_, targetRotationY_, lerpTimer_);

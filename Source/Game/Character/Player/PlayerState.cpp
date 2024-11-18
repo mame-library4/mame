@@ -959,6 +959,9 @@ namespace PlayerState
         // 回転
         Turn();
 
+        // ビネット設定
+        SetVignette();
+
         isCameraShakeActive_ = false;
     }
 
@@ -976,6 +979,15 @@ namespace PlayerState
                 Camera::Instance().ScreenVibrate(0.1f, 0.3f);
                 isCameraShakeActive_ = true;
             }
+        }
+
+        // ビネット更新
+        if (isVignetteActive_)
+        {
+            vignetteTimer_ += vignetteFadeOutSpeed_ * elapsedTime;
+            vignetteTimer_ = std::min(vignetteTimer_, 1.0f);
+            const float intensity = XMFloatLerp(vignetteMaxIntensity_, 0.0f, vignetteTimer_);
+            PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteIntensity_ = intensity;
         }
 
 
@@ -1030,15 +1042,50 @@ namespace PlayerState
     {
         // 無敵状態を解除する
         owner_->SetIsInvincible(false);
+
+        // ビネット使用フラグを下げる
+        PostProcess::Instance().SetUseVignette(false);
     }
 
+    // ----- ImGui用 -----
     void DamageState::DrawDebug()
     {
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
+            if (ImGui::TreeNodeEx("---------- Vignette ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("Timer", &vignetteTimer_, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("FadeOutSpeed", &vignetteFadeOutSpeed_, 0.01f, 0.0f, 5.0f);
+                ImGui::DragFloat("Intensity", &vignetteMaxIntensity_, 0.01f, 0.0f, 5.0f);
+                ImGui::ColorEdit4("Color", &vignetteColor_.x);
+
+                ImGui::TreePop();
+            }
 
             ImGui::TreePop();
         }
+    }
+
+    // ----- ビネット設定 -----
+    void DamageState::SetVignette()
+    {
+        // ドラゴンの攻撃がSuperNovaではないなら使用しない
+        const int dragonAnimationIndex = EnemyManager::Instance().GetEnemy(0)->GetAnimationIndex();
+        if (dragonAnimationIndex != static_cast<int>(Enemy::DragonAnimation::Nova1))
+        {
+            isVignetteActive_ = false;
+            return;
+        }
+
+        PostProcess::Instance().SetUseVignette(true);
+
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteCenter_ = { 0.5f, 0.5f };
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteIntensity_ = vignetteMaxIntensity_;
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteSmoothness_ = 2.2f;
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteColor_ = vignetteColor_;
+
+        vignetteTimer_ = 0.0f;
+        isVignetteActive_ = true;
     }
 
     // ----- アニメーションの速度設定 -----
@@ -2362,14 +2409,13 @@ namespace PlayerState
 
         const int animationData[] =
         {
-            static_cast<int>(Enemy::DragonAnimation::AttackSlam0), static_cast<int>(Enemy::DragonAnimation::AttackTurn),
-            static_cast<int>(Enemy::DragonAnimation::AttackKnockBackEnd0), static_cast<int>(Enemy::DragonAnimation::AttackTackle1),
-            static_cast<int>(Enemy::DragonAnimation::AttackTackle3),
+            static_cast<int>(Enemy::DragonAnimation::AttackSlam0), static_cast<int>(Enemy::DragonAnimation::AttackTurn), static_cast<int>(Enemy::DragonAnimation::AttackKnockBackEnd0), 
+            static_cast<int>(Enemy::DragonAnimation::AttackTackle1), static_cast<int>(Enemy::DragonAnimation::AttackTackle3), static_cast<int>(Enemy::DragonAnimation::Nova1)
         };
         const char* jointName[] =
         {
-            "Dragon15_r_hand", "Dragon15_l_horselink",
-            "Dragon15_l_foot", "Dragon15_l_calf", "Dragon15_r_calf"
+            "Dragon15_r_hand", "Dragon15_l_horselink", "Dragon15_l_foot",
+            "Dragon15_l_calf", "Dragon15_r_calf", "Dragon15_r_foot"
         };
         
         for (int i = 0; i < _countof(animationData); ++i)

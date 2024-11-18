@@ -1588,10 +1588,26 @@ namespace ActionDragon
             preRadialBlurTimer_ = 0.0f;
             intenseBlurFrameCount_ = 0;
 
+            for (int i = 0; i < maxFlapNum_; ++i)
+            {
+                isFlap_[i] = false;
+            }
+
             owner_->SetStep(1);
 
             break;
         case 1:
+        {
+            // 羽ばたき効果音を再生
+            const float playFrame[] =
+            {
+                0.33f, 0.92f, 1.75f, 2.45f, 3.05f, 3.73f, 4.45f, 5.23f
+            };
+            for (int i = 0; i < maxFlapNum_; ++i)
+            {
+                PlayFlapSound(playFrame[i], i);
+            }
+        }
 
             // チャージエフェクト生成
             GenerateChargeEffect(elapsedTime);
@@ -1658,6 +1674,11 @@ namespace ActionDragon
         emitterPosition.y = 0.3f;
         superNovaParticle_->PlayLavaCrawlerParticle(elapsedTime, emitterPosition);
 
+        // 効果音再生 (チャージ)
+        wind0SENum_ = AudioManager::Instance().PlaySE(SE::Wind0);
+        wind1SENum_ = AudioManager::Instance().PlaySE(SE::Wind1);
+        fireSENum_ = AudioManager::Instance().PlaySE(SE::Fire0);
+
         isCreateLavaCrawlerParticle_ = true;
     }
 
@@ -1688,6 +1709,14 @@ namespace ActionDragon
 
         // 地面を這うパーティクルの速度を上げる
         superNovaParticle_->SetLavaCrawlerParticleSpeed(30.0f);
+
+        // 効果音を止める (チャージ)
+        AudioManager::Instance().StopSE(SE::Wind0, wind0SENum_);
+        AudioManager::Instance().StopSE(SE::Wind1, wind1SENum_);
+        AudioManager::Instance().StopSE(SE::Fire0, fireSENum_);
+        // 効果音を再生
+        AudioManager::Instance().PlaySE(SE::Explosion2);
+        //AudioManager::Instance().PlaySE(SE::Explosion3);
 
         isCreateCoreBurst_ = true;
 
@@ -1791,6 +1820,18 @@ namespace ActionDragon
         EffectManager::Instance().GetEffect("Power")->Stop(powerEffectHandle_);
         
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 1;
+    }
+
+    // ----- 羽ばたきの効果音を再生する -----
+    void SuperNovaAction::PlayFlapSound(const float& frame, const int& flapNum)
+    {
+        // 既に再生済み
+        if (isFlap_[flapNum]) return;
+        // 再生フレームに達していない
+        if (owner_->GetAnimationSeconds() < frame) return;
+
+        AudioManager::Instance().PlaySE(SE::Flap0);
+        isFlap_[flapNum] = true;
     }
 }
 

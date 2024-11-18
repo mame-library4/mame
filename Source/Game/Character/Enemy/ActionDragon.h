@@ -340,6 +340,8 @@ namespace ActionDragon
 
         void Finalize();
 
+        void PlayFlapSound(const float& frame, const int& flapNum);
+
     private:
         SuperNovaParticle* superNovaParticle_ = nullptr;
 
@@ -357,6 +359,14 @@ namespace ActionDragon
         float       preRadialBlurTimer_ = 0.0f;
         float       radialBlurTimer_ = 0.0f;
         const int   maxSampleCount_ = 5.0f;
+
+        // ----- SE -----
+        int wind0SENum_ = 0;
+        int wind1SENum_ = 0;
+        int fireSENum_ = 0;
+
+        static const int maxFlapNum_ = 8;
+        bool isFlap_[maxFlapNum_] = {};
     };
 
     // ----- WalkAction -----

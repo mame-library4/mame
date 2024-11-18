@@ -203,6 +203,8 @@ namespace PlayerState
         void DrawDebug()                        override;
 
     private:
+        void SetVignette(); // ビネット設定
+
         void SetAnimationSpeed();
         void Turn();
 
@@ -214,6 +216,13 @@ namespace PlayerState
         DirectX::XMFLOAT3 addForceDirection_ = {}; // 吹っ飛び方向
 
         bool isCameraShakeActive_ = false;
+
+        // ----- Vignette -----
+        DirectX::XMFLOAT4 vignetteColor_        = { 1.0f, 0.4f, 0.0f, 1.0f };
+        float             vignetteTimer_        = 0.0f;
+        float             vignetteFadeOutSpeed_ = 0.7f;
+        float             vignetteMaxIntensity_ = 1.5f;
+        bool              isVignetteActive_     = false;
     };
 
     // ----- 死亡 -----
