@@ -395,6 +395,9 @@ namespace ActionDragon
             // アニメーション設定
             PlayAnimation();
 
+            // 現在の攻撃アクションを設定する
+            owner_->SetCurrentAttackAction(Enemy::AttackAction::SlamAttack);
+
             // カウンター有効範囲を設定する
             PlayerManager::Instance().GetPlayer()->SetCounterActiveRadius(6.0f);
 
@@ -936,6 +939,9 @@ namespace ActionDragon
             // アニメーション再生
             PlayAnimation();
 
+            // 現在の攻撃アクションを設定する
+            owner_->SetCurrentAttackAction(Enemy::AttackAction::TurnAttack);
+
             // 現時点ではルートモーションを使用しない
             owner_->SetUseRootMotion(false);
 
@@ -1167,6 +1173,9 @@ namespace ActionDragon
             // アニメーション設定
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackKnockBackStart, false);
 
+            // 現在の攻撃アクションを設定する
+            owner_->SetCurrentAttackAction(Enemy::AttackAction::GuardAttack);
+
             // ルートモーションを使用しない
             owner_->SetUseRootMotion(false);
 
@@ -1344,6 +1353,9 @@ namespace ActionDragon
         case 0:// 初期化
             // アニメーション再生
             PlayAnimation();
+
+            // 現在の攻撃アクションを設定する
+            owner_->SetCurrentAttackAction(Enemy::AttackAction::TackleAttack);
 
             // 変数初期化
             addForceData_.Initialize(rotationEndFrame_, 0.6f, 0.6f);
@@ -1561,6 +1573,9 @@ namespace ActionDragon
         {
         case 0:
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::Nova1, false);
+
+            // 現在の攻撃アクションを設定する
+            owner_->SetCurrentAttackAction(Enemy::AttackAction::SuperNova);
 
             // 変数初期化
             superNovaParticle_ = new SuperNovaParticle();

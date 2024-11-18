@@ -6,54 +6,70 @@
 UIGuardGauge::UIGuardGauge()
     : UI(UIManager::UIType::UIGuardGauge, L"./Resources/Image/White.png", "UIGuardGauge")
 {
-    // ガードゲージアイコン
-    guardGaugeIcon_ = std::make_unique<Sprite>(L"./Resources/Image/UI/Guard.png");
-    guardGaugeIcon_->SetName("GuardGaugeIcon");
-    guardGaugeIcon_->GetTransform()->SetPosition(20.0f, 84.0f);
-    guardGaugeIcon_->GetTransform()->SetSize(32.0f);
-    guardGaugeIcon_->GetTransform()->SetColor(0.86f, 0.86f, 0.86f);
-
-    const DirectX::XMFLOAT3 color = DirectX::XMFLOAT3(0.27f, 0.27f, 0.59f);
-
     guardGaugeRhombus_ = std::make_unique<Sprite>(L"./Resources/Image/white.png");
-    guardGaugeRhombus_->SetName("GuardGaugeRhombus");
-    guardGaugeRhombus_->GetTransform()->SetPosition(60.0f, 95.0f);
-    guardGaugeRhombus_->GetTransform()->SetSize(9.0f);
-    guardGaugeRhombus_->GetTransform()->SetAngle(45.0f);
-    guardGaugeRhombus_->GetTransform()->SetColor(color);
+    guardGaugeWarning_ = std::make_unique<Sprite>(L"./Resources/Image/White.png");
+    guardGaugeFrame_ = std::make_unique<Sprite>(L"./Resources/Image/White.png");
+    guardGaugeRhombusFrame_ = std::make_unique<Sprite>(L"./Resources/Image/white.png");
+    guardGaugeIcon_ = std::make_unique<Sprite>(L"./Resources/Image/UI/Guard.png");
 
+    // 初期化
+    Initialize();
+
+    // 全てのUIが生成された
+    isAllUICreated = true;
+}
+
+// ----- 初期化 -----
+void UIGuardGauge::Initialize()
+{
     const DirectX::XMFLOAT2 position = DirectX::XMFLOAT2(68.0f, 98.0f);
     const float sizeY = 5.0f;
 
     // ガードゲージ(青色)
     SetSpriteName("GuardGauge");
+    SetIsActiveUVScroll();
+    SetNoiseTextureNum(0);
+    SetScrollDirection({ 0.25f, 0.0f });
     GetTransform()->SetPosition(position);
     GetTransform()->SetSize(maxGuardGaugeSizeX, sizeY);
-    GetTransform()->SetColor(color);
+    GetTransform()->SetColor(0.42f, 0.42f, 1.0f);
 
-    // ガードゲージの枠(黒色)の設定
-    guardGaugeFrame_ = std::make_unique<Sprite>(L"./Resources/Image/White.png");
+    // ----- ◇ひし形 -----
+    guardGaugeRhombus_->SetName("GuardGaugeRhombus");
+    guardGaugeRhombus_->SetIsActiveUVScroll();
+    guardGaugeRhombus_->SetNoiseTextureNum(1);
+    guardGaugeRhombus_->SetScrollDirection({ 0.5f, 0.5f });
+    guardGaugeRhombus_->GetTransform()->SetPosition(60.0f, 95.0f);
+    guardGaugeRhombus_->GetTransform()->SetSize(9.0f);
+    guardGaugeRhombus_->GetTransform()->SetAngle(45.0f);
+    guardGaugeRhombus_->GetTransform()->SetColor(0.42f, 0.42f, 1.0f);
+
+    // ----- 赤ゲージ -----
+    guardGaugeWarning_->SetName("GuardGaugeWarning");
+    guardGaugeWarning_->GetTransform()->SetPosition(position);
+    guardGaugeWarning_->GetTransform()->SetSize(maxGuardGaugeSizeX, sizeY);
+    guardGaugeWarning_->GetTransform()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+
+    // ----- ガードゲージの枠(黒色) -----
     guardGaugeFrame_->SetName("GuardGaugeFrame");
     guardGaugeFrame_->GetTransform()->SetPosition(68.0f, 96.0f);
     guardGaugeFrame_->GetTransform()->SetSize(302.0f, 9.0f);
     guardGaugeFrame_->GetTransform()->SetColor(0.0f, 0.0f, 0.0f, 0.4f);
 
-    guardGaugeRhombusFrame_ = std::make_unique<Sprite>(L"./Resources/Image/white.png");
+    // ----- ◇ひし形の枠(黒色) -----
     guardGaugeRhombusFrame_->SetName("GuardGaugeRhombusFrame");
     guardGaugeRhombusFrame_->GetTransform()->SetPosition(58.0f, 93.0f);
     guardGaugeRhombusFrame_->GetTransform()->SetSize(13.0f);
     guardGaugeRhombusFrame_->GetTransform()->SetAngle(45.0f);
     guardGaugeRhombusFrame_->GetTransform()->SetColor(0.0f, 0.0f, 0.0f, 0.4f);
 
-    // ガードゲージが少ない警告(赤色)の設定
-    guardGaugeWarning_ = std::make_unique<Sprite>(L"./Resources/Image/White.png");
-    guardGaugeWarning_->SetName("GuardGaugeWarning");
-    guardGaugeWarning_->GetTransform()->SetPosition(position);
-    guardGaugeWarning_->GetTransform()->SetSize(maxGuardGaugeSizeX, sizeY);
-    guardGaugeWarning_->GetTransform()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-
-    // 全てのUIが生成された
-    isAllUICreated = true;
+    // ----- ガードアイコン -----
+    guardGaugeIcon_->SetName("GuardGaugeIcon");
+    guardGaugeIcon_->SetIsActiveUVScroll();
+    guardGaugeIcon_->SetNoiseTextureNum(1);
+    guardGaugeIcon_->SetScrollDirection({ 0.0f, 0.5f });
+    guardGaugeIcon_->GetTransform()->SetPosition(20.0f, 84.0f);
+    guardGaugeIcon_->GetTransform()->SetSize(32.0f);
 }
 
 // ----- 更新 -----
@@ -71,6 +87,7 @@ void UIGuardGauge::Update(const float& elapsedTime)
     const float guardGaugeSizeX = max(maxGuardGaugeSizeX * currentGuardGauge, 0.0f);
 
     GetTransform()->SetSizeX(guardGaugeSizeX);
+    GetTransform()->SetTexSizeX(guardGaugeSizeX);
 
     
     // ------------------------------------------------------------
@@ -116,6 +133,11 @@ void UIGuardGauge::Update(const float& elapsedTime)
         GetTransform()->SetColor(0.2f, 0.2f, 0.47f, 1.0f);
     }
 #endif
+
+    // 更新
+    UI::Update(elapsedTime);
+    guardGaugeRhombus_->Update(elapsedTime);
+    guardGaugeIcon_->Update(elapsedTime);
 }
 
 // ----- 描画 -----

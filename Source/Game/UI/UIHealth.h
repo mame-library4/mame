@@ -12,6 +12,8 @@ public:
     void DrawDebug()                        override; // ImGui用
 
 private:
+    void Initialize(); // 初期化
+
     void ApplyDamageEffect();                           // ダメージ効果を適用する
     void UpdateVibration(const float& elapsedTime);     // 振動更新
     void UpdateAutoRecovery(const float& elapsedTime);  // 自動回復

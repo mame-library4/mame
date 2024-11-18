@@ -12,6 +12,9 @@ public:
     void DrawDebug()                        override; // ImGui—p
 
 private:
+    void Initialize(); // ‰Šú‰»
+
+private:
     std::unique_ptr<Sprite> guardGaugeRhombus_;
     std::unique_ptr<Sprite> guardGaugeRhombusFrame_;
     std::unique_ptr<Sprite> guardGaugeFrame_;

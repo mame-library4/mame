@@ -163,7 +163,7 @@ void EnemyDragon::DrawDebug()
                 "TurnAttack",
                 "GuardAttack",
                 "TackleAttack",
-                //"KnockBackAttack",
+                "SuperNova",
                 //"FireBreath",
             };
 
@@ -293,7 +293,7 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Down", "NormalDown", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::DownAction(this));
     
     // --------------- UŒ‚ ---------------
-#if 1
+#if 0
     behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
 
     behaviorTree_->AddNode("Attack", "NormalAttack", 0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
@@ -314,10 +314,10 @@ void EnemyDragon::RegisterBehaviorNode()
 
     behaviorTree_->AddNode("PowerAttack", "SuperNova", 0, BehaviorTree::SelectRule::Random, nullptr, new ActionDragon::SuperNovaAction(this));
 #else
-    behaviorTree_->AddNode("Root", "TackleAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
+    behaviorTree_->AddNode("Root", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
+    //behaviorTree_->AddNode("Root", "TackleAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
     //behaviorTree_->AddNode("Root", "Walk", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));
     //behaviorTree_->AddNode("Root", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
-    //behaviorTree_->AddNode("Root", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
     //behaviorTree_->AddNode("Root", "Guard", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::GuardAction(this));
 
 #endif
@@ -854,7 +854,9 @@ void EnemyDragon::AddDamagePart(const float& damage, const int& dataIndex)
 
 void EnemyDragon::SetAttackPower()
 {
-    attackPower_[static_cast<int>(AttackAction::SlamAttack)] = 50.0f;
-    attackPower_[static_cast<int>(AttackAction::TurnAttack)] = 50.0f;
-    attackPower_[static_cast<int>(AttackAction::GuardAttack)] = 50.0f;
+    attackPower_[static_cast<int>(AttackAction::SlamAttack)]    = 50.0f;
+    attackPower_[static_cast<int>(AttackAction::TurnAttack)]    = 50.0f;
+    attackPower_[static_cast<int>(AttackAction::GuardAttack)]   = 50.0f;
+    attackPower_[static_cast<int>(AttackAction::TackleAttack)]  = 50.0f;
+    attackPower_[static_cast<int>(AttackAction::SuperNova)]     = 200.0f;
 }

@@ -435,7 +435,7 @@
     <None Include="Source\Shader\SlamChargeParticle.hlsli" />
     <None Include="Source\Shader\SlamExplosionParticle.hlsli" />
     <None Include="Source\Shader\SnowParticle.hlsli" />
-    <None Include="Source\Shader\sprite.hlsli" />
+    <None Include="Source\Shader\Sprite.hlsli" />
     <None Include="Source\Shader\SuperNovaChargeParticle.hlsli" />
     <None Include="Source\Shader\SuperNovaParticle.hlsli" />
     <None Include="Source\Shader\TailMainParticle.hlsli" />
@@ -769,6 +769,12 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\SkyMapPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SpriteUVScrollPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="Source\Shader\sprite_ps.hlsl">

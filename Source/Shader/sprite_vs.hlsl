@@ -1,22 +1,13 @@
-#include "sprite.hlsli"
+#include "Sprite.hlsli"
 
-VS_OUT main(float4 position : POSITION, float4 color : COLOR, float2 texcoord : TEXCOORD)
+PSIn main(VSIn vsIn)
 {
-    VS_OUT vout;
-    vout.position = position;
-    vout.color = color;
+    PSIn vsOut;
+    vsOut.position_ = vsIn.position_;
+    vsOut.color_    = vsIn.color_;
+    vsOut.texcoord_ = vsIn.texcoord_;
 
-    vout.texcoord = texcoord;
+    vsOut.scrollTexcoord_ = vsIn.texcoord_ + direction_ * timer_;
 
-    return vout;
+    return vsOut;
 }
-
-#if 0
-VS_OUT main(float4 position:POSITION, float4 color : COLOR)
-{
-    VS_OUT vout;
-    vout.position = position;
-    vout.color = color;
-    return vout;
-}
-#endif

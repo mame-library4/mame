@@ -1,6 +1,7 @@
 #include "UIHealth.h"
 #include "Character/Player/PlayerManager.h"
 #include "Easing.h"
+#include "NoiseTexture.h"
 
 // ----- コンストラクタ -----
 UIHealth::UIHealth()
@@ -11,55 +12,72 @@ UIHealth::UIHealth()
     healthFramePosition_ = DirectX::XMFLOAT2(68.0f, 30.0f);
     healthRhombusPosition_ = DirectX::XMFLOAT2(60.0f, 31.0f);
     healthRhombusFramePosition_ = DirectX::XMFLOAT2(57.0f, 28.0f);
-
-    const DirectX::XMFLOAT3 colorGreen = DirectX::XMFLOAT3(0.12f, 0.43f, 0.12f);
-    const DirectX::XMFLOAT4 colorBlack = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 0.4f);
-    const float sizeY = 6.0f;
-
-    // 体力アイコン
-    healthIcon_ = std::make_unique<Sprite>(L"./Resources/Image/UI/Health.png");
-    healthIcon_->SetName("HealthIcon");
-    healthIcon_->GetTransform()->SetPosition(20.0f, 20.0f);
-    healthIcon_->GetTransform()->SetSize(32.0f);
-    healthIcon_->GetTransform()->SetColor(0.59f, 0.59f, 0.59f);
-
-    healthRhombus_ = std::make_unique<Sprite>(L"./Resources/Image/white.png");
-    healthRhombus_->SetName("HealthRhombus");
-    healthRhombus_->GetTransform()->SetPosition(healthRhombusPosition_);
-    healthRhombus_->GetTransform()->SetSize(10.0f);
-    healthRhombus_->GetTransform()->SetAngle(45.0f);
-    healthRhombus_->GetTransform()->SetColor(colorGreen);
-
-    autoRecoveryBar_ = std::make_unique<Sprite>(L"./Resources/Image/white.png");
-    autoRecoveryBar_->SetName("AutoRepairBar");
-    autoRecoveryBar_->GetTransform()->SetPosition(healthPosition_);
-    autoRecoveryBar_->GetTransform()->SetSize(maxHealthSizeX_, sizeY);
-    autoRecoveryBar_->GetTransform()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);    
     
-    // 体力の枠(黒色)
-    healthFrame_ = std::make_unique<Sprite>(L"./Resources/Image/white.png");
-    healthFrame_->SetName("HealthFrame");
-    healthFrame_->GetTransform()->SetPosition(healthFramePosition_);
-    healthFrame_->GetTransform()->SetSize(453.0f, 12.0f);
-    healthFrame_->GetTransform()->SetColor(colorBlack);
-
-    // ひし形の枠
+    healthRhombus_      = std::make_unique<Sprite>(L"./Resources/Image/white.png");
+    autoRecoveryBar_    = std::make_unique<Sprite>(L"./Resources/Image/white.png");
+    healthFrame_        = std::make_unique<Sprite>(L"./Resources/Image/white.png");
     healthRhombusFrame_ = std::make_unique<Sprite>(L"./Resources/Image/white.png");
-    healthRhombusFrame_->SetName("HealthRhombusFrame");
-    healthRhombusFrame_->GetTransform()->SetPosition(healthRhombusFramePosition_);
-    healthRhombusFrame_->GetTransform()->SetSize(16.0f);
-    healthRhombusFrame_->GetTransform()->SetAngle(45.0f);
-    healthRhombusFrame_->GetTransform()->SetColor(colorBlack);
+    healthIcon_         = std::make_unique<Sprite>(L"./Resources/Image/UI/Health.png");
 
-    SetSpriteName("Health");
-    GetTransform()->SetPosition(healthPosition_);
-    GetTransform()->SetSize(maxHealthSizeX_, sizeY);
-    GetTransform()->SetColor(colorGreen);
+    // 初期化
+    Initialize();
 
     oldHealth_ = 300.0f;
     autoRecoveryHealth_ = 300.0f;
 
     isAllUICreated = true;
+}
+
+// ----- 初期化 -----
+void UIHealth::Initialize()
+{
+    const float sizeY = 6.0f;
+
+    // ----- 体力ゲージ -----
+    SetSpriteName("Health");
+    SetIsActiveUVScroll();
+    SetNoiseTextureNum(0);
+    SetScrollDirection({ 0.25f, 0.0f });
+    GetTransform()->SetPosition(healthPosition_);
+    GetTransform()->SetSize(maxHealthSizeX_, sizeY);
+    GetTransform()->SetColor(0.0f, 1.0f, 0.0f);
+
+    // ----- ◇ひし形 -----
+    healthRhombus_->SetName("HealthRhombus");
+    healthRhombus_->SetIsActiveUVScroll();
+    healthRhombus_->SetNoiseTextureNum(1);
+    healthRhombus_->SetScrollDirection({ 0.5f, 0.5f });
+    healthRhombus_->GetTransform()->SetPosition(healthRhombusPosition_);
+    healthRhombus_->GetTransform()->SetSize(10.0f);
+    healthRhombus_->GetTransform()->SetAngle(45.0f);
+    healthRhombus_->GetTransform()->SetColor(0.0f, 1.0f, 0.0f);
+
+    // ----- 赤ゲージ -----
+    autoRecoveryBar_->SetName("AutoRepairBar");
+    autoRecoveryBar_->GetTransform()->SetPosition(healthPosition_);
+    autoRecoveryBar_->GetTransform()->SetSize(maxHealthSizeX_, sizeY);
+    autoRecoveryBar_->GetTransform()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+
+    // ----- 体力の枠(黒色) -----
+    healthFrame_->SetName("HealthFrame");
+    healthFrame_->GetTransform()->SetPosition(healthFramePosition_);
+    healthFrame_->GetTransform()->SetSize(453.0f, 12.0f);
+    healthFrame_->GetTransform()->SetColor(0.0f, 0.0f, 0.0f, 0.4f);
+
+    // ----- ◇ひし形の枠(黒色) -----
+    healthRhombusFrame_->SetName("HealthRhombusFrame");
+    healthRhombusFrame_->GetTransform()->SetPosition(healthRhombusFramePosition_);
+    healthRhombusFrame_->GetTransform()->SetSize(16.0f);
+    healthRhombusFrame_->GetTransform()->SetAngle(45.0f);
+    healthRhombusFrame_->GetTransform()->SetColor(0.0f, 0.0f, 0.0f, 0.4f);
+
+    // ----- 体力アイコン -----
+    healthIcon_->SetName("HealthIcon");
+    healthIcon_->SetIsActiveUVScroll();
+    healthIcon_->SetNoiseTextureNum(1);
+    healthIcon_->SetScrollDirection({ 0.0f, 0.5f });
+    healthIcon_->GetTransform()->SetPosition(20.0f, 20.0f);
+    healthIcon_->GetTransform()->SetSize(32.0f);
 }
 
 // ----- 更新 -----
@@ -89,6 +107,11 @@ void UIHealth::Update(const float& elapsedTime)
 
     // 現在の体力を保存する
     oldHealth_ = PlayerManager::Instance().GetPlayer()->GetHealth();
+
+    // 更新
+    UI::Update(elapsedTime);
+    healthRhombus_->Update(elapsedTime);
+    healthIcon_->Update(elapsedTime);
 }
 
 // ----- 描画 -----
@@ -103,8 +126,9 @@ void UIHealth::Render()
     healthRhombusFrame_->Render();
 
     autoRecoveryBar_->Render();
-
+    
     UI::Render();
+
     healthRhombus_->Render();
 
     healthIcon_->Render();
@@ -206,6 +230,7 @@ void UIHealth::UpdateSpriteSize()
     const float healthSizeX = max(maxHealthSizeX_ * currentHealth, 0.0f);
 
     GetTransform()->SetSizeX(healthSizeX);
+    GetTransform()->SetTexSizeX(healthSizeX);
 
     float recoveryHealth = autoRecoveryHealth_ / maxHealth;
     recoveryHealth = max(maxHealthSizeX_ * recoveryHealth, 0.0f);

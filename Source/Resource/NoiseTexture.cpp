@@ -7,15 +7,12 @@ NoiseTexture::NoiseTexture()
 {
     D3D11_TEXTURE2D_DESC noiseTexture2dDesc = {};
 
-    Texture::Instance().LoadTexture(L"./Resources/Image/Mask/Fade/mask1.png",
-        noiseTexture[0].GetAddressOf(), &noiseTexture2dDesc);
+    Texture::Instance().LoadTexture(L"./Resources/Image/Mask/Noise.png", noiseTexture[0].GetAddressOf(), &noiseTexture2dDesc);
+    Texture::Instance().LoadTexture(L"./Resources/Image/Mask/Mask.png",  noiseTexture[1].GetAddressOf(), &noiseTexture2dDesc);
+    Texture::Instance().LoadTexture(L"./Resources/Image/Mask/Mask1.png", noiseTexture[2].GetAddressOf(), &noiseTexture2dDesc);
 }
 
-// constantBuffer set
-void NoiseTexture::SetConstantBuffers(int slot)
+void NoiseTexture::PSSetShaderResourceView(const int& slot, const int& num)
 {
-    Graphics& graphics = Graphics::Instance();
-
-    graphics.GetDeviceContext()->PSSetShaderResources(slot,
-        _countof(noiseTexture), noiseTexture->GetAddressOf());
+    Graphics::Instance().GetDeviceContext()->PSSetShaderResources(slot, 1, noiseTexture[num].GetAddressOf());
 }

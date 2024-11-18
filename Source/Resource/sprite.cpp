@@ -3,6 +3,7 @@
 #include "Misc.h"
 #include "Graphics.h"
 #include "Camera.h"
+#include "NoiseTexture.h"
 
 // ----- ImGui用 -----
 int Sprite::nameNum_ = 0;
@@ -49,6 +50,8 @@ Sprite::Sprite(const wchar_t* filename)
     // シェーダー
     Graphics::Instance().CreateVsFromCso("./Resources/Shader/sprite_vs.cso", vertexShader_.GetAddressOf(), inputLayout_.GetAddressOf(), inputElementDesc, _countof(inputElementDesc));
     Graphics::Instance().CreatePsFromCso("./Resources/Shader/sprite_ps.cso", pixelShader_.GetAddressOf());
+    Graphics::Instance().CreatePsFromCso("./Resources/Shader/SpriteUVScrollPS.cso", uvScrollPS_.GetAddressOf());
+    scrollConstants_ = std::make_unique<ConstantBuffer<ScrollConstants>>();
 
     // テクスチャのロード
     D3D11_TEXTURE2D_DESC texture2dDesc = {};
@@ -81,6 +84,10 @@ void Sprite::Initialize()
 // ----- 更新 -----
 void Sprite::Update(const float& elapsedTime)
 {
+    if (isActiveUVScroll_)
+    {
+        scrollConstants_->GetData()->timer_ += elapsedTime;
+    }
 }
 
 // アニメーション関数
@@ -253,7 +260,17 @@ void Sprite::Render(ID3D11PixelShader* psShader)
     deviceContext->IASetInputLayout(inputLayout_.Get());
 
     deviceContext->VSSetShader(vertexShader_.Get(), nullptr, 0);
-    psShader ? deviceContext->PSSetShader(psShader, nullptr, 0) : deviceContext->PSSetShader(pixelShader_.Get(), nullptr, 0);
+    
+    if (isActiveUVScroll_)
+    {
+        NoiseTexture::Instance().PSSetShaderResourceView(1, noiseTextureNum_);
+        scrollConstants_->Activate(4);
+        deviceContext->PSSetShader(uvScrollPS_.Get(), nullptr, 0);
+    }
+    else
+    {
+        psShader ? deviceContext->PSSetShader(psShader, nullptr, 0) : deviceContext->PSSetShader(pixelShader_.Get(), nullptr, 0);
+    }
 
     deviceContext->PSSetShaderResources(0, 1, shaderResourceView_.GetAddressOf());
 
@@ -265,6 +282,18 @@ void Sprite::DrawDebug()
 {
     if (ImGui::BeginMenu(GetName()))
     {
+        if (ImGui::TreeNodeEx("ScrollConstants", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::Checkbox("Active", &isActiveUVScroll_);
+            ImGui::DragFloat2("Direction", &scrollConstants_->GetData()->direction_.x, 0.01f, -1.0f, 1.0f);
+            ImGui::DragFloat("Timer", &scrollConstants_->GetData()->timer_);
+            ImGui::DragFloat("Threshold", &scrollConstants_->GetData()->threshold_);
+
+            ImGui::DragInt("NoiseTexture", &noiseTextureNum_, 1, 0, 2);
+
+            ImGui::TreePop();
+        }
+
         GetTransform()->DrawDebug();
 
         ImGui::DragFloat("AnimationFrame", &animationFrame_);

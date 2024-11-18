@@ -12,6 +12,9 @@ public:
     void DrawDebug()                        override; // ImGui—p
 
 private:
+    void Initialize(); // ‰Šú‰»
+
+private:
     std::unique_ptr<Sprite> staminaRhombus_;
     std::unique_ptr<Sprite> staminaRhombusFrame_;
     std::unique_ptr<Sprite> staminaFrame_;

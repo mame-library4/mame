@@ -1,8 +1,10 @@
 #pragma once
+#include "MathHelper.h"
+#include "ConstantBuffer.h"
 #include <d3d11.h>
 #include <wrl.h>
 #include <string>
-#include "MathHelper.h"
+#include <memory>
 
 // ----- Animation‚Ì‚â‚è•û -----
 // PlayAnimationŠÖ”‚ðŒÄ‚Ño‚·
@@ -154,6 +156,10 @@ public:// Žæ“¾EÝ’è
 
     void SetIsDraw(const bool& flag) { isDraw_ = flag; }
 
+    void SetIsActiveUVScroll(const bool& flag = true) { isActiveUVScroll_ = flag; }
+    void SetScrollDirection(const DirectX::XMFLOAT2& direction) { scrollConstants_->GetData()->direction_ = direction; }
+    void SetNoiseTextureNum(const int& num) { noiseTextureNum_ = num; }
+
 private:
     void Rotate(float& x, float& y, const float& centerX, const float& centerY, const float& angle);
 
@@ -180,6 +186,18 @@ private:
     Microsoft::WRL::ComPtr<ID3D11InputLayout>           inputLayout_;
     Microsoft::WRL::ComPtr<ID3D11Buffer>                vertexBuffer_;
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>    shaderResourceView_;
+
+    // ---------- UVScroll ----------
+    struct ScrollConstants
+    {
+        DirectX::XMFLOAT2   direction_ = { 0.5f , 0.0f };
+        float               timer_ = 0.0f;
+        float               threshold_ = 0.2f;
+    };
+    std::unique_ptr<ConstantBuffer<ScrollConstants>> scrollConstants_;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader>        uvScrollPS_;
+    bool isActiveUVScroll_ = false;
+    int noiseTextureNum_ = 0;
 
     // ---------- ImGui—p ----------
     static int  nameNum_;

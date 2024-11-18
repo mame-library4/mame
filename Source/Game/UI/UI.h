@@ -25,6 +25,10 @@ public:
 
     Sprite::Transform* GetTransform() { return sprite_->GetTransform(); }
 
+    void SetIsActiveUVScroll(const bool& flag = true) { sprite_->SetIsActiveUVScroll(flag); }
+    void SetNoiseTextureNum(const int& num) { sprite_->SetNoiseTextureNum(num); }
+    void SetScrollDirection(const DirectX::XMFLOAT2& direction) { sprite_->SetScrollDirection(direction); }
+
 protected:
     const UIManager::UIType type_;
     std::unique_ptr<Sprite> sprite_;

@@ -118,6 +118,7 @@ public:// ----- 定数 -----
         TurnAttack,
         GuardAttack,
         TackleAttack,
+        SuperNova,
 
         //FireBreath,
 
@@ -165,9 +166,11 @@ public:
 
 public:// --- 取得・設定 ---
 #pragma region [Get, Set] Function
-    // ----- BehaviorTree用 -----
+    // ---------- BehaviorTree用 ----------
     [[nodiscard]] const int GetStep() const { return step_; }
     void SetStep(const int& step) { step_ = step; }
+    [[nodiscard]] const AttackAction GetCurrentAttackAction() const { return currentAttackAction_; }
+    void SetCurrentAttackAction(const AttackAction& type) { currentAttackAction_ = type; }
 
     // ----- ひるみ -----
     [[nodiscard]] const bool GetIsStagger() const { return isStagger_; }
@@ -200,7 +203,7 @@ public:// --- 取得・設定 ---
 #pragma endregion [Get, Set] Function
 
     // ---------- 攻撃力 ----------
-    [[noidscard]] const float GetAttackPower() const;
+    [[noidscard]] const float GetAttackPower() const { return attackPower_[static_cast<int>(currentAttackAction_)]; }
 
     [[nodiscard]] const std::string GetActiveNodeName() const { return (activeNode_ != nullptr) ? activeNode_->GetName() : ""; }
 
@@ -241,6 +244,7 @@ protected:
     std::unique_ptr<BehaviorTree>   behaviorTree_;
     std::unique_ptr<BehaviorData>   behaviorData_;
     NodeBase*                       activeNode_ = nullptr;
+    AttackAction                    currentAttackAction_ = AttackAction::SlamAttack; // 現在の攻撃アクション
 
     std::vector<JustDodgeDetectionData> justDodgeDetectionData_;
 

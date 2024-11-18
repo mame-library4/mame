@@ -22,6 +22,7 @@ void UI::Update(const float& elapsedTime)
 {
     if (sprite_ != nullptr)
     {
+        sprite_->Update(elapsedTime);
     }
 }
 

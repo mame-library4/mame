@@ -17,12 +17,10 @@ public:
         static NoiseTexture instance;
         return instance;
     }
-
-    // constantBuffer set
-    void SetConstantBuffers(int slot);
+    void PSSetShaderResourceView(const int& slot, const int& num);
 
 private:
-    static const int maxNoiseTexture = 1;  // Å‘å–‡”
+    static const int maxNoiseTexture = 4;  // Å‘å–‡”
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> noiseTexture[maxNoiseTexture];
 };
 

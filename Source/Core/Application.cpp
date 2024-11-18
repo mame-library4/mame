@@ -4,8 +4,6 @@
 
 #include "../Scene/SceneManager.h"
 #include "../Scene/TitleScene.h"
-#include "../Scene/GameScene.h"
-#include "../Scene/DemoScene.h"
 
 #include "Camera.h"
 
@@ -47,8 +45,6 @@ bool Application::Initialize()
 
     // --- シーン初期化 ---
     SceneManager::Instance().ChangeScene(new TitleScene);
-    //SceneManager::Instance().ChangeScene(new GameScene);
-    //SceneManager::Instance().ChangeScene(new DemoScene);
 
     // エフェクト初期化
     EffectManager::Instance().Initialize();
@@ -338,7 +334,9 @@ LRESULT Application::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
     case WM_KEYDOWN:
         if (wparam == VK_ESCAPE)
         {      
-            //isGameEnd_ = true;
+#ifdef _DEBUG
+            isGameEnd_ = true;
+#endif
         }
         break;
     case WM_ENTERSIZEMOVE:

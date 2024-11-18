@@ -879,6 +879,9 @@
     <Filter Include="Mame\Game\UI\UIGame">
       <UniqueIdentifier>{8b55316f-a41c-4b45-a7a3-2143bccb1890}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mame\Shader\Sprite">
+      <UniqueIdentifier>{f3fef47a-b314-4cd5-9398-5893d68a216d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -902,9 +905,6 @@
       <Filter>Mame\Shader</Filter>
     </None>
     <None Include="Source\Shader\PostEffect.hlsli">
-      <Filter>Mame\Shader</Filter>
-    </None>
-    <None Include="Source\Shader\sprite.hlsli">
       <Filter>Mame\Shader</Filter>
     </None>
     <None Include="Source\Shader\gltfModel.hlsli">
@@ -982,6 +982,9 @@
     <None Include="Source\Shader\AfterimageParticle.hlsli">
       <Filter>Mame\Shader\Particle\AfterimageParticle</Filter>
     </None>
+    <None Include="Source\Shader\Sprite.hlsli">
+      <Filter>Mame\Shader\Sprite</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shader\blur_ps.hlsl">
@@ -997,12 +1000,6 @@
       <Filter>Mame\Shader</Filter>
     </FxCompile>
     <FxCompile Include="Source\Shader\SkyMapPS.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\sprite_ps.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\sprite_vs.hlsl">
       <Filter>Mame\Shader</Filter>
     </FxCompile>
     <FxCompile Include="Source\Shader\gltfModelPs.hlsl">
@@ -1172,6 +1169,15 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\AfterimageGS.hlsl">
       <Filter>Mame\Shader\Particle\AfterimageParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\sprite_vs.hlsl">
+      <Filter>Mame\Shader\Sprite</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\sprite_ps.hlsl">
+      <Filter>Mame\Shader\Sprite</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\SpriteUVScrollPS.hlsl">
+      <Filter>Mame\Shader\Sprite</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

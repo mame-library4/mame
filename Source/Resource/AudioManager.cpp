@@ -90,6 +90,8 @@ void AudioManager::LoadAudio()
 
             se_[static_cast<int>(SE::Mikiri)].Volume(0.3f);
             
+            se_[static_cast<int>(SE::Explosion0)].Volume(0.5f);
+            se_[static_cast<int>(SE::Explosion1)].Volume(0.5f);
             se_[static_cast<int>(SE::Charge0)].Volume(0.5f);
             se_[static_cast<int>(SE::Breath0)].Volume(0.3f);
 
