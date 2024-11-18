@@ -480,11 +480,11 @@ namespace ActionDragon
             // 攻撃判定処理
             if (owner_->GetAnimationSeconds() > 1.04f)
             {
-                if (owner_->GetIsAttackActive()) owner_->SetSlamAttackActiveFlag(false);
+                if (owner_->GetIsAttackActive()) owner_->SetAttackActiveFlag(Enemy::AttackAction::SlamAttack, false);
             }
             else if (owner_->GetAnimationSeconds() > slowStartFrame_)
             {
-                if (owner_->GetIsAttackActive() == false) owner_->SetSlamAttackActiveFlag();
+                if (owner_->GetIsAttackActive() == false) owner_->SetAttackActiveFlag(Enemy::AttackAction::SlamAttack, true);
             }
 
             // ターゲット位置設定
@@ -1017,13 +1017,13 @@ namespace ActionDragon
             {
                 owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::TurnAttack, false);
 
-                if (owner_->GetIsAttackActive()) owner_->SetTurnAttackActiveFlag(false);
+                if (owner_->GetIsAttackActive()) owner_->SetAttackActiveFlag(Enemy::AttackAction::TurnAttack, false);
             }
             else if (owner_->GetAnimationSeconds() > 1.55f)
             {
                 owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::TurnAttack, true);
 
-                if (owner_->GetIsAttackActive() == false) owner_->SetTurnAttackActiveFlag();
+                if (owner_->GetIsAttackActive() == false) owner_->SetAttackActiveFlag(Enemy::AttackAction::TurnAttack, true);
             }
 
             // アニメーションの速度を調整する
@@ -1265,15 +1265,13 @@ namespace ActionDragon
             {
                 owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::GuardAttack, false);
 
-                if (owner_->GetIsAttackActive())
-                    owner_->SetGuardAttackActiveFlag(false);
+                if (owner_->GetIsAttackActive()) owner_->SetAttackActiveFlag(Enemy::AttackAction::GuardAttack, false);
             }
             else if (owner_->GetAnimationSeconds() > 0.36f)
             {
                 owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::GuardAttack, true);
 
-                if (owner_->GetIsAttackActive() == false)
-                    owner_->SetGuardAttackActiveFlag();
+                if (owner_->GetIsAttackActive() == false) owner_->SetAttackActiveFlag(Enemy::AttackAction::GuardAttack, true);
             }
 
             if (owner_->GetAnimationSeconds() > 1.75f)
@@ -1419,7 +1417,7 @@ namespace ActionDragon
             {
                 if (owner_->GetAnimationSeconds() > 0.2f)
                 {
-                    owner_->SetTackleAttackActiveFlag();
+                    owner_->SetAttackActiveFlag(Enemy::AttackAction::TackleAttack, true);
                     owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::TackleAttack, true);
                 }
             }
@@ -1463,7 +1461,7 @@ namespace ActionDragon
             {
                 if (owner_->GetAnimationSeconds() > 0.6f)
                 {
-                    owner_->SetTackleAttackActiveFlag(false);
+                    owner_->SetAttackActiveFlag(Enemy::AttackAction::TackleAttack, false);
                     owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::TackleAttack, false);
                 }
             }
@@ -1555,7 +1553,6 @@ namespace ActionDragon
     }
 }
 
-
 // ----- SuperNovaAction -----
 namespace ActionDragon
 {
@@ -1564,6 +1561,7 @@ namespace ActionDragon
         // 実行中ノードを中断するか
         if (owner_->CheckStatusChange())
         {
+            // 終了化
             Finalize();
 
             return ActionBase::State::Failed;
@@ -1571,7 +1569,8 @@ namespace ActionDragon
 
         switch (owner_->GetStep())
         {
-        case 0:
+        case 0:// 初期化
+            // アニメーション再生
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::Nova1, false);
 
             // 現在の攻撃アクションを設定する
@@ -1601,7 +1600,22 @@ namespace ActionDragon
             UpdateChargeEffect(elapsedTime);
 
             // メインエフェクト生成
-            GenarateMainEffect(elapsedTime);
+            if (GenarateMainEffect(elapsedTime))
+            {
+                // 攻撃判定有効化
+                owner_->SetAttackActiveFlag(Enemy::AttackAction::SuperNova, true);
+                
+                // ジャスト回避有効化
+                owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::SuperNova, true);
+            }
+            else if(isCreateCoreBurst_)
+            {
+                // 攻撃判定無効化
+                owner_->SetAttackActiveFlag(Enemy::AttackAction::SuperNova, false);
+
+                // ジャスト回避無効化
+                owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::SuperNova, false);
+            }
 
             // ラジアルブラー更新
             UpdateRadialBlur(elapsedTime);
@@ -1648,12 +1662,12 @@ namespace ActionDragon
     }
 
     // ----- メインエフェクト生成 -----
-    void SuperNovaAction::GenarateMainEffect(const float& elapsedTime)
+    const bool SuperNovaAction::GenarateMainEffect(const float& elapsedTime)
     {
         // もう既にメインエフェクトが生成されている
-        if (isCreateCoreBurst_) return;
+        if (isCreateCoreBurst_) return false;
         // 生成フレームに達していない
-        if (owner_->GetAnimationSeconds() <= 3.9f) return;
+        if (owner_->GetAnimationSeconds() <= 3.9f) return false;
         
         // チャージエフェクトを停止する
         EffectManager::Instance().GetEffect("Power")->Stop(powerEffectHandle_);
@@ -1676,6 +1690,8 @@ namespace ActionDragon
         superNovaParticle_->SetLavaCrawlerParticleSpeed(30.0f);
 
         isCreateCoreBurst_ = true;
+
+        return true;
     }
 
     // ----- チャージエフェクト更新 -----

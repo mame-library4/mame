@@ -203,16 +203,12 @@ public:// --- æ“¾Eİ’è ---
 #pragma endregion [Get, Set] Function
 
     // ---------- UŒ‚—Í ----------
-    [[noidscard]] const float GetAttackPower() const { return attackPower_[static_cast<int>(currentAttackAction_)]; }
-
+    [[noidscard]] const float GetAttackPower()          const { return attackPower_[static_cast<int>(currentAttackAction_)]; }
     [[nodiscard]] const std::string GetActiveNodeName() const { return (activeNode_ != nullptr) ? activeNode_->GetName() : ""; }
 
     // ---------- UŒ‚”»’è ----------
-    virtual void ResetAllAttackActiveFlag()                             = 0; // ‘SUŒ‚”»’è–³Œø‰»
-    virtual void SetSlamAttackActiveFlag(const bool& flag = true)       = 0; // ‚½‚½‚«‚Â‚¯UŒ‚
-    virtual void SetTurnAttackActiveFlag(const bool& flag = true)       = 0; // ‰ñ“]UŒ‚
-    virtual void SetGuardAttackActiveFlag(const bool& flag = true)      = 0; // ƒK[ƒhUŒ‚
-    virtual void SetTackleAttackActiveFlag(const bool& flag = true)     = 0; // “ËiUŒ‚
+    virtual void ResetAllAttackActiveFlag()                                      = 0; // ‘SUŒ‚”»’è–³Œø‰»    
+    virtual void SetAttackActiveFlag(const AttackAction& type, const bool& flag) = 0; 
 
     // ---------- ‰Ÿ‚µo‚µ”»’è ----------
     virtual void SetDownCollisionActiveFlag(const bool& flag = true) = 0;

@@ -24,14 +24,11 @@ private:
     void UpdateCollisions(const float& elapsedTime) override;
 
     // ---------- çUåÇîªíË ----------
-    void ResetAllAttackActiveFlag()                             override;
-    void SetSlamAttackActiveFlag(const bool& flag = true)       override;
-    void SetTurnAttackActiveFlag(const bool& flag = true)       override;
-    void SetGuardAttackActiveFlag(const bool& flag = true)      override;
-    void SetTackleAttackActiveFlag(const bool& flag = true)     override;
+    void ResetAllAttackActiveFlag()                                      override;
+    void SetAttackActiveFlag(const AttackAction& type, const bool& flag) override;
 
     // ---------- ÉWÉÉÉXÉgâÒîîªíË ----------
-    void ResetAllJustDodgeActiveFlag() override;
+    void ResetAllJustDodgeActiveFlag()                                      override;
     void SetJustDodgeActiveFlag(const AttackAction& type, const bool& flag) override;
 
     // ---------- âüÇµèoÇµîªíË ----------
@@ -80,7 +77,8 @@ public:
         GuardAttackEnd          = 11,
         TackleAttackStart       = 12,
         TackleAttackEnd         = 13,
-
+        SuperNovaStart          = 14,
+        SuperNovaEnd            = 14,
 
         //FlyAttackStart          = 14,
         //FlyAttackEnd            = 15,
@@ -89,17 +87,17 @@ public:
     };
     enum class DamageData
     {
-        Head    = 0,  // ì™
-        Chest   = 1,  // ãπ
-        Body    = 2,  // ëÃ
+        Head         = 0,  // ì™
+        Chest        = 1,  // ãπ
+        Body         = 2,  // ëÃ
         FrontLeg     = 3,  // ëOãr
         FrontLegEnd  = 6,  // ëOãrÇÃç≈å„
         BackLeg      = 7,  // å„ÇÎãr
         BackLegEnd   = 16, // å„ÇÎãrÇÃç≈å„
-        Tail = 17,
-        TailEnd = 21,
-        Wings = 22,
-        WingsEnd = 47,
+        Tail         = 17,
+        TailEnd      = 21,
+        Wings        = 22,
+        WingsEnd     = 47,
     };
     enum class JustDodgeData
     {
@@ -111,6 +109,8 @@ public:
         GuardAttackEnd      = 10,
         TackleAttackStart   = 11,
         TackleAttackEnd     = 13,
+        SuperNovaStart      = 14,
+        SuperNovaEnd        = 14,
     };
 };
 

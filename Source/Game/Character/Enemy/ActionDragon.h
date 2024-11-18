@@ -333,7 +333,7 @@ namespace ActionDragon
 
     private:
         void GenerateChargeEffect(const float& elapsedTime);
-        void GenarateMainEffect(const float& elapsedTime);
+        [[nodiscard]] const bool GenarateMainEffect(const float& elapsedTime);
 
         void UpdateChargeEffect(const float& elapsedTime);
         void UpdateRadialBlur(const float& elapsedTime);

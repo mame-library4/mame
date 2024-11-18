@@ -312,9 +312,11 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("CloseRangeAttack", "TackleAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
     behaviorTree_->AddNode("CloseRangeAttack", "SuperNova",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
 
-    behaviorTree_->AddNode("PowerAttack", "SuperNova", 0, BehaviorTree::SelectRule::Random, nullptr, new ActionDragon::SuperNovaAction(this));
+    behaviorTree_->AddNode("PowerAttack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
 #else
-    behaviorTree_->AddNode("Root", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
+    behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    behaviorTree_->AddNode("Attack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
+    //behaviorTree_->AddNode("Root", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
     //behaviorTree_->AddNode("Root", "TackleAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
     //behaviorTree_->AddNode("Root", "Walk", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));
     //behaviorTree_->AddNode("Root", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
@@ -622,6 +624,9 @@ void EnemyDragon::RegisterCollisionData()
     RegisterAttackDetectionData({ "TackleAttack_0",  2.0f, { 1.0f, 0.0f, 0.0f },   "Dragon15_neck_1" });    // 12
     RegisterAttackDetectionData({ "TackleAttack_1",  2.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_spine0" });    // 13
 
+    // ----- 大技(SuperNova) -----
+    RegisterAttackDetectionData({ "SuperNova_0",  13.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_spine2" });    // 14
+
     // ----- 叩き付けコンボ攻撃 -----
 
 #pragma endregion ---------- 攻撃判定登録 ----------
@@ -648,6 +653,9 @@ void EnemyDragon::RegisterCollisionData()
     RegisterJustDodgeDetectionData({ "TackleAttack_0", 3.0f, { 1.5f, 0.0f, 0.0f }, "Dragon15_neck_1" }); // 11
     RegisterJustDodgeDetectionData({ "TackleAttack_1", 3.0f, { 0.0f, 0.0f, 0.0f }, "Dragon15_spine0" }); // 12
     RegisterJustDodgeDetectionData({ "TackleAttack_2", 3.0f, { -2.0f, 0.0f, 0.0f }, "Dragon15_spine0" }); // 13
+
+    // ----- 大技(SuperNova) -----
+    RegisterJustDodgeDetectionData({ "SuperNova_0",  15.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_spine2" }); // 14
 
 #pragma endregion ---------- ジャスト回避判定登録 ----------
 }
@@ -702,7 +710,7 @@ void EnemyDragon::UpdateCollisions(const float& elapsedTime)
 }
 
 
-#pragma region ----- 攻撃判定 -----
+#pragma region ---------- 攻撃判定 ----------
 // ----- 全攻撃判定無効化 -----
 void EnemyDragon::ResetAllAttackActiveFlag()
 {
@@ -715,56 +723,32 @@ void EnemyDragon::ResetAllAttackActiveFlag()
     }
 }
 
-// ----- たたきつけ攻撃判定設定 -----
-void EnemyDragon::SetSlamAttackActiveFlag(const bool& flag)
+// ----- 攻撃判定設定 -----
+void EnemyDragon::SetAttackActiveFlag(const AttackAction& type, const bool& flag)
 {
-    // 攻撃判定フラグをセットする
+    // 攻撃判定を設定
     SetIsAttackActive(flag);
 
-    for (int i = AttackData::SlamAttackStart; i <= AttackData::SlamAttackEnd; ++i)
+    int dataList[][2] =
+    {
+        { static_cast<int>(AttackData::SlamAttackStart),   static_cast<int>(AttackData::SlamAttackEnd) },
+        { static_cast<int>(AttackData::TrunAttackStart),   static_cast<int>(AttackData::TrunAttackEnd) },
+        { static_cast<int>(AttackData::GuardAttackStart),  static_cast<int>(AttackData::GuardAttackEnd) },
+        { static_cast<int>(AttackData::TackleAttackStart), static_cast<int>(AttackData::TackleAttackEnd) },
+        { static_cast<int>(AttackData::SuperNovaStart),    static_cast<int>(AttackData::SuperNovaEnd) },
+    };
+    const int start = dataList[static_cast<int>(type)][0];
+    const int end = dataList[static_cast<int>(type)][1];
+
+    for (int i = start; i <= end; ++i)
     {
         GetAttackDetectionData(i).SetIsActive(flag);
     }
 }
 
-// ----- 回転攻撃判定設定 -----
-void EnemyDragon::SetTurnAttackActiveFlag(const bool& flag)
-{
-    // 攻撃判定フラグをセットする
-    SetIsAttackActive(flag);
+#pragma endregion ---------- 攻撃判定 ----------
 
-    for (int i = AttackData::TrunAttackStart; i <= AttackData::TrunAttackEnd; ++i)
-    {
-        GetAttackDetectionData(i).SetIsActive(flag);
-    }
-}
-
-// ----- ガード攻撃判定設定 -----
-void EnemyDragon::SetGuardAttackActiveFlag(const bool& flag)
-{
-    // 攻撃判定フラグをセットする
-    SetIsAttackActive(flag);
-
-    for (int i = AttackData::GuardAttackStart; i <= AttackData::GuardAttackEnd; ++i)
-    {
-        GetAttackDetectionData(i).SetIsActive(flag);
-    }
-}
-
-// ----- 突進攻撃判定設定 -----
-void EnemyDragon::SetTackleAttackActiveFlag(const bool& flag)
-{
-    // 攻撃判定フラグをセットする
-    SetIsAttackActive(flag);
-
-    for (int i = AttackData::TackleAttackStart; i <= AttackData::TackleAttackEnd; ++i)
-    {
-        GetAttackDetectionData(i).SetIsActive(flag);
-    }
-}
-
-#pragma endregion ----- 攻撃判定 -----
-
+#pragma region ---------- ジャスト回避判定 ----------
 // ----- 全ジャスト回避判定無効化 -----
 void EnemyDragon::ResetAllJustDodgeActiveFlag()
 {
@@ -777,21 +761,24 @@ void EnemyDragon::ResetAllJustDodgeActiveFlag()
 // ----- ジャスト回避判定設定 -----
 void EnemyDragon::SetJustDodgeActiveFlag(const AttackAction& type, const bool& flag)
 {
-    int data[][2] =
+    int dataList[][2] =
     {
-        { static_cast<int>(JustDodgeData::SlamAttackStart), static_cast<int>(JustDodgeData::SlamAttackEnd) },
-        { static_cast<int>(JustDodgeData::TurnAttackStart), static_cast<int>(JustDodgeData::TurnAttackEnd) },
-        { static_cast<int>(JustDodgeData::GuardAttackStart), static_cast<int>(JustDodgeData::GuardAttackEnd) },
+        { static_cast<int>(JustDodgeData::SlamAttackStart),   static_cast<int>(JustDodgeData::SlamAttackEnd) },
+        { static_cast<int>(JustDodgeData::TurnAttackStart),   static_cast<int>(JustDodgeData::TurnAttackEnd) },
+        { static_cast<int>(JustDodgeData::GuardAttackStart),  static_cast<int>(JustDodgeData::GuardAttackEnd) },
         { static_cast<int>(JustDodgeData::TackleAttackStart), static_cast<int>(JustDodgeData::TackleAttackEnd) },
+        { static_cast<int>(JustDodgeData::SuperNovaStart),    static_cast<int>(JustDodgeData::SuperNovaEnd) },
     };
-    const int start = data[static_cast<int>(type)][0];
-    const int end = data[static_cast<int>(type)][1];
+    const int start = dataList[static_cast<int>(type)][0];
+    const int end = dataList[static_cast<int>(type)][1];
 
     for (int i = start; i <= end; ++i)
     {
         GetJustDodgeDetectionData(i).SetIsActive(flag);
     }
 }
+
+#pragma endregion ---------- ジャスト回避判定 ----------
 
 // ----- 押し出し判定 -----
 void EnemyDragon::SetDownCollisionActiveFlag(const bool& flag)
