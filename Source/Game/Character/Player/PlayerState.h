@@ -415,6 +415,13 @@ namespace PlayerState
         float               effectLength_           = 0.0f;
 
         DirectX::XMFLOAT3 mikiriEffectAddPosition_ = {};
+
+        // ----- Vignette -----
+        DirectX::XMFLOAT4 vignetteColor_        = { 0.4f, 0.4f, 1.0f, 1.0f };
+        float             vignetteMaxIntensity_ = 1.0f;
+        float             vignetteTimer_        = 0.0f;
+        float             vignetteFadeOutSpeed_ = 1.0f;
+        bool              isVignetteActive_     = false;
     };
 
     // ----- カウンター攻撃 -----

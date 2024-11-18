@@ -1077,8 +1077,7 @@ namespace PlayerState
             return;
         }
 
-        PostProcess::Instance().SetUseVignette(true);
-
+        PostProcess::Instance().SetUseVignette();
         PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteCenter_ = { 0.5f, 0.5f };
         PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteIntensity_ = vignetteMaxIntensity_;
         PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteSmoothness_ = 2.2f;
@@ -2513,11 +2512,33 @@ namespace PlayerState
                     counterEffectHandle_ = counterEffect->Play(position, 0.1f, 4.0f);
                 }
 
-                // TODO: 効果音を鳴らす
+                // 効果音再生 (見切成功)
                 AudioManager::Instance().PlaySE(SE::Mikiri);
+
+                // ポストエフェクトを使用 (ビネット)
+                PostProcess::Instance().SetUseVignette();
+                const DirectX::XMFLOAT3 playerPosition = owner_->GetJointPosition("pelvis");
+                DirectX::XMFLOAT2 vignetteCenter = Sprite::ConvertToScreenPos(playerPosition);
+                vignetteCenter.x /= SCREEN_WIDTH;
+                vignetteCenter.y /= SCREEN_HEIGHT;
+                PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteCenter_ = vignetteCenter;
+                PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteIntensity_ = vignetteMaxIntensity_;
+                PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteSmoothness_ = 2.2f;
+                PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteColor_ = vignetteColor_;
+                vignetteTimer_ = 0.0f;
+                isVignetteActive_ = true;
 
                 isCounterReaction = true;
             }
+        }
+
+        // ビネット更新
+        if (isVignetteActive_)
+        {
+            vignetteTimer_ += vignetteFadeOutSpeed_ * elapsedTime;
+            vignetteTimer_ = std::min(vignetteTimer_, 1.0f);
+            const float intensity = XMFloatLerp(vignetteMaxIntensity_, 0.0f, vignetteTimer_);
+            PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteIntensity_ = intensity;
         }
 
         // エフェクトの位置を更新する
@@ -2553,7 +2574,7 @@ namespace PlayerState
         }
 
         // カウンター成功
-        //if (owner_->GetIsAbleCounterAttack())
+        if (owner_->GetIsAbleCounterAttack())
         {
             if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER)
             {
@@ -2572,12 +2593,24 @@ namespace PlayerState
     // ----- 終了化 -----
     void CounterState::Finalize()
     {
+        // ビネット使用フラグを下げる
+        PostProcess::Instance().SetUseVignette(false);
     }
 
+    // ----- ImGui用 -----
     void CounterState::DrawDebug()
     {
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
+            if (ImGui::TreeNodeEx("---------- Vignette ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("Timer", &vignetteTimer_, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("FadeOutSpeed", &vignetteFadeOutSpeed_, 0.01f, 0.0f, 5.0f);
+                ImGui::DragFloat("Intensity", &vignetteMaxIntensity_, 0.01f, 0.0f, 5.0f);
+                ImGui::ColorEdit4("Color", &vignetteColor_.x);
+
+                ImGui::TreePop();
+            }
 
             ImGui::TreePop();
         }
