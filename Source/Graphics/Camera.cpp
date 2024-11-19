@@ -689,11 +689,6 @@ const bool Camera::UpdateEnemyDeathCamera(const float& elapsedTime)
     {
     case EnemyDeathCamera::Initialize:// 初期化
 #pragma region ---------- 初期化 ----------
-        // アニメーション設定
-        enemy->PlayBlendAnimation(Enemy::DragonAnimation::Death, false);
-
-        // 押し出し判定を無効化する
-        PlayerManager::Instance().SetUseCollisionDetection(false);
 
         // カメラの各種項目を設定する
         targetOffset_   = { 0.0f, -7.0f, 0.0f };

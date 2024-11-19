@@ -47,6 +47,6 @@ private:
 
     float maxHealthSizeX_ = 450.0f;
 
-    float healSpeed_ = 0.5f; // ‰ñ•œ‘¬“x
+    float healSpeed_ = 1.0f; // ‰ñ•œ‘¬“x
 };
 

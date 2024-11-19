@@ -14,6 +14,7 @@ LoadingScene::LoadingScene(BaseScene* nextScene)
 // ----- リソース生成 -----
 void LoadingScene::CreateResource()
 {
+    UIManager::Instance().Remove(UIManager::UIType::UIFader);
     uiLoading_ = new UILoading();
 }
 
@@ -26,7 +27,7 @@ void LoadingScene::Initialize()
     thread_ = new std::thread(LoadingThread, this);
 
     // 現在のSceneを設定
-    SceneManager::Instance().SetCurrentSceneName(SceneManager::SceneName::Loading);
+    SceneManager::Instance().SetCurrentSceneName(SceneManager::SceneName::Loading);    
 }
 
 // ----- 終了化 -----

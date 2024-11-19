@@ -9,6 +9,8 @@
 
 #include "Effect/EffectManager.h"
 
+#include "UI/UIFader.h"
+
 namespace ActionDragon
 {
     struct GamePadVibration
@@ -53,7 +55,12 @@ namespace ActionDragon
         void DrawDebug()                                      override;
 
     private:
-        float timer_ = 10.0f;
+        void Finalize(); // èIóπâª
+
+    private:
+        UIFader* uiFader_ = nullptr;
+
+        float timer_ = 0.0f;
     };
 
     // ----- DownAction -----

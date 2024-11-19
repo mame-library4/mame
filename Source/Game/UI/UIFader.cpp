@@ -1,10 +1,10 @@
 #include "UIFader.h"
 #include "Easing.h"
 
-
 // ----- コンストラクタ -----
-UIFader::UIFader()
-    : UI(UIManager::UIType::UIFader, L"./Resources/Image/White.png", "UIFader")
+UIFader::UIFader(const bool& autoDelete, const float& fadeSpeed)
+    : UI(UIManager::UIType::UIFader, L"./Resources/Image/White.png", "UIFader"),
+    isAutoDelete_(autoDelete), fadeSpeed_(fadeSpeed)
 {
     GetTransform()->SetColorBlack();
 
@@ -24,7 +24,9 @@ void UIFader::Update(const float& elapsedTime)
 
     GetTransform()->SetColorA(alpha);
 
-    if (fadeTimer_ == totalFrame)
+    if (fadeTimer_ == totalFrame) isFadeComplete_ = true;
+
+    if(isAutoDelete_ && isFadeComplete_)
     {
         UIManager::Instance().Remove(this);
     }

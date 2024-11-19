@@ -83,43 +83,81 @@ namespace ActionDragon
 {
     const ActionBase::State DeathAction::Run(const float& elapsedTime)
     {
-        if (owner_->GetStep() == 0)
+        switch (owner_->GetStep())
         {
+        case 0:// 初期化
+            // アニメーション再生
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::Death, false);
+            owner_->SetTransitionTime(0.1f);
             // 攻撃判定を無効化する
             owner_->ResetAllAttackActiveFlag();
             // ジャスト回避判定を無効化する
             owner_->ResetAllJustDodgeActiveFlag();
-            
             // ルートモーションを使用しない
             owner_->SetUseRootMotion(false);
-
+            // 押し出し判定を無効化する
+            PlayerManager::Instance().SetUseCollisionDetection(false);
+            // ゲーム全体の速度をリセットする
             SystemManager::Instance().SetAllSlowSpeed(1.0f);
             SystemManager::Instance().SetPlayerSlowSpeed(1.0f);
-
+            // プレイヤーのステートを強制的に待機にする
             PlayerManager::Instance().GetPlayer()->ChangeState(Player::STATE::Idle);
-
             // 移動させない
             owner_->AddForce({}, 0.0f, 0.0f);
             // 全オーディオ停止
             AudioManager::Instance().StopAllAudio();
+            // タイマー設定
+            timer_ = 20.0f;
+
 
             owner_->SetStep(1);
-        }
-        if (owner_->GetStep() == 1)
-        {
+
+            break;
+        case 1:
+
             timer_ -= elapsedTime;
             if (timer_ <= 0.0f)
             {
-                AudioManager::Instance().StopAllAudio();
+                uiFader_ = new UIFader(false);
+                owner_->SetStep(2);
+            }
+
+            break;
+        case 2:
+
+            if (uiFader_->GetIsFadeComplete())
+            {
+                Finalize();
+                
                 SceneManager::Instance().ChangeScene(new LoadingScene(new TitleScene));
             }
+
+            break;
         }
 
         return ActionBase::State::Run;
     }
 
+    // ----- ImGui用 -----
     void DeathAction::DrawDebug()
     {
+        if (ImGui::TreeNodeEx("Death", ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::DragFloat("Timer", &timer_);
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- 終了化 -----
+    void DeathAction::Finalize()
+    {
+        if (uiFader_ != nullptr)
+        {
+            uiFader_ = nullptr;
+        }
+
+        AudioManager::Instance().StopAllAudio();
     }
 }
 
