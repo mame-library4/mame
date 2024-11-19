@@ -1684,6 +1684,9 @@ namespace ActionDragon
             // 現在の攻撃アクションを設定する
             owner_->SetCurrentAttackAction(Enemy::AttackAction::SuperNova);
 
+            // 攻撃の判定を有効化する
+            owner_->SetIsAttackActive(true);
+
             // 変数初期化
             superNovaParticle_ = new SuperNovaParticle();
             
@@ -1760,8 +1763,23 @@ namespace ActionDragon
         return ActionBase::State::Run;
     }
 
+    // ----- ImGui用 -----
     void SuperNovaAction::DrawDebug()
     {
+        if (ImGui::TreeNodeEx("SuperNova", ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- GamePadVibration ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("ChargeVibrationTime", &chargeVibrationTime_, 0.01f, 0.0f, 3.0f);
+                ImGui::DragFloat("ChargeVibrationPower", &chargeVibrationPower_, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("ExplosionVibrationTime", &explosionVibrationTime_, 0.01f, 0.0f, 3.0f);
+                ImGui::DragFloat("ExplosionVibrationPower", &explosionVibrationPower_, 0.01f, 0.0f, 1.0f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
     }
 
     // ----- チャージエフェクト生成 -----
@@ -1772,6 +1790,9 @@ namespace ActionDragon
 
         // 生成フレームに達していない
         if (owner_->GetAnimationSeconds() <= 0.65f) return;
+
+        // コントローラー振動
+        Input::Instance().GetGamePad().Vibration(chargeVibrationTime_, chargeVibrationPower_);
 
         // チャージエフェクトとパーティクルを再生する
         DirectX::XMFLOAT3 emitterPosition = owner_->GetJointPosition("Dragon15_neck_1");
@@ -1814,6 +1835,9 @@ namespace ActionDragon
 
         // カメラシェイク
         Camera::Instance().ScreenVibrate(0.3f, 1.5f);
+        
+        // コントローラー振動
+        Input::Instance().GetGamePad().Vibration(explosionVibrationTime_, explosionVibrationPower_);
 
         // 地面を這うパーティクルの速度を上げる
         superNovaParticle_->SetLavaCrawlerParticleSpeed(30.0f);
@@ -1825,6 +1849,9 @@ namespace ActionDragon
         // 効果音を再生
         AudioManager::Instance().PlaySE(SE::Explosion2);
         //AudioManager::Instance().PlaySE(SE::Explosion3);
+
+        // チャージのダメージ範囲を消す
+        owner_->SetSuperNovaRadius(0.0f);
 
         isCreateCoreBurst_ = true;
 
@@ -1870,6 +1897,10 @@ namespace ActionDragon
 
         const float radius = XMFloatLerp(0.0f, 5.0f, scaleLerpTimer_);
         superNovaParticle_->SetChargeParticleRadius(radius);
+
+        // チャージのダメージ範囲を徐々に大きくする
+        const float damageRadius = XMFloatLerp(0.0f, 7.0f, scaleLerpTimer_);
+        owner_->SetSuperNovaRadius(damageRadius);
     }
 
     // ----- ラジアルブラー更新 -----
@@ -1932,6 +1963,9 @@ namespace ActionDragon
 
         // ジャスト回避判定をリセットする
         owner_->ResetAllJustDodgeActiveFlag();
+
+        // チャージのダメージ範囲を消す
+        owner_->SetSuperNovaRadius(0.0f);
     }
 
     // ----- 羽ばたきの効果音を再生する -----

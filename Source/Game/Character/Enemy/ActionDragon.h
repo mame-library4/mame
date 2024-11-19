@@ -375,6 +375,12 @@ namespace ActionDragon
 
         Effekseer::Handle powerEffectHandle_ = {};
 
+        // ----- GamepadVibration -----
+        float chargeVibrationTime_ = 3.5f;
+        float chargeVibrationPower_ = 0.4f;
+        float explosionVibrationTime_ = 1.0f;
+        float explosionVibrationPower_ = 1.0f;
+
         // ----- ラジアルブラー -----
         int         intenseBlurFrame_ = 3;
         int         intenseBlurFrameCount_ = 0;

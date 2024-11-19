@@ -265,6 +265,18 @@ void CollisionManager::UpdatePlayerDamageVsEnemyAttack()
 
     Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
 
+    // ‚­‚ç‚¢”»’è (‚«”ò‚Î‚µ‚È‚µ)
+    {
+        DirectX::XMFLOAT2 playerPosition = { player->GetTransform()->GetPositionX(), player->GetTransform()->GetPositionZ() };
+        DirectX::XMFLOAT2 dragonPosition = { enemy->GetTransform()->GetPositionX(), enemy->GetTransform()->GetPositionZ() };
+        const float length = XMFloat2Length(playerPosition - dragonPosition);
+        if (length < enemy->GetSuperNovaRadius())
+        {
+            player->AddDamage(enemy->GetSuperNovaDamage());
+        }
+    }
+
+
     // ‚­‚ç‚¢”»’è (‚Á”ò‚Î‚³‚ê‚é‹¯‚İ)
     for (int playerDataIndex = 0; playerDataIndex < player->GetDamageDetectionDataCount(); ++playerDataIndex)
     {

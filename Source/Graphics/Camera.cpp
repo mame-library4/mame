@@ -287,9 +287,9 @@ void Camera::DrawDebug()
         ImGui::DragFloat("Fov", &fov_, 0.01f);
         ImGui::DragFloat("InputThreshold", &inputThreshold_, 0.1f, 0.0f, 1.0f);
         
-        ImGui::DragFloat3("FocusOffset", &targetOffset_.x);
-        ImGui::DragFloat3("CameraOffset", &cameraOffset_.x);
-        ImGui::DragFloat3("LocalOffset", &localOffset_.x);
+        ImGui::DragFloat3("FocusOffset", &targetOffset_.x, 0.01f);
+        ImGui::DragFloat3("CameraOffset", &cameraOffset_.x, 0.01f);
+        ImGui::DragFloat3("LocalOffset", &localOffset_.x, 0.01f);
 
         ImGui::DragFloat("VerticalRotationSpeed", &verticalRotationSpeed_);
         ImGui::DragFloat("HorizontalRotationSpeed", &horizontalRotationSpeed_);

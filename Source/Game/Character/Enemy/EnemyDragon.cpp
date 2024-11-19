@@ -129,9 +129,7 @@ void EnemyDragon::Render(ID3D11PixelShader* psShader)
 void EnemyDragon::DrawDebug()
 {
     if (ImGui::BeginMenu("Dragon"))
-    {
-        distanceToPlayer_ = CalcDistanceToPlayerNoConsiderationY();
-        
+    {        
         if (ImGui::TreeNodeEx("BehaviorTree", ImGuiTreeNodeFlags_Framed))
         {
             std::string nodeName = (activeNode_ != nullptr) ? activeNode_->GetName() : u8"‚È‚µ";
@@ -142,6 +140,9 @@ void EnemyDragon::DrawDebug()
             ImGui::TreePop();
         }
 
+        ImGui::DragFloat("SuperNovaRadius", &superNovaRadius_, 0.01f, 0.0f, 20.0f);
+        ImGui::DragFloat("SuperNovaDamage", &superNovaDamage_, 0.01f, 0.0f, 2.0f);
+
         if (ImGui::TreeNodeEx("Judgment", ImGuiTreeNodeFlags_Framed))
         {
             ImGui::DragFloat("LongRangeRadius", &longRangeRadius_);
@@ -149,6 +150,7 @@ void EnemyDragon::DrawDebug()
             ImGui::TreePop();
         }
 
+        distanceToPlayer_ = CalcDistanceToPlayerNoConsiderationY();
         ImGui::DragFloat("DistanceToPlayer", &distanceToPlayer_);
 
         ImGui::Checkbox("EffekSeerEffect", &useEffekseerEffect_);
@@ -237,6 +239,8 @@ void EnemyDragon::DrawDebug()
 // ----- DebugRebderer -----
 void EnemyDragon::DebugRender(DebugRenderer* debugRenderer)
 {
+    debugRenderer->DrawCylinder(GetTransform()->GetPosition(), superNovaRadius_, 3.0f, {1,0,0,1});
+
     debugRenderer->DrawCylinder(GetTransform()->GetPosition(), longRangeRadius_, 1.0f, { 0, 1, 0, 1 });
 
     if (isCollisionSphere_)
@@ -315,9 +319,9 @@ void EnemyDragon::RegisterBehaviorNode()
 
 #else
     behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
-    behaviorTree_->AddNode("Attack", "TackleAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
-    behaviorTree_->AddNode("Attack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
     behaviorTree_->AddNode("Attack", "Roar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
+    behaviorTree_->AddNode("Attack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
+    behaviorTree_->AddNode("Attack", "TackleAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
     behaviorTree_->AddNode("Attack", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
     behaviorTree_->AddNode("Attack", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
 

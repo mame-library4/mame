@@ -211,6 +211,9 @@ public:// --- æ“¾Eİ’è ---
     // ---------- UŒ‚”»’è ----------
     virtual void ResetAllAttackActiveFlag()                                      = 0; // ‘SUŒ‚”»’è–³Œø‰»    
     virtual void SetAttackActiveFlag(const AttackAction& type, const bool& flag) = 0; 
+    [[nodiscard]] const float GetSuperNovaRadius() const { return superNovaRadius_; }
+    void SetSuperNovaRadius(const float& radius) { superNovaRadius_ = radius; }
+    [[nodiscard]] const float GetSuperNovaDamage() const { return superNovaDamage_; }
 
     // ---------- ‰Ÿ‚µo‚µ”»’è ----------
     virtual void SetDownCollisionActiveFlag(const bool& flag = true) = 0;
@@ -283,6 +286,10 @@ protected:
 
     // ---------- UŒ‚—Í ----------
     float attackPower_[static_cast<int>(AttackAction::Max)] = {};
+
+    // ---------- SuperNova ---------- 
+    float superNovaRadius_ = 0.0f;
+    float superNovaDamage_ = 0.5f;
 
     bool useEffekseerEffect_ = false;
 };
