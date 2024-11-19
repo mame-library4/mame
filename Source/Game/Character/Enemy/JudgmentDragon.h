@@ -2,39 +2,57 @@
 #include "BehaviorTree/JudgmentBase.h"
 #include "Enemy.h"
 
-// ----- DeathJudgment -----
-class DeathJudgment : public JudgmentBase
+namespace ActionDragon
 {
-public:
-    DeathJudgment(Enemy* owner) : JudgmentBase(owner) {}
-    const bool Judgment() override;
-};
+    // ----- DeathJudgment -----
+    class DeathJudgment : public JudgmentBase
+    {
+    public:
+        DeathJudgment(Enemy* owner) : JudgmentBase(owner) {}
+        const bool Judgment() override;
+        void DrawDebug() override {}
+    };
 
-// ----- DownJudgment -----
-class DownJudgment : public JudgmentBase
-{
-public:
-    DownJudgment(Enemy* owner) : JudgmentBase(owner) {}
-    const bool Judgment() override;
-};
+    // ----- DownJudgment -----
+    class DownJudgment : public JudgmentBase
+    {
+    public:
+        DownJudgment(Enemy* owner) : JudgmentBase(owner) {}
+        const bool Judgment() override;
+        void DrawDebug() override {}
+    };
 
-// ----- KnockDownJudgment -----
-class KnockDownJudgment : public JudgmentBase
-{
-public:
-    KnockDownJudgment(Enemy* owner) : JudgmentBase(owner) {}
-    const bool Judgment() override;
-};
+    // ----- KnockDownJudgment -----
+    class KnockDownJudgment : public JudgmentBase
+    {
+    public:
+        KnockDownJudgment(Enemy* owner) : JudgmentBase(owner) {}
+        const bool Judgment() override;
+        void DrawDebug() override {}
+    };
 
-// ----- KnockDownJudgment -----
-class LongRangeJudgment : public JudgmentBase
-{
-public:
-    LongRangeJudgment(Enemy* owner) : JudgmentBase(owner) {}
-    const bool Judgment() override;
-};
+    // ----- LongRangeJudgment -----
+    class LongRangeJudgment : public JudgmentBase
+    {
+    public:
+        LongRangeJudgment(Enemy* owner) : JudgmentBase(owner) {}
+        const bool Judgment() override;
+        void DrawDebug() override {}
+    };
 
+    // ----- TackleAttackJudgment -----
+    class TackleAttackJudgment : public JudgmentBase
+    {
+    public:
+        TackleAttackJudgment(Enemy* owner) : JudgmentBase(owner) {}
+        const bool Judgment() override;
+        void DrawDebug() override;
 
+    private:
+        int maxCount_ = 3;
+        int counter_ = 0;
+    };
+}
 
 #if 0
 // ‚Ð‚é‚Ý”»’è

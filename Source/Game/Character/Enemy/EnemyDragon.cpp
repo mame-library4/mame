@@ -285,21 +285,21 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("", "Root", 0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
 
     // --------------- €–S ---------------
-    behaviorTree_->AddNode("Root", "Death", 0, BehaviorTree::SelectRule::None, new DeathJudgment(this), new ActionDragon::DeathAction(this));
+    behaviorTree_->AddNode("Root", "Death", 0, BehaviorTree::SelectRule::None, new ActionDragon::DeathJudgment(this), new ActionDragon::DeathAction(this));
 
     // --------------- ƒ_ƒEƒ“ ---------------
-    behaviorTree_->AddNode("Root", "Down", 1, BehaviorTree::SelectRule::Priority, new DownJudgment(this), nullptr);
-    behaviorTree_->AddNode("Down", "KnockDown",  0, BehaviorTree::SelectRule::None, new KnockDownJudgment(this), new ActionDragon::KnockDownAction(this));
+    behaviorTree_->AddNode("Root", "Down", 1, BehaviorTree::SelectRule::Priority, new ActionDragon::DownJudgment(this), nullptr);
+    behaviorTree_->AddNode("Down", "KnockDown",  0, BehaviorTree::SelectRule::None, new ActionDragon::KnockDownJudgment(this), new ActionDragon::KnockDownAction(this));
     behaviorTree_->AddNode("Down", "NormalDown", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::DownAction(this));
     
     // --------------- UŒ‚ ---------------
-#if 0
+#if 1
     behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
 
     behaviorTree_->AddNode("Attack", "NormalAttack", 0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
     behaviorTree_->AddNode("Attack", "PowerAttack",  1, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
     
-    behaviorTree_->AddNode("NormalAttack", "LongRangeAttack", 0, BehaviorTree::SelectRule::Random, new LongRangeJudgment(this), nullptr);
+    behaviorTree_->AddNode("NormalAttack", "LongRangeAttack", 0, BehaviorTree::SelectRule::Random, new ActionDragon::LongRangeJudgment(this), nullptr);
     behaviorTree_->AddNode("NormalAttack", "CloseRangeAttack", 0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
     
     behaviorTree_->AddNode("LongRangeAttack", "Walk",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));
@@ -309,12 +309,13 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("CloseRangeAttack", "TurnAttack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
     behaviorTree_->AddNode("CloseRangeAttack", "Guard",        0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::GuardAction(this));
     behaviorTree_->AddNode("CloseRangeAttack", "Walk",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));
-    behaviorTree_->AddNode("CloseRangeAttack", "TackleAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
+    behaviorTree_->AddNode("CloseRangeAttack", "TackleAttack", 0, BehaviorTree::SelectRule::None, new ActionDragon::TackleAttackJudgment(this), new ActionDragon::TackleAction(this));
     behaviorTree_->AddNode("CloseRangeAttack", "SuperNova",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
 
     behaviorTree_->AddNode("PowerAttack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
 #else
     behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    behaviorTree_->AddNode("Attack", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
     behaviorTree_->AddNode("Attack", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
     behaviorTree_->AddNode("Attack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
     //behaviorTree_->AddNode("Root", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
@@ -726,6 +727,12 @@ void EnemyDragon::ResetAllAttackActiveFlag()
 // ----- UŒ‚”»’èİ’è -----
 void EnemyDragon::SetAttackActiveFlag(const AttackAction& type, const bool& flag)
 {
+    // UŒ‚”»’è‚ğ—LŒø‰»‚·‚é‚Æ‚«‚ÉA—LŒø‰»‚É‚·‚é‹–‰Â‚ª‚È‚¢‚Æ‚Å‚«‚È‚¢
+    if (flag == true && isAttackActivationAllowed_ == false)
+    {
+        return;
+    }
+
     // UŒ‚”»’è‚ğİ’è
     SetIsAttackActive(flag);
 

@@ -585,6 +585,7 @@ namespace ActionDragon
     // ----- 終了化 -----
     void SlamAttackAction::Finalize()
     {
+        // パーティクルを終了化させる
         if (slamAttackParticle_ != nullptr)
         {
             slamAttackParticle_->Remove();
@@ -595,6 +596,9 @@ namespace ActionDragon
         {
             EffectManager::Instance().GetEffect("Charge")->Stop(powerEffectHandle_);
         }
+
+        // ジャスト回避判定をリセットする
+        owner_->ResetAllJustDodgeActiveFlag();
     }
 
     // ----- アニメーションの速度を調整する -----
@@ -866,11 +870,15 @@ namespace ActionDragon
     // ----- 終了化 -----
     void ComboSlamAttackAction::Finalize()
     {
+        // パーティクルを終了化させる
         if (slamAttackParticle_ != nullptr)
         {
             slamAttackParticle_->Remove();
             slamAttackParticle_ = nullptr;
         }
+
+        // ジャスト回避判定をリセットする
+        owner_->ResetAllJustDodgeActiveFlag();
     }
 
     // ----- アニメーション再生 -----
@@ -1120,11 +1128,15 @@ namespace ActionDragon
         // ルートモーション使用終了
         owner_->SetUseRootMotion(false);
 
+        // パーティクルを終了化させる
         if (tailParticle_ != nullptr)
         {
             tailParticle_->Remove();
             tailParticle_ = nullptr;
         }
+
+        // ジャスト回避判定をリセットする
+        owner_->ResetAllJustDodgeActiveFlag();
     }
 
     // ----- アニメーションの速度を調整する -----
@@ -1164,6 +1176,8 @@ namespace ActionDragon
         // 実行中ノードを中断するか
         if (owner_->CheckStatusChange())
         {
+            Finalize();
+
             return ActionBase::State::Failed;
         }
 
@@ -1276,8 +1290,7 @@ namespace ActionDragon
 
             if (owner_->GetAnimationSeconds() > 1.75f)
             {
-                // ステートリセット
-                owner_->SetStep(0);
+                Finalize();
 
                 return ActionBase::State::Complete;
             }
@@ -1286,8 +1299,7 @@ namespace ActionDragon
         case 5:
             if (owner_->GetAnimationSeconds() > 1.15f)
             {
-                // ステートリセット
-                owner_->SetStep(0);
+                Finalize();
 
                 return ActionBase::State::Complete;
             }
@@ -1316,6 +1328,15 @@ namespace ActionDragon
 
             ImGui::TreePop();
         }
+    }
+
+    // ----- 終了化 -----
+    void GuardAction::Finalize()
+    {
+        owner_->SetStep(0);
+
+        // ジャスト回避判定をリセットする
+        owner_->ResetAllJustDodgeActiveFlag();
     }
 }
 
@@ -1511,6 +1532,9 @@ namespace ActionDragon
 
         // X軸回転をリセットする
         owner_->GetTransform()->SetRotationX(0.0f);
+
+        // ジャスト回避判定をリセットする
+        owner_->ResetAllJustDodgeActiveFlag();
 
         isCurrentNodeCancelled_ = false;
     }
@@ -1820,6 +1844,9 @@ namespace ActionDragon
         EffectManager::Instance().GetEffect("Power")->Stop(powerEffectHandle_);
         
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 1;
+
+        // ジャスト回避判定をリセットする
+        owner_->ResetAllJustDodgeActiveFlag();
     }
 
     // ----- 羽ばたきの効果音を再生する -----

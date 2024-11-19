@@ -115,6 +115,15 @@ void Enemy::SetHitStop()
     isHitStopActive_ = true;
 }
 
+// ----- 現在の攻撃アクションを設定する -----
+void Enemy::SetCurrentAttackAction(const AttackAction& type)
+{
+    currentAttackAction_ = type;
+
+    // 攻撃判定を有効化できるようにする
+    isAttackActivationAllowed_ = true;
+}
+
 // ----- 部位破壊判定 -----
 void Enemy::CheckPartDestruction()
 {

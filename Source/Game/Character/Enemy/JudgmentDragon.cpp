@@ -3,47 +3,84 @@
 #include "Character/Player/PlayerManager.h"
 
 // ----- Ž€–S”»’è -----
-const bool DeathJudgment::Judgment()
+namespace ActionDragon
 {
-    // HP‚ª‚O‚æ‚è¬‚³‚©‚Á‚½‚çŽ€‚ñ‚Å‚¢‚é
-    if (owner_->GetHealth() <= 0) return true;
+    const bool DeathJudgment::Judgment()
+    {
+        // HP‚ª‚O‚æ‚è¬‚³‚©‚Á‚½‚çŽ€‚ñ‚Å‚¢‚é
+        if (owner_->GetHealth() <= 0) return true;
 
-    return false;
+        return false;
+    }
 }
 
 #pragma region ---------- Down ----------
-// ----- DownJudgment -----
-const bool DownJudgment::Judgment()
+namespace ActionDragon
 {
-    if (owner_->GetIsStagger() == false) return false;
-
-    return true;
-}
-
-// ----- KnockDownJudgment -----
-const bool KnockDownJudgment::Judgment()
-{
-    const Player::STATE currentState = PlayerManager::Instance().GetPlayer()->GetCurrentState();
-    if (currentState == Player::STATE::RushAttack &&
-        owner_->GetStaggerPartIndex() == static_cast<int>(Enemy::PartName::Leg))
+    // ----- DownJudgment -----
+    const bool DownJudgment::Judgment()
     {
+        if (owner_->GetIsStagger() == false) return false;
+
         return true;
     }
 
-    return false;
+    // ----- KnockDownJudgment -----
+    const bool KnockDownJudgment::Judgment()
+    {
+        const Player::STATE currentState = PlayerManager::Instance().GetPlayer()->GetCurrentState();
+        if (currentState == Player::STATE::RushAttack &&
+            owner_->GetStaggerPartIndex() == static_cast<int>(Enemy::PartName::Leg))
+        {
+            return true;
+        }
+
+        return false;
+    }
 }
 
 #pragma endregion ---------- Down ----------
 
 // ----- LongRangeJudgment -----
-const bool LongRangeJudgment::Judgment()
+namespace ActionDragon
 {
-    if (owner_->CalcDistanceToPlayerNoConsiderationY() > owner_->GetLongRangeRadius())
+    const bool LongRangeJudgment::Judgment()
     {
+        if (owner_->CalcDistanceToPlayerNoConsiderationY() > owner_->GetLongRangeRadius())
+        {
+            return true;
+        }
+
+        return false;
+    }
+}
+
+// ----- TackleAttackJudgment -----
+namespace ActionDragon
+{
+    const bool TackleAttackJudgment::Judgment()
+    {
+        ++counter_;
+
+        if (counter_ <= maxCount_) return false;
+
+
+        counter_ = 0;
+
         return true;
     }
 
-    return false;
+    // ----- ImGui—p -----
+    void TackleAttackJudgment::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx("TackleAttackJudgment", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::DragInt("MaxCount", &maxCount_);
+            ImGui::DragInt("Counter", &counter_);
+
+            ImGui::TreePop();
+        }
+    }
 }
 
 
@@ -167,3 +204,4 @@ const bool ComboFlySlamJudgment::Judgment()
     return false;
 }
 #endif
+

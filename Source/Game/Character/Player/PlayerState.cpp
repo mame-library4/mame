@@ -1848,6 +1848,11 @@ namespace PlayerState
     // ----- ‰Šú‰» -----
     void JustDodgeState::Initialize()
     {
+        // “G‚ÌUŒ‚”»’è‚ð–³‚­‚·
+        EnemyManager::Instance().GetEnemy(0)->SetIsAttackActivationAllowed(false);
+        EnemyManager::Instance().GetEnemy(0)->SetIsAttackActive(false);
+        EnemyManager::Instance().GetEnemy(0)->ResetAllAttackActiveFlag();
+
         // ƒ‰ƒWƒAƒ‹ƒuƒ‰[Ý’è
         PostProcess::Instance().SetUseRadialBlur();
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 5;

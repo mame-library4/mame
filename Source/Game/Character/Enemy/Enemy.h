@@ -170,7 +170,7 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const int GetStep() const { return step_; }
     void SetStep(const int& step) { step_ = step; }
     [[nodiscard]] const AttackAction GetCurrentAttackAction() const { return currentAttackAction_; }
-    void SetCurrentAttackAction(const AttackAction& type) { currentAttackAction_ = type; }
+    void SetCurrentAttackAction(const AttackAction& type);
 
     // ----- ひるみ -----
     [[nodiscard]] const bool GetIsStagger() const { return isStagger_; }
@@ -196,6 +196,8 @@ public:// --- 取得・設定 ---
     // ----- 攻撃判定が有効か -----
     [[nodiscard]] const bool GetIsAttackActive() const { return isAttackActive_; }
     void SetIsAttackActive(const bool& flag) { isAttackActive_ = flag; }
+    // ---- 攻撃判定を有効化できるか -----
+    void SetIsAttackActivationAllowed(const bool& flag) { isAttackActivationAllowed_ = flag; }
 
     [[nodiscard]] const bool GetIsRoar() const { return isRoar_; }
     void SetIsRoar(const bool& flag) { isRoar_ = flag; }
@@ -256,7 +258,8 @@ protected:
     float walkSpeed_ = 0.0f; // 歩行速度
 
     // ---------- 状況管理フラグ ----------
-    bool isAttackActive_    = false; // 攻撃判定が有効か
+    bool isAttackActive_            = false; // 攻撃判定が有効か
+    bool isAttackActivationAllowed_ = false; // 攻撃判定を有効にできるか
     bool isRoar_            = false; // 咆哮したか
 
     bool isStageCollisionJudgement_ = false; // ステージとの判定をするか

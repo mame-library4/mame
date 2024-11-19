@@ -279,6 +279,9 @@ namespace ActionDragon
         void DrawDebug()                                      override;
 
     private:
+        void Finalize(); // èIóπâª
+
+    private:
         float oldHealth_ = 0.0f;
 
         int loopCounter_ = 0;

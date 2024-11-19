@@ -196,6 +196,7 @@ ActionBase::State NodeBase::Run(const float& elapsedTime)
 
 void NodeBase::DrawDebug()
 {
+    if (judgment_ != nullptr) judgment_->DrawDebug();
     if(action_ != nullptr) action_->DrawDebug();
 }
 
