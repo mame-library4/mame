@@ -335,6 +335,11 @@ namespace ActionDragon
 
         bool isCurrentNodeCancelled_ = false;
 
+        float tackleEndFrame_   = 0.9f;
+        float blendStartFrame_  = 0.0f;
+        float transitionTurn_   = 0.2f;
+        DirectX::XMFLOAT3 targetPosition_ = {};
+
         // ----- SE -----
         static const int maxFootSteps_ = 3;
         bool isPlayFootSteps_[maxFootSteps_] = {};

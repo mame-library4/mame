@@ -1537,12 +1537,35 @@ namespace ActionDragon
                 }
             }
 
+            if(owner_->GetAnimationSeconds() > tackleEndFrame_)
+            {
+                owner_->SetUseRootMotion(false);
+                owner_->PlayBlendAnimation(Enemy::DragonAnimation::BackStep, false, 1.0f, blendStartFrame_);
+                owner_->SetTransitionTime(transitionTurn_);
+
+                targetPosition_ = PlayerManager::Instance().GetTransform()->GetPosition();
+
+                owner_->SetStep(4);
+            }
+
+
+            break;
+        case 4:// 回転処理
+
+            if (owner_->GetAnimationSeconds() > 0.4f)
+            {
+                owner_->Turn(elapsedTime, targetPosition_);
+            }
+
+            if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+            {
+                owner_->SetUseRootMotion(true);
+            }
+
             // アニメーション再生終了
             if (owner_->IsPlayAnimation() == false)
             {
                 Finalize();
-
-                owner_->SetStep(0);
 
                 return ActionBase::State::Complete;
             }
@@ -1558,6 +1581,15 @@ namespace ActionDragon
     {
         if (ImGui::TreeNodeEx("Tackle", ImGuiTreeNodeFlags_Framed)) 
         {
+            if (ImGui::TreeNodeEx("---------- RotateAnimation ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("TackleEndFrame", &tackleEndFrame_, 0.01f, 0.0f, 2.067f);
+                ImGui::DragFloat("BlendStartFrame", &blendStartFrame_, 0.01f, 0.0f, 2.0f);
+                ImGui::DragFloat("TransitionTurn", &transitionTurn_, 0.01f, 0.0f, 1.0f);
+
+                ImGui::TreePop();
+            }
+
             if (ImGui::TreeNodeEx("---------- Rotation ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::DragFloat("StartFrame", &rotationStartFrame_, 0.01f, 0.0f, 2.0f);
@@ -1574,6 +1606,8 @@ namespace ActionDragon
     // ----- 終了化 -----
     void TackleAction::Finalize()
     {
+        owner_->SetStep(0);
+
         // ルートモーションの使用終了
         owner_->SetUseRootMotion(false);
 
