@@ -45,7 +45,10 @@ private:
         float lavaCrawlerParticleSpeed_ = 10.0f;
 
         int state_ = 0;
-        float dummy_ = {};
+        int removeState_ = 0;
+
+        float fadeOutSpeed_ = 1.0f;
+        DirectX::XMFLOAT3 dummy_ = {};
     };
 #pragma endregion ----- ’è” -----
 
@@ -66,6 +69,8 @@ public:
 
     void SetChargeParticleRadius(const float& radius) { constants_.radius_ = radius; }
 
+    void Remove(const float& lifeTime, const float& speed);
+
 private:
     ParticleData lavaCrawlerParticle_;
     ParticleData chargeParticle_;
@@ -75,5 +80,8 @@ private:
     const int cbSlot_ = 2;
     const int csSlot_ = 0;
     const int gsSlot_ = 0;
+
+    float   lifeTimer_ = 30.0f;  // ¶‘¶ŠÔ
+    bool    isRemove_ = false;  // Á‹€”õƒtƒ‰ƒO
 };
 

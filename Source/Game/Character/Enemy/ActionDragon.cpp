@@ -360,6 +360,7 @@ namespace ActionDragon
 #pragma endregion ---------- 攻撃以外の重要行動 ----------
 
 #pragma region ---------- 咆哮 ----------
+// ----- RoarAction -----
 namespace ActionDragon
 {
     const ActionBase::State RoarAction::Run(const float& elapsedTime)
@@ -1635,7 +1636,7 @@ namespace ActionDragon
         if (owner_->CheckStatusChange())
         {
             // 終了化
-            Finalize();
+            Finalize(0.5f, 2.0f);
 
             return ActionBase::State::Failed;
         }
@@ -1714,7 +1715,7 @@ namespace ActionDragon
             {
                 owner_->SetStep(0);
 
-                Finalize();
+                Finalize(2.0f, 1.0f);
 
                 return ActionBase::State::Complete;
             }
@@ -1883,10 +1884,11 @@ namespace ActionDragon
     }
 
     // ----- 終了処理 -----
-    void SuperNovaAction::Finalize()
+    void SuperNovaAction::Finalize(const float& lifeTime, const float& speed)
     {
         if (superNovaParticle_ != nullptr)
         {
+            superNovaParticle_->Remove(lifeTime, speed);
             superNovaParticle_ = nullptr;
         }
         

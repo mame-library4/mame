@@ -2,6 +2,7 @@
 #include "Graphics.h"
 #include "Texture.h"
 #include "Misc.h"
+#include "ParticleManager.h"
 
 // ----- コンストラクタ -----
 SuperNovaParticle::SuperNovaParticle()
@@ -18,6 +19,14 @@ SuperNovaParticle::SuperNovaParticle()
 // ----- 更新 -----
 void SuperNovaParticle::Update(const float& elapsedTime)
 {
+	lifeTimer_ -= elapsedTime;
+
+	if (lifeTimer_ <= 0.0f)
+	{
+		ParticleManager::Instance().Remove(this);
+		return;
+	}
+
     constants_.deltaTime_ = elapsedTime;
 
     GetParticleData()->Update(csSlot_, cbSlot_, &constants_);
@@ -42,6 +51,8 @@ void SuperNovaParticle::DrawDebug()
 {
 	if (ImGui::TreeNode("SuperNovaParticle"))
 	{
+		ImGui::DragFloat("Lifetimer", &lifeTimer_);
+
 		ImGui::DragFloat3("Center", &constants_.chargeParticleCenter_.x);
 		ImGui::DragFloat("Radius", &constants_.radius_);
 		ImGui::DragFloat3("RotationAxis", &constants_.rotationAxis_.x);
@@ -75,4 +86,16 @@ void SuperNovaParticle::PlayChargeParticle(const DirectX::XMFLOAT3& emitterPosit
 {
 	constants_.emitterPosition_ = emitterPosition;
 	chargeParticle_.PlayParticle(csSlot_, cbSlot_, &constants_);
+}
+
+// ----- 削除命令 -----
+void SuperNovaParticle::Remove(const float& lifeTime, const float& speed)
+{
+	isRemove_ = true;
+
+	lifeTimer_ = lifeTime;
+
+	constants_.fadeOutSpeed_ = speed;
+
+	constants_.removeState_ = 1;
 }

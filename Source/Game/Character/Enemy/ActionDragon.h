@@ -355,7 +355,7 @@ namespace ActionDragon
         void UpdateChargeEffect(const float& elapsedTime);
         void UpdateRadialBlur(const float& elapsedTime);
 
-        void Finalize();
+        void Finalize(const float& lifeTime, const float& speed);
 
         void PlayFlapSound(const float& frame, const int& flapNum);
 

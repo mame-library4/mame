@@ -14,5 +14,7 @@ cbuffer ParticleConstants : register(b2)
     float lavaCrawlerParticleSpeed_;
     
     int state_;
-    float dummy_;
+    int removeState_; // 1‚È‚çRemove‚·‚é
+    float fadeOutSpeed_;
+    float3 dummy_;
 };

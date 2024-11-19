@@ -68,6 +68,7 @@ namespace ActionDragon
         bool isSucceed_ = false;
     };
 
+    // ----- PowerAttackJudgment -----
     class PowerAttackJudgment : public JudgmentBase
     {
     public:
