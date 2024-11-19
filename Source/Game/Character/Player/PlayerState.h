@@ -216,11 +216,13 @@ namespace PlayerState
         bool isCameraShakeActive_ = false;
 
         // ----- Vignette -----
-        DirectX::XMFLOAT4 vignetteColor_        = { 1.0f, 0.4f, 0.0f, 1.0f };
-        float             vignetteTimer_        = 0.0f;
-        float             vignetteFadeOutSpeed_ = 0.7f;
-        float             vignetteMaxIntensity_ = 1.5f;
-        bool              isVignetteActive_     = false;
+        DirectX::XMFLOAT4 normalDamageColor_        = { 1.0f, 0.0f, 0.0f, 1.0f };
+        DirectX::XMFLOAT4 highDamageColor_          = { 1.0f, 0.4f, 0.0f, 1.0f };
+        float             vignetteTimer_            = 0.0f;
+        float             vignetteFadeOutSpeed_     = 0.7f;
+        float             normalDamageMaxIntensity_ = 0.7f;
+        float             highDamageMaxIntensity_   = 1.5f;
+        bool              isHighDamage_             = false;
     };
 
     // ----- Ž€–S -----

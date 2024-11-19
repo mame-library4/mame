@@ -982,14 +982,11 @@ namespace PlayerState
         }
 
         // ビネット更新
-        if (isVignetteActive_)
-        {
-            vignetteTimer_ += vignetteFadeOutSpeed_ * elapsedTime;
-            vignetteTimer_ = std::min(vignetteTimer_, 1.0f);
-            const float intensity = XMFloatLerp(vignetteMaxIntensity_, 0.0f, vignetteTimer_);
-            PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteIntensity_ = intensity;
-        }
-
+        vignetteTimer_ += vignetteFadeOutSpeed_ * elapsedTime;
+        vignetteTimer_ = std::min(vignetteTimer_, 1.0f);
+        const float maxIntensity = isHighDamage_ ? highDamageMaxIntensity_ : normalDamageMaxIntensity_;
+        const float intensity = XMFloatLerp(maxIntensity, 0.0f, vignetteTimer_);
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteIntensity_ = intensity;
 
         // 移動値
         if (addForceData_.Update(owner_->GetAnimationSeconds()))
@@ -999,7 +996,7 @@ namespace PlayerState
 
         // 吹き飛ばされアニメーション処理
         if (owner_->GetAnimationSeconds() > 1.2f && isFirstAnimation_ == true)
-        {            
+        {
             // 入力があれば倒れてる状態を終了する
             if (owner_->IsGetUpKeyDown())
             {
@@ -1010,19 +1007,19 @@ namespace PlayerState
         }
 
         // アニメーション終了
-        if(owner_->IsPlayAnimation() == false && isFirstAnimation_ == true)
+        if (owner_->IsPlayAnimation() == false && isFirstAnimation_ == true)
         {
             owner_->PlayBlendAnimation(Player::Animation::GetUp, false);
             owner_->SetTransitionTime(0.1f);
             isFirstAnimation_ = false;
         }
         //else if(owner_->IsPlayAnimation() == false)
-        else if(owner_->GetAnimationSeconds() > 1.8f && isFirstAnimation_ == false)
+        else if (owner_->GetAnimationSeconds() > 1.8f && isFirstAnimation_ == false)
         {
             owner_->ChangeState(Player::STATE::Idle);
             return;
         }
-        
+
         if (isFirstAnimation_ == false)
         {
             if (owner_->GetAnimationSeconds() > 1.25f)
@@ -1056,8 +1053,12 @@ namespace PlayerState
             {
                 ImGui::DragFloat("Timer", &vignetteTimer_, 0.01f, 0.0f, 1.0f);
                 ImGui::DragFloat("FadeOutSpeed", &vignetteFadeOutSpeed_, 0.01f, 0.0f, 5.0f);
-                ImGui::DragFloat("Intensity", &vignetteMaxIntensity_, 0.01f, 0.0f, 5.0f);
-                ImGui::ColorEdit4("Color", &vignetteColor_.x);
+
+                ImGui::ColorEdit4("NormalDmageColor", &normalDamageColor_.x);
+                ImGui::ColorEdit4("HighDmageColor", &highDamageColor_.x);
+
+                ImGui::DragFloat("NormalIntensity", &normalDamageMaxIntensity_, 0.01f, 0.0f, 2.0f);
+                ImGui::DragFloat("HighIntensity", &highDamageMaxIntensity_, 0.01f, 0.0f, 2.0f);
 
                 ImGui::TreePop();
             }
@@ -1069,22 +1070,16 @@ namespace PlayerState
     // ----- ビネット設定 -----
     void DamageState::SetVignette()
     {
-        // ドラゴンの攻撃がSuperNovaではないなら使用しない
-        const int dragonAnimationIndex = EnemyManager::Instance().GetEnemy(0)->GetAnimationIndex();
-        if (dragonAnimationIndex != static_cast<int>(Enemy::DragonAnimation::Nova1))
-        {
-            isVignetteActive_ = false;
-            return;
-        }
+        // HighDamageかの判定
+        isHighDamage_ = (EnemyManager::Instance().GetEnemy(0)->GetAnimationIndex() == static_cast<int>(Enemy::DragonAnimation::Nova1));
 
         PostProcess::Instance().SetUseVignette();
         PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteCenter_ = { 0.5f, 0.5f };
-        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteIntensity_ = vignetteMaxIntensity_;
         PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteSmoothness_ = 2.2f;
-        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteColor_ = vignetteColor_;
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteIntensity_ = isHighDamage_ ? highDamageMaxIntensity_ : normalDamageMaxIntensity_;
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteColor_ = isHighDamage_ ? highDamageColor_ : normalDamageColor_;
 
         vignetteTimer_ = 0.0f;
-        isVignetteActive_ = true;
     }
 
     // ----- アニメーションの速度設定 -----
@@ -1120,7 +1115,7 @@ namespace PlayerState
     {
         DirectX::XMFLOAT2 ownerFront = XMFloat2Normalize({ owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z });
         DirectX::XMFLOAT2 addForceDirection = XMFloat2Normalize(DirectX::XMFLOAT2(addForceDirection_.x, addForceDirection_.z) * -1.0f);
-        
+
         float cross = XMFloat2Cross(addForceDirection, ownerFront);
         float dot = std::clamp(XMFloat2Dot(addForceDirection, ownerFront), -1.0f, 1.0f);
         float angle = acosf(dot);
