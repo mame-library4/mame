@@ -104,7 +104,21 @@ namespace ActionDragon
         RoarAction(Enemy* owner) : ActionBase(owner) {}
         const ActionBase::State Run(const float& elapsedTime) override;
         void DrawDebug()                                      override;
+
+    private:
+        void Finalize();        // 終了化
+        void PlayAnimation();   // アニメーション再生
+
+    private:
+        float blendStartFrame_ = 0.12f;
+
+        // ----- Transition -----
+        float transition_ = 0.25f;
+
+
     };
+
+
 
 #pragma endregion ---------- 咆哮 ----------
 

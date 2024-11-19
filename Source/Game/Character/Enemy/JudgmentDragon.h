@@ -51,6 +51,32 @@ namespace ActionDragon
     private:
         int maxCount_ = 3;
         int counter_ = 0;
+        bool isSucceed_ = false;
+    };
+
+    // ----- SuperNovaJudgment -----
+    class SuperNovaJudgment : public JudgmentBase
+    {
+    public:
+        SuperNovaJudgment(Enemy* owner) : JudgmentBase(owner) {}
+        const bool Judgment() override;
+        void DrawDebug() override;
+
+    private:
+        int maxCount_ = 4;
+        int counter_ = 0;
+        bool isSucceed_ = false;
+    };
+
+    class PowerAttackJudgment : public JudgmentBase
+    {
+    public:
+        PowerAttackJudgment(Enemy* owner) : JudgmentBase(owner) {}
+        const bool Judgment() override;
+        void DrawDebug() override;
+
+    private:
+        bool isFirstTime_ = true;
     };
 }
 

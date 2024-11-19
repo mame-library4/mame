@@ -41,8 +41,7 @@ void EnemyDragon::Initialize()
     SetWalkSpeed(15.0f);
 
     // ‘Ì—ÍÝ’è
-    //SetMaxHealth(60.0f);
-    SetMaxHealth(3000.0f);
+    SetMaxHealth(6000.0f);
     SetHealth(GetMaxHealth());
 
     PlayAnimation(Enemy::DragonAnimation::Idle0, true);
@@ -296,8 +295,10 @@ void EnemyDragon::RegisterBehaviorNode()
 #if 1
     behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
 
-    behaviorTree_->AddNode("Attack", "NormalAttack", 0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
-    behaviorTree_->AddNode("Attack", "PowerAttack",  1, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    behaviorTree_->AddNode("Attack", "PowerAttack",  0, BehaviorTree::SelectRule::Priority, new ActionDragon::PowerAttackJudgment(this), nullptr);
+    behaviorTree_->AddNode("Attack", "NormalAttack", 1, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    
+    behaviorTree_->AddNode("PowerAttack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
     
     behaviorTree_->AddNode("NormalAttack", "LongRangeAttack", 0, BehaviorTree::SelectRule::Random, new ActionDragon::LongRangeJudgment(this), nullptr);
     behaviorTree_->AddNode("NormalAttack", "CloseRangeAttack", 0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
@@ -310,11 +311,11 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("CloseRangeAttack", "Guard",        0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::GuardAction(this));
     behaviorTree_->AddNode("CloseRangeAttack", "Walk",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));
     behaviorTree_->AddNode("CloseRangeAttack", "TackleAttack", 0, BehaviorTree::SelectRule::None, new ActionDragon::TackleAttackJudgment(this), new ActionDragon::TackleAction(this));
-    behaviorTree_->AddNode("CloseRangeAttack", "SuperNova",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
+    behaviorTree_->AddNode("CloseRangeAttack", "SuperNova",    0, BehaviorTree::SelectRule::None, new ActionDragon::SuperNovaJudgment(this), new ActionDragon::SuperNovaAction(this));
 
-    behaviorTree_->AddNode("PowerAttack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
 #else
     behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    behaviorTree_->AddNode("Attack", "Roar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
     behaviorTree_->AddNode("Attack", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
     behaviorTree_->AddNode("Attack", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
     behaviorTree_->AddNode("Attack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
@@ -510,7 +511,6 @@ void EnemyDragon::RegisterCollisionData()
     RegisterCollisionDetectionData({ "Dragon15_neck_1",      1.0f,  false, { -0.4f, 0.0f, 0.0f } });
     RegisterCollisionDetectionData({ "Dragon15_spine2",      1.05f, false, {} });    
     RegisterCollisionDetectionData({ "Dragon15_spine0",      0.85f, false, {} });
-    RegisterCollisionDetectionData({ "root",                 0.85f, false, {} });
     RegisterCollisionDetectionData({ "Dragon15_r_hand",      0.3f,  false, {} });
     RegisterCollisionDetectionData({ "Dragon15_r_forearm",   0.32,  false, {} });
     RegisterCollisionDetectionData({ "Dragon15_l_hand",      0.3f,  false, {} });

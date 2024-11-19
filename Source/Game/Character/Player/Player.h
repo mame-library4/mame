@@ -358,7 +358,7 @@ private:
     bool isDodgeAttackCancel_ = false; // 回避による攻撃キャンセル
 
     // ---------- カウンター有効範囲 ----------
-    float counterActiveRadius_   = 0.0f; // カウンター有効範囲
+    float counterActiveRadius_   = 6.0f; // カウンター有効範囲
 
     // ---------- 無敵 ----------
     bool isInvincible_ = false;

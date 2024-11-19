@@ -364,12 +364,61 @@ namespace ActionDragon
 {
     const ActionBase::State RoarAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange())
+        {
+            Finalize();
+
+            return ActionBase::State::Failed;
+        }
+
+        switch (owner_->GetStep())
+        {
+        case 0:// 初期化
+            // アニメーション再生
+            PlayAnimation();
+
+            owner_->SetStep(1);
+
+            break;
+        case 1:
+            if (owner_->IsPlayAnimation() == false)
+            {
+                Finalize();
+                return ActionBase::State::Complete;
+            }
+
+            break;
+        case 2:
+            break;
+        }
+
         return ActionBase::State::Run;
     }
 
+    // ----- ImGui用 -----
     void RoarAction::DrawDebug()
     {
+        if (ImGui::TreeNodeEx("Roar", ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::DragFloat("BlendStartFrame", &blendStartFrame_, 0.01f, 0.0f, 4.0f);
+            ImGui::DragFloat("Transition", &transition_, 0.01f, 0.0f, 1.0f);
 
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- 終了化 -----
+    void RoarAction::Finalize()
+    {
+        owner_->SetStep(0);
+    }
+
+    // ----- アニメーション再生 -----
+    void RoarAction::PlayAnimation()
+    {
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::ComboRoarEnd1, false, 1.0f, blendStartFrame_);
+        owner_->SetTransitionTime(transition_);
     }
 }
 
@@ -399,7 +448,7 @@ namespace ActionDragon
             owner_->SetCurrentAttackAction(Enemy::AttackAction::SlamAttack);
 
             // カウンター有効範囲を設定する
-            PlayerManager::Instance().GetPlayer()->SetCounterActiveRadius(6.0f);
+            //PlayerManager::Instance().GetPlayer()->SetCounterActiveRadius(6.0f);
 
             // パーティクル生成
             slamAttackParticle_ = new SlamAttackParticle();

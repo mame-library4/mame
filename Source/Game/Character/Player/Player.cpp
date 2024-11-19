@@ -111,6 +111,9 @@ void Player::Update(const float& elapsedTime)
     // ルートモーション
     RootMotion();
 
+    // 剣の座標更新
+    UpdateSwordTransform();
+
     // TODO:テスト用
     if (GetHealth() <= 0.0f)
     {
@@ -131,10 +134,6 @@ void Player::Update(const float& elapsedTime)
 
     // ステージの外に出ないようにする
     CollisionCharacterVsStage();
-   
-
-    // 剣の座標更新
-    UpdateSwordTransform();
 
     const DirectX::XMFLOAT3 startPos = weapon_.GetJointPosition("joint1", weaponWorld_);
     const DirectX::XMFLOAT3 joint2Pos = weapon_.GetJointPosition("joint2", weaponWorld_);

@@ -63,8 +63,6 @@ namespace ActionDragon
         ++counter_;
 
         if (counter_ <= maxCount_) return false;
-
-
         counter_ = 0;
 
         return true;
@@ -73,7 +71,7 @@ namespace ActionDragon
     // ----- ImGui用 -----
     void TackleAttackJudgment::DrawDebug()
     {
-        if (ImGui::TreeNodeEx("TackleAttackJudgment", ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::TreeNodeEx("TackleAttackJudgment", ImGuiTreeNodeFlags_Framed))
         {
             ImGui::DragInt("MaxCount", &maxCount_);
             ImGui::DragInt("Counter", &counter_);
@@ -83,6 +81,60 @@ namespace ActionDragon
     }
 }
 
+// ----- SuperNovaJudgment -----
+namespace ActionDragon
+{
+    const bool SuperNovaJudgment::Judgment()
+    {
+        const float halfHealth = owner_->GetMaxHealth() * 0.5f;
+        if (owner_->GetHealth() > halfHealth) return false;
+
+        // ４回に１回しか通らないので連続して出すことを避ける
+        ++counter_;
+        if (counter_ <= maxCount_) return false;
+        counter_ = 0;
+
+        return true;
+    }
+
+    // ----- ImGui用 -----
+    void SuperNovaJudgment::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx("SuperNovaJudgment", ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::DragInt("MaxCount", &maxCount_);
+            ImGui::DragInt("Counter", &counter_);
+
+            ImGui::TreePop();
+        }
+    }
+}
+
+// ----- PowerAttackJudgment -----
+namespace ActionDragon
+{
+    const bool PowerAttackJudgment::Judgment()
+    {
+        if (isFirstTime_ == false) return false;
+
+        const float halfHealth = owner_->GetMaxHealth() * 0.5f;
+        if (owner_->GetHealth() > halfHealth) return false;
+
+        isFirstTime_ = false;
+        return true;
+    }
+
+    // ----- ImGui用 -----
+    void PowerAttackJudgment::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx("PowerAttackJudgment", ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::Checkbox("IsFirstTime", &isFirstTime_);
+
+            ImGui::TreePop();
+        }
+    }
+}
 
 #if 0
 // ----- ひるみ判定 -----
