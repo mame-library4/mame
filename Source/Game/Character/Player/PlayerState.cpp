@@ -2087,9 +2087,6 @@ namespace PlayerState
         currentAttackNum_ = 0;
         radialBlurLerpTimer_ = 0.0f;
         startRadialBlurStrength_ = PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_;
-
-        //afterimageParticle_ = new AfterimageParticle();
-        //afterimageParticle_->Play();
     }
 
     // ----- 更新 -----
@@ -2106,27 +2103,6 @@ namespace PlayerState
         PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteCenter_ = jointPosition_float2;
 
         Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
-
-        // 残像
-        std::vector<DirectX::XMFLOAT3> jointPosition;
-        std::string jointName[] =
-        {
-            "foot_r", "foot_l"
-        };
-#if 0
-        {
-            "head", "upperarm_r", "upperarm_l", "lowerarm_r", "lowerarm_l",
-            "hand_r", "hand_l", "spine_03", "spine_02", "spine_01",
-            "pelvis", "thigh_r", "thigh_l", "thigh_twist_01_r", "thigh_twist_01_l",
-            "calf_r", "calf_l", "foot_r", "foot_l",
-        };
-#endif
-        for (int i = 0; i < _countof(jointName); ++i)
-        {
-            jointPosition.emplace_back(owner_->GetJointPosition(jointName[i].c_str()));
-        }
-        //afterimageParticle_->UpdateJointPosition(jointPosition);
-
 
         // ラジアルブラー更新
         radialBlurLerpTimer_ += radialBlurLerpSpeed_ * elapsedTime;
@@ -2161,7 +2137,7 @@ namespace PlayerState
             {
                 owner_->SetUseRootMotion(true);
 
-                owner_->SetRootMotionValue(3.0f);
+                owner_->SetRootMotionValue(dashRootMotionValue_);
             }
 
             // 移動判定
@@ -2336,11 +2312,6 @@ namespace PlayerState
     // ----- 終了化 -----
     void RushAttackState::Finalize()
     {
-        if (afterimageParticle_ != nullptr)
-        {
-            afterimageParticle_ = nullptr;
-        }
-
         // ラジアルブラーリセット
         PostProcess::Instance().SetUseRadialBlur(false);
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 1;
@@ -2362,6 +2333,8 @@ namespace PlayerState
     {
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
+            ImGui::DragFloat("DashRootMotionValue", &dashRootMotionValue_, 0.1f, 0.0f, 10.0f);
+
             ImGui::DragFloat("RotationSpeed", &rotationSpeed_);
             ImGui::DragFloat3("TargetPosition", &targetPosition_.x);
 
@@ -3778,6 +3751,9 @@ namespace PlayerState
             isVibration_ = true;
         }
 
+        // ルートモーションの移動値を更新
+        UpdateRootMotionMovement();
+
         if(owner_->GetAnimationSeconds() > 1.7f)
         {
             owner_->ChangeState(Player::STATE::Idle);
@@ -3796,6 +3772,8 @@ namespace PlayerState
     {
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
+            ImGui::DragFloat("RootMotionValue", &rootMotionValue_);
+
             if (ImGui::TreeNodeEx("---------- SE ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::Text("SwordSlash");
@@ -3854,5 +3832,22 @@ namespace PlayerState
         }
 
         return false;
+    }
+    
+    // ----- ルートモーションの移動値を更新する -----
+    void ComboAttack0_3::UpdateRootMotionMovement()
+    {
+        const float aLX = Input::Instance().GetGamePad().GetAxisLX();
+        const float aLY = Input::Instance().GetGamePad().GetAxisLY();
+
+        float rootMotionValue = 1.0f;
+
+        // 移動入力がなかったらルートモーションの移動値を微量にする
+        if (fabsf(aLX) == 0.0f && fabsf(aLY) == 0.0f)
+        {
+            rootMotionValue = rootMotionValue_;
+        }
+
+        owner_->SetRootMotionValue(rootMotionValue);
     }
 }

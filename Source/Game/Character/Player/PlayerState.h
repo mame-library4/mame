@@ -2,8 +2,6 @@
 #include "StateMachine/State.h"
 #include "Player.h"
 
-#include "Particle/AfterimageParticle.h"
-
 namespace PlayerState
 {
     struct AddForceData
@@ -365,8 +363,8 @@ namespace PlayerState
         float radialBlurLerpTimer_ = 0.0f;
         float radialBlurLerpSpeed_ = 3.0f;
 
-        // ----- Žc‘œ -----
-        AfterimageParticle* afterimageParticle_ = nullptr;
+        // ----- RootMotion -----
+        float dashRootMotionValue_ = 4.0f;
     };
 
 
@@ -550,6 +548,8 @@ namespace PlayerState
         void SetAnimationSpeed();
         [[nodiscard]] const bool CheckNextInput();
 
+        void UpdateRootMotionMovement();
+
     private:
         AttackData      attackData_;
         bool isVibration_ = false;
@@ -557,5 +557,7 @@ namespace PlayerState
         // ----- SE -----
         float   swordSlashSEPlayFrame_ = 0.65f;
         bool    isPlaySwordSlashSE_ = false;
+
+        float rootMotionValue_ = 0.4f;
     };
 }

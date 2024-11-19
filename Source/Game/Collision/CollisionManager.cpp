@@ -305,6 +305,9 @@ void CollisionManager::UpdatePlayerDamageVsEnemyAttack()
                 int damage = enemy->GetAttackPower();
                 player->AddDamage(damage);
 
+                // コントローラー振動 (ダメージ受けたリアクションとして)
+                Input::Instance().GetGamePad().Vibration(0.3f, 1.0f);
+
                 // HPがまだあるのでDamageStateに遷移
                 if (player->GetHealth() > 0.0f)
                 {
