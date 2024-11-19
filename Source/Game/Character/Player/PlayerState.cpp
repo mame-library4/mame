@@ -1249,7 +1249,6 @@ namespace PlayerState
         // ジャスト回避判定
         if (currentAnimationFrame_ < justDodgeFrame_)
         {
-            // TODO:ジャスト回避
             // ジャスト回避が成功したら遷移する
             if (owner_->GetIsJustDodgeSuccessful())
             {

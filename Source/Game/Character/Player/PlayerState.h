@@ -293,7 +293,7 @@ namespace PlayerState
 
     private:
         // ----- コントローラー振動 -----
-        float vibrationTime_ = 0.3f;
+        float vibrationTime_ = 0.5f;
 
         // ----- スロー用 -----
         float allSlowSpeed_     = 0.01f;
