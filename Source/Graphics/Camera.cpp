@@ -28,8 +28,8 @@ void Camera::Initialize()
     GetTransform()->SetRotationY(DirectX::XMConvertToRadians(180));
     
     GetTransform()->SetRotationX(DirectX::XMConvertToRadians(10.0f));
+    offset_         = gameCameraOffset_;
     length_         = gameCameraLength_;
-    offset_         = { 0.0f, 1.6f, 0.0f };
 
     lerpTimer_ = 0.0f;
 
@@ -333,7 +333,7 @@ void Camera::Rotate(const float& elapsedTime)
     rotation.y += aRX * horizontalRotationSpeed_ * elapsedTime;
 
     rotation.x += aRYValue * verticalRotationSpeed_ * elapsedTime;
-    rotation.x = std::clamp(rotation.x, DirectX::XMConvertToRadians(-15), DirectX::XMConvertToRadians(35));
+    rotation.x = std::clamp(rotation.x, minXRotation_, maxXRotation_);
 
     GetTransform()->SetRotation(rotation);
 }
@@ -806,6 +806,7 @@ const bool Camera::UpdateDragonDeathCamera(const float& elapsedTime)
             {
                 // カメラをもとに戻す
                 GetTransform()->SetRotation({ 0, 0, 0 });
+                offset_ = gameCameraOffset_;
                 length_ = gameCameraLength_;
 
                 // 敵死亡時カメラを使用終了

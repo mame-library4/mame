@@ -145,7 +145,7 @@ private:
 
     // ---------- 回転角制御用 ----------
     float               minXRotation_       = DirectX::XMConvertToRadians(-15.0f);
-    float               maxXRotation_       = DirectX::XMConvertToRadians(13.0f);
+    float               maxXRotation_       = DirectX::XMConvertToRadians(35.0f);
 
     // ---------- カメラ位置制御用 ----------
     float               minLength_          = 6.0f;
@@ -160,14 +160,14 @@ private:
     float               vibrationTimer_         = 0.0f; // 振動時間を測るタイマー
 
     // ---------- 特殊な動き制御用 ----------    
-    int     playerDeathState_       = 0;    
+    
     
 
     float counterDelayTimer_ = 0.0f;
 
     float   easingTimer_            = 0.0f;
     
-    bool    usePlayerDeathCamera_   = false; // 自機死亡カメラ
+    
     bool    useRiseAttackCamera_    = false; // 上昇攻撃カメラ
     
 
@@ -216,7 +216,12 @@ private:
     float lerpWeight_ = 0.12f;
 
     // ---------- ゲームカメラ用 ----------
-    float gameCameraLength_ = 4.5f;
+    DirectX::XMFLOAT3   gameCameraOffset_ = DirectX::XMFLOAT3(0.0f, 1.6f, 0.0f);
+    float               gameCameraLength_ = 4.5f;
+
+    // ---------- プレイヤー死亡カメラ ----------
+    int     playerDeathState_ = 0;
+    bool    usePlayerDeathCamera_ = false; // プレイヤー死亡カメラ
 
     // ---------- ドラゴン死亡カメラ ----------
     DirectX::XMFLOAT3   dragonDeathFirstOffset_         = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
