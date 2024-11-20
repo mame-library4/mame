@@ -23,7 +23,8 @@ public:
     void SetPerspectiveFov();
     void DrawDebug();
 
-    void SetTitleCamera();
+    void SetTitleCamera();  // タイトル用カメラ設定
+    void SetGameCamera();   // ゲーム用カメラ設定
 
     // ---------- 回転処理 ---------------
     void Rotate(const float& elapsedTime);
@@ -38,6 +39,11 @@ public:
         DirectX::XMFLOAT3 focus_    = { 0.0f, 0.0f, 0.0f };
         DirectX::XMFLOAT3 up_       = { 0.0f, 1.0f, 0.0f };
     };
+
+
+    // ---------- カメラから見たスティックの入力値を算出する ----------
+    [[nodiscard]] const DirectX::XMFLOAT2 ConvertTo2DVectorFromCamera(const DirectX::XMFLOAT2& v);
+    
 
 public:// --- 取得・設定 ---
     // ---------- Transform -------------------------
@@ -66,12 +72,6 @@ public:// --- 取得・設定 ---
     // ---------- Fov ------------------------------
     [[nodiscard]] const float GetFov() const { return fov_; }
     void SetFov(const float& fov) { fov_ = fov; }
-
-    // ---------- Offset -------------------------
-    [[nodiscard]] const DirectX::XMFLOAT3 GetTargetOffset() const { return targetOffset_; }
-    void SetTargetOffset(const DirectX::XMFLOAT3& offset) { targetOffset_ = offset; }
-    [[nodiscard]] const DirectX::XMFLOAT3 GetCameraOffset() const { return cameraOffset_; }
-    void SetCameraOffset(const DirectX::XMFLOAT3& offset) { cameraOffset_ = offset; }
 
     // ---------- 特殊な動き制御用 ----------
     void SetUsePlayerDeathCmaera(const float& flag = true);
@@ -115,13 +115,13 @@ private:
     // ---------- 自機死亡カメラ ----------
     [[nodiscard]] const bool UpdatePlayerDeathCamera(const float& elapsedTime);
     // ---------- 敵死亡カメラ ----------
-    [[nodiscard]] const bool UpdateEnemyDeathCamera(const float& elapsedTime);
+    [[nodiscard]] const bool UpdateDragonDeathCamera(const float& elapsedTime);
     // ---------- ドラゴン上昇攻撃時のカメラ ----------
     [[nodiscard]] const bool UpdateRiseAttackCamera(const float& elapsedTime);
     // ---------- カウンター攻撃時のカメラ更新 ----------
     [[nodiscard]] const bool UpdateCounterAttackCamera(const float& elapsedTime);
 
-    void SetState(const EnemyDeathCamera& state)    { enemyDeathstate_ = static_cast<int>(state); }
+    void SetState(const EnemyDeathCamera& state)    { dragonDeathState_ = static_cast<int>(state); }
     void SetState(const CounterAttackCamera& state) { counterState_ = static_cast<int>(state); }
 
 private:
@@ -131,20 +131,17 @@ private:
     View                view_               = {};
 
     DirectX::XMFLOAT3   target_             = {};
-    DirectX::XMFLOAT3   targetOffset_       = {};       // ターゲット(注視点)に対するオフセット
-    DirectX::XMFLOAT3   cameraOffset_       = {};       // カメラの位置に対するオフセット
-    DirectX::XMFLOAT3   localOffset_        = {};       // カメラのローカル位置のオフセット
+    DirectX::XMFLOAT3   offset_             = {};
     float               nearZ_              = 0.1f;
     float               farZ_               = 150.0f;
     float               fov_                = 45.0f;    // 視野角
     float               length_             = 10.0f;    // focusとeyeまでの距離
-    float               inputThreshold_     = 0.3f;     // 入力判定値
     
-
-    float               verticalRotationSpeed_      = 1.0f; // 垂直回転速度
-    float               horizontalRotationSpeed_    = 1.0f; // 水平回転速度
-
-    bool                invertVertical_     = false;    // 上下反転フラグ
+    // ---------- 入力による回転の詳細 ----------
+    float               inputThreshold_          = 0.3f;  // 入力判定値    
+    float               verticalRotationSpeed_   = 1.7f;  // 垂直回転速度
+    float               horizontalRotationSpeed_ = 4.0f;  // 水平回転速度
+    bool                invertVertical_          = false; // 上下反転フラグ
 
     // ---------- 回転角制御用 ----------
     float               minXRotation_       = DirectX::XMConvertToRadians(-15.0f);
@@ -164,12 +161,12 @@ private:
 
     // ---------- 特殊な動き制御用 ----------    
     int     playerDeathState_       = 0;    
-    int     enemyDeathstate_        = 0;
+    
 
     float counterDelayTimer_ = 0.0f;
 
     float   easingTimer_            = 0.0f;
-    bool    useEnemyDeathCamera_    = false; // 敵死亡カメラ
+    
     bool    usePlayerDeathCamera_   = false; // 自機死亡カメラ
     bool    useRiseAttackCamera_    = false; // 上昇攻撃カメラ
     
@@ -217,4 +214,27 @@ private:
 
     // ---------- カメラ補間 ----------
     float lerpWeight_ = 0.12f;
+
+    // ---------- ゲームカメラ用 ----------
+    float gameCameraLength_ = 4.5f;
+
+    // ---------- ドラゴン死亡カメラ ----------
+    DirectX::XMFLOAT3   dragonDeathFirstOffset_         = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
+    DirectX::XMFLOAT3   dragonDeathFirstRotation_       = DirectX::XMFLOAT3(-10.0f, 0.0f, 0.0f);
+    float               dragonDeathFirstTime_           = 2.0f;  // １つ目のカメラの使用時間
+    float               dragonDeathFirstLength_         = 9.0f;  
+    float               dragonDeathFirstMaxRotationY_   = -40.0f;
+    DirectX::XMFLOAT3   dragonDeathSecondRotation_      = DirectX::XMFLOAT3(20.0f, 0.0f, 0.0f);
+    float               dragonDeathSecondTime_          = 2.2f;  // ２つ目のカメラの使用時間
+    float               dragonDeathSecondLength_        = 10.0f;
+    float               dragonDeathSecondMaxRotationX_  = 10.0f;
+    float               dragonDeathSecondMaxRotationY_  = 30.0f;
+    DirectX::XMFLOAT3   dragonDeathThirdRotation_       = DirectX::XMFLOAT3(55.0f, 250.0f, 0.0f);
+    float               dragonDeathThirdTime_           = 2.5f;  // ３つ目のカメラの使用時間
+    float               dragonDeathThirdLength_         = 10.0f;
+    float               dragonDeathThirdMaxRotationX_   = 15.0f;
+    float               dragonDeathThirdMaxRotationY_   = -50.0f;
+    float               dragonDeathChangeFrame_         = 0.0f;  // カメラ切り替えフレーム
+    int                 dragonDeathState_               = 0;     // 制御用
+    bool                isDragonDeathCameraActive_      = false; // 敵死亡カメラ
 };

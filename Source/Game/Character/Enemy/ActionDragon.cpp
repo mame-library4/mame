@@ -118,8 +118,8 @@ namespace ActionDragon
             timer_ -= elapsedTime;
             if (timer_ <= 0.0f)
             {
-                uiFader_ = new UIFader(false);
-                owner_->SetStep(2);
+                //uiFader_ = new UIFader(false);
+                //owner_->SetStep(2);
             }
 
             break;

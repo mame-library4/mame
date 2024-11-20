@@ -338,15 +338,9 @@ void Player::Turn(const float& elapsedTime)
     float aLY = gamePad.GetAxisLY();
         
     DirectX::XMFLOAT2 input = { fabsf(gamePad.GetAxisLX()), fabsf(gamePad.GetAxisLY()) };
-    DirectX::XMFLOAT3 cameraFront = Camera::Instance().CalcForward();
-    DirectX::XMFLOAT3 cameraRight = Camera::Instance().CalcRight();
 
-    moveDirection_ =
-    {
-        aLY * cameraFront.x + aLX * cameraRight.x,
-        0,
-        aLY * cameraFront.z + aLX * cameraRight.z,
-    };
+    DirectX::XMFLOAT2 moveDirection = Camera::Instance().ConvertTo2DVectorFromCamera(DirectX::XMFLOAT2(aLX, aLY));
+    moveDirection_ = DirectX::XMFLOAT3(moveDirection.x, 0.0f, moveDirection.y);
     moveDirection_ = XMFloat3Normalize(moveDirection_);
 
     if (input.x > 0.0f || input.y > 0.0f)

@@ -19,11 +19,11 @@ public:
 	};
 
 	Transform() :
-		position_(DirectX::XMFLOAT3())
-		, scale_(DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f))
-		, rotation_(DirectX::XMFLOAT4())
-		, scaleFactor_(1.0f)
-		, coordinateSystem_(static_cast<int>(CoordinateSystem::cRightYup))
+		position_(DirectX::XMFLOAT3()),
+		scale_(DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f)),
+		rotation_(DirectX::XMFLOAT4()),
+		scaleFactor_(1.0f),
+		coordinateSystem_(static_cast<int>(CoordinateSystem::cRightYup))
 	{}
 	~Transform() {}
 

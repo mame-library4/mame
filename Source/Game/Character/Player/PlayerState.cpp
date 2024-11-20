@@ -1262,7 +1262,7 @@ namespace PlayerState
         }
         else
         {
-            if(owner_->GetIsJustDodgeCheckEnabled()) 
+            if (owner_->GetIsJustDodgeCheckEnabled())
                 owner_->SetIsJustDodgeCheckEnabled(false);
         }
 
@@ -1280,7 +1280,7 @@ namespace PlayerState
             owner_->SetIsInvincible(false);
         }
 
-        if(owner_->IsPlayAnimation() == false)
+        if (owner_->IsPlayAnimation() == false)
         {
             owner_->ChangeState(Player::STATE::Idle);
             return;
@@ -1311,13 +1311,13 @@ namespace PlayerState
             if (ImGui::TreeNodeEx("---------- Invincible ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::DragFloat("InvincibleFrame", &invincibleFrame_, 0.01f, 0.0f, 3.0f);
-                
+
                 ImGui::TreePop();
             }
             if (ImGui::TreeNodeEx("---------- Movement ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::DragFloat("RootMotionMoveValue", &rootMotionMoveValue_, 0.1f, 0.0f, 10.0f);
-                
+
                 ImGui::TreePop();
             }
 
@@ -1338,25 +1338,25 @@ namespace PlayerState
 
         float forwardCross = XMFloat2Cross(inputDirection_, playerForward);
 
-        float forwardDot = XMFloat2Dot(inputDirection_, playerForward) - 1.0f;
+        float dot = std::clamp(XMFloat2Dot(inputDirection_, playerForward), -1.0f, 1.0f);
+        float angle = acosf(dot);
 
-        if (forwardDot > -0.01f)
+        if (angle < DirectX::XMConvertToRadians(1))
         {
             isRotating_ = false;
             return;
         }
 
         const float speed = owner_->GetRotateSpeed() * elapsedTime;
-        float rotateY = forwardDot * speed;
-        rotateY = std::min(rotateY, -0.7f * speed);
+        float rotateY = angle * speed;
 
         if (forwardCross > 0)
         {
-            owner_->GetTransform()->AddRotationY(rotateY);
+            owner_->GetTransform()->AddRotationY(-rotateY);
         }
         else
         {
-            owner_->GetTransform()->AddRotationY(-rotateY);
+            owner_->GetTransform()->AddRotationY(rotateY);
         }
     }
 
@@ -1451,7 +1451,7 @@ namespace PlayerState
                 }
             }
         }
-            break;
+        break;
         case Player::Animation::RollBack:// 後ろ
         {
             const float nextInputStartFrame = 0.5f;
@@ -1464,7 +1464,7 @@ namespace PlayerState
                 }
             }
         }
-            break;
+        break;
         case Player::Animation::RollRight:// 右
         {
             const float nextInputStartFrame = 0.5f;
@@ -1482,7 +1482,7 @@ namespace PlayerState
                 }
             }
         }
-            break;
+        break;
         case Player::Animation::RollLeft:
         {
             const float nextInputStartFrame = 0.5f;
@@ -1500,7 +1500,7 @@ namespace PlayerState
                 }
             }
         }
-            break;
+        break;
         }
 #pragma endregion 先行入力受付
 #endif
@@ -1549,7 +1549,7 @@ namespace PlayerState
                 }
             }
         }
-            break;
+        break;
         case Player::Animation::RollBack:// 後ろ
         {
             // コンボ攻撃0の場合
@@ -1579,7 +1579,7 @@ namespace PlayerState
                 }
             }
         }
-            break;
+        break;
         case Player::Animation::RollRight:
         {
             // 回避の先行入力がある場合
@@ -1620,7 +1620,7 @@ namespace PlayerState
                 }
             }
         }
-            break;
+        break;
         case Player::Animation::RollLeft:
         {
             // 回避の先行入力がある場合
@@ -1661,7 +1661,7 @@ namespace PlayerState
                 }
             }
         }
-            break;
+        break;
         }
 #pragma endregion 先行入力によるステート変更処理
 
@@ -1733,28 +1733,16 @@ namespace PlayerState
             // 前方向のアニメーションを設定する
             owner_->PlayBlendAnimation(Player::Animation::RollFront, false, 1.0f, animationStartFrame_);
             owner_->SetTransitionTime(0.05f);
-            return;            
+            return;
         }
 
+        float transitionTime = 0.05f;
         // 元のアニメーションに応じてブレンドの時間を設定する
-        const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
-        if (animationIndex == Player::Animation::Attack0_0)
-        {
-            owner_->SetTransitionTime(0.1f);
-        }
-        else if (animationIndex == Player::Animation::RunAttack1)
-        {
-            owner_->SetTransitionTime(0.1f);
-        }
-        else if (animationIndex == Player::Animation::GetUp)
-        {
-            //owner_->SetTransitionTime(0.1f);
-            owner_->SetTransitionTime(0.2f);
-        }
-        else
-        {
-            owner_->SetTransitionTime(0.05f);
-        }
+        const Player::Animation currentAnimationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+        if (currentAnimationIndex == Player::Animation::Attack0_0)          transitionTime = 0.1f;
+        else if (currentAnimationIndex == Player::Animation::RunAttack1)    transitionTime = 0.1f;
+        else if (currentAnimationIndex == Player::Animation::GetUp)         transitionTime = 0.2f;
+        owner_->SetTransitionTime(transitionTime);
 
         // ------------------------------------------------------------
         // プレイヤーの姿勢に合わせてアニメーションの方向を設定する
@@ -1762,21 +1750,14 @@ namespace PlayerState
         const float animationSpeed = 1.0f;
         const float aLx = Input::Instance().GetGamePad().GetAxisLX();
         const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+        Player::Animation animationindex = Player::Animation::DodgeFront;
         // 入力値がある場合
         if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
         {
             // カメラから見たスティックの入力値を算出する
-            const DirectX::XMFLOAT3 cameraFront = Camera::Instance().GetTransform()->CalcForward();
-            const DirectX::XMFLOAT3 cameraRight = Camera::Instance().GetTransform()->CalcRight();
-            DirectX::XMFLOAT2 cameraInput =
-            {
-                aLy * cameraFront.x + aLx * cameraRight.x,
-                aLy * cameraFront.z + aLx * cameraRight.z,
-            };
-            cameraInput = XMFloat2Normalize(cameraInput);
-            DirectX::XMFLOAT2 ownerFront = { owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z };
-            ownerFront = XMFloat2Normalize(ownerFront);
-            
+            DirectX::XMFLOAT2 cameraInput = Camera::Instance().ConvertTo2DVectorFromCamera(DirectX::XMFLOAT2(aLx, aLy));
+            DirectX::XMFLOAT2 ownerFront = XMFloat2Normalize({ owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z });
+
             // 内積で角度を算出
             float dot = std::clamp(XMFloat2Dot(cameraInput, ownerFront), -1.0f, 1.0f);
             float angle = acosf(dot);
@@ -1789,20 +1770,15 @@ namespace PlayerState
             {
                 // 回転角が４５度よりも小さければ 前方向
                 if (angle < DirectX::XM_PIDIV4)
-                {                    
-                    owner_->PlayBlendAnimation(Player::Animation::RollFront, false, animationSpeed, animationStartFrame_);
-                    return;
-                }
-
-                // 右方向
-                if (cross < 0)
                 {
-                    owner_->PlayBlendAnimation(Player::Animation::RollRight, false, animationSpeed, animationStartFrame_);
+                    animationindex = Player::Animation::RollFront;
                 }
-                // 左方向
                 else
                 {
-                    owner_->PlayBlendAnimation(Player::Animation::RollLeft, false, animationSpeed, animationStartFrame_);
+                    // 右方向
+                    if (cross < 0)  animationindex = Player::Animation::RollRight;
+                    // 左方向
+                    else            animationindex = Player::Animation::RollLeft;
                 }
             }
             // 回転角が９０度よりも大きければ 後,右,左 の三択
@@ -1811,28 +1787,23 @@ namespace PlayerState
                 // 回転角が１３５度よりも大きければ 後方向
                 if (angle > DirectX::XM_PIDIV2 + DirectX::XM_PIDIV4)
                 {
-                    owner_->PlayBlendAnimation(Player::Animation::RollBack, false, animationSpeed, animationStartFrame_);
-                    return;
+                    animationindex = Player::Animation::RollBack;
                 }
-
-                // 右方向
-                if (cross < 0)
-                {
-                    owner_->PlayBlendAnimation(Player::Animation::RollRight, false, animationSpeed, animationStartFrame_);
-                }
-                // 左方向
                 else
                 {
-                    owner_->PlayBlendAnimation(Player::Animation::RollLeft, false, animationSpeed, animationStartFrame_);
+                    // 右方向
+                    if (cross < 0)  animationindex = Player::Animation::RollRight;
+                    // 左方向
+                    else            animationindex = Player::Animation::RollLeft;
                 }
             }
         }
         // 入力値がない場合前方向のアニメーションを設定する
         else
         {
-            owner_->PlayBlendAnimation(Player::Animation::RollFront, false, animationSpeed, animationStartFrame_);
-            return;
+            animationindex = Player::Animation::RollFront;
         }
+        owner_->PlayBlendAnimation(animationindex, false, animationSpeed, animationStartFrame_);
     }
 }
 

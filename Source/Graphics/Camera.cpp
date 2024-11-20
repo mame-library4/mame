@@ -18,23 +18,18 @@
 // ----- 初期化 -----
 void Camera::Initialize()
 {
-    useEnemyDeathCamera_ = false;
+    isDragonDeathCameraActive_ = false;
 
-    enemyDeathstate_ = 0;
+    dragonDeathState_ = 0;
     playerDeathState_ = 0;
     counterState_ = 0;
 
 
     GetTransform()->SetRotationY(DirectX::XMConvertToRadians(180));
-    //GetTransform()->SetRotationX(DirectX::XMConvertToRadians(-9));
-
-    // TODO:かめら
-    // ここからテストしてるだけなので変える多分
-    targetOffset_ = { 0, -1, 0 };
-    cameraOffset_ = { 0, 2.5f, 0 };
-    length_ = 6.0f;
-    verticalRotationSpeed_ = 1.0f;
-    horizontalRotationSpeed_ = 4.0f;
+    
+    GetTransform()->SetRotationX(DirectX::XMConvertToRadians(10.0f));
+    length_         = gameCameraLength_;
+    offset_         = { 0.0f, 1.6f, 0.0f };
 
     lerpTimer_ = 0.0f;
 
@@ -53,9 +48,15 @@ void Camera::Update(const float& elapsedTime)
     if (SceneManager::Instance().GetCurrentSceneName() == SceneManager::SceneName::Title ||
         SceneManager::Instance().GetCurrentSceneName() == SceneManager::SceneName::Loading) return;
 
+    // TODO:各種死亡カメラが使用されているときはカメラシェイクを行わない
+    if (usePlayerDeathCamera_ || isDragonDeathCameraActive_)
+    {
+        ScreenVibrate(0.0f, 0.0f);
+    }
+
     // 死亡カメラ使用時はここで終了
     if (UpdatePlayerDeathCamera(elapsedTime)) return; // Player死亡カメラ
-    if (UpdateEnemyDeathCamera(elapsedTime))  return; // Enemy死亡カメラ
+    if (UpdateDragonDeathCamera(elapsedTime))  return; // Enemy死亡カメラ
 
     const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
 
@@ -70,39 +71,6 @@ void Camera::Update(const float& elapsedTime)
         lerpWeight_ = 0.12f;
     }
 
-#if 1
-    //if (isCounterDelay_ == false) target_ = cameraTargetPosition;
-
-#else
-    if (lerpTimer_ >= 1.0f)
-    {
-        target_ = cameraTargetPosition;
-    }
-    else
-    {
-        target_ = XMFloat3Lerp(target_, cameraTargetPosition, lerpTimer_);
-    }
-
-    GamePad& gamePad = Input::Instance().GetGamePad();
-    const float aLx = gamePad.GetAxisLX();
-    const float aLy = gamePad.GetAxisLY();
-    if (aLx == 0.0f && aLy == 0.0f)
-    {
-        lerpTimer_ += elapsedTime * 0.05;
-    
-        lerpTimer_ = min(lerpTimer_, 1.0f);
-    }
-    else
-    {
-        lerpTimer_ = 0.05f;
-    }
-#endif
-
-    // ドラゴンの上昇攻撃のカメラ更新
-    //if (UpdateRiseAttackCamera(elapsedTime)) return;
-
-    // カウンター攻撃のカメラ更新
-    //if (UpdateCounterAttackCamera(elapsedTime)) return;
 
     // ロックオンカメラ
     UpdateLockonCamera(elapsedTime);
@@ -127,18 +95,10 @@ void Camera::Update(const float& elapsedTime)
 
 void Camera::SetPerspectiveFov()
 {
-    DirectX::XMFLOAT3 front = XMFloat3Normalize(GetTransform()->CalcForward());
-    DirectX::XMFLOAT3 rot = GetTransform()->GetRotation();
+    DirectX::XMFLOAT3 forward = XMFloat3Normalize(GetTransform()->CalcForward());
 
-    DirectX::XMFLOAT3 worldOffset = {};
-    DirectX::XMStoreFloat3(&worldOffset, DirectX::XMVector3Transform(
-        DirectX::XMLoadFloat3(&localOffset_), GetTransform()->CalcWorldMatrix(1.0f)));
-    worldOffset = worldOffset - GetTransform()->GetPosition();
-
-    view_.eye_.x = target_.x + cameraOffset_.x + worldOffset.x + front.x - length_ * cosf(rot.x) * sinf(rot.y);
-    view_.eye_.y = target_.y + cameraOffset_.y + worldOffset.y + front.y - length_ * sinf(rot.x);
-    view_.eye_.z = target_.z + cameraOffset_.z + worldOffset.z + front.z - length_ * cosf(rot.x) * cosf(rot.y);
-    view_.focus_ = target_ + cameraOffset_ + targetOffset_ + worldOffset;
+    view_.eye_   = target_ + offset_ - forward * length_;
+    view_.focus_ = target_ + offset_;
 
     GetTransform()->SetPosition(view_.eye_);
 
@@ -231,10 +191,52 @@ void Camera::SetPerspectiveFov()
     viewMatrix_ = DirectX::XMMatrixLookAtLH(eye, focus, up);
 }
 
+// ----- ImGui用 -----
 void Camera::DrawDebug()
 {
     if (ImGui::BeginMenu("Camera"))
     {
+        if (ImGui::TreeNodeEx("DragonDeathCamera", ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::Checkbox("Active", &isDragonDeathCameraActive_);
+            ImGui::DragInt("State", &dragonDeathState_, 1, 0, 5);
+            ImGui::DragFloat("ChangeFrame", &dragonDeathChangeFrame_);
+            if (ImGui::TreeNodeEx("---------- FirstCamera ----------", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+            {
+                ImGui::DragFloat3("Offset", &dragonDeathFirstOffset_.x, 0.01f);
+                ImGui::DragFloat3("Rotation", &dragonDeathFirstRotation_.x, 0.01f);
+                ImGui::DragFloat("Length", &dragonDeathFirstLength_, 0.01f, 1.0f, 20.0f);
+                ImGui::DragFloat("Time", &dragonDeathFirstTime_, 0.01f, 0.0f, 10.0f);
+                ImGui::DragFloat("MaxRotationY", &dragonDeathFirstMaxRotationY_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- SecondCamera ----------", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+            {
+                ImGui::DragFloat3("Rotation", &dragonDeathSecondRotation_.x, 0.01f);
+                ImGui::DragFloat("Length", &dragonDeathSecondLength_, 0.01f, 1.0f, 20.0f);
+                ImGui::DragFloat("Time", &dragonDeathSecondTime_, 0.01f, 0.0f, 10.0f);
+                ImGui::DragFloat("MaxRotationX", &dragonDeathSecondMaxRotationX_, 0.01f);
+                ImGui::DragFloat("MaxRotationY", &dragonDeathSecondMaxRotationY_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- ThirdCamera ----------", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+            {
+                ImGui::DragFloat3("Rotation", &dragonDeathThirdRotation_.x, 0.01f);
+                ImGui::DragFloat("Length", &dragonDeathThirdLength_, 0.01f, 1.0f, 20.0f);
+                ImGui::DragFloat("Time", &dragonDeathThirdTime_, 0.01f, 0.0f, 10.0f);
+                ImGui::DragFloat("MaxRotationX", &dragonDeathThirdMaxRotationX_, 0.01f);
+                ImGui::DragFloat("MaxRotationY", &dragonDeathThirdMaxRotationY_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::Button("ReStart")) dragonDeathState_ = 0;
+
+            ImGui::TreePop();
+        }
+
+
         ImGui::DragFloat3("Target", &target_.x);
         ImGui::DragFloat("LerpWegith", &lerpWeight_, 0.01f, 0.0f, 1.0f);
 
@@ -287,12 +289,10 @@ void Camera::DrawDebug()
         ImGui::DragFloat("Fov", &fov_, 0.01f);
         ImGui::DragFloat("InputThreshold", &inputThreshold_, 0.1f, 0.0f, 1.0f);
         
-        ImGui::DragFloat3("FocusOffset", &targetOffset_.x, 0.01f);
-        ImGui::DragFloat3("CameraOffset", &cameraOffset_.x, 0.01f);
-        ImGui::DragFloat3("LocalOffset", &localOffset_.x, 0.01f);
+        ImGui::DragFloat3("Offset", &offset_.x, 0.01f);
 
-        ImGui::DragFloat("VerticalRotationSpeed", &verticalRotationSpeed_);
-        ImGui::DragFloat("HorizontalRotationSpeed", &horizontalRotationSpeed_);
+        ImGui::DragFloat("VerticalRotationSpeed", &verticalRotationSpeed_, 0.01f, 0.0f, 10.0f);
+        ImGui::DragFloat("HorizontalRotationSpeed", &horizontalRotationSpeed_, 0.01f, 0.0f, 10.0f);
 
         float minXRotation = DirectX::XMConvertToDegrees(minXRotation_);
         float maxXRotation = DirectX::XMConvertToDegrees(maxXRotation_);
@@ -307,73 +307,35 @@ void Camera::DrawDebug()
     }
 }
 
+// ----- タイトル用カメラ設定 -----
 void Camera::SetTitleCamera()
 {
-    GetTransform()->SetRotationX(DirectX::XMConvertToRadians(16.0f));
+    //GetTransform()->SetRotationX(DirectX::XMConvertToRadians(16.0f));
     GetTransform()->SetRotationY(DirectX::XMConvertToRadians(180.0f));
 
     target_ = {};
-    targetOffset_ = { 0, -1, 0 };
-    cameraOffset_ = { 0, 2.5f, 0 };
-    length_ = 6.0f;
+}
+
+// ----- ゲーム用カメラ設定 -----
+void Camera::SetGameCamera()
+{
 }
 
 // ----- 回転処理 -----
 void Camera::Rotate(const float& elapsedTime)
 {
-    if (useLockonCamera_) return;
-
-    GamePad& gamePad = Input::Instance().GetGamePad();
-    float aRx = gamePad.GetAxisRX();
-    float aRy = gamePad.GetAxisRY();
-    DirectX::XMFLOAT3 rotate = GetTransform()->GetRotation();
+    const float aRX = Input::Instance().GetGamePad().GetAxisRX();
+    const float aRY = Input::Instance().GetGamePad().GetAxisRY();
+    const float aRYValue = invertVertical_ ? aRY * -1.0f : aRY;
+    DirectX::XMFLOAT3 rotation = GetTransform()->GetRotation();
 
     // 横移動は制限なし
-    rotate.y += aRx * horizontalRotationSpeed_ * elapsedTime;
+    rotation.y += aRX * horizontalRotationSpeed_ * elapsedTime;
 
-    // length制御
-    float deltaLength = maxLength_ - minLength_;
-    float deltaRotate = fabs(maxXRotation_) + fabs(minXRotation_);
-    float addLength = deltaLength / deltaRotate;    
+    rotation.x += aRYValue * verticalRotationSpeed_ * elapsedTime;
+    rotation.x = std::clamp(rotation.x, DirectX::XMConvertToRadians(-15), DirectX::XMConvertToRadians(35));
 
-    // 理不尽な縦回転を入れないように閾値以上なら入力を取得する
-    if (fabs(aRy) >= inputThreshold_)
-    {
-        // 上下入力反転を判定
-        const float aRyValue = invertVertical_ ? aRy * -1 * elapsedTime : aRy * elapsedTime;
-
-        if (rotate.x > maxXRotation_)
-        {
-            isAdjustCameraLength_ = true;
-
-            constexpr float maxRotate = DirectX::XMConvertToRadians(40);
-            const float addAmountSpeed = 2.0f;
-            const float rotateAmount = (maxRotate - maxXRotation_) * addAmountSpeed;
-            const float lengthAmount = (minLength_ - 2.5f) * addAmountSpeed;
-
-            rotate.x -= rotateAmount * aRyValue;
-
-            if (rotate.x > maxRotate) rotate.x = maxRotate;
-
-            length_ += lengthAmount * aRyValue;
-            if (length_ < 2.5f) length_ = 2.5f;
-        }
-        else
-        {
-            isAdjustCameraLength_ = false;
-
-            rotate.x -= verticalRotationSpeed_ * aRyValue;
-
-            length_ += addLength * aRyValue;
-        }
-    }
-
-    if (length_ > maxLength_) length_ = maxLength_;
-
-    // X軸(上下)の回転制御
-    if (rotate.x < minXRotation_) rotate.x = minXRotation_;
-
-    GetTransform()->SetRotation(rotate);
+    GetTransform()->SetRotation(rotation);
 }
 
 // ----- 画面振動 (振動量, 振動時間) 設定 -----
@@ -413,6 +375,20 @@ void Camera::ScreenVibrationUpdate(const float& elapsedTime)
     vibrationTimer_ -= elapsedTime;
 }
 
+// ----- カメラから見たスティックの入力値を算出する -----
+const DirectX::XMFLOAT2 Camera::ConvertTo2DVectorFromCamera(const DirectX::XMFLOAT2& v)
+{
+    DirectX::XMFLOAT2 result = {};
+
+    const DirectX::XMFLOAT3 forward = CalcForward();
+    const DirectX::XMFLOAT3 right   = CalcRight();
+
+    result.x = forward.x * v.y + right.x * v.x;
+    result.y = forward.z * v.y + right.z * v.x;
+
+    return XMFloat2Normalize(result);
+}
+
 // ----- 前ベクトル取得 -----
 const DirectX::XMFLOAT3 Camera::CalcForward()
 {
@@ -424,7 +400,7 @@ const DirectX::XMFLOAT3 Camera::CalcRight()
 {
     DirectX::XMFLOAT3 forward = CalcForward();
     DirectX::XMFLOAT3 up = { 0, 1, 0 };
-    return XMFloat3Cross(up, forward);
+    return XMFloat3Normalize(XMFloat3Cross(up, forward));
 }
 
 // ---- 自機死亡時カメラを使用する -----
@@ -438,8 +414,8 @@ void Camera::SetUsePlayerDeathCmaera(const float& flag)
 void Camera::SetUseEnemyDeathCamera()
 {
     // 敵死亡カメラ変数を設定
-    useEnemyDeathCamera_ = true;
-    enemyDeathstate_ = 0;
+    isDragonDeathCameraActive_ = true;
+    dragonDeathState_ = 0;
 
     // -------------------------------------
     //  現在使用しているカメラをすべて解除する
@@ -579,6 +555,8 @@ void Camera::UpdateLockonCamera(const float& elapsedTime)
 // ----- カメラリセット更新 -----
 void Camera::UpdateCameraReset(const float& elapsedTime)
 {
+    return;
+
     // ロックオンカメラを使用しているのでカメラリセットは使えない
     if (useLockonCamera_) return;
 
@@ -638,8 +616,6 @@ const bool Camera::UpdatePlayerDeathCamera(const float& elapsedTime)
 
         length_ = 4.5f;
         //length_ = 4.0f;
-        targetOffset_ = { 0.0f, -1.0f, 0.0f };
-        cameraOffset_ = { 0.0f, 1.0f, 0.0f };
 
         playerDeathState_ = 1;
 
@@ -675,29 +651,36 @@ const bool Camera::UpdatePlayerDeathCamera(const float& elapsedTime)
 }
 
 // ----- 敵死亡時カメラ -----
-const bool Camera::UpdateEnemyDeathCamera(const float& elapsedTime)
+const bool Camera::UpdateDragonDeathCamera(const float& elapsedTime)
 {
-    // 敵死亡時カメラの使用フラグが立っていないのでここで終了
-    if (useEnemyDeathCamera_ == false) return false;
+    // ドラゴン死亡カメラを使用しない
+    if (isDragonDeathCameraActive_ == false) return false;
 
     Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
 
-    std::string nodeName = (enemyDeathstate_ >= 3) ? "root" : "Dragon15_spine2";
+    std::string nodeName = "Dragon15_spine2";
+    //std::string nodeName = (dragonDeathState_ >= 3) ? "root" : "Dragon15_spine2";
     target_ = enemy->GetJointPosition(nodeName);
 
-    switch (static_cast<EnemyDeathCamera>(enemyDeathstate_))
+    switch (static_cast<EnemyDeathCamera>(dragonDeathState_))
     {
     case EnemyDeathCamera::Initialize:// 初期化
 #pragma region ---------- 初期化 ----------
-
         // カメラの各種項目を設定する
-        targetOffset_   = { 0.0f, -7.0f, 0.0f };
-        cameraOffset_   = { 0.0f, 7.0f, 0.0f };
-        length_         = 10.0f;
-        GetTransform()->SetRotation({ 0.0f, DirectX::XMConvertToRadians(rand() % 360), 0.0f });
+        length_ = dragonDeathFirstLength_;
+        offset_ = dragonDeathFirstOffset_;
+        const DirectX::XMFLOAT3 rotation =
+        {
+            DirectX::XMConvertToRadians(dragonDeathFirstRotation_.x),
+            DirectX::XMConvertToRadians(rand() % 360),
+            DirectX::XMConvertToRadians(dragonDeathFirstRotation_.z),
+        };
+        GetTransform()->SetRotation(rotation);
         oldRotate_ = GetTransform()->GetRotation();
 
-        // 変数初期化
+        // ステート遷移フレームを設定
+        dragonDeathChangeFrame_ = dragonDeathFirstTime_; 
+        // 初期化
         easingTimer_ = 0.0f;
 
         // ステート変更
@@ -708,25 +691,32 @@ const bool Camera::UpdateEnemyDeathCamera(const float& elapsedTime)
 #pragma region ---------- １つ目のカメラ ----------
     {
         // タイマー加算＆上限管理
-        const float totalFrame = 2.0f;
         easingTimer_ += elapsedTime;
-        easingTimer_ = min(easingTimer_, totalFrame);
+        easingTimer_ = min(easingTimer_, dragonDeathFirstTime_);
 
         // 回転処理
-        constexpr float minRotateY = DirectX::XMConvertToRadians(0.0f);
-        constexpr float maxRotateY = DirectX::XMConvertToRadians(-40.0f);
-        const float rotateY = oldRotate_.y + Easing::InSine(easingTimer_, totalFrame, maxRotateY, minRotateY);
+        const float maxRotateY = DirectX::XMConvertToRadians(dragonDeathFirstMaxRotationY_);
+        const float rotateY = oldRotate_.y + Easing::InSine(easingTimer_, dragonDeathFirstTime_, maxRotateY, 0.0f);
         GetTransform()->SetRotationY(rotateY);
 
         // 指定のフレームを超えたら次のステートへ
-        const float changeStateFrame = 2.0f;
-        if (enemy->GetAnimationSeconds() > changeStateFrame)
+        if (enemy->GetAnimationSeconds() > dragonDeathChangeFrame_)
         {
             // カメラの初期位置を設定する
-            GetTransform()->SetRotation({ 0.0f, DirectX::XMConvertToRadians(rand() % 360), 0.0f });
+            length_ = dragonDeathSecondLength_;
+            const DirectX::XMFLOAT3 rotation =
+            {
+                DirectX::XMConvertToRadians(dragonDeathSecondRotation_.x),
+                DirectX::XMConvertToRadians(rand() % 360),
+                DirectX::XMConvertToRadians(dragonDeathSecondRotation_.z),
+            };
+            GetTransform()->SetRotation(rotation);
             oldRotate_ = GetTransform()->GetRotation();
 
-            // 変数初期化
+            // ステート遷移フレームを設定
+            dragonDeathChangeFrame_ += dragonDeathSecondTime_;
+
+            // 初期化
             easingTimer_ = 0.0f;
 
             // ステート変更
@@ -739,29 +729,36 @@ const bool Camera::UpdateEnemyDeathCamera(const float& elapsedTime)
 #pragma region ---------- ２つ目のカメラ ----------
     {
         // タイマー加算＆上限管理
-        const float totalFrame = 2.2f;
         easingTimer_ += elapsedTime;
-        easingTimer_ = min(easingTimer_, totalFrame);
+        easingTimer_ = min(easingTimer_, dragonDeathSecondTime_);
 
         // 回転処理
-        constexpr float minRotateX = DirectX::XMConvertToRadians(20.0f);
-        constexpr float maxRotateX = DirectX::XMConvertToRadians(30.0f);
-        constexpr float minRotateY = DirectX::XMConvertToRadians(0.0f);
-        constexpr float maxRotateY = DirectX::XMConvertToRadians(30.0f);
-        DirectX::XMFLOAT3 cameraRotate = {};
-        cameraRotate.x = Easing::InSine(easingTimer_, totalFrame, maxRotateX, minRotateX);
-        cameraRotate.y = oldRotate_.y + Easing::InSine(easingTimer_, totalFrame, maxRotateY, minRotateY);
-        GetTransform()->SetRotation(cameraRotate);
+        const float maxRotateX = DirectX::XMConvertToRadians(dragonDeathSecondMaxRotationX_);
+        const float maxRotateY = DirectX::XMConvertToRadians(dragonDeathSecondMaxRotationY_);
+        DirectX::XMFLOAT3 rotation = GetTransform()->GetRotation();
+        rotation.x = oldRotate_.x + Easing::InSine(easingTimer_, dragonDeathSecondTime_, maxRotateX, 0.0f);
+        rotation.y = oldRotate_.y + Easing::InSine(easingTimer_, dragonDeathSecondTime_, maxRotateY, 0.0f);
+        GetTransform()->SetRotation(rotation);
 
         // 指定のフレームを超えたら次のステートへ
-        const float changeStateFrame = 4.4f;
-        if (enemy->GetAnimationSeconds() > changeStateFrame)
+        if (enemy->GetAnimationSeconds() > dragonDeathChangeFrame_)
         {
             // カメラの初期位置を設定する
-            length_ = 6.5f;
-            GetTransform()->SetRotationX(DirectX::XMConvertToRadians(-30.0f));
+            length_ = dragonDeathThirdLength_;
 
-            // 変数初期化
+            const DirectX::XMFLOAT3 rotation =
+            {
+                DirectX::XMConvertToRadians(dragonDeathThirdRotation_.x),
+                DirectX::XMConvertToRadians(dragonDeathThirdRotation_.y),
+                DirectX::XMConvertToRadians(dragonDeathThirdRotation_.z),
+            };
+            GetTransform()->SetRotation(rotation);
+            oldRotate_ = GetTransform()->GetRotation();
+
+            // ステート遷移フレームを設定
+            dragonDeathChangeFrame_ += dragonDeathThirdTime_;
+
+            // 初期化
             easingTimer_ = 0.0f;
 
             // ステート変更
@@ -774,23 +771,16 @@ const bool Camera::UpdateEnemyDeathCamera(const float& elapsedTime)
 #pragma region ---------- ３つ目のカメラ ----------
     {
         // タイマー加算＆上限管理
-        const float totalFrame = 2.5f;
         easingTimer_ += elapsedTime;
-        easingTimer_ = min(easingTimer_, totalFrame);
+        easingTimer_ = min(easingTimer_, dragonDeathThirdTime_);
 
         // 回転処理
-        constexpr float minRotateY = DirectX::XMConvertToRadians(250.0f);
-        constexpr float maxRotateY = DirectX::XMConvertToRadians(220.0f);
-        const float rotateY = Easing::OutSine(easingTimer_, totalFrame, maxRotateY, minRotateY);
-        GetTransform()->SetRotationY(rotateY);
-
-        // 視野角
-        fov_ = Easing::InSine(easingTimer_, totalFrame, 50.0f, 45.0f);
-
-        // targetOffset
-        targetOffset_.x = Easing::InSine(easingTimer_, totalFrame, 1.0f, 0.0f);
-        targetOffset_.y = Easing::InSine(easingTimer_, totalFrame, -5.0f, -7.0f);
-        targetOffset_.z = Easing::InSine(easingTimer_, totalFrame, 1.0f, 0.0f);
+        DirectX::XMFLOAT3 rotation = GetTransform()->GetRotation();
+        const float maxRotateX = DirectX::XMConvertToRadians(dragonDeathThirdMaxRotationX_);
+        const float maxRotateY = DirectX::XMConvertToRadians(dragonDeathThirdMaxRotationY_);
+        rotation.x = oldRotate_.x + Easing::InSine(easingTimer_, dragonDeathThirdTime_, maxRotateX, 0.0f);
+        rotation.y = oldRotate_.y + Easing::InSine(easingTimer_, dragonDeathThirdTime_, maxRotateY, 0.0f);
+        GetTransform()->SetRotation(rotation);
         
         // -------------------------------------------------------
         //  死亡アニメーションが終了後,少しの時間カメラを回転させておく
@@ -816,13 +806,10 @@ const bool Camera::UpdateEnemyDeathCamera(const float& elapsedTime)
             {
                 // カメラをもとに戻す
                 GetTransform()->SetRotation({ 0, 0, 0 });
-                length_ = 6.0f;
-                targetOffset_ = { 0.0f, -1.0f, 0.0f };
-                cameraOffset_ = { 0.0f, 2.5f, 0.0f };
-                fov_ = 45.0f;
+                length_ = gameCameraLength_;
 
                 // 敵死亡時カメラを使用終了
-                useEnemyDeathCamera_ = false;
+                isDragonDeathCameraActive_ = false;
 
                 // ステート変更
                 SetState(EnemyDeathCamera::Death);
