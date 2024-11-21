@@ -436,7 +436,7 @@ bool EnemyDragon::CheckStatusChange()
         SetStep(0);
 
         // 死亡時カメラを使用する
-        Camera::Instance().SetUseEnemyDeathCamera();
+        Camera::Instance().UseDragonDeathCamera();
 
         // 討伐達成UIを出す
         UIHuntComplete* uIHuntComplete = new UIHuntComplete();

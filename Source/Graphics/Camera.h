@@ -65,17 +65,11 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const DirectX::XMFLOAT3 GetTarget() const { return target_; }
     void SetTarget(const DirectX::XMFLOAT3& target) { target_ = target; }
 
-    // ---------- Lenght -------------------------
-    [[nodiscard]] const float GetLength() const { return length_; }
-    void SetLength(const float length) { length_ = length; }
-
-    // ---------- Fov ------------------------------
-    [[nodiscard]] const float GetFov() const { return fov_; }
-    void SetFov(const float& fov) { fov_ = fov; }
-
     // ---------- 特殊な動き制御用 ----------
     void SetUsePlayerDeathCmaera(const float& flag = true);
-    void SetUseEnemyDeathCamera();
+    
+    void UseDragonDeathCamera(); // ドラゴンの死亡演出カメラを使用する
+    
     void SetUseCounterCamera();
 
     // ---------- ロックオンカメラ ----------
@@ -112,12 +106,10 @@ private:
     void UpdateCameraReset(const float& elapsedTime);  // カメラリセット更新
 
 
-    // ---------- 自機死亡カメラ ----------
+    // ---------- プレイヤー死亡カメラ ----------
     [[nodiscard]] const bool UpdatePlayerDeathCamera(const float& elapsedTime);
-    // ---------- 敵死亡カメラ ----------
+    // ---------- ドラゴン死亡カメラ ----------
     [[nodiscard]] const bool UpdateDragonDeathCamera(const float& elapsedTime);
-    // ---------- ドラゴン上昇攻撃時のカメラ ----------
-    [[nodiscard]] const bool UpdateRiseAttackCamera(const float& elapsedTime);
     // ---------- カウンター攻撃時のカメラ更新 ----------
     [[nodiscard]] const bool UpdateCounterAttackCamera(const float& elapsedTime);
 
@@ -220,8 +212,15 @@ private:
     float               gameCameraLength_ = 4.5f;
 
     // ---------- プレイヤー死亡カメラ ----------
-    int     playerDeathState_ = 0;
-    bool    usePlayerDeathCamera_ = false; // プレイヤー死亡カメラ
+    DirectX::XMFLOAT3   playerDeathOffset_          = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
+    DirectX::XMFLOAT3   playerDeathRotation_        = DirectX::XMFLOAT3(-20.0f, 210.0f, 0.0f);
+    float               playerDeathTime_            = 3.5f;
+    float               playerDeathLength_          = 4.5f;
+    float               playerDeathMinLength_       = 4.0f;
+    float               playerDeathMaxRotationX_    = 30.0f;
+    float               playerDeathMaxRotationY_    = 90.0f;
+    int                 playerDeathState_           = 0;
+    bool                isPlayerDeathCameraActive_  = false; // プレイヤー死亡カメラ
 
     // ---------- ドラゴン死亡カメラ ----------
     DirectX::XMFLOAT3   dragonDeathFirstOffset_         = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);

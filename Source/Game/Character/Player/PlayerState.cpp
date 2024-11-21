@@ -1160,6 +1160,7 @@ namespace PlayerState
     // ----- 更新 -----
     void DeathState::Update(const float& elapsedTime)
     {
+        //return;
         deathTimer_ += elapsedTime;
 
         if (deathTimer_ > 2.2f)
@@ -1180,12 +1181,6 @@ namespace PlayerState
             owner_->ChangeState(Player::STATE::Idle);
             return;
         }
-
-        // テスト用
-        if (owner_->GetHealth() > 0)
-        {
-            owner_->ChangeState(Player::STATE::Idle);
-        }
     }
 
     // ----- 終了化 -----
@@ -1193,6 +1188,7 @@ namespace PlayerState
     {
         owner_->SetIsInvincible(false);
     }
+
     void DeathState::DrawDebug()
     {
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))

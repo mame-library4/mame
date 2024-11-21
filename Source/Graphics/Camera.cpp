@@ -49,7 +49,7 @@ void Camera::Update(const float& elapsedTime)
         SceneManager::Instance().GetCurrentSceneName() == SceneManager::SceneName::Loading) return;
 
     // TODO:各種死亡カメラが使用されているときはカメラシェイクを行わない
-    if (usePlayerDeathCamera_ || isDragonDeathCameraActive_)
+    if (isPlayerDeathCameraActive_ || isDragonDeathCameraActive_)
     {
         ScreenVibrate(0.0f, 0.0f);
     }
@@ -196,12 +196,32 @@ void Camera::DrawDebug()
 {
     if (ImGui::BeginMenu("Camera"))
     {
+        if (ImGui::TreeNodeEx("PlayerDeathCamera", ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::Checkbox("Active", &isPlayerDeathCameraActive_);
+            ImGui::DragInt("State", &playerDeathState_, 1, 0, 3);
+            ImGui::DragFloat3("Offset", &playerDeathOffset_.x, 0.01f);
+            ImGui::DragFloat3("Rotation", &playerDeathRotation_.x, 0.01f);
+            ImGui::DragFloat("Length", &playerDeathLength_, 0.01f, 1.0f, 20.0f);
+            ImGui::DragFloat("MinLength", &playerDeathMinLength_, 0.01f, 1.0f, 20.0f);
+            ImGui::DragFloat("Time", &playerDeathTime_, 0.01f, 0.0f, 10.0f);
+            ImGui::DragFloat("MaxRotationX", &playerDeathMaxRotationX_, 0.01f);
+            ImGui::DragFloat("MaxRotationY", &playerDeathMaxRotationY_, 0.01f);
+
+            if (ImGui::Button("ReStartPlayerDeathCamera"))
+            {
+                PlayerManager::Instance().GetPlayer()->SetHealth(0);
+                playerDeathState_ = 0;
+            }
+
+            ImGui::TreePop();
+        }
         if (ImGui::TreeNodeEx("DragonDeathCamera", ImGuiTreeNodeFlags_Framed))
         {
             ImGui::Checkbox("Active", &isDragonDeathCameraActive_);
-            ImGui::DragInt("State", &dragonDeathState_, 1, 0, 5);
+            ImGui::DragInt("State", &dragonDeathState_, 1, 0, 4);
             ImGui::DragFloat("ChangeFrame", &dragonDeathChangeFrame_);
-            if (ImGui::TreeNodeEx("---------- FirstCamera ----------", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+            if (ImGui::TreeNodeEx("---------- FirstCamera ----------", ImGuiTreeNodeFlags_Framed))
             {
                 ImGui::DragFloat3("Offset", &dragonDeathFirstOffset_.x, 0.01f);
                 ImGui::DragFloat3("Rotation", &dragonDeathFirstRotation_.x, 0.01f);
@@ -211,7 +231,7 @@ void Camera::DrawDebug()
 
                 ImGui::TreePop();
             }
-            if (ImGui::TreeNodeEx("---------- SecondCamera ----------", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+            if (ImGui::TreeNodeEx("---------- SecondCamera ----------", ImGuiTreeNodeFlags_Framed))
             {
                 ImGui::DragFloat3("Rotation", &dragonDeathSecondRotation_.x, 0.01f);
                 ImGui::DragFloat("Length", &dragonDeathSecondLength_, 0.01f, 1.0f, 20.0f);
@@ -221,7 +241,7 @@ void Camera::DrawDebug()
 
                 ImGui::TreePop();
             }
-            if (ImGui::TreeNodeEx("---------- ThirdCamera ----------", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+            if (ImGui::TreeNodeEx("---------- ThirdCamera ----------", ImGuiTreeNodeFlags_Framed))
             {
                 ImGui::DragFloat3("Rotation", &dragonDeathThirdRotation_.x, 0.01f);
                 ImGui::DragFloat("Length", &dragonDeathThirdLength_, 0.01f, 1.0f, 20.0f);
@@ -231,7 +251,7 @@ void Camera::DrawDebug()
 
                 ImGui::TreePop();
             }
-            if (ImGui::Button("ReStart")) dragonDeathState_ = 0;
+            if (ImGui::Button("ReStartDragonDeathCamera")) dragonDeathState_ = 0;
 
             ImGui::TreePop();
         }
@@ -406,12 +426,12 @@ const DirectX::XMFLOAT3 Camera::CalcRight()
 // ---- 自機死亡時カメラを使用する -----
 void Camera::SetUsePlayerDeathCmaera(const float& flag)
 {
-    usePlayerDeathCamera_ = flag;
+    isPlayerDeathCameraActive_ = flag;
     playerDeathState_ = 0;
 }
 
-// ----- 敵死亡時カメラ使用する -----
-void Camera::SetUseEnemyDeathCamera()
+// ----- ドラゴンの死亡演出カメラを使用する -----
+void Camera::UseDragonDeathCamera()
 {
     // 敵死亡カメラ変数を設定
     isDragonDeathCameraActive_ = true;
@@ -599,43 +619,58 @@ void Camera::UpdateCameraReset(const float& elapsedTime)
     if (resetLerpTimer_ == 1.0f) cameraResetFlag_ = false;
 }
 
-// ----- 自機死亡カメラ -----
+// ----- プレイヤー死亡カメラ -----
 const bool Camera::UpdatePlayerDeathCamera(const float& elapsedTime)
 {
-    // 自機死亡時カメラの使用フラグが立っていないのでここで終了
-    if (usePlayerDeathCamera_ == false) return false;
+    // プレイヤー死亡カメラを使用しない
+    if (isPlayerDeathCameraActive_ == false) return false;
 
-    DirectX::XMFLOAT3 target = PlayerManager::Instance().GetPlayer()->GetJointPosition("spine_02");
-    target.y = 0.5f;
-    target_ = target;
+    target_ = PlayerManager::Instance().GetPlayer()->GetJointPosition("spine_02");
+    target_.y = 0.5f;
 
     switch (playerDeathState_)
     {
-    case 0:
+    case 0:// 初期化
+    {
+        // カメラの各種項目を設定する
+        length_ = playerDeathLength_;
+        offset_ = playerDeathOffset_;
+        const float playerRotationY = PlayerManager::Instance().GetTransform()->GetRotationY();
+        const DirectX::XMFLOAT3 rotation =
+        {
+            DirectX::XMConvertToRadians(playerDeathRotation_.x),
+            DirectX::XMConvertToRadians(playerDeathRotation_.y) + playerRotationY,
+            DirectX::XMConvertToRadians(playerDeathRotation_.z),
+        };
+        GetTransform()->SetRotation(rotation);
+        oldRotate_ = GetTransform()->GetRotation();
+
+        // 初期化
         easingTimer_ = 0.0f;
 
-        length_ = 4.5f;
-        //length_ = 4.0f;
-
+        // ステート変更
         playerDeathState_ = 1;
-
+    }
         break;
     case 1:
     {
-        const float totalFrame = 3.5f;
         easingTimer_ += elapsedTime;
-        easingTimer_ = min(easingTimer_, totalFrame);
+        easingTimer_ = min(easingTimer_, playerDeathTime_);
 
-        const float rotateX = Easing::OutQuad(easingTimer_, totalFrame, -20.0f, 10.0f);
-        const float rotateY = Easing::InSine(easingTimer_, totalFrame, 70.0f, 160.0f);
+        const float maxRotationX = DirectX::XMConvertToRadians(playerDeathMaxRotationX_);
+        const float maxRotationY = DirectX::XMConvertToRadians(playerDeathMaxRotationY_);
 
-        length_ = Easing::OutCubic(easingTimer_, totalFrame, 4.0f, 4.5f);
+        DirectX::XMFLOAT3 rotation = GetTransform()->GetRotation();
+        rotation.x = oldRotate_.x + Easing::OutQuad(easingTimer_, playerDeathTime_, maxRotationX, 0.0f);
+        rotation.y = oldRotate_.y + Easing::InSine(easingTimer_, playerDeathTime_, maxRotationY, 0.0f);
 
-        GetTransform()->SetRotationX(DirectX::XMConvertToRadians(rotateX));
-        GetTransform()->SetRotationY(DirectX::XMConvertToRadians(rotateY));
+        length_ = Easing::OutCubic(easingTimer_, playerDeathTime_, playerDeathMinLength_, playerDeathLength_);
 
-        if (easingTimer_ == totalFrame)
+        GetTransform()->SetRotation(rotation);
+
+        if (easingTimer_ == playerDeathTime_)
         {
+            return true;
             easingTimer_ = 0.0f;
             playerDeathState_ = 3;
         }
@@ -650,7 +685,7 @@ const bool Camera::UpdatePlayerDeathCamera(const float& elapsedTime)
     return true;
 }
 
-// ----- 敵死亡時カメラ -----
+// ----- ドラゴン死亡時カメラ -----
 const bool Camera::UpdateDragonDeathCamera(const float& elapsedTime)
 {
     // ドラゴン死亡カメラを使用しない
@@ -826,106 +861,6 @@ const bool Camera::UpdateDragonDeathCamera(const float& elapsedTime)
     }
 
     return true;
-}
-
-// ----- ドラゴン上昇攻撃時のカメラ -----
-const bool Camera::UpdateRiseAttackCamera(const float& elapsedTime)
-{
-#if 0
-    const float maxLength = 10.0f;
-    const float totalFrame = 0.4f;
-    const float totalFrame1= 0.7f;
-    constexpr float maxRotate = DirectX::XMConvertToRadians(-10.0f);
-    //constexpr float maxRotate = DirectX::XMConvertToRadians(-3.0f);
-    //constexpr float maxRotate = DirectX::XMConvertToRadians(10.0f);
-    float rotateX = 0.0f;
-    bool returnFlag = false;
-
-    const float maxOffsetX = 4.0f;
-    const float minOffsetX = 2.5f;
-
-    switch (state_)
-    {
-    case 0:// 初期化
-        easingTimer_ = 0.0f;
-        oldCameraLength_ = length_;
-        oldRotateX_ = GetTransform()->GetRotationX();
-        state_ = 1;
-        returnFlag = true;
-        break;
-    case 1:
-    {
-        length_ = Easing::OutSine(easingTimer_, totalFrame, maxLength, oldCameraLength_);
-        rotateX = Easing::OutSine(easingTimer_, totalFrame, maxRotate, oldRotateX_);
-        //cameraOffset_.y = Easing::InSine(riseAttackEasingTimer_, totalFrame, maxOffsetX, minOffsetX);
-
-        easingTimer_ += elapsedTime;
-        if (easingTimer_ > totalFrame)
-        {
-            length_ = maxLength;
-            rotateX = maxRotate;
-            //cameraOffset_.y = maxOffsetX;
-
-            state_ = 2;
-            easingTimer_ = 0.0f;
-        }
-
-        returnFlag = true;
-        break;
-    }
-    // 待機... 何もしない 
-    case 2:   
-        returnFlag = true;
-        break;
-    // 未使用
-    case 5:   
-        returnFlag = false;
-        break;
-    // RiseAttack終了処理
-    default:
-    {
-        const float resetLength = 6.15f;
-        length_ = Easing::InSine(easingTimer_, totalFrame1, resetLength, maxLength);
-        rotateX = Easing::InSine(easingTimer_, totalFrame1, DirectX::XMConvertToRadians(7.0f), maxRotate);
-        //cameraOffset_.y = Easing::InSine(riseAttackEasingTimer_, totalFrame, minOffsetX, maxOffsetX);
-
-        easingTimer_ += elapsedTime;
-        if (easingTimer_ > totalFrame1)
-        {
-            //length_ = oldCameraLength_;
-            length_ = resetLength;
-            rotateX = DirectX::XMConvertToRadians(7.0f);
-            //cameraOffset_.y = minOffsetX;
-
-            easingTimer_ = 0.0f;
-            state_ = 5;// 未使用にする
-        }
-        returnFlag = true;
-    }
-        break;
-    }
-
-    // 回転処理
-    if (returnFlag == true)
-    {
-        GamePad& gamePad = Input::Instance().GetGamePad();
-        float aRx = gamePad.GetAxisRX();
-        DirectX::XMFLOAT3 rotate = GetTransform()->GetRotation();
-                
-        rotate.y += aRx * horizontalRotationSpeed_ * elapsedTime;
-
-        // Y軸回転値を-3.14~3.14に収まるようにする
-        if (rotate.y < -DirectX::XM_PI) rotate.y += DirectX::XM_2PI;
-        if (rotate.y > DirectX::XM_PI) rotate.y -= DirectX::XM_2PI;
-
-        if (rotateX != 0.0f) rotate.x = rotateX;
-
-        GetTransform()->SetRotation(rotate);
-    }
-
-    return returnFlag;
-#endif
-    return false;
 }
 
 // ----- カウンター攻撃時のカメラ更新 -----
