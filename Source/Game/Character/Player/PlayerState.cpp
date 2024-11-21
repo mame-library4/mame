@@ -2380,8 +2380,8 @@ namespace PlayerState
         // アニメーション設定
         SetAnimation();
 
-        // カウンター時カメラを使用する
-        Camera::Instance().SetUseCounterCamera();
+        // カウンターカメラを使用する
+        Camera::Instance().UseCounterCamera();
 
         // 操作UI設定
         UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(1500.0f, 0.0f);
@@ -2513,7 +2513,7 @@ namespace PlayerState
         }
 
         // カウンター成功
-        if (owner_->GetIsAbleCounterAttack())
+        //if (owner_->GetIsAbleCounterAttack())
         {
             if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER)
             {
@@ -2784,17 +2784,33 @@ namespace PlayerState
         // 無敵状態にする
         owner_->SetIsInvincible(true);
 
+        // カウンター攻撃カメラを使用する
+        Camera::Instance().UseCounterAttackCamera();
+
         // 操作UI設定
         UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(1500.0f, 700.0f);
 
         // 変数初期化
         addForceData_.Initialize(0.35f, 0.3f, 1.0f);
         attackData_.Initialize(0.35f, 0.7f);
+
+        isPlayCameraVibration_ = false;
     }
 
     // ----- 更新 -----
     void CounterComboState::Update(const float& elapsedTime)
     {
+        // アニメーション速度調整
+        UpdateAnimationSpeed();
+
+        // カメラシェイク
+        if (owner_->GetAnimationSeconds() > cameraVibrationFrame_ && isPlayCameraVibration_ == false)
+        {
+            Camera::Instance().ScreenVibrate(cameraVibrationVolume_, cameraVibrationTime_);
+
+            isPlayCameraVibration_ = true;
+        }
+
         currentAnimationFrame_ = owner_->GetAnimationSeconds();
 
         // RootMotionの設定
@@ -2842,6 +2858,21 @@ namespace PlayerState
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
             ImGui::DragFloat("AnimationFrame", &currentAnimationFrame_);
+            if (ImGui::TreeNodeEx("---------- CameraVibration ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("Frame", &cameraVibrationFrame_, 0.01f, 0.0f, 3.0f);
+                ImGui::DragFloat("Volume", &cameraVibrationVolume_, 0.01f, 0.0f, 3.0f);
+                ImGui::DragFloat("Time", &cameraVibrationTime_, 0.01f, 0.0f, 3.0f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- Slow ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("EndFrame", &slowEndFrame_, 0.01f, 0.0f, 3.0f);
+                ImGui::DragFloat("AnimationSpeed", &slowAnimationSpeed_, 0.01f, 0.0f, 1.0f);
+
+                ImGui::TreePop();
+            }
             if (ImGui::TreeNodeEx("---------- SwordTrail ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::DragFloat("StartFrame", &swordTrailStartFrame_, 0.01f, 0.0f, 3.0f);
@@ -2852,6 +2883,24 @@ namespace PlayerState
 
             ImGui::TreePop();
         }
+    }
+
+    // ----- アニメーション速度調整 -----
+    void CounterComboState::UpdateAnimationSpeed()
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+        float animationSpeed = 1.0f;
+
+        if (animationSeconds >= 0.35f && animationSeconds < 0.45f)
+        {
+            animationSpeed = 0.8f;
+        }
+        else if (animationSeconds < slowEndFrame_)
+        {
+            animationSpeed = slowAnimationSpeed_;
+        }
+
+        owner_->SetAnimationSpeed(animationSpeed);
     }
 }
 

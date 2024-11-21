@@ -25,6 +25,8 @@ void Camera::Initialize()
     counterState_ = 0;
 
 
+    lerpWeight_ = gameCameraLerpWeight_;
+
     GetTransform()->SetRotationY(DirectX::XMConvertToRadians(180));
     
     GetTransform()->SetRotationX(DirectX::XMConvertToRadians(10.0f));
@@ -56,20 +58,31 @@ void Camera::Update(const float& elapsedTime)
 
     // 死亡カメラ使用時はここで終了
     if (UpdatePlayerDeathCamera(elapsedTime)) return; // Player死亡カメラ
-    if (UpdateDragonDeathCamera(elapsedTime))  return; // Enemy死亡カメラ
+    if (UpdateDragonDeathCamera(elapsedTime))  return; // Enemy死亡カメラ    
+
+    // カウンターカメラ
+    UpdateCounterCamera(elapsedTime);
+    // カウンター攻撃カメラ
+    UpdateCounterAttackCamera(elapsedTime);
+
+    // カウンターカメラを使用していないとき
+    if (isCounterCameraActive_ == false && isCounterAttackCameraActive_ == false)
+    {
+        if (length_ != gameCameraLength_)
+        {
+            length_ -= gameCameraLengthReturnSpeed_ * elapsedTime;
+            if (length_ <= gameCameraLength_)
+            {
+                length_ = gameCameraLength_;
+                lerpWeight_ = gameCameraLerpWeight_;
+            }
+        }
+    }
 
     const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
-
     target_ = XMFloat3Lerp(target_, cameraTargetPosition, lerpWeight_);
 
-    if (PlayerManager::Instance().GetPlayer()->GetCurrentState() == Player::STATE::CounterCombo)
-    {
-        lerpWeight_ = 0.0f;
-    }
-    else
-    {
-        lerpWeight_ = 0.12f;
-    }
+
 
 
     // ロックオンカメラ
@@ -196,6 +209,46 @@ void Camera::DrawDebug()
 {
     if (ImGui::BeginMenu("Camera"))
     {
+#pragma region ---------- CounterCamera ----------
+        if (ImGui::TreeNodeEx("CounterCamera", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::DragInt("State", &counterState_);
+            if(ImGui::TreeNodeEx("CounterCamera", ImGuiTreeNodeFlags_Framed))
+            {
+                ImGui::Checkbox("Active", &isCounterCameraActive_);
+                ImGui::DragFloat("Time", &counterTime_, 0.01f, 0.0f, 2.0f);
+                ImGui::DragFloat("ReturnTime", &counterReturnTime_, 0.01f, 0.0f, 2.0f);
+                ImGui::DragFloat("Length", &counterLength_, 0.01f, 1.0f, 20.0f);
+                ImGui::DragFloat("LerpWeight", &counterLerpWegiht_, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("MinRotationX", &counterMinRotationX_, 0.01f);
+
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("CounterAttackCamera", ImGuiTreeNodeFlags_Framed))
+            {
+                ImGui::Checkbox("Active", &isCounterAttackCameraActive_);
+                ImGui::DragFloat("ZoomTime", &counterAttackZoomTime_, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("ZoomLength", &counterAttackZoomLength_, 0.01f, 1.0f, 20.0f);
+
+                ImGui::DragFloat("SlowTime", &counterAttackSlowTime_, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("SlowLength", &counterAttackSlowLength_, 0.01f, 1.0f, 20.0f);
+
+                ImGui::DragFloat("Time", &counterAttackTime_, 0.01f, 0.0f, 2.0f);
+                ImGui::DragFloat("Length", &counterAttackLength_, 0.01f, 1.0f, 20.0f);
+                ImGui::DragFloat("LerpWeight", &counterAttackLerpWeight_, 0.01f, 0.0f, 1.0f);
+
+                ImGui::DragFloat("LengthReturnSpeed", &gameCameraLengthReturnSpeed_, 0.01f, 0.0f, 10.0f);
+                ImGui::DragFloat("LerpWeightReturnSpeed", &gameCameraLerpWeightReturnSpeed_, 0.01f, 0.0f, 1.0f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
+#pragma region ---------- CounterCamera ----------
+
+#pragma region ---------- PlayerDeathCamera ----------
         if (ImGui::TreeNodeEx("PlayerDeathCamera", ImGuiTreeNodeFlags_Framed))
         {
             ImGui::Checkbox("Active", &isPlayerDeathCameraActive_);
@@ -216,6 +269,9 @@ void Camera::DrawDebug()
 
             ImGui::TreePop();
         }
+#pragma endregion ---------- PlayerDeathCamera ----------
+
+#pragma region ---------- DragonDeathCamera ----------
         if (ImGui::TreeNodeEx("DragonDeathCamera", ImGuiTreeNodeFlags_Framed))
         {
             ImGui::Checkbox("Active", &isDragonDeathCameraActive_);
@@ -251,10 +307,17 @@ void Camera::DrawDebug()
 
                 ImGui::TreePop();
             }
-            if (ImGui::Button("ReStartDragonDeathCamera")) dragonDeathState_ = 0;
+            if (ImGui::Button("ReStartDragonDeathCamera"))
+            {
+                EnemyManager::Instance().GetEnemy(0)->SetHealth(0.0f);
+                EnemyManager::Instance().GetEnemy(0)->PlayAnimation(Enemy::DragonAnimation::Death, false);
+                isDragonDeathCameraActive_ = true;
+                dragonDeathState_ = 0;
+            }
 
             ImGui::TreePop();
         }
+#pragma endregion ---------- DragonDeathCamera ----------
 
 
         ImGui::DragFloat3("Target", &target_.x);
@@ -314,12 +377,12 @@ void Camera::DrawDebug()
         ImGui::DragFloat("VerticalRotationSpeed", &verticalRotationSpeed_, 0.01f, 0.0f, 10.0f);
         ImGui::DragFloat("HorizontalRotationSpeed", &horizontalRotationSpeed_, 0.01f, 0.0f, 10.0f);
 
-        float minXRotation = DirectX::XMConvertToDegrees(minXRotation_);
-        float maxXRotation = DirectX::XMConvertToDegrees(maxXRotation_);
-        ImGui::DragFloat("MinXRotation", &minXRotation, 1.0f, -75.0f, -20.0f);
-        ImGui::DragFloat("MaxXRotation", &maxXRotation, 1.0f, -20.0f, 20.0f);
-        minXRotation_ = DirectX::XMConvertToRadians(minXRotation);
-        maxXRotation_ = DirectX::XMConvertToRadians(maxXRotation);
+        float minXRotation = DirectX::XMConvertToDegrees(minRotationX_);
+        float maxXRotation = DirectX::XMConvertToDegrees(maxRotationX_);
+        ImGui::DragFloat("MinXRotation", &minXRotation, 1.0f);
+        ImGui::DragFloat("MaxXRotation", &maxXRotation, 1.0f);
+        minRotationX_ = DirectX::XMConvertToRadians(minXRotation);
+        maxRotationX_ = DirectX::XMConvertToRadians(maxXRotation);
 
         transform_.DrawDebug();
 
@@ -353,7 +416,7 @@ void Camera::Rotate(const float& elapsedTime)
     rotation.y += aRX * horizontalRotationSpeed_ * elapsedTime;
 
     rotation.x += aRYValue * verticalRotationSpeed_ * elapsedTime;
-    rotation.x = std::clamp(rotation.x, minXRotation_, maxXRotation_);
+    rotation.x = std::clamp(rotation.x, minRotationX_, maxRotationX_);
 
     GetTransform()->SetRotation(rotation);
 }
@@ -423,7 +486,8 @@ const DirectX::XMFLOAT3 Camera::CalcRight()
     return XMFloat3Normalize(XMFloat3Cross(up, forward));
 }
 
-// ---- 自機死亡時カメラを使用する -----
+#pragma region ---------- 各種カメラ使用設定 ----------
+// ---- プレイヤー死亡時カメラを使用する -----
 void Camera::SetUsePlayerDeathCmaera(const float& flag)
 {
     isPlayerDeathCameraActive_ = flag;
@@ -447,12 +511,22 @@ void Camera::UseDragonDeathCamera()
 
 }
 
-// ----- カウンター時カメラを使用する -----
-void Camera::SetUseCounterCamera()
+// ----- カウンターカメラを使用する -----
+void Camera::UseCounterCamera()
 {
-    useCounterCamera_ = true;
-    counterState_ = 0;
+    counterState_          = 0;
+    isCounterCameraActive_ = true;
 }
+
+// ----- カウンター攻撃カメラを使用する -----
+void Camera::UseCounterAttackCamera()
+{
+    counterState_                = 0;
+    isCounterCameraActive_       = false; // カウンターカメラを使用しない
+    isCounterAttackCameraActive_ = true;  // カウンター攻撃カメラを使用
+}
+
+#pragma endregion ---------- 各種カメラ使用設定 ----------
 
 // ----- ロックオンカメラ更新 -----
 void Camera::UpdateLockonCamera(const float& elapsedTime)
@@ -717,6 +791,7 @@ const bool Camera::UpdateDragonDeathCamera(const float& elapsedTime)
         dragonDeathChangeFrame_ = dragonDeathFirstTime_; 
         // 初期化
         easingTimer_ = 0.0f;
+        dragonDeathtimerActive_ = false;
 
         // ステート変更
         SetState(EnemyDeathCamera::FirstCamera);
@@ -828,16 +903,17 @@ const bool Camera::UpdateDragonDeathCamera(const float& elapsedTime)
             enemy->PlayAnimation(Enemy::DragonAnimation::DeathLoop, true);
 
             // 死亡時タイマーを使用する
-            useDeathTimer_ = true;
+            dragonDeathtimerActive_ = true;
+            dragonDeathTimer_ = 0.0f;
         }
         // 少しの間を作るためのタイマー
-        if (useDeathTimer_)
+        if (dragonDeathtimerActive_)
         {
-            deathTimer_ += elapsedTime;
+            dragonDeathTimer_ += elapsedTime;
             
             // 設定した時間を超えたらそのまま放置状態に入る
             const float maxTime = 1.0f;
-            if (deathTimer_ > maxTime)
+            if (dragonDeathTimer_ > maxTime)
             {
                 // カメラをもとに戻す
                 GetTransform()->SetRotation({ 0, 0, 0 });
@@ -863,6 +939,163 @@ const bool Camera::UpdateDragonDeathCamera(const float& elapsedTime)
     return true;
 }
 
+#pragma region ---------- カウンターカメラ ----------
+// ----- カウンターカメラ -----
+void Camera::UpdateCounterCamera(const float& elapsedTime)
+{
+    // カウンターカメラを使用しない
+    if (isCounterCameraActive_ == false) return;
+
+    lerpWeight_ = counterLerpWegiht_;
+
+    switch (counterState_)
+    {
+    case 0:// 初期化
+#pragma region ---------- 初期化 ----------
+        easingTimer_ = 0.0f;
+
+        oldRotate_ = GetTransform()->GetRotation();
+
+        counterState_ = 1;
+#pragma endregion ---------- 初期化 ----------
+        break;
+    case 1:// カメラを引く
+#pragma region ---------- カメラを引く ----------
+    {
+        easingTimer_ += elapsedTime;
+        easingTimer_ = min(easingTimer_, counterTime_);
+
+        const float minRotationX = DirectX::XMConvertToRadians(counterMinRotationX_);
+        if (oldRotate_.x < minRotationX)
+        {
+            const float rotationX = Easing::InSine(easingTimer_, counterTime_, minRotationX, oldRotate_.x);
+            GetTransform()->SetRotationX(rotationX);
+        }
+
+        length_ = Easing::InSine(easingTimer_, counterTime_, counterLength_, gameCameraLength_);
+
+        if (easingTimer_ == counterTime_)
+        {
+            minRotationX_ = DirectX::XMConvertToRadians(counterMinRotationX_);
+            counterState_ = 2;
+        }
+    }
+#pragma endregion ---------- カメラを引く ----------
+        break;
+    case 2:// 待機
+#pragma region ---------- 待機 ----------
+        if (PlayerManager::Instance().GetPlayer()->GetCurrentState() != Player::STATE::Counter)
+        {
+            easingTimer_ = 0.0f;
+            counterState_ = 3;
+        }
+#pragma endregion ---------- 待機 ----------
+        break;
+    case 3:// カメラを戻す
+#pragma region ---------- カメラを戻す ----------
+        easingTimer_ += elapsedTime;
+        easingTimer_ = min(easingTimer_, counterReturnTime_);
+
+        length_ = Easing::InSine(easingTimer_, counterReturnTime_, gameCameraLength_, counterLength_);
+
+        if (easingTimer_ == counterReturnTime_)
+        {
+            minRotationX_ = gameCameraMinRotationX_;
+            easingTimer_ = 0.0f;
+            counterState_ = 0;
+            isCounterCameraActive_ = false;
+        }
+#pragma endregion ---------- カメラを戻す ----------
+        break;
+    }
+}
+
+// ----- カウンター攻撃カメラ -----
+void Camera::UpdateCounterAttackCamera(const float& elapsedTime)
+{
+    // カウンター攻撃カメラを使用しない
+    if (isCounterAttackCameraActive_ == false) return;
+
+    lerpWeight_ = counterAttackLerpWeight_;
+
+    switch (counterState_)
+    {
+    case 0:// 初期化
+#pragma region ---------- 初期化 ----------
+        easingTimer_ = 0.0f;
+
+        oldLength_ = length_;
+
+        counterState_ = 1;
+#pragma endregion ---------- 初期化 ----------
+        break;
+    case 1:
+#pragma region ---------- カメラを寄せる ----------
+        lerpWeight_ = gameCameraLerpWeight_ * 0.5f;
+        
+        easingTimer_ += elapsedTime;
+        easingTimer_ = min(easingTimer_, counterAttackZoomTime_);
+
+        length_ = Easing::InSine(easingTimer_, counterAttackZoomTime_, counterAttackZoomLength_, oldLength_);
+        
+        if (easingTimer_ == counterAttackZoomTime_)
+        {
+            oldLength_ = length_;
+            easingTimer_ = 0.0f;
+            counterState_ = 2;
+        }
+
+#pragma endregion ---------- カメラを寄せる ----------
+        break;
+    case 2:
+        lerpWeight_ = gameCameraLerpWeight_ * 0.5f;
+
+        easingTimer_ += elapsedTime;
+        easingTimer_ = min(easingTimer_, counterAttackSlowTime_);
+
+        length_ = Easing::InSine(easingTimer_, counterAttackSlowTime_, counterAttackSlowLength_, oldLength_);
+
+        if (easingTimer_ == counterAttackSlowTime_)
+        {
+            oldLength_ = length_;
+            easingTimer_ = 0.0f;
+            counterState_ = 3;
+        }
+
+        break;
+    case 3:
+#pragma region ---------- カメラを引く ----------
+        easingTimer_ += elapsedTime;
+        easingTimer_ = min(easingTimer_, counterAttackTime_);
+
+        length_ = Easing::InSine(easingTimer_, counterAttackTime_, counterAttackLength_, oldLength_);
+
+        if (easingTimer_ == counterAttackTime_)
+        {
+            counterState_ = 4;
+        }
+#pragma endregion ---------- カメラを引く ----------
+        break;
+    case 4:
+#pragma region ---------- ----------
+    {
+
+        const float animationSeconds = PlayerManager::Instance().GetPlayer()->GetAnimationSeconds();
+
+        if (animationSeconds > 1.6f)
+        {
+            lerpWeight_ = gameCameraLerpWeight_ * gameCameraLerpWeightReturnSpeed_;
+            isCounterAttackCameraActive_ = false;
+        }
+    }
+#pragma endregion ---------- ----------
+        break;
+    }
+}
+
+#pragma endregion ---------- カウンターカメラ ----------
+
+#if 0
 // ----- カウンター攻撃時のカメラ更新 -----
 const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
 {
@@ -1102,3 +1335,4 @@ const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
 
     return true;
 }
+#endif

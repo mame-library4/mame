@@ -437,8 +437,21 @@ namespace PlayerState
         void DrawDebug()                        override;
 
     private:
+        void UpdateAnimationSpeed();
+
+    private:
         AddForceData        addForceData_;
         AttackData          attackData_;
+
+        // ----- CameraVibration -----
+        float cameraVibrationFrame_     = 0.6f;
+        float cameraVibrationVolume_    = 0.08f;
+        float cameraVibrationTime_      = 0.6f;
+        bool isPlayCameraVibration_     = false;
+
+        // ----- Slow -----
+        float slowEndFrame_       = 0.5f;
+        float slowAnimationSpeed_ = 0.7f;
 
         float currentAnimationFrame_ = 0.0f;
 
