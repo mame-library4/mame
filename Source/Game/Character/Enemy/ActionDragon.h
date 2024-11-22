@@ -116,12 +116,43 @@ namespace ActionDragon
         void Finalize();        // 終了化
         void PlayAnimation();   // アニメーション再生
 
+        void UpdateRadialBlur(const float& elapsedTime);
+
     private:
         float blendStartFrame_ = 0.12f;
 
         // ----- Transition -----
         float transition_ = 0.25f;
 
+
+        float roarStartFrame_   = 0.8f;
+        float roarEndFrame_     = 2.5f;
+
+        // ----- CameraVibration -----
+        float cameraVibrationPower_ = 0.05f;
+        float cameraVibrationTime_  = 3.0f;
+
+        // ----- GamePadVibration -----
+        float gamePadVibrationPower_ = 0.5f;
+        bool isPlayVibration_ = false;
+
+        // ----- RadialBlur -----
+        float radialBlurTimer_          = 0.0f;
+        float radialBlurSpeed_          = 0.5f;
+        float radialBlurMaxStrength_    = 0.2f;// ブラー強度
+        float intenseBlurStrength_      = 0.8; // ブラーの最強度
+        float intenseBlurFrame_         = 0.1f;
+        float intenseBlurFrameCount_    = 0.0f;
+        float oldRadialBlurStrength_    = 0.0f;  // ブラーの強度補間用
+        float oldRadialBlurRatio_       = 0.05f; // ブラーの強度補間用
+
+        Effekseer::Handle roarEffectHandle_ = {};
+        float roarEffectScale_ = 7.0f;
+        float roarEffectSpeed_ = 2.0f;
+        bool isPlayRoarEffect_ = false;
+
+        float effectDeleteTimer_ = 0.0f;
+        float effectDeleteSpeed_ = 1.0f;
 
     };
 

@@ -182,13 +182,6 @@ namespace PlayerState
         const float animationSeconds = owner_->GetAnimationSeconds();
 
 #pragma region ----- 先行入力受付 -----
-        // 回避先行入力受付
-        if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
-            animationSeconds <= owner_->GetDodgeInputEndFrame())
-        {
-            if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
-        }
-
         // 攻撃先行入力受付
         if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
             animationSeconds <= owner_->GetAttackInputEndFrame())
@@ -201,6 +194,13 @@ namespace PlayerState
             animationSeconds <= owner_->GetCounterInputEndFrame())
         {
             if (owner_->IsCounterStanceKey()) owner_->SetNextInput(Player::NextInput::Counter);
+        }
+
+        // 回避先行入力受付
+        if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
+            animationSeconds <= owner_->GetDodgeInputEndFrame())
+        {
+            if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
         }
 
 #pragma endregion ----- 先行入力受付 -----
@@ -376,17 +376,25 @@ namespace PlayerState
         const float animationSeconds = owner_->GetAnimationSeconds();
 
 #pragma region ----- 先行入力受付 -----
-        // 回避先行入力受付
-        if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
-            animationSeconds <= owner_->GetDodgeInputEndFrame())
-        {
-            if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
-        }
         // 攻撃先行入力受付
         if (animationSeconds >= owner_->GetAttackInputStartFrame() &&
             animationSeconds <= owner_->GetAttackInputEndFrame())
         {
             if (owner_->IsComboAttack0KeyDown()) owner_->SetNextInput(Player::NextInput::ComboAttack0);
+        }
+
+        // カウンター先行入力受付
+        if (animationSeconds >= owner_->GetCounterInputStartFrame() &&
+            animationSeconds <= owner_->GetCounterInputEndFrame())
+        {
+            if (owner_->IsCounterStanceKey()) owner_->SetNextInput(Player::NextInput::Counter);
+        }
+
+        // 回避先行入力受付
+        if (animationSeconds >= owner_->GetDodgeInputStartFrame() &&
+            animationSeconds <= owner_->GetDodgeInputEndFrame())
+        {
+            if (owner_->IsDodgeKeyDown()) owner_->SetNextInput(Player::NextInput::Dodge);
         }
 
 #pragma endregion ----- 先行入力受付 -----
@@ -410,7 +418,15 @@ namespace PlayerState
                 if (owner_->GetIsDash()) owner_->ChangeState(Player::STATE::RunAttack);
                 // 通常の走りの場合はコンボ攻撃０に遷移する
                 else owner_->ChangeState(Player::STATE::ComboAttack0_0);
-
+                return true;
+            }
+        }
+        // カウンター遷移チェック
+        else if (owner_->GetNextInput() == Player::NextInput::Counter)
+        {
+            if (animationSeconds >= owner_->GetCounterTransitionFrame())
+            {
+                owner_->ChangeState(Player::STATE::Counter);
                 return true;
             }
         }
@@ -889,14 +905,16 @@ namespace PlayerState
         case 0:
             if (owner_->IsPlayAnimation() == false)
             {
-                owner_->PlayAnimation(Player::Animation::DownLoop, true);
+                owner_->PlayAnimation(Player::Animation::DownLoop, false);
                 state_ = 1;
             }
 
             break;
         case 1:
             
-            if (EnemyManager::Instance().GetEnemy(0)->GetActiveNodeName() != "Roar")
+
+            if(owner_->IsPlayAnimation() == false)
+            //if (EnemyManager::Instance().GetEnemy(0)->GetActiveNodeName() != "Roar")
             {
                 owner_->PlayBlendAnimation(Player::Animation::DownEnd, false);
                 state_ = 2;
@@ -2513,7 +2531,7 @@ namespace PlayerState
         }
 
         // カウンター成功
-        //if (owner_->GetIsAbleCounterAttack())
+        if (owner_->GetIsAbleCounterAttack())
         {
             if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER)
             {
@@ -2559,18 +2577,27 @@ namespace PlayerState
     void CounterState::SetAnimation()
     {
         const Player::STATE oldState = owner_->GetOldState();
-        if (oldState == Player::STATE::ComboAttack0_0 ||
-            oldState == Player::STATE::ComboAttack0_1 ||
-            oldState == Player::STATE::ComboAttack0_2 ||
-            oldState == Player::STATE::RunAttack)
+        float transitionTime = 0.1f;
+
+        if (oldState == Player::STATE::ComboAttack0_0 || oldState == Player::STATE::ComboAttack0_1 ||
+            oldState == Player::STATE::ComboAttack0_2 || oldState == Player::STATE::RunAttack)
         {
             owner_->PlayBlendAnimation(Player::Animation::Counter, false, 1.0f, 0.15f);
             owner_->SetTransitionTime(0.1f);
             return;
         }
 
-        owner_->PlayBlendAnimation(Player::Animation::Counter, false, 1.0f);
-        owner_->SetTransitionTime(0.1f);
+        if (oldState == Player::STATE::Idle)
+        {
+            transitionTime = transitionIdle_;
+        }
+        else if (oldState == Player::STATE::Run)
+        {
+            transitionTime = transitionRun_;
+        }
+
+        owner_->PlayBlendAnimation(Player::Animation::Counter, false, 1.0f, 0.15f);
+        owner_->SetTransitionTime(transitionTime);
     }
 
     // ----- 移動処理 -----

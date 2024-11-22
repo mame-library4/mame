@@ -393,8 +393,9 @@ void Camera::DrawDebug()
 // ----- タイトル用カメラ設定 -----
 void Camera::SetTitleCamera()
 {
-    //GetTransform()->SetRotationX(DirectX::XMConvertToRadians(16.0f));
-    GetTransform()->SetRotationY(DirectX::XMConvertToRadians(180.0f));
+    GetTransform()->SetRotation(titleCameraRotation_);
+    offset_ = titleCameraOffset_;
+    length_ = titleCameraLength_;
 
     target_ = {};
 }

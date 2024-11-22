@@ -397,6 +397,10 @@ namespace PlayerState
 
         GamePadVibration gamePadVibration_;
 
+        // ----- Transition -----
+        float transitionIdle_   = 0.1f;
+        float transitionRun_    = 0.1f;
+
         bool isNextInput_ = false; // カウンター攻撃の先行入力用
 
         bool isCounterReaction = false; // カウンターが成功したときの演出

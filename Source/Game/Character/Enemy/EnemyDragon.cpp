@@ -296,7 +296,7 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Down", "NormalDown", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::DownAction(this));
     
     // --------------- UŒ‚ ---------------
-#if 1
+#if 0
     behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
 
     behaviorTree_->AddNode("Attack", "PowerAttack",  0, BehaviorTree::SelectRule::Priority, new ActionDragon::PowerAttackJudgment(this), nullptr);
@@ -627,7 +627,10 @@ void EnemyDragon::RegisterCollisionData()
     RegisterAttackDetectionData({ "TackleAttack_1",  2.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_spine0" });    // 13
 
     // ----- ‘å‹Z(SuperNova) -----
-    RegisterAttackDetectionData({ "SuperNova_0",  13.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_spine2" });    // 14
+    RegisterAttackDetectionData({ "SuperNova_0",  13.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_spine2" });    // 14 
+
+    // ----- ™ôšK -----
+    RegisterAttackDetectionData({ "Roar_0",  20.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_spine2" });    // 14 
 
     // ----- ’@‚«•t‚¯ƒRƒ“ƒ{UŒ‚ -----
 
@@ -744,6 +747,7 @@ void EnemyDragon::SetAttackActiveFlag(const AttackAction& type, const bool& flag
         { static_cast<int>(AttackData::GuardAttackStart),  static_cast<int>(AttackData::GuardAttackEnd) },
         { static_cast<int>(AttackData::TackleAttackStart), static_cast<int>(AttackData::TackleAttackEnd) },
         { static_cast<int>(AttackData::SuperNovaStart),    static_cast<int>(AttackData::SuperNovaEnd) },
+        { static_cast<int>(AttackData::RoarStart),         static_cast<int>(AttackData::RoarEnd) },
     };
     const int start = dataList[static_cast<int>(type)][0];
     const int end = dataList[static_cast<int>(type)][1];

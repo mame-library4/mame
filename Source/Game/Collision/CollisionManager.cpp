@@ -255,15 +255,55 @@ void CollisionManager::UpdatePlayerDamageVsEnemyAttack()
     if (EnemyManager::Instance().GetEnemy(0)->GetIsAttackActive() == false) return;
 
     Player* player = PlayerManager::Instance().GetPlayer().get();
+    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
+
+    if (player->GetIsGuardCounterSuccessful()) return;
+
+    // ========================================
+    //                怯み判定
+    // ========================================  
+    if (enemy->GetCurrentAttackAction() == Enemy::AttackAction::Roar)
+    {
+        // 既にプレイヤーが怯んでいる
+        if (player->GetCurrentState() == Player::STATE::Flinch) return;
+
+        for (int playerDataIndex = 0; playerDataIndex < player->GetDamageDetectionDataCount(); ++playerDataIndex)
+        {
+            const DamageDetectionData playerData = player->GetDamageDetectionData(playerDataIndex);
+            
+            for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetAttackDetectionDataCount(); ++enemyDataIndex)
+            {
+                const AttackDetectionData enemyData = enemy->GetAttackDetectionData(enemyDataIndex);
+                // このデータは攻撃判定が有効ではない
+                if (enemyData.GetIsActive() == false) continue;
+
+                // 当たったか判定
+                if (IntersectSphereVsSphere(
+                    playerData.GetPosition(), playerData.GetRadius(),
+                    enemyData.GetPosition(), enemyData.GetRadius()))
+                {
+                    // 怯みステートに遷移
+                    player->ChangeState(Player::STATE::Flinch);
+
+                    // 当たったので終了
+                    return;
+                }
+            }
+        }
+
+        // 怯み判定なのでこの後のダメージ判定を行わない
+        return;
+    }
+
+    // ========================================
+    //              ダメージ判定
+    // ========================================
 
     // 現在無敵状態なので判定を行わない
     if (player->GetIsInvincible()) return;
 
     // カウンターが成功したのでダメージをくらわない
     if (player->GetIsAbleCounterAttack()) return;
-    if (player->GetIsGuardCounterSuccessful()) return;
-
-    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
 
     // くらい判定 (吹き飛ばしなし)
     {
@@ -275,7 +315,6 @@ void CollisionManager::UpdatePlayerDamageVsEnemyAttack()
             player->AddDamage(enemy->GetSuperNovaDamage());
         }
     }
-
 
     // くらい判定 (吹っ飛ばされる怯み)
     for (int playerDataIndex = 0; playerDataIndex < player->GetDamageDetectionDataCount(); ++playerDataIndex)
@@ -306,8 +345,11 @@ void CollisionManager::UpdatePlayerDamageVsEnemyAttack()
                 player->AddDamage(damage);
 
                 // コントローラー振動 (ダメージ受けたリアクションとして)
-                Input::Instance().GetGamePad().Vibration(0.2f, 1.0f);
-
+                if (enemy->GetCurrentAttackAction() != Enemy::AttackAction::SuperNova)
+                {
+                    Input::Instance().GetGamePad().Vibration(0.2f, 1.0f);
+                }
+                
                 // HPがまだあるのでDamageStateに遷移
                 if (player->GetHealth() > 0.0f)
                 {

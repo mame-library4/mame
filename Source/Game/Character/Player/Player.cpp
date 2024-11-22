@@ -612,8 +612,17 @@ const bool Player::IsDodgeKeyDown() const
 // ----- カウンター受付入力判定 -----
 const bool Player::IsCounterStanceKey() const
 {
-    if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B && Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_TRIGGER) return true;
-    if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_B && Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER) return true;
+    GamePad& gamePad = Input::Instance().GetGamePad();
+
+    if (gamePad.GetButton() & GamePad::BTN_RIGHT_TRIGGER)
+    {
+        if (gamePad.GetButtonDown() & GamePad::BTN_B) return true;
+    }
+    if (gamePad.GetButton() & GamePad::BTN_B)
+    {
+        if (gamePad.GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER) return true;
+    }
+    if ((gamePad.GetButton() & GamePad::BTN_RIGHT_TRIGGER) && (gamePad.GetButton() & GamePad::BTN_B)) return true;
 
     return false;
 }

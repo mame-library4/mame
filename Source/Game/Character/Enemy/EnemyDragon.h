@@ -49,8 +49,8 @@ private:
     //bool isDamageSphere_    = true;
     bool isDamageSphere_    = false;
 
-    bool isUpdateAnimation_ = false;
-    //bool isUpdateAnimation_ = true;
+    //bool isUpdateAnimation_ = false;
+    bool isUpdateAnimation_ = true;
     
 
     float oldHealth_ = 0.0f;
@@ -79,6 +79,9 @@ public:
         TackleAttackEnd         = 13,
         SuperNovaStart          = 14,
         SuperNovaEnd            = 14,
+
+        RoarStart = 15,
+        RoarEnd   = 15,
 
         //FlyAttackStart          = 14,
         //FlyAttackEnd            = 15,

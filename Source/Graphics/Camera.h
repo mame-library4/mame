@@ -187,6 +187,11 @@ private:
     DirectX::XMFLOAT3   oldRotate_      = {};
     float               oldLength_      = 0.0f;
 
+    // ---------- タイトルカメラ用 ----------
+    DirectX::XMFLOAT3   titleCameraOffset_      = DirectX::XMFLOAT3(0.0f, 1.5f, 0.0f);
+    DirectX::XMFLOAT3   titleCameraRotation_    = DirectX::XMFLOAT3(DirectX::XMConvertToRadians(-10.0f), DirectX::XMConvertToRadians(180.0f), 0.0f);
+    float               titleCameraLength_      = 4.5f;
+
     // ---------- ゲームカメラ用 ----------
     DirectX::XMFLOAT3   gameCameraOffset_       = DirectX::XMFLOAT3(0.0f, 1.6f, 0.0f);
     float               gameCameraLength_       = 4.5f;

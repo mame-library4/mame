@@ -222,7 +222,7 @@ void Application::Render()
     IMGUI_CTRL_DISPLAY();
 
     // --- 実行 ---
-    UINT syncInterval = 0;
+    UINT syncInterval = 1;
     graphics_.GetSwapChain()->Present(syncInterval, 0);
 }
 

@@ -417,12 +417,66 @@ namespace ActionDragon
             // アニメーション再生
             PlayAnimation();
 
+            // 現在の攻撃アクションを設定する
+            owner_->SetCurrentAttackAction(Enemy::AttackAction::Roar);
+
+            PostProcess::Instance().SetUseRadialBlur(true);
+            PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 5;
+            PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = 0.0f;
+
+            // 変数初期化
+            isPlayVibration_ = false;
+            isPlayRoarEffect_ = false;
+            radialBlurTimer_    = 0.0f;
+            effectDeleteTimer_ = 0.0f;
+            intenseBlurFrameCount_ = 0.0f;
+
             owner_->SetStep(1);
 
             break;
         case 1:
+
+            // 攻撃(怯み)判定処理
+            if(owner_->GetAnimationSeconds() > 0.9f)owner_->SetAttackActiveFlag(Enemy::AttackAction::Roar, false);
+            else if(owner_->GetAnimationSeconds() > 0.8f) owner_->SetAttackActiveFlag(Enemy::AttackAction::Roar, true);
+            
+            // ラジアルブラー更新
+            UpdateRadialBlur(elapsedTime);           
+
+            // コントローラー振動 & カメラシェイク
+            if (owner_->GetAnimationSeconds() > roarStartFrame_ && isPlayVibration_ == false)
+            {
+                Input::Instance().GetGamePad().Vibration(roarEndFrame_ - roarStartFrame_, gamePadVibrationPower_);
+                Camera::Instance().ScreenVibrate(cameraVibrationPower_, cameraVibrationTime_);
+
+                isPlayVibration_ = true;
+            }
+
+
+
+            if (owner_->GetAnimationSeconds() > 0.8f && isPlayRoarEffect_ == false)
+            {
+                DirectX::XMFLOAT3 position = owner_->GetJointPosition("Dragon15_spine2");
+                roarEffectHandle_ = EffectManager::Instance().GetEffect("Roar")->Play(position, roarEffectScale_, roarEffectSpeed_);
+
+                isPlayRoarEffect_ = true;
+            }
+            if (owner_->GetAnimationSeconds() > 2.5f)
+            {
+                DirectX::XMFLOAT3 position = owner_->GetJointPosition("Dragon15_spine2");
+                EffectManager::Instance().GetEffect("Roar")->SetPosition(roarEffectHandle_, position);
+
+                effectDeleteTimer_ += effectDeleteSpeed_ * elapsedTime;
+                effectDeleteTimer_ = std::min(effectDeleteTimer_, 1.0f);
+                const float scale = XMFloatLerp(roarEffectScale_, 0.0f, effectDeleteTimer_);
+                EffectManager::Instance().GetEffect("Roar")->SetScale(roarEffectHandle_, scale);
+            }
+
             if (owner_->IsPlayAnimation() == false)
             {
+                EffectManager::Instance().GetEffect("Roar")->Stop(roarEffectHandle_);
+
+
                 Finalize();
                 return ActionBase::State::Complete;
             }
@@ -440,6 +494,40 @@ namespace ActionDragon
     {
         if (ImGui::TreeNodeEx("Roar", ImGuiTreeNodeFlags_Framed))
         {
+            if (ImGui::TreeNodeEx("---------- Vibration ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("CameraPower", &cameraVibrationPower_, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("CameraTime", &cameraVibrationTime_, 0.01f, 0.0f, 10.0f);
+                ImGui::DragFloat("GamePadPower", &gamePadVibrationPower_, 0.01f, 0.0f, 1.0f);
+
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNodeEx("---------- RadialBlur ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("IntenseBlurFrame", &intenseBlurFrame_, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("IntenseBlurFrameCount", &intenseBlurFrameCount_, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("IntenseBlurStrength", &intenseBlurStrength_, 0.01f, 0.0f, 2.0f);
+                ImGui::DragFloat("OldRadialBlurStrength", &oldRadialBlurStrength_, 0.01f, 0.0f, 2.0f);
+                ImGui::DragFloat("OldRadialBlurRatio", &oldRadialBlurRatio_, 0.01f, 0.0f, 2.0f);
+                ImGui::DragFloat("Timer", &radialBlurTimer_);
+                ImGui::DragFloat("Speed", &radialBlurSpeed_, 0.01f, 0.0f, 10.0f);
+                ImGui::DragFloat("MaxStrength", &radialBlurMaxStrength_, 0.01f, 0.0f, 2.0f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- Effect ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("Scale", &roarEffectScale_, 0.01f, 0.0f, 10.0f);
+                ImGui::DragFloat("Speed", &roarEffectSpeed_, 0.01f, 0.0f, 10.0f);
+                ImGui::DragFloat("DeleteTimer", &effectDeleteTimer_);
+                ImGui::DragFloat("DeleteSpeed", &effectDeleteSpeed_, 0.01f, 0.0f, 10.0f);
+
+                ImGui::TreePop();
+            }
+
+
+
             ImGui::DragFloat("BlendStartFrame", &blendStartFrame_, 0.01f, 0.0f, 4.0f);
             ImGui::DragFloat("Transition", &transition_, 0.01f, 0.0f, 1.0f);
 
@@ -458,6 +546,47 @@ namespace ActionDragon
     {
         owner_->PlayBlendAnimation(Enemy::DragonAnimation::ComboRoarEnd1, false, 1.0f, blendStartFrame_);
         owner_->SetTransitionTime(transition_);
+    }
+
+    // ----- ラジアルブラー更新 -----
+    void RoarAction::UpdateRadialBlur(const float& elapsedTime)
+    {
+        if (owner_->GetAnimationSeconds() < roarStartFrame_) return;
+
+        DirectX::XMFLOAT3 position = owner_->GetJointPosition("Dragon15_spine2");
+        DirectX::XMFLOAT2 center = Sprite::ConvertToScreenPos(position);
+        center.x /= SCREEN_WIDTH;
+        center.y /= SCREEN_HEIGHT;
+        // 中心点を 0.0 ~ 1.0 の間に収める
+        center.x = std::clamp(center.x, 0.0f, 1.0f);
+        center.y = std::clamp(center.y, 0.0f, 1.0f);
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->uvOffset_ = center;
+
+        // ブラー強度
+        // 始まりの数フレーム間最強度のブラーをかける
+        if (intenseBlurFrameCount_ < intenseBlurFrame_)
+        {
+            PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = intenseBlurStrength_;
+            intenseBlurFrameCount_ += elapsedTime;
+
+            oldRadialBlurStrength_ = intenseBlurStrength_;
+            return;
+        }
+
+        // 強度補間
+        float strength = 0.0f;
+        if (oldRadialBlurStrength_ > radialBlurMaxStrength_)
+        {
+            strength = XMFloatLerp(oldRadialBlurStrength_, 0.0f, oldRadialBlurRatio_);
+            oldRadialBlurStrength_ = strength;
+        }
+        else
+        {
+            radialBlurTimer_ += radialBlurSpeed_ * elapsedTime;
+            radialBlurTimer_ = std::min(radialBlurTimer_, 1.0f);
+            strength = XMFloatLerp(radialBlurMaxStrength_, 0.0f, radialBlurTimer_);
+        }
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = strength;
     }
 }
 

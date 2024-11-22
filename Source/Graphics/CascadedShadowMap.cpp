@@ -94,8 +94,8 @@ void CascadedShadowMap::DrawDebug()
 {
     if (ImGui::TreeNode("CascadedShadowMaps"))
     {
-        ImGui::DragFloat("SplitSchemeWeight", &splitSchemeWeight_);
-        ImGui::DragFloat("ZMult", &zMult_);
+        ImGui::DragFloat("SplitSchemeWeight", &splitSchemeWeight_, 0.01f);
+        ImGui::DragFloat("ZMult", &zMult_, 0.01f);
         ImGui::Checkbox("fit_to_cascade", &fitToCascade_);
 
         ImGui::TreePop();

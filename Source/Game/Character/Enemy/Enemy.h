@@ -119,6 +119,7 @@ public:// ----- ’è” -----
         GuardAttack,
         TackleAttack,
         SuperNova,
+        Roar,
 
         //FireBreath,
 
