@@ -119,22 +119,26 @@ namespace ActionDragon
         void UpdateRadialBlur(const float& elapsedTime);
 
     private:
+        DirectX::XMFLOAT3 targetPosition_ = {};
+
         float blendStartFrame_ = 0.12f;
 
         // ----- Transition -----
+        float transitionTurn_ = 0.2f;
         float transition_ = 0.25f;
+
+        float turnStartFrame_ = 0.4f;
 
 
         float roarStartFrame_   = 0.8f;
         float roarEndFrame_     = 2.5f;
 
         // ----- CameraVibration -----
-        float cameraVibrationPower_ = 0.05f;
-        float cameraVibrationTime_  = 3.0f;
-
+        float   cameraVibrationPower_   = 0.05f;
+        float   cameraVibrationTime_    = 3.0f;
         // ----- GamePadVibration -----
-        float gamePadVibrationPower_ = 0.5f;
-        bool isPlayVibration_ = false;
+        float   gamePadVibrationPower_  = 0.5f;
+        bool    isPlayVibration_        = false;
 
         // ----- RadialBlur -----
         float radialBlurTimer_          = 0.0f;
@@ -146,14 +150,13 @@ namespace ActionDragon
         float oldRadialBlurStrength_    = 0.0f;  // ブラーの強度補間用
         float oldRadialBlurRatio_       = 0.05f; // ブラーの強度補間用
 
-        Effekseer::Handle roarEffectHandle_ = {};
-        float roarEffectScale_ = 7.0f;
-        float roarEffectSpeed_ = 2.0f;
-        bool isPlayRoarEffect_ = false;
-
-        float effectDeleteTimer_ = 0.0f;
-        float effectDeleteSpeed_ = 1.0f;
-
+        // ----- Effect -----
+        Effekseer::Handle   roarEffectHandle_   = {};
+        float               roarEffectScale_    = 7.0f;
+        float               roarEffectSpeed_    = 2.0f;
+        float               effectDeleteTimer_  = 0.0f;
+        float               effectDeleteSpeed_  = 1.0f;
+        bool                isPlayRoarEffect_   = false;
     };
 
 

@@ -53,7 +53,7 @@ public:// ----- ’è” -----
 
         FireBreathFront,
 
-        Meteor, // ƒƒeƒI
+        FrontRoar,
 
 
         // ----- ‚«”ò‚Î‚µUŒ‚ -----

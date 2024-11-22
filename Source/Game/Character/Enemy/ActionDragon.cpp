@@ -414,7 +414,7 @@ namespace ActionDragon
         switch (owner_->GetStep())
         {
         case 0:// 初期化
-            // アニメーション再生
+            // アニメーション再生 (回転する角度に応じて遷移するステートを決める)
             PlayAnimation();
 
             // 現在の攻撃アクションを設定する
@@ -431,10 +431,42 @@ namespace ActionDragon
             effectDeleteTimer_ = 0.0f;
             intenseBlurFrameCount_ = 0.0f;
 
-            owner_->SetStep(1);
+            owner_->SetUseRootMotion(false);
 
             break;
         case 1:
+            // ルートモーションを使用する
+            if (owner_->GetUseRootMotionMovement() == false && owner_->GetIsBlendAnimation() == false)
+            {
+                owner_->SetUseRootMotion(true);
+            }
+
+            if (owner_->GetAnimationSeconds() > turnStartFrame_)
+            {
+                owner_->Turn(elapsedTime, targetPosition_);
+            }
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                // ルートモーションの使用終了
+                owner_->SetUseRootMotion(false);
+
+                owner_->PlayBlendAnimation(Enemy::DragonAnimation::FrontRoar, false, 1.0f, blendStartFrame_);
+                owner_->SetTransitionTime(transition_);
+
+                owner_->SetStep(2);
+            }
+
+            break;
+        case 2:
+
+            // ルートモーションを使用する
+            if (owner_->GetUseRootMotionMovement() == false && owner_->GetIsBlendAnimation() == false)
+            {
+                owner_->SetUseRootMotion(true);
+            }
+
+            owner_->Turn(elapsedTime, targetPosition_);
 
             // 攻撃(怯み)判定処理
             if(owner_->GetAnimationSeconds() > 0.9f)owner_->SetAttackActiveFlag(Enemy::AttackAction::Roar, false);
@@ -476,13 +508,13 @@ namespace ActionDragon
             {
                 EffectManager::Instance().GetEffect("Roar")->Stop(roarEffectHandle_);
 
+                // ルートモーションの使用終了
+                owner_->SetUseRootMotion(false);
 
                 Finalize();
                 return ActionBase::State::Complete;
             }
 
-            break;
-        case 2:
             break;
         }
 
@@ -494,6 +526,10 @@ namespace ActionDragon
     {
         if (ImGui::TreeNodeEx("Roar", ImGuiTreeNodeFlags_Framed))
         {
+            ImGui::DragFloat("BlendStartFrame", &blendStartFrame_, 0.01f, 0.0f, 4.0f);
+            ImGui::DragFloat("TransitionTurn", &transitionTurn_, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat("Transition", &transition_, 0.01f, 0.0f, 1.0f);
+
             if (ImGui::TreeNodeEx("---------- Vibration ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::DragFloat("CameraPower", &cameraVibrationPower_, 0.01f, 0.0f, 1.0f);
@@ -526,11 +562,6 @@ namespace ActionDragon
                 ImGui::TreePop();
             }
 
-
-
-            ImGui::DragFloat("BlendStartFrame", &blendStartFrame_, 0.01f, 0.0f, 4.0f);
-            ImGui::DragFloat("Transition", &transition_, 0.01f, 0.0f, 1.0f);
-
             ImGui::TreePop();
         }
     }
@@ -544,8 +575,22 @@ namespace ActionDragon
     // ----- アニメーション再生 -----
     void RoarAction::PlayAnimation()
     {
-        owner_->PlayBlendAnimation(Enemy::DragonAnimation::ComboRoarEnd1, false, 1.0f, blendStartFrame_);
-        owner_->SetTransitionTime(transition_);
+        targetPosition_ = PlayerManager::Instance().GetTransform()->GetPosition();
+        DirectX::XMFLOAT3 vec = XMFloat3Normalize(targetPosition_ - owner_->GetTransform()->GetPosition());
+        DirectX::XMFLOAT3 forward = XMFloat3Normalize(owner_->GetTransform()->CalcForward());
+        float angle = acosf(std::clamp(XMFloat3Dot(vec, forward), -1.0f, 1.0f));
+        if (angle > DirectX::XM_PIDIV4) 
+        {
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::BackStep, false);
+            owner_->SetTransitionTime(transitionTurn_);
+            owner_->SetStep(1);
+        }
+        else
+        {
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::FrontRoar, false, 1.0f, blendStartFrame_);
+            owner_->SetTransitionTime(transition_);
+            owner_->SetStep(2);
+        }
     }
 
     // ----- ラジアルブラー更新 -----
@@ -2335,7 +2380,7 @@ namespace ActionDragon
     // ----- アニメーション再生 -----
     void MeteorAction::PlayAnimation()
     {
-        owner_->PlayBlendAnimation(Enemy::DragonAnimation::Meteor, false);
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::FrontRoar, false);
     }
 
     // ----- アニメーションの速度を調整 -----

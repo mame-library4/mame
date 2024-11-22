@@ -630,7 +630,7 @@ void EnemyDragon::RegisterCollisionData()
     RegisterAttackDetectionData({ "SuperNova_0",  13.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_spine2" });    // 14 
 
     // ----- ™ôšK -----
-    RegisterAttackDetectionData({ "Roar_0",  20.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_spine2" });    // 14 
+    RegisterAttackDetectionData({ "Roar_0",  0.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_spine2" });    // 14 
 
     // ----- ’@‚«•t‚¯ƒRƒ“ƒ{UŒ‚ -----
 
