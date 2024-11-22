@@ -500,6 +500,9 @@ void CollisionManager::CounterCheckEnemyAttack()
     // “G‚ÌUŒ‚”»’è‚ª–³Œø
     if (enemy->GetIsAttackActive() == false) return;
 
+    // ƒhƒ‰ƒSƒ“‚Ì™ôšK‚ÍƒJƒEƒ“ƒ^[‚Å‚«‚È‚¢
+    if (enemy->GetCurrentAttackAction() == Enemy::AttackAction::Roar) return;
+
     const float distance = enemy->CalcDistanceToPlayer();
     const float counterActiveRadius = player->GetCounterActiveRadius();
 

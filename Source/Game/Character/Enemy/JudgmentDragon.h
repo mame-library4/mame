@@ -49,9 +49,20 @@ namespace ActionDragon
         void DrawDebug() override;
 
     private:
-        int maxCount_ = 3;
+        int maxCount_ = 2;
         int counter_ = 0;
-        bool isSucceed_ = false;
+    };
+
+    class RoarJudgment : public JudgmentBase
+    {
+    public:
+        RoarJudgment(Enemy* owner) : JudgmentBase(owner) {}
+        const bool Judgment() override;
+        void DrawDebug() override;
+
+    private:
+        int maxCount_ = 2;
+        int counter_ = 0;
     };
 
     // ----- SuperNovaJudgment -----

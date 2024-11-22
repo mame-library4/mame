@@ -120,6 +120,7 @@ public:// ----- ’è” -----
         TackleAttack,
         SuperNova,
         Roar,
+        StompAttack,
 
         //FireBreath,
 

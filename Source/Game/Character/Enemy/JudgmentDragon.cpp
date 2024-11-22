@@ -81,6 +81,31 @@ namespace ActionDragon
     }
 }
 
+// ----- RoarJudgment -----
+namespace ActionDragon
+{
+    const bool RoarJudgment::Judgment()
+    {
+        ++counter_;
+
+        if (counter_ <= maxCount_) return false;
+        counter_ = 0;
+
+        return true;
+    }
+
+    void RoarJudgment::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx("RoarJudgment", ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::DragInt("MaxCount", &maxCount_);
+            ImGui::DragInt("Counter", &counter_);
+
+            ImGui::TreePop();
+        }
+    }
+}
+
 // ----- SuperNovaJudgment -----
 namespace ActionDragon
 {
@@ -211,11 +236,6 @@ const bool NonBattleIdleJudgment::Judgment()
     return false;
 }
 
-// ----- ™ôšK”»’è -----
-const bool RoarJudgment::Judgment()
-{
-    return true;
-}
 
 // ----- ‹©‚Ô”»’è -----
 const bool ShoutJudgment::Judgment()

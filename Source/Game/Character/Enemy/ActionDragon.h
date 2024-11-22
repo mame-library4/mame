@@ -128,21 +128,23 @@ namespace ActionDragon
         float transition_ = 0.25f;
 
         float turnStartFrame_ = 0.4f;
+        float turnAnimationEndFrame_ = 1.2f;
 
 
-        float roarStartFrame_   = 0.8f;
-        float roarEndFrame_     = 2.5f;
+        float roarStartFrame_   = 1.26f;
+        float roarEndFrame_     = 2.2f;
 
         // ----- CameraVibration -----
         float   cameraVibrationPower_   = 0.05f;
-        float   cameraVibrationTime_    = 3.0f;
+        float   cameraVibrationTime_    = 2.2f;
         // ----- GamePadVibration -----
-        float   gamePadVibrationPower_  = 0.5f;
+        float   gamePadVibrationPower_  = 1.0f;
+        float   gamePadVibrationTime_   = 1.25f;
         bool    isPlayVibration_        = false;
 
         // ----- RadialBlur -----
         float radialBlurTimer_          = 0.0f;
-        float radialBlurSpeed_          = 0.5f;
+        float radialBlurSpeed_          = 1.0f;
         float radialBlurMaxStrength_    = 0.2f;// ブラー強度
         float intenseBlurStrength_      = 0.8; // ブラーの最強度
         float intenseBlurFrame_         = 0.1f;
@@ -155,7 +157,7 @@ namespace ActionDragon
         float               roarEffectScale_    = 7.0f;
         float               roarEffectSpeed_    = 2.0f;
         float               effectDeleteTimer_  = 0.0f;
-        float               effectDeleteSpeed_  = 1.0f;
+        float               effectDeleteSpeed_  = 2.0f;
         bool                isPlayRoarEffect_   = false;
     };
 
@@ -384,6 +386,24 @@ namespace ActionDragon
         // ----- SE -----
         static const int maxFootSteps_ = 3;
         bool isPlayFootSteps_[maxFootSteps_] = {};
+    };
+
+    // ----- StompAttackAction -----
+    class StompAttackAction : public ActionBase
+    {
+    public:
+        StompAttackAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
+
+    private:
+        void PlayAnimation(); // アニメーション再生
+
+    private:
+        DirectX::XMFLOAT3 rootMotionValue_ = DirectX::XMFLOAT3(1.0f, 7.0f, 1.0f);
+
+        float attackStartFrame_ = 1.6f;
+        float attackEndFrame_   = 1.75f;
     };
 
     // ----- SuperNovaAction -----

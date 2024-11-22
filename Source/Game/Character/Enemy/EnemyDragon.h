@@ -79,9 +79,10 @@ public:
         TackleAttackEnd         = 13,
         SuperNovaStart          = 14,
         SuperNovaEnd            = 14,
-
-        RoarStart = 15,
-        RoarEnd   = 15,
+        RoarStart               = 15,
+        RoarEnd                 = 15,
+        StompAttackStart        = 16,
+        StompAttackEnd          = 20,
 
         //FlyAttackStart          = 14,
         //FlyAttackEnd            = 15,
@@ -114,6 +115,10 @@ public:
         TackleAttackEnd     = 13,
         SuperNovaStart      = 14,
         SuperNovaEnd        = 14,
+        RoarStart           = 15,
+        RoarEnd             = 15,
+        StompAttackStart    = 16,
+        StompAttackEnd      = 20,
     };
 };
 

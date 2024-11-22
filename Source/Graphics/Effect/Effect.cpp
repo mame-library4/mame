@@ -70,6 +70,14 @@ void Effect::SetSpeed(const Effekseer::Handle& handle, const float& speed)
     effekseerManager->SetSpeed(handle, speed);
 }
 
+void Effect::SetColor(const Effekseer::Handle& handle, const DirectX::XMFLOAT4& color)
+{
+    Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
+
+    Effekseer::Color c = Effekseer::Color(color.x * 255.0f, color.y * 255.0f, color.z * 255.0f, color.w * 255.0f);
+    effekseerManager->SetAllColor(handle, c);
+}
+
 void Effect::DrawDebug()
 {
     if (ImGui::TreeNode(name_.c_str()))

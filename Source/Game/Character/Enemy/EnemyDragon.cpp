@@ -316,9 +316,10 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("CloseRangeAttack", "Walk",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));
     behaviorTree_->AddNode("CloseRangeAttack", "TackleAttack", 0, BehaviorTree::SelectRule::None, new ActionDragon::TackleAttackJudgment(this), new ActionDragon::TackleAction(this));
     behaviorTree_->AddNode("CloseRangeAttack", "SuperNova",    0, BehaviorTree::SelectRule::None, new ActionDragon::SuperNovaJudgment(this), new ActionDragon::SuperNovaAction(this));
-
+    behaviorTree_->AddNode("CloseRangeAttack", "Roar",         0, BehaviorTree::SelectRule::None, new ActionDragon::RoarJudgment(this), new ActionDragon::RoarAction(this));
 #else
     behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    behaviorTree_->AddNode("Attack", "StompAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::StompAttackAction(this));
     behaviorTree_->AddNode("Attack", "Roar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
     behaviorTree_->AddNode("Attack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
     behaviorTree_->AddNode("Attack", "TackleAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
@@ -630,7 +631,15 @@ void EnemyDragon::RegisterCollisionData()
     RegisterAttackDetectionData({ "SuperNova_0",  13.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_spine2" });    // 14 
 
     // ----- ôÙöK -----
-    RegisterAttackDetectionData({ "Roar_0",  0.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_spine2" });    // 14 
+    RegisterAttackDetectionData({ "Roar_0",  20.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_spine2" });    // 15
+
+    // ----- ì•Ç›Ç¬ÇØ -----
+    RegisterAttackDetectionData({ "StompAttack_0",  1.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_l_hand" }); // 16
+    RegisterAttackDetectionData({ "StompAttack_1",  1.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_r_hand" });
+    RegisterAttackDetectionData({ "StompAttack_2",  2.5f, { 0.0f, 0.0f, 0.0f },   "Dragon15_spine2" });
+    RegisterAttackDetectionData({ "StompAttack_3",  1.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_l_foot" });
+    RegisterAttackDetectionData({ "StompAttack_4",  1.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_r_foot" }); // 20
+
 
     // ----- í@Ç´ïtÇØÉRÉìÉ{çUåÇ -----
 
@@ -661,6 +670,16 @@ void EnemyDragon::RegisterCollisionData()
 
     // ----- ëÂãZ(SuperNova) -----
     RegisterJustDodgeDetectionData({ "SuperNova_0",  15.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_spine2" }); // 14
+
+    // ----- ôÙöK (É_É~Å[) -----
+    RegisterJustDodgeDetectionData({ "Roar_0",  0.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_spine2" });    // 15
+
+    // ----- ì•Ç›Ç¬ÇØ -----
+    RegisterJustDodgeDetectionData({ "StompAttack_0",  1.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_l_hand" }); // 16
+    RegisterJustDodgeDetectionData({ "StompAttack_1",  1.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_r_hand" });
+    RegisterJustDodgeDetectionData({ "StompAttack_2",  2.5f, { 0.0f, 0.0f, 0.0f },   "Dragon15_spine2" });
+    RegisterJustDodgeDetectionData({ "StompAttack_3",  1.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_l_foot" });
+    RegisterJustDodgeDetectionData({ "StompAttack_4",  1.0f, { 0.0f, 0.0f, 0.0f },   "Dragon15_r_foot" }); // 20
 
 #pragma endregion ---------- ÉWÉÉÉXÉgâÒîîªíËìoò^ ----------
 }
@@ -748,6 +767,7 @@ void EnemyDragon::SetAttackActiveFlag(const AttackAction& type, const bool& flag
         { static_cast<int>(AttackData::TackleAttackStart), static_cast<int>(AttackData::TackleAttackEnd) },
         { static_cast<int>(AttackData::SuperNovaStart),    static_cast<int>(AttackData::SuperNovaEnd) },
         { static_cast<int>(AttackData::RoarStart),         static_cast<int>(AttackData::RoarEnd) },
+        { static_cast<int>(AttackData::StompAttackStart),  static_cast<int>(AttackData::StompAttackEnd) },
     };
     const int start = dataList[static_cast<int>(type)][0];
     const int end = dataList[static_cast<int>(type)][1];
@@ -780,6 +800,8 @@ void EnemyDragon::SetJustDodgeActiveFlag(const AttackAction& type, const bool& f
         { static_cast<int>(JustDodgeData::GuardAttackStart),  static_cast<int>(JustDodgeData::GuardAttackEnd) },
         { static_cast<int>(JustDodgeData::TackleAttackStart), static_cast<int>(JustDodgeData::TackleAttackEnd) },
         { static_cast<int>(JustDodgeData::SuperNovaStart),    static_cast<int>(JustDodgeData::SuperNovaEnd) },
+        { static_cast<int>(JustDodgeData::RoarStart),         static_cast<int>(JustDodgeData::RoarEnd) },
+        { static_cast<int>(JustDodgeData::StompAttackStart),  static_cast<int>(JustDodgeData::StompAttackEnd) },
     };
     const int start = dataList[static_cast<int>(type)][0];
     const int end = dataList[static_cast<int>(type)][1];

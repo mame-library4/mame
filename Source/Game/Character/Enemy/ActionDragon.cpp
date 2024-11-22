@@ -425,13 +425,11 @@ namespace ActionDragon
             PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = 0.0f;
 
             // 変数初期化
-            isPlayVibration_ = false;
-            isPlayRoarEffect_ = false;
+            isPlayVibration_    = false;
+            isPlayRoarEffect_   = false;
             radialBlurTimer_    = 0.0f;
-            effectDeleteTimer_ = 0.0f;
+            effectDeleteTimer_  = 0.0f;
             intenseBlurFrameCount_ = 0.0f;
-
-            owner_->SetUseRootMotion(false);
 
             break;
         case 1:
@@ -441,12 +439,15 @@ namespace ActionDragon
                 owner_->SetUseRootMotion(true);
             }
 
+            // 旋回処理
             if (owner_->GetAnimationSeconds() > turnStartFrame_)
             {
+                targetPosition_ = PlayerManager::Instance().GetTransform()->GetPosition();
                 owner_->Turn(elapsedTime, targetPosition_);
             }
 
-            if (owner_->IsPlayAnimation() == false)
+            //if (owner_->IsPlayAnimation() == false)
+            if(owner_->GetAnimationSeconds() > turnAnimationEndFrame_)
             {
                 // ルートモーションの使用終了
                 owner_->SetUseRootMotion(false);
@@ -466,11 +467,12 @@ namespace ActionDragon
                 owner_->SetUseRootMotion(true);
             }
 
-            owner_->Turn(elapsedTime, targetPosition_);
+            // 旋回処理
+            if(owner_->GetAnimationSeconds() > 0.3f) owner_->Turn(elapsedTime, targetPosition_);
 
             // 攻撃(怯み)判定処理
-            if(owner_->GetAnimationSeconds() > 0.9f)owner_->SetAttackActiveFlag(Enemy::AttackAction::Roar, false);
-            else if(owner_->GetAnimationSeconds() > 0.8f) owner_->SetAttackActiveFlag(Enemy::AttackAction::Roar, true);
+            if(owner_->GetAnimationSeconds() > roarStartFrame_ + 0.1f)owner_->SetAttackActiveFlag(Enemy::AttackAction::Roar, false);
+            else if(owner_->GetAnimationSeconds() > roarStartFrame_) owner_->SetAttackActiveFlag(Enemy::AttackAction::Roar, true);
             
             // ラジアルブラー更新
             UpdateRadialBlur(elapsedTime);           
@@ -478,30 +480,32 @@ namespace ActionDragon
             // コントローラー振動 & カメラシェイク
             if (owner_->GetAnimationSeconds() > roarStartFrame_ && isPlayVibration_ == false)
             {
-                Input::Instance().GetGamePad().Vibration(roarEndFrame_ - roarStartFrame_, gamePadVibrationPower_);
+                Input::Instance().GetGamePad().Vibration(gamePadVibrationTime_, gamePadVibrationPower_);
                 Camera::Instance().ScreenVibrate(cameraVibrationPower_, cameraVibrationTime_);
 
                 isPlayVibration_ = true;
             }
 
-
-
-            if (owner_->GetAnimationSeconds() > 0.8f && isPlayRoarEffect_ == false)
+            // エフェクト
+            if (owner_->GetAnimationSeconds() > roarStartFrame_)
             {
-                DirectX::XMFLOAT3 position = owner_->GetJointPosition("Dragon15_spine2");
-                roarEffectHandle_ = EffectManager::Instance().GetEffect("Roar")->Play(position, roarEffectScale_, roarEffectSpeed_);
+                DirectX::XMFLOAT3 position = owner_->GetJointPosition("Dragon15_tongue3");
 
-                isPlayRoarEffect_ = true;
-            }
-            if (owner_->GetAnimationSeconds() > 2.5f)
-            {
-                DirectX::XMFLOAT3 position = owner_->GetJointPosition("Dragon15_spine2");
+                if (isPlayRoarEffect_ == false)
+                {
+                    roarEffectHandle_ = EffectManager::Instance().GetEffect("Roar")->Play(position, roarEffectScale_, roarEffectSpeed_);
+                    isPlayRoarEffect_ = true;
+                }
+
                 EffectManager::Instance().GetEffect("Roar")->SetPosition(roarEffectHandle_, position);
-
+            }            
+            if (owner_->GetAnimationSeconds() > roarEndFrame_)
+            {
                 effectDeleteTimer_ += effectDeleteSpeed_ * elapsedTime;
-                effectDeleteTimer_ = std::min(effectDeleteTimer_, 1.0f);
-                const float scale = XMFloatLerp(roarEffectScale_, 0.0f, effectDeleteTimer_);
-                EffectManager::Instance().GetEffect("Roar")->SetScale(roarEffectHandle_, scale);
+                effectDeleteTimer_ = std::min(effectDeleteTimer_, 1.0f);                
+                DirectX::XMFLOAT4 color = { 1, 1, 1, 1 };
+                color.w = XMFloatLerp(1.0f, 0.0f, effectDeleteTimer_);
+                EffectManager::Instance().GetEffect("Roar")->SetColor(roarEffectHandle_, color);
             }
 
             if (owner_->IsPlayAnimation() == false)
@@ -526,6 +530,9 @@ namespace ActionDragon
     {
         if (ImGui::TreeNodeEx("Roar", ImGuiTreeNodeFlags_Framed))
         {
+            ImGui::DragFloat("StartFrame", &roarStartFrame_, 0.01f, 0.0f, 4.0f);
+            ImGui::DragFloat("EndFrame", &roarEndFrame_, 0.01f, 0.0f, 4.0f);
+            
             ImGui::DragFloat("BlendStartFrame", &blendStartFrame_, 0.01f, 0.0f, 4.0f);
             ImGui::DragFloat("TransitionTurn", &transitionTurn_, 0.01f, 0.0f, 1.0f);
             ImGui::DragFloat("Transition", &transition_, 0.01f, 0.0f, 1.0f);
@@ -591,6 +598,9 @@ namespace ActionDragon
             owner_->SetTransitionTime(transition_);
             owner_->SetStep(2);
         }
+
+        // ルートモーションを現時点では使用しない
+        owner_->SetUseRootMotion(false);
     }
 
     // ----- ラジアルブラー更新 -----
@@ -1870,6 +1880,85 @@ namespace ActionDragon
 
         float angle = Easing::InSine(easingTimer_, totalFrame, maxAngle, 0.0f);
         owner_->GetTransform()->SetRotationX(DirectX::XMConvertToRadians(angle));
+    }
+}
+
+// ----- StompAttackAction -----
+namespace ActionDragon
+{
+    const ActionBase::State StompAttackAction::Run(const float& elapsedTime)
+    {
+        switch (owner_->GetStep())
+        {
+        case 0:
+            // アニメーション再生
+            PlayAnimation();
+
+            // 現在の攻撃アクションを設定する
+            owner_->SetCurrentAttackAction(Enemy::AttackAction::StompAttack);
+
+            owner_->SetStep(1);
+
+            break;
+        case 1:
+
+            // 攻撃判定設定
+            if (owner_->GetAnimationSeconds() > attackEndFrame_)
+            {
+                if (owner_->GetIsAttackActive())
+                {
+                    owner_->SetAttackActiveFlag(Enemy::AttackAction::StompAttack, false);
+                }
+                owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::StompAttack, false);
+            }
+            else if (owner_->GetAnimationSeconds() > attackStartFrame_)
+            {
+                if (owner_->GetIsAttackActive() == false)
+                {
+                    owner_->SetAttackActiveFlag(Enemy::AttackAction::StompAttack, true);
+                    owner_->SetJustDodgeActiveFlag(Enemy::AttackAction::StompAttack, true);
+                }
+            }
+
+            if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+            {
+                owner_->SetUseRootMotion(true);
+                owner_->SetRootMotionValue(rootMotionValue_);
+            }
+
+            // アニメーション再生終了
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetUseRootMotion(false);
+
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+
+            break;
+        }
+
+        return ActionBase::State();
+    }
+
+    // ----- ImGui用 -----
+    void StompAttackAction::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx("Stomp", ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::DragFloat3("RootMotionValue", &rootMotionValue_.x, 0.01f, 0.0f, 10.0f);
+            ImGui::DragFloat("StartFrame", &attackStartFrame_, 0.01f, 0.0f, 4.0f);
+            ImGui::DragFloat("EndFrame", &attackEndFrame_, 0.01f, 0.0f, 4.0f);
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- アニメーション再生 -----
+    void StompAttackAction::PlayAnimation()
+    {
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::BackStepAttack, false);
+        owner_->SetTransitionTime(0.1f);
     }
 }
 
