@@ -391,27 +391,27 @@ namespace PlayerState
         void SetAnimationSpeed();
 
     private:
-        AddForceData        addForceFront_; // 前方向
-        AddForceData        addForceBack_;  // 後ろ方向
         AttackData          attackData_;
+        GamePadVibration    gamePadVibration_;
 
-        GamePadVibration gamePadVibration_;
+        bool isNextInput_ = false; // カウンター攻撃の先行入力用
 
         // ----- Transition -----
         float transitionIdle_   = 0.1f;
         float transitionRun_    = 0.1f;
 
-        bool isNextInput_ = false; // カウンター攻撃の先行入力用
+        // ----- Movement -----
+        AddForceData        addForceFront_; // 前方向
+        AddForceData        addForceBack_;  // 後ろ方向
+        DirectX::XMFLOAT2   addForceDirection_ = {};
 
-        bool isCounterReaction = false; // カウンターが成功したときの演出
-
+        // ----- Rotation -----
         bool isRotating_ = false;
-
-        DirectX::XMFLOAT2  addForceDirection_ = {};
 
         // ----- Counter -----
         float counterStartFrame_    = 0.1f;
         float counterEndFrame_      = 0.6f;
+        bool isCounterReaction      = false; // カウンターが成功したときの演出
 
         // ----- Effect用 -----
         Effekseer::Handle   mikiriEffectHandle_     = 0;
@@ -442,10 +442,13 @@ namespace PlayerState
 
     private:
         void UpdateAnimationSpeed();
+        void Turn(const float& elapsedTime); // 旋回処理
 
     private:
-        AddForceData        addForceData_;
         AttackData          attackData_;
+
+        // ----- Roation -----
+        float rotationEndFrame_ = 0.45f;
 
         // ----- CameraVibration -----
         float cameraVibrationFrame_     = 0.6f;
@@ -457,11 +460,12 @@ namespace PlayerState
         float slowEndFrame_       = 0.5f;
         float slowAnimationSpeed_ = 0.7f;
 
-        float currentAnimationFrame_ = 0.0f;
-
         // ----- SwordTrail -----
         float swordTrailStartFrame_ = 0.45f;
         float swordTrailEndFrame_   = 0.8f;
+
+        // ----- Debug用 -----
+        float currentAnimationFrame_ = 0.0f;
     };
 
     class RunAttackState : public State<Player>

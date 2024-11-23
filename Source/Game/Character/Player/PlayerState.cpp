@@ -2800,7 +2800,6 @@ namespace PlayerState
         UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(1500.0f, 700.0f);
 
         // 変数初期化
-        addForceData_.Initialize(0.35f, 0.3f, 1.0f);
         attackData_.Initialize(0.35f, 0.7f);
 
         isPlayCameraVibration_ = false;
@@ -2809,6 +2808,12 @@ namespace PlayerState
     // ----- 更新 -----
     void CounterComboState::Update(const float& elapsedTime)
     {
+        // デバッグ用に現在のアニメーションフレームを保存
+        currentAnimationFrame_ = owner_->GetAnimationSeconds();
+
+        // 旋回処理
+        Turn(elapsedTime);
+
         // アニメーション速度調整
         UpdateAnimationSpeed();
 
@@ -2819,8 +2824,6 @@ namespace PlayerState
 
             isPlayCameraVibration_ = true;
         }
-
-        currentAnimationFrame_ = owner_->GetAnimationSeconds();
 
         // RootMotionの設定
         if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
@@ -2910,6 +2913,52 @@ namespace PlayerState
         }
 
         owner_->SetAnimationSpeed(animationSpeed);
+    }
+
+    // ----- 旋回処理 -----
+    void CounterComboState::Turn(const float& elapsedTime)
+    {
+        // 旋回処理フレームを過ぎている
+        if (owner_->GetAnimationSeconds() > rotationEndFrame_) return;
+
+        const float aLX = Input::Instance().GetGamePad().GetAxisLX();
+        const float aLY = Input::Instance().GetGamePad().GetAxisLY();
+
+        DirectX::XMFLOAT2 direction = {};
+
+        // スティック入力がある時はその方向へ旋回
+        if (fabsf(aLX) > 0.0f || fabsf(aLY) > 0.0f)
+        {
+            direction = XMFloat2Normalize(Camera::Instance().ConvertTo2DVectorFromCamera(DirectX::XMFLOAT2(aLX, aLY)));
+        }
+        // 入力がない場合敵の方向へ旋回
+        else
+        {
+            const DirectX::XMFLOAT3 ownerPosition = owner_->GetTransform()->GetPosition();
+            const DirectX::XMFLOAT3 dragonPosition = EnemyManager::Instance().GetEnemy(0)->GetTransform()->GetPosition();
+            direction = XMFloat2Normalize(DirectX::XMFLOAT2(dragonPosition.x - ownerPosition.x, dragonPosition.z - ownerPosition.z));
+        }
+
+        DirectX::XMFLOAT2 ownerForward = XMFloat2Normalize({ owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z });
+
+        // 外積をしてどちらに回転するのかを判定する
+        float corss = XMFloat2Cross(direction, ownerForward);
+
+        // 内積で回転幅を算出
+        float angle = acosf(std::clamp(XMFloat2Dot(direction, ownerForward), -1.0f, 1.0f));
+        if (angle < DirectX::XMConvertToRadians(1)) return;
+
+        const float speed = owner_->GetRotateSpeed() * elapsedTime;
+        angle *= speed;
+
+        if (corss > 0)
+        {
+            owner_->GetTransform()->AddRotationY(-angle);
+        }
+        else
+        {
+            owner_->GetTransform()->AddRotationY(angle);
+        }
     }
 }
 
