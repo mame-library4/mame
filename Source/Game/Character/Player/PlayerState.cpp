@@ -2420,32 +2420,30 @@ namespace PlayerState
         addForceBack_.Initialize(0.16f, 0.2f, 0.5f);
         addForceFront_.Initialize(0.66f, 0.30f, 1.0f);
         gamePadVibration_.Initialize(0.3f, 0.4f, 1.0f);
-        //gamePadVibration_.Initialize(0.3f, 0.2f, 0.5f);
         attackData_.Initialize(0.75f, 1.0f);
 
         isNextInput_ = false;
 
         isCounterReaction = false;
 
-        isTurnChecked_ = false;
+
+        isRotating_ = false;
+
 
         const DirectX::XMFLOAT3 pos = owner_->GetJointPosition("spine_02");
         Effect* counterEffect = EffectManager::Instance().GetEffect("Mikiri");
-        //mikiriEffectHandle_ = counterEffect->Play(pos, 0.3f, 2.0f);
         mikiriEffectHandle_ = counterEffect->Play(pos, 0.05f, 2.0f);
     }
 
     // ----- 更新 -----
     void CounterState::Update(const float& elapsedTime)
     {
-        const float counterStartFrame = 0.1f;
-        const float counterEndFrame = 0.6f;
         // カウンター判定
-        if (owner_->GetAnimationSeconds() > counterEndFrame)
+        if (owner_->GetAnimationSeconds() > counterEndFrame_)
         {
             if (owner_->GetIsCounter()) owner_->SetIsCounter(false);
         }
-        else if (owner_->GetAnimationSeconds() > counterStartFrame)
+        else if (owner_->GetAnimationSeconds() > counterStartFrame_)
         {
             if (owner_->GetIsCounter() == false) owner_->SetIsCounter(true);
         }
@@ -2623,7 +2621,6 @@ namespace PlayerState
             //  左スティックの入力があればその方向に向くようにする
             //          何も入力がなければ後ろに下がる
             // --------------------------------------------------
-            DirectX::XMFLOAT3 addForceDirection = {};
 
             // 左スティックの入力があるか判定
             const float aLx = Input::Instance().GetGamePad().GetAxisLX();
@@ -2631,48 +2628,38 @@ namespace PlayerState
             if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
             {
                 // カメラから見た左スティックの傾きを適応した方向を算出する
-                const DirectX::XMFLOAT3 cameraForward = Camera::Instance().CalcForward();
-                const DirectX::XMFLOAT3 cameraRight = Camera::Instance().CalcRight();
-                addForceDirection =
-                {
-                    aLy * cameraForward.x + aLx * cameraRight.x,
-                    0,
-                    aLy * cameraForward.z + aLx * cameraRight.z
-                };
-                addForceDirection = XMFloat3Normalize(addForceDirection);
-                addForceDirection = addForceDirection * -1;
-
-                // 一気にスティックを反対方向に向けると、プレイヤーが違う方向を向くので修正
-                DirectX::XMFLOAT2 cameraForward_float2 = { -addForceDirection.x, -addForceDirection.z };
-                cameraForward_float2 = XMFloat2Normalize(cameraForward_float2);
+                DirectX::XMFLOAT2 direction = Camera::Instance().ConvertTo2DVectorFromCamera(DirectX::XMFLOAT2(aLx, aLy));
+                addForceDirection_ = XMFloat2Normalize(direction) * -1.0f;
 
                 DirectX::XMFLOAT2 ownerForward = { owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z };
                 ownerForward = XMFloat2Normalize(ownerForward);
 
                 // 外積をしてどちらに回転するのかを判定する
-                float forwardCross = XMFloat2Cross(cameraForward_float2, ownerForward);
+                float corss = XMFloat2Cross(direction, ownerForward);
 
                 // 内積で回転幅を算出
-                float forwardDot = XMFloat2Dot(cameraForward_float2, ownerForward) - 1.0f;
+                float angle = acosf(std::clamp(XMFloat2Dot(direction, ownerForward), -1.0f, 1.0f));
 
-                if (forwardCross > 0)
+                if (corss > 0)
                 {
-                    owner_->GetTransform()->AddRotationY(forwardDot);
+                    owner_->GetTransform()->AddRotationY(-angle);
                 }
                 else
                 {
-                    owner_->GetTransform()->AddRotationY(-forwardDot);
+                    owner_->GetTransform()->AddRotationY(angle);
                 }
             }
             // 左スティックの入力がない場合後ろ方向に引く
             else
             {
-                addForceDirection = owner_->GetTransform()->CalcForward() * -1.0f;
+                const DirectX::XMFLOAT3 ownerBack = owner_->GetTransform()->CalcForward() * -1.0f;
+
+                addForceDirection_ = DirectX::XMFLOAT2(ownerBack.x, ownerBack.z);
             }
 
-            mikiriEffectAddPosition_ = addForceDirection;
+            mikiriEffectAddPosition_ = DirectX::XMFLOAT3(addForceDirection_.x, 0.0f, addForceDirection_.y);
 
-            owner_->AddForce(addForceDirection, addForceBack_.GetForce(), addForceBack_.GetDecelerationForce());
+            owner_->AddForce(DirectX::XMFLOAT3(addForceDirection_.x, 0.0f, addForceDirection_.y), addForceBack_.GetForce(), addForceBack_.GetDecelerationForce());
         }
 #pragma endregion ---------- 後ろ方向に進む ----------
 
@@ -2684,7 +2671,6 @@ namespace PlayerState
             //  左スティックの入力があればその方向に向くようにする
             //          何も入力がなければそのまま前に進む
             // --------------------------------------------------
-            DirectX::XMFLOAT3 addForceDirection = {};
 
             // 左スティックの入力があるか判定
             const float aLx = Input::Instance().GetGamePad().GetAxisLX();
@@ -2692,18 +2678,8 @@ namespace PlayerState
             if (fabsf(aLx) > 0.0f || fabsf(aLy) > 0.0f)
             {
                 // カメラから見た左スティックの傾きを適応した方向を算出する
-                const DirectX::XMFLOAT3 cameraForward = Camera::Instance().CalcForward();
-                const DirectX::XMFLOAT3 cameraRight = Camera::Instance().CalcRight();
-                addForceDirection =
-                {
-                    aLy * cameraForward.x + aLx * cameraRight.x,
-                    0,
-                    aLy * cameraForward.z + aLx * cameraRight.z
-                };
-                addForceDirection = XMFloat3Normalize(addForceDirection);
-
-                addForceDirection_ = { addForceDirection.x, addForceDirection.z };
-                addForceDirection_ = XMFloat2Normalize(addForceDirection_);
+                DirectX::XMFLOAT2 direction = Camera::Instance().ConvertTo2DVectorFromCamera(DirectX::XMFLOAT2(aLx, aLy));
+                addForceDirection_ = XMFloat2Normalize(direction);
 
                 // ------------------------------------------------------------
                 //              回転する角度は左右ともに９０度まで
@@ -2720,8 +2696,7 @@ namespace PlayerState
                 ownerFront = XMFloat2Normalize(ownerFront);
 
                 // 内積で角度を算出
-                float dot = std::clamp(XMFloat2Dot(addForceDirection_, ownerFront), -1.0f, 1.0f);
-                float angle = acosf(dot);
+                float angle = acosf(std::clamp(XMFloat2Dot(addForceDirection_, ownerFront), -1.0f, 1.0f));
 
                 // 90度以上回転角がある
                 if (angle > DirectX::XM_PIDIV2)
@@ -2730,17 +2705,15 @@ namespace PlayerState
                     float cross = XMFloat2Cross(addForceDirection_, ownerFront);
 
                     const DirectX::XMFLOAT3 ownerRight_float3 = owner_->GetTransform()->CalcRight();
-                    const DirectX::XMFLOAT2 ownerRight_float2 = XMFloat2Normalize({ ownerRight_float3.x, ownerRight_float3.z });
+                    DirectX::XMFLOAT2 ownerRight_float2 = XMFloat2Normalize({ ownerRight_float3.x, ownerRight_float3.z });
 
-                    if (cross < 0)
+                    if (cross > 0)
                     {
-                        addForceDirection_ = ownerRight_float2;
-                        addForceDirection = { addForceDirection_.x, 0.0f, addForceDirection_.y };
+                        addForceDirection_ = ownerRight_float2  * -1.0f;
                     }
                     else
                     {
-                        addForceDirection_ = ownerRight_float2 * -1;
-                        addForceDirection = { addForceDirection_.x, 0.0f, addForceDirection_.y };
+                        addForceDirection_ = ownerRight_float2;
                     }
                 }
 
@@ -2748,10 +2721,11 @@ namespace PlayerState
             }
             else
             {
-                addForceDirection = owner_->GetTransform()->CalcForward();
+                const DirectX::XMFLOAT3 ownerForward = owner_->GetTransform()->CalcForward();
+                addForceDirection_ = DirectX::XMFLOAT2(ownerForward.x, ownerForward.z);
             }
 
-            owner_->AddForce(addForceDirection, addForceFront_.GetForce(), addForceFront_.GetDecelerationForce());
+            owner_->AddForce(DirectX::XMFLOAT3(addForceDirection_.x, 0.0f, addForceDirection_.y), addForceFront_.GetForce(), addForceFront_.GetDecelerationForce());
         }
 #pragma endregion ---------- 前方向に進む ----------
     }
@@ -2765,30 +2739,26 @@ namespace PlayerState
         // まだ旋回処理を行わない
         if (addForceFront_.GetIsAddForce() == false) return;
 
-
         DirectX::XMFLOAT2 ownerForward = { owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z };
         ownerForward = XMFloat2Normalize(ownerForward);
 
         // 外積をしてどちらに回転するのかを判定する
-        float corss = XMFloat2Cross(addForceDirection_, ownerForward);
+        float corss = XMFloat2Cross(XMFloat2Normalize(addForceDirection_), ownerForward);
 
         // 内積で回転幅を算出
-        float dot = std::clamp(XMFloat2Dot(addForceDirection_, ownerForward), -1.0f, 1.0f);
-        float angle = acosf(dot);
+        float angle = acosf(std::clamp(XMFloat2Dot(XMFloat2Normalize(addForceDirection_), ownerForward), -1.0f, 1.0f));
         if (angle < DirectX::XMConvertToRadians(1)) return;
 
-        // TODO:回転速度を固定値で入れちゃってる
-        //const float speed = owner_->GetRotateSpeed() * elapsedTime;
-        const float speed = 8.0f * elapsedTime;
-        float rotateY = angle * speed;
+        const float speed = owner_->GetRotateSpeed() * elapsedTime;
+        angle *= speed;
 
         if (corss > 0)
         {
-            owner_->GetTransform()->AddRotationY(-rotateY);
+            owner_->GetTransform()->AddRotationY(-angle);
         }
         else
         {
-            owner_->GetTransform()->AddRotationY(rotateY);
+            owner_->GetTransform()->AddRotationY(angle);
         }
     }
 

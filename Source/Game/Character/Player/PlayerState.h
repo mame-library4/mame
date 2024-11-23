@@ -405,20 +405,20 @@ namespace PlayerState
 
         bool isCounterReaction = false; // カウンターが成功したときの演出
 
-        // ----- 旋回用 -----
-        bool isTurnChecked_ = false; // 旋回するか判定用
-
         bool isRotating_ = false;
 
         DirectX::XMFLOAT2  addForceDirection_ = {};
+
+        // ----- Counter -----
+        float counterStartFrame_    = 0.1f;
+        float counterEndFrame_      = 0.6f;
 
         // ----- Effect用 -----
         Effekseer::Handle   mikiriEffectHandle_     = 0;
         Effekseer::Handle   counterEffectHandle_    = 0;
         DirectX::XMFLOAT3   effectOffsetVec_        = {};
         float               effectLength_           = 0.0f;
-
-        DirectX::XMFLOAT3 mikiriEffectAddPosition_ = {};
+        DirectX::XMFLOAT3   mikiriEffectAddPosition_ = {};
 
         // ----- Vignette -----
         DirectX::XMFLOAT4 vignetteColor_        = { 0.4f, 0.4f, 1.0f, 1.0f };
