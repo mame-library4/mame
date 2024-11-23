@@ -130,6 +130,8 @@ void EnemyDragon::DrawDebug()
 {
     if (ImGui::BeginMenu("Dragon"))
     {        
+        ImGui::DragFloat("DebugRadius", &debugRadius_, 0.01f);
+
         if (ImGui::TreeNodeEx("BehaviorTree", ImGuiTreeNodeFlags_Framed))
         {
             std::string nodeName = (activeNode_ != nullptr) ? activeNode_->GetName() : u8"‚È‚µ";
@@ -239,6 +241,8 @@ void EnemyDragon::DrawDebug()
 // ----- DebugRebderer -----
 void EnemyDragon::DebugRender(DebugRenderer* debugRenderer)
 {
+    debugRenderer->DrawCylinder(GetTransform()->GetPosition(), debugRadius_, 1.0f, { 0,0.5f,1,1 });
+    
     debugRenderer->DrawCylinder(GetTransform()->GetPosition(), superNovaRadius_, 3.0f, {1,0,0,1});
 
     debugRenderer->DrawCylinder(GetTransform()->GetPosition(), longRangeRadius_, 1.0f, { 0, 1, 0, 1 });
@@ -296,7 +300,7 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Down", "NormalDown", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::DownAction(this));
     
     // --------------- UŒ‚ ---------------
-#if 0
+#if 1
     behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
 
     behaviorTree_->AddNode("Attack", "PowerAttack",  0, BehaviorTree::SelectRule::Priority, new ActionDragon::PowerAttackJudgment(this), nullptr);
@@ -314,9 +318,10 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("CloseRangeAttack", "TurnAttack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
     behaviorTree_->AddNode("CloseRangeAttack", "Guard",        0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::GuardAction(this));
     behaviorTree_->AddNode("CloseRangeAttack", "Walk",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));
+    behaviorTree_->AddNode("CloseRangeAttack", "StompAttack",  0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::StompAttackAction(this));
     behaviorTree_->AddNode("CloseRangeAttack", "TackleAttack", 0, BehaviorTree::SelectRule::None, new ActionDragon::TackleAttackJudgment(this), new ActionDragon::TackleAction(this));
-    behaviorTree_->AddNode("CloseRangeAttack", "SuperNova",    0, BehaviorTree::SelectRule::None, new ActionDragon::SuperNovaJudgment(this), new ActionDragon::SuperNovaAction(this));
-    behaviorTree_->AddNode("CloseRangeAttack", "Roar",         0, BehaviorTree::SelectRule::None, new ActionDragon::RoarJudgment(this), new ActionDragon::RoarAction(this));
+    behaviorTree_->AddNode("CloseRangeAttack", "SuperNova",    0, BehaviorTree::SelectRule::None, new ActionDragon::SuperNovaJudgment(this),    new ActionDragon::SuperNovaAction(this));
+    behaviorTree_->AddNode("CloseRangeAttack", "Roar",         0, BehaviorTree::SelectRule::None, new ActionDragon::RoarJudgment(this),         new ActionDragon::RoarAction(this));
 #else
     behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
     behaviorTree_->AddNode("Attack", "StompAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::StompAttackAction(this));

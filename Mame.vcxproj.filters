@@ -289,6 +289,9 @@
     <ClCompile Include="Source\Game\UI\UILoading.cpp">
       <Filter>Mame\Game\UI\UILoading</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\UI\UIRush.cpp">
+      <Filter>Mame\Game\UI\UIRush</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -607,6 +610,9 @@
     <ClInclude Include="Source\Game\UI\UILoading.h">
       <Filter>Mame\Game\UI\UILoading</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\UI\UIRush.h">
+      <Filter>Mame\Game\UI\UIRush</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -881,6 +887,9 @@
     </Filter>
     <Filter Include="Mame\Shader\Sprite">
       <UniqueIdentifier>{f3fef47a-b314-4cd5-9398-5893d68a216d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\UI\UIRush">
+      <UniqueIdentifier>{bfd8a9c5-0c73-4b99-bf8d-e997c242ac35}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

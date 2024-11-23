@@ -398,12 +398,37 @@ namespace ActionDragon
 
     private:
         void PlayAnimation(); // アニメーション再生
+        void Move(const float& elapsedTime);
+        void Turn(const float& elapsedTime); // 旋回処理
 
     private:
-        DirectX::XMFLOAT3 rootMotionValue_ = DirectX::XMFLOAT3(1.0f, 7.0f, 1.0f);
-
+        // ----- Movement -----
+        DirectX::XMFLOAT3 rootMotionValue_      = DirectX::XMFLOAT3(1.0f, 7.0f, 1.0f);
+        DirectX::XMFLOAT3   startPosition_      = {};
+        DirectX::XMFLOAT3   targetPosition_     = {};     
+        float               moveForwardFrame_   = 1.1f;
+        float               moveTimer_          = 0.0f;
+        float               moveSpeed_          = 2.5f;
+        float               moveLength_         = 0.0f;
+        float               maxMoveLength_      = 10.0f;
+        bool                isSetMoveParameter_ = false;
+        float               addForceBackFrame_      = 0.35f;
+        float               addForceBackPower_      = 3.0f;
+        float               backDecelerationForce_  = 2.0f;
+        bool                isAddforceBack_         = false;
+        // ----- Turn -----
+        float turnStartFrame_ = 0.45f;
+        float turnEndFrame_ = 0.9f;
+        
         float attackStartFrame_ = 1.6f;
         float attackEndFrame_   = 1.75f;
+
+        float   vibrationFrame_     = 1.73f;
+        float   vibrationLength_    = 7.0f;
+        float   vibrationPower_     = 0.2f;
+        float   vibrationTime_      = 0.4f;
+        bool    isPlayVibration_    = false;
+
     };
 
     // ----- SuperNovaAction -----

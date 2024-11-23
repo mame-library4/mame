@@ -10,6 +10,8 @@
 
 #include "Sword/Sword.h"
 
+#include "UI/UIRush.h"
+
 class Player : public Character
 {
 public:// --- ’è” ---
@@ -174,6 +176,10 @@ public:
 
     // ---------- UŒ‚—Íæ“¾ ----------
     [[nodiscard]] const float GetAttackPower() const;
+
+    // ---------- ƒ‰ƒbƒVƒ…UŒ‚UI ----------
+    void GenerateUIRush();
+    void RemoveUIRush();
 
 public:// --- æ“¾Eİ’è ---
 #pragma region [Get, Set] Function
@@ -417,4 +423,7 @@ private:
 
     // ---------- UŒ‚ ----------
     float attackPower_[static_cast<int>(AttackType::Max)] = {};
+
+    // ---------- ƒ‰ƒbƒVƒ…UŒ‚UI ----------
+    UIRush* uiRush_ = nullptr;
 };

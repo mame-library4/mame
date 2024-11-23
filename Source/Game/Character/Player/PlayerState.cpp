@@ -1856,6 +1856,9 @@ namespace PlayerState
         AudioManager::Instance().PlaySE(SE::JustDodge);
         slowSENum_ = AudioManager::Instance().PlaySE(SE::Slow);
 
+        // ラッシュ攻撃UIを生成
+        owner_->GenerateUIRush();
+
         slowTimer_ = 0.0f;
         lerpTimer_ = 0.0f;
     }
@@ -1935,6 +1938,9 @@ namespace PlayerState
             if (animationIndex == Player::Animation::RollFront || animationIndex == Player::Animation::RollBack ||
                 animationIndex == Player::Animation::RollRight || animationIndex == Player::Animation::RollLeft)
             {
+                // ラッシュ攻撃UIを削除する
+                owner_->RemoveUIRush();
+
                 owner_->ChangeState(Player::STATE::Idle);
                 return;
             }
@@ -1943,6 +1949,9 @@ namespace PlayerState
         // キャンセルボタンを押された
         if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_X)
         {
+            // ラッシュ攻撃UIを削除する
+            owner_->RemoveUIRush();
+            
             owner_->ChangeState(Player::STATE::JustDodgeCancel);
             return;
         }
@@ -2305,6 +2314,9 @@ namespace PlayerState
         owner_->SetIsInvincible(false);
 
         owner_->SetUseRootMotion(false);
+
+        // ラッシュ攻撃UIを削除する
+        owner_->RemoveUIRush();
     }
 
     // ----- ImGui用 -----

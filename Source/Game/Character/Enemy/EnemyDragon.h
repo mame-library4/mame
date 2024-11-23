@@ -61,6 +61,8 @@ private:
 
     float distanceToPlayer_ = 0.0f;
 
+    float debugRadius_ = 0.0f;
+
 public:
     enum CollisionData
     {

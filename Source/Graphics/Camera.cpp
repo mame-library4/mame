@@ -115,6 +115,7 @@ void Camera::SetPerspectiveFov()
 
     GetTransform()->SetPosition(view_.eye_);
 
+
     if (useLockonCamera_)
     {
         DirectX::XMFLOAT3 targetPosition = EnemyManager::Instance().GetEnemy(0)->GetJointPosition(GetCurrentTargetJointName());

@@ -1897,10 +1897,33 @@ namespace ActionDragon
             // 現在の攻撃アクションを設定する
             owner_->SetCurrentAttackAction(Enemy::AttackAction::StompAttack);
 
+            moveTimer_ = 0.0f;
+            isSetMoveParameter_ = false;
+            isAddforceBack_ = false;
+            isPlayVibration_ = false;
+
             owner_->SetStep(1);
 
             break;
         case 1:
+
+            // 移動処理
+            Move(elapsedTime);
+
+            // 旋回処理
+            Turn(elapsedTime);
+
+            // カメラシェイク
+            if (owner_->GetAnimationSeconds() > vibrationFrame_ && isPlayVibration_ == false)
+            {
+                const float length = owner_->CalcDistanceToPlayerNoConsiderationY();
+                if (length <= vibrationLength_)
+                {
+                    Camera::Instance().ScreenVibrate(vibrationPower_, vibrationTime_);
+                }
+
+                isPlayVibration_ = true;
+            }
 
             // 攻撃判定設定
             if (owner_->GetAnimationSeconds() > attackEndFrame_)
@@ -1938,7 +1961,7 @@ namespace ActionDragon
             break;
         }
 
-        return ActionBase::State();
+        return ActionBase::State::Run;
     }
 
     // ----- ImGui用 -----
@@ -1946,6 +1969,32 @@ namespace ActionDragon
     {
         if (ImGui::TreeNodeEx("Stomp", ImGuiTreeNodeFlags_Framed))
         {
+            if (ImGui::TreeNodeEx("---------- Vibration ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("Frame", &vibrationFrame_, 0.01f);
+                ImGui::DragFloat("Length", &vibrationLength_, 0.01f);
+                ImGui::DragFloat("Power", &vibrationPower_, 0.01f);
+                ImGui::DragFloat("Time", &vibrationTime_, 0.01f);
+
+                ImGui::TreePop();
+            }            
+            if (ImGui::TreeNodeEx("---------- Movement ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat3("StartPosition", &startPosition_.x);
+                ImGui::DragFloat3("TargetPosition", &targetPosition_.x);
+                ImGui::DragFloat("MoveForwardFrame", &moveForwardFrame_, 0.01f);
+                ImGui::DragFloat("MoveTimer", &moveTimer_);
+                ImGui::DragFloat("MoveSpeed", &moveSpeed_, 0.01f, 0.0f, 10.0f);
+                ImGui::DragFloat("MoveLength", &moveLength_);
+                ImGui::DragFloat("MaxMoveLength", &maxMoveLength_, 0.01f, 0.0f, 20.0f);
+
+                ImGui::DragFloat("BackFrame", &addForceBackFrame_, 0.01f, 0.0f, 2.0f);
+                ImGui::DragFloat("BackPower", &addForceBackPower_, 0.01f, 0.0f, 10.0f);
+                ImGui::DragFloat("BackDecelerationForce", &backDecelerationForce_, 0.01f, 0.0f, 10.0f);
+
+                ImGui::TreePop();
+            }
+
             ImGui::DragFloat3("RootMotionValue", &rootMotionValue_.x, 0.01f, 0.0f, 10.0f);
             ImGui::DragFloat("StartFrame", &attackStartFrame_, 0.01f, 0.0f, 4.0f);
             ImGui::DragFloat("EndFrame", &attackEndFrame_, 0.01f, 0.0f, 4.0f);
@@ -1959,6 +2008,58 @@ namespace ActionDragon
     {
         owner_->PlayBlendAnimation(Enemy::DragonAnimation::BackStepAttack, false);
         owner_->SetTransitionTime(0.1f);
+    }
+
+    // ----- 移動処理 -----
+    void StompAttackAction::Move(const float& elapsedTime)
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+
+        if (animationSeconds > moveForwardFrame_ && isSetMoveParameter_ == false)
+        {
+            const DirectX::XMFLOAT3 dragonPosition = owner_->GetTransform()->GetPosition();
+            const DirectX::XMFLOAT3 vec = DirectX::XMFLOAT3(targetPosition_.x - dragonPosition.x, 0.0f, targetPosition_.z - dragonPosition.z);
+            moveLength_ = XMFloat3Length(vec);
+            if (moveLength_ > maxMoveLength_) moveLength_ = maxMoveLength_;
+
+            startPosition_ = dragonPosition;
+            targetPosition_ = dragonPosition + XMFloat3Normalize(vec) * moveLength_;            
+
+            isSetMoveParameter_ = true;
+        }
+        if (isSetMoveParameter_)
+        {
+            moveTimer_ += moveSpeed_ * elapsedTime;
+            moveTimer_ = std::min(moveTimer_, 1.0f);
+            const DirectX::XMFLOAT3 position = XMFloat3Lerp(startPosition_, targetPosition_, moveTimer_);
+            owner_->GetTransform()->SetPositionX(position.x);
+            owner_->GetTransform()->SetPositionZ(position.z);
+        }
+        
+        if (animationSeconds > addForceBackFrame_ && animationSeconds < moveForwardFrame_)
+        {
+            targetPosition_ = PlayerManager::Instance().GetTransform()->GetPosition();
+
+            if (isAddforceBack_ == false)
+            {
+                const DirectX::XMFLOAT3 forward = owner_->GetTransform()->CalcForward();
+                const DirectX::XMFLOAT3 backVec = XMFloat3Normalize(DirectX::XMFLOAT3(forward.x, 0.0f, forward.z)) * -1.0f;
+
+                owner_->AddForce(backVec, addForceBackPower_, backDecelerationForce_);
+                isAddforceBack_ = true;
+            }
+        }
+    }
+
+    // ----- 旋回処理 -----
+    void StompAttackAction::Turn(const float& elapsedTime)
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+        
+        if (animationSeconds > turnStartFrame_ && animationSeconds < turnEndFrame_)
+        {
+            owner_->Turn(elapsedTime, targetPosition_);
+        }
     }
 }
 

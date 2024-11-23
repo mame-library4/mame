@@ -244,6 +244,7 @@
     <ClCompile Include="Source\Game\UI\UINotifications.cpp" />
     <ClCompile Include="Source\Game\UI\UINumber.cpp" />
     <ClCompile Include="Source\Game\UI\UIPartDestruction.cpp" />
+    <ClCompile Include="Source\Game\UI\UIRush.cpp" />
     <ClCompile Include="Source\Game\UI\UIStamina.cpp" />
     <ClCompile Include="Source\Game\UI\UITitle.cpp" />
     <ClCompile Include="Source\Graphics\Camera.cpp" />
@@ -347,6 +348,7 @@
     <ClInclude Include="Source\Game\UI\UINotifications.h" />
     <ClInclude Include="Source\Game\UI\UINumber.h" />
     <ClInclude Include="Source\Game\UI\UIPartDestruction.h" />
+    <ClInclude Include="Source\Game\UI\UIRush.h" />
     <ClInclude Include="Source\Game\UI\UIStamina.h" />
     <ClInclude Include="Source\Game\UI\UITitle.h" />
     <ClInclude Include="Source\Graphics\Camera.h" />

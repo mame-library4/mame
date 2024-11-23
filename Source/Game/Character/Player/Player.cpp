@@ -767,6 +767,22 @@ const float Player::GetAttackPower() const
     return 0.0f;
 }
 
+// ----- ラッシュ攻撃UIを生成 -----
+void Player::GenerateUIRush()
+{
+    if (uiRush_ == nullptr) uiRush_ = new UIRush();
+}
+
+// ----- ラッシュ攻撃UIを削除 -----
+void Player::RemoveUIRush()
+{
+    if (uiRush_ != nullptr)
+    {
+        UIManager::Instance().Remove(uiRush_);
+        uiRush_ = nullptr;
+    }
+}
+
 void Player::UpdateCollisions(const float& elapsedTime)
 {
     // くらい判定更新
