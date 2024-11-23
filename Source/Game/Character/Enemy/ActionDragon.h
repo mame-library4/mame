@@ -113,6 +113,15 @@ namespace ActionDragon
         void DrawDebug()                                      override;
 
     private:
+        enum class STATE
+        {
+            Initilaize,
+            Turn,
+            Roar,
+        };
+        void ChangeState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
+
+    private:
         void Finalize();        // 終了化
         void PlayAnimation();   // アニメーション再生
 
@@ -130,6 +139,8 @@ namespace ActionDragon
         float turnStartFrame_ = 0.4f;
         float turnAnimationEndFrame_ = 1.2f;
 
+        // ----- SE -----
+        bool isPlayFlapSE_ = false;
 
         float roarStartFrame_   = 1.26f;
         float roarEndFrame_     = 2.2f;
@@ -386,6 +397,7 @@ namespace ActionDragon
         // ----- SE -----
         static const int maxFootSteps_ = 3;
         bool isPlayFootSteps_[maxFootSteps_] = {};
+        bool isPlayFlapSE_ = false;
     };
 
     // ----- StompAttackAction -----

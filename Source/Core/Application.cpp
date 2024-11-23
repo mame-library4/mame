@@ -216,7 +216,8 @@ void Application::Render()
     ID3D11ShaderResourceView* views[10]{ nullptr };
     deviceContext->PSSetShaderResources(0, 10, views);
 
-    DrawDebug();
+    if (GetAsyncKeyState('P') && 0x0800)isDrawImGui_ = !isDrawImGui_;
+    if(isDrawImGui_) DrawDebug();
 
     // --- ImGui表示 ---
     IMGUI_CTRL_DISPLAY();
@@ -229,6 +230,8 @@ void Application::Render()
 void Application::DrawDebug()
 {
 #ifdef USE_IMGUI
+
+    SceneManager::Instance().DrawDebug();
 
     Camera::Instance().DrawDebug();
 

@@ -23,7 +23,7 @@ void UIActionGuide::Update(const float& elapsedTime)
 // ----- •`‰æ -----
 void UIActionGuide::Render()
 {
-    UI::Render();
+    //UI::Render();
 }
 
 // ----- ImGui—p -----

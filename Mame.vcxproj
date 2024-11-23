@@ -222,6 +222,9 @@
     <ClCompile Include="Source\Game\Character\Player\PlayerState.cpp" />
     <ClCompile Include="Source\Game\Collision\CollisionData.cpp" />
     <ClCompile Include="Source\Game\Collision\CollisionManager.cpp" />
+    <ClCompile Include="Source\Game\Item\Barrel.cpp" />
+    <ClCompile Include="Source\Game\Item\Item.cpp" />
+    <ClCompile Include="Source\Game\Item\ItemManager.cpp" />
     <ClCompile Include="Source\Game\Object.cpp" />
     <ClCompile Include="Source\Game\Projectile\Fireball.cpp" />
     <ClCompile Include="Source\Game\Projectile\Projectile.cpp" />
@@ -326,6 +329,9 @@
     <ClInclude Include="Source\Game\Character\Player\PlayerState.h" />
     <ClInclude Include="Source\Game\Collision\CollisionData.h" />
     <ClInclude Include="Source\Game\Collision\CollisionManager.h" />
+    <ClInclude Include="Source\Game\Item\Barrel.h" />
+    <ClInclude Include="Source\Game\Item\Item.h" />
+    <ClInclude Include="Source\Game\Item\ItemManager.h" />
     <ClInclude Include="Source\Game\Object.h" />
     <ClInclude Include="Source\Game\Projectile\Fireball.h" />
     <ClInclude Include="Source\Game\Projectile\Projectile.h" />

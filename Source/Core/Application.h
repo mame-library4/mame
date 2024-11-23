@@ -78,4 +78,6 @@ private:
 	ConstantBuffer<SceneConstants> sceneConstants_;
 
 	static bool isGameEnd_;
+
+	bool isDrawImGui_ = true;
 };

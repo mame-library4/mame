@@ -32,6 +32,8 @@ private:
     void UpdatePlayerDamageVsProjectileAttack();
     void CounterCheckProjectile();                  // 発射物に対するカウンター判定
 
+    void UpdateItemVsAttack(); // アイテムと攻撃判定との判定
+
 private:// 判定用関数
 #pragma region ---------- 判定用関数 ----------
     // ---------- 球と球の交差判定 ----------

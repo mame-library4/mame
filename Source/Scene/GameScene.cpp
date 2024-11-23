@@ -7,7 +7,7 @@
 #include "Character/Enemy/EnemyDragon.h"
 #include "Camera.h"
 #include "Collision/CollisionManager.h"
-
+#include "Item/ItemManager.h"
 #include "UI/UINumber.h"
 #include "UI/UIHealth.h"
 #include "UI/UIStamina.h"
@@ -75,6 +75,7 @@ void GameScene::CreateResource()
     Effect* effect7 = new Effect("./Resources/Effect/Guard1.efk", "Guard");
     Effect* effect8 = new Effect("./Resources/Effect/Charge1.efk", "Charge");
     Effect* effect9 = new Effect("./Resources/Effect/Roar.efk", "Roar");
+    Effect* effect10 = new Effect("./Resources/Effect/Explosion/Explosion.efk", "Explosion");
     //Effect* effect8 = new Effect("./Resources/Effect/Charge.efk", "Charge");
     
     UIHealth* uIHealth = new UIHealth();
@@ -104,6 +105,9 @@ void GameScene::Initialize()
     // 発射物
     ProjectileManager::Instance().Initialize();
 
+    // アイテム
+    ItemManager::Instance().Initialize();
+
     // カメラ初期化
     //Camera::Instance().SetTarget({ PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() });
     Camera::Instance().SetTarget({});
@@ -125,6 +129,9 @@ void GameScene::Finalize()
 
     // 発射物
     ProjectileManager::Instance().Finalize();
+
+    // アイテム
+    ItemManager::Instance().Finalize();
 
     // パーティクル
     ParticleManager::Instance().Finalize();
@@ -148,6 +155,9 @@ void GameScene::Update(const float& elapsedTime)
 
     // 発射物
     ProjectileManager::Instance().Update(adjustedElapsedTime);
+
+    // アイテム
+    ItemManager::Instance().Update(adjustedElapsedTime);
 
     // ステージ位置更新
     stageCenter_ = stage_->GetTransform()->GetPosition();
@@ -203,54 +213,13 @@ void GameScene::DeferredRender()
 
     // 発射物
     ProjectileManager::Instance().Render(gBufferPixelShader);
+
+    // アイテム
+    ItemManager::Instance().Render(gBufferPixelShader);
 }
 
 void GameScene::ForwardRender()
 {
-#if 1
-    ID3D11DeviceContext* deviceContext = Graphics::Instance().GetDeviceContext();
-
-    deviceContext->PSSetShaderResources(32, 1, iblTextures_[0].GetAddressOf());
-    deviceContext->PSSetShaderResources(33, 1, iblTextures_[1].GetAddressOf());
-    deviceContext->PSSetShaderResources(34, 1, iblTextures_[2].GetAddressOf());
-    deviceContext->PSSetShaderResources(35, 1, iblTextures_[3].GetAddressOf());
-
-    // ステージ
-    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
-    stage_->Render(0.01f);
-    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::SOLID);
-
-    // プレイヤー描画
-    PlayerManager::Instance().Render();
-
-    // 敵描画
-    EnemyManager::Instance().Render();
-
-    ProjectileManager::Instance().Render();
-
-#endif
-
-
-
-
-    DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
-#ifdef _DEBUG
-    if (isDebugRenderer_)
-    {
-        // player
-        PlayerManager::Instance().DebugRender(debugRenderer);
-
-        // enemy
-        EnemyManager::Instance().DebugRender(debugRenderer);
-
-        DirectX::XMFLOAT3 position{};
-        position = stage_->GetTransform()->GetPosition();
-
-        debugRenderer->DrawCylinder(position, stageRadius_, 1.5f, { 1, 0, 0, 1 });
-        //debugRenderer->DrawCylinder(position, stageRadius1_, 1.5f, { 1, 0, 0, 1 });
-
-    }
-#endif
 }
 
 void GameScene::Render()
@@ -288,6 +257,9 @@ void GameScene::Render()
         }
 
         ProjectileManager::Instance().DebugRender(debugRenderer);
+
+        // アイテム
+        ItemManager::Instance().DebugRender(debugRenderer);
     }
 #endif
 }
@@ -314,6 +286,9 @@ void GameScene::DrawDebug()
 
             ProjectileManager::Instance().DrawDebug();
 
+            // アイテム
+            ItemManager::Instance().DrawDebug();
+
             ParticleManager::Instance().DrawDebug();
 
             UIManager::Instance().DrawDebug();
@@ -334,6 +309,9 @@ void GameScene::DrawDebug()
         EnemyManager::Instance().DrawDebug();
 
         ProjectileManager::Instance().DrawDebug();
+
+        // アイテム
+        ItemManager::Instance().DrawDebug();
 
         ParticleManager::Instance().DrawDebug();
 

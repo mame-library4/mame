@@ -46,11 +46,13 @@ public:// --- 定数 ---
         ComboAttack0_2,   // コンボ0
         ComboAttack0_3,   // コンボ0
         
+        PlacingBarre, // 樽設置
+
+
         ComboAttack1_0,   // コンボ1
         ComboAttack1_1,   // コンボ1
         ComboAttack1_2,   // コンボ1
 
-        
     };
 
     enum class Animation
@@ -292,9 +294,9 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const bool IsCounterStanceKey()    const;
     [[nodiscard]] const bool IsGetUpKeyDown()        const;
     [[nodiscard]] const bool IsDashKey()             const;
-
-    [[nodiscard]] const bool IsGuardCounterKeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_X; }
-    [[nodiscard]] const bool IsRushAttackKeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
+    [[nodiscard]] const bool IsItemKeyDown()         const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_X; }
+    [[nodiscard]] const bool IsGuardCounterKeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_LEFT_TRIGGER; }
+    [[nodiscard]] const bool IsRushAttackKeyDown()   const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
 
 #pragma endregion [Get, Set] Function
 

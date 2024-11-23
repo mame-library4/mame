@@ -31,6 +31,8 @@ enum class SE
 
     Attack0,
 
+    Damage,
+
     // ---------- Dragon ----------
     // ----- SlamAttack -----
     Explosion0,
@@ -52,6 +54,8 @@ enum class SE
     Fire0,
     Explosion2,
     Explosion3,
+    // ----- Roar -----
+    Roar,
 
     Max,
 };

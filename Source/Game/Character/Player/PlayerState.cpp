@@ -14,6 +14,7 @@
 #include "Application.h"
 
 #include "AudioManager.h"
+#include "Item/Barrel.h"
 
 // ----- AddForceData -----
 namespace PlayerState
@@ -124,6 +125,12 @@ namespace PlayerState
         if (owner_->IsGuardCounterKeyDown() && owner_->GetIsGuardGaugeDepleted() == false)
         {
             owner_->ChangeState(Player::STATE::GuardCounter);
+            return;
+        }
+
+        if (owner_->IsItemKeyDown())
+        {
+            owner_->ChangeState(Player::STATE::PlacingBarre);
             return;
         }
 
@@ -3917,5 +3924,64 @@ namespace PlayerState
         }
 
         owner_->SetRootMotionValue(rootMotionValue);
+    }
+}
+
+// ----- 樽設置 -----
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void PlacingBarrelState::Initialize()
+    {
+        // アニメーション再生
+        owner_->PlayBlendAnimation(Player::Animation::DownStart, false, firstAnimationSpeed_, firstAnimationStartFrame_);
+        owner_->SetTransitionTime(firstAnimationTransitionTime_);
+    }
+
+    // ----- 更新 -----
+    void PlacingBarrelState::Update(const float& elapsedTime)
+    {
+        if (owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::DownStart))
+        {
+            if (owner_->GetAnimationSeconds() > firstAnimationEndFrame_)
+            {
+                // 樽設置
+                DirectX::XMFLOAT3 generatePosition = owner_->GetTransform()->GetPosition();
+                generatePosition = generatePosition + XMFloat3Normalize(owner_->GetTransform()->CalcForward()) * generatePosition_;
+                Barrel* barrel = new Barrel(generatePosition);
+
+                owner_->PlayBlendAnimation(Player::Animation::DownEnd, false, secondAnimationSpeed_, secondAnimationStartFrame_);
+                owner_->SetTransitionTime(secondAniamtionTransitionTime_);
+            }
+        }
+
+        if(owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+    }
+
+    // ----- 終了化 -----
+    void PlacingBarrelState::Finalize()
+    {
+    }
+
+    // ----- ImGui用 -----
+    void PlacingBarrelState::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::DragFloat("generatePosition_", &generatePosition_, 0.01f);
+            ImGui::DragFloat("FirstAnimationStartFrame", &firstAnimationStartFrame_, 0.01f);
+            ImGui::DragFloat("FirstAnimationEndFrame", &firstAnimationEndFrame_, 0.01f);
+            ImGui::DragFloat("FirstAnimationSpeed", &firstAnimationSpeed_, 0.01f);
+            ImGui::DragFloat("FirstAnimationTransitionTime", &firstAnimationTransitionTime_, 0.01f);
+            ImGui::DragFloat("SecondAnimationStartFrame", &secondAnimationStartFrame_, 0.01f);
+            ImGui::DragFloat("SecondAnimationSpeed", &secondAnimationSpeed_, 0.01f);
+            ImGui::DragFloat("SecondAniamtionTransitionTime", &secondAniamtionTransitionTime_, 0.01f);            
+
+            ImGui::TreePop();
+        }
     }
 }

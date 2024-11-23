@@ -46,6 +46,9 @@ void AudioManager::LoadAudio()
             // SE::Attack0,
             se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Player/Attack/Attack2.wav", 10));
             
+            // SE::Damage
+            se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Player/Damage/Damage.wav", 2));
+            
             // SE::Explosion0, SE::Explosion1
             se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Dragon/SlamAttack/Explosion0.wav", 2));
             se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Dragon/SlamAttack/Explosion1.wav", 2));
@@ -72,6 +75,9 @@ void AudioManager::LoadAudio()
             se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Dragon/SuperNova/Fire.wav", 2));
             se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Dragon/SuperNova/Explosion0.wav", 2));
             se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Dragon/SuperNova/Explosion1.wav", 2));
+            
+            // SE::Roar
+            se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Dragon/Roar/Roar.wav", 2));
         }
     }
 
@@ -95,6 +101,8 @@ void AudioManager::LoadAudio()
             se_[static_cast<int>(SE::SowrdSlash2)].Volume(0.2f);
 
             se_[static_cast<int>(SE::Attack0)].Volume(0.3f);
+            
+            se_[static_cast<int>(SE::Damage)].Volume(0.3f);
 
             se_[static_cast<int>(SE::Mikiri)].Volume(0.3f);
             
@@ -111,7 +119,7 @@ void AudioManager::LoadAudio()
             
             se_[static_cast<int>(SE::FootSteps)].Volume(0.2f);
             
-            se_[static_cast<int>(SE::Flap0)].Volume(0.2f);
+            se_[static_cast<int>(SE::Flap0)].Volume(0.3f);
             se_[static_cast<int>(SE::Wind0)].Volume(0.2f);
             se_[static_cast<int>(SE::Wind1)].Volume(0.3f);
             se_[static_cast<int>(SE::Fire0)].Volume(0.1f);

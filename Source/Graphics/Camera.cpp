@@ -32,15 +32,6 @@ void Camera::Initialize()
     GetTransform()->SetRotationX(DirectX::XMConvertToRadians(10.0f));
     offset_         = gameCameraOffset_;
     length_         = gameCameraLength_;
-
-    lerpTimer_ = 0.0f;
-
-    // ----- ロックオンカメラ -----
-    targetJointName_.emplace_back("Dragon15_head");
-    targetJointName_.emplace_back("Dragon15_spine2");
-    targetJointName_.emplace_back("Dragon15_tail_02");
-    currentTargetJointIndex_ = 0;
-    useLockonCamera_ = false;
 }
 
 // ----- 更新 -----
@@ -82,20 +73,6 @@ void Camera::Update(const float& elapsedTime)
     const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
     target_ = XMFloat3Lerp(target_, cameraTargetPosition, lerpWeight_);
 
-
-
-
-    // ロックオンカメラ
-    UpdateLockonCamera(elapsedTime);
-
-    if(useLockonCamera_)
-    {
-        hitWallLerpTimer_ = isHitWall_ ? hitWallLerpTimer_ + elapsedTime * 2.0f : hitWallLerpTimer_ - elapsedTime * 2.0f;
-
-        hitWallLerpTimer_ = min(1.0f, hitWallLerpTimer_);
-        hitWallLerpTimer_ = max(0.0f, hitWallLerpTimer_);
-    }
-
     // カメラリセット
     UpdateCameraReset(elapsedTime);
 
@@ -114,30 +91,6 @@ void Camera::SetPerspectiveFov()
     view_.focus_ = target_ + offset_;
 
     GetTransform()->SetPosition(view_.eye_);
-
-
-    if (useLockonCamera_)
-    {
-        DirectX::XMFLOAT3 targetPosition = EnemyManager::Instance().GetEnemy(0)->GetJointPosition(GetCurrentTargetJointName());
-        const float targetLengthY = fabsf(groundNearest_ - targetPosition.y);
-        const float currentLengthY = fabsf(view_.eye_.y - targetPosition.y);
-
-        DirectX::XMFLOAT3 vec = XMFloat3Normalize(view_.eye_ - view_.focus_) * minLength_;
-        vec = view_.focus_ + vec;
-
-        if (vec.y < groundNearest_)
-        {
-            // 地面に埋まっているため
-            length_ = (length_ * targetLengthY) / currentLengthY;
-        }
-        else
-        {
-            if (length_ < minLength_)
-            {
-                length_ = XMFloatLerp(length_, maxLength_, 0.5f);
-            }
-        }
-    }
 
     // ----- カメラをステージ内に収める -----
     if(SceneManager::Instance().GetCurrentSceneName() == SceneManager::SceneName::Game)
@@ -167,24 +120,6 @@ void Camera::SetPerspectiveFov()
 
             DirectX::XMFLOAT3 d = direction * root0;
             view_.eye_ = cameraPosition + d;
-
-            if (useLockonCamera_)
-            {
-                DirectX::XMFLOAT3 targetPosition = EnemyManager::Instance().GetEnemy(0)->GetJointPosition(GetCurrentTargetJointName());
-                view_.focus_ = XMFloat3Lerp(view_.focus_, targetPosition, hitWallLerpTimer_);
-            }
-
-            isHitWall_ = true;
-        }
-        else
-        {
-            if (useLockonCamera_)
-            {
-                DirectX::XMFLOAT3 targetPosition = EnemyManager::Instance().GetEnemy(0)->GetJointPosition(GetCurrentTargetJointName());
-                view_.focus_ = XMFloat3Lerp(view_.focus_, targetPosition, hitWallLerpTimer_);
-            }
-
-            isHitWall_ = false;
         }
 #endif
     }
@@ -329,16 +264,6 @@ void Camera::DrawDebug()
         ImGui::DragFloat("NearZ", &nearZ_);
         ImGui::DragFloat("FarZ", &farZ_);
 
-        if (ImGui::TreeNode("LockonCamera"))
-        {
-            ImGui::BulletText(targetJointName_.at(currentTargetJointIndex_).c_str());
-            ImGui::DragFloat("LockOnRotationSpeed", &lockOnRotationSpeed_, 0.1f);
-            ImGui::DragInt("TargetJointIndex", &currentTargetJointIndex_, 1, 0, 2);
-            ImGui::DragFloat("LockonInputThreshold", &lockonInputThreshold_, 0.1f, 0.1f, 1.0f);
-
-            ImGui::TreePop();
-        }
-
         if (ImGui::TreeNode("ResetCamera"))
         {
             DirectX::XMFLOAT2 oldRotation = {};
@@ -364,7 +289,6 @@ void Camera::DrawDebug()
 
         ImGui::Checkbox("InvertVertical", &invertVertical_);
 
-        ImGui::DragFloat("LerpTimer", &lerpTimer_);
 
         ImGui::DragFloat("Length", &length_, 0.01f);
         ImGui::DragFloat("MinLength", &minLength_, 0.01f);
@@ -507,10 +431,6 @@ void Camera::UseDragonDeathCamera()
     //  現在使用しているカメラをすべて解除する
     // -------------------------------------
 
-    // ロックオンカメラを解除する。ロックオンUIも削除する
-    useLockonCamera_ = false;
-    UIManager::Instance().Remove(UIManager::UIType::UICrosshair);
-
 }
 
 // ----- カウンターカメラを使用する -----
@@ -530,131 +450,10 @@ void Camera::UseCounterAttackCamera()
 
 #pragma endregion ---------- 各種カメラ使用設定 ----------
 
-// ----- ロックオンカメラ更新 -----
-void Camera::UpdateLockonCamera(const float& elapsedTime)
-{
-    // ロックオンする敵が存在しない
-    if (EnemyManager::Instance().GetEnemyCount() == 0) return;
-    // ドラゴンが死んでいるためロックオンできない
-    if (EnemyManager::Instance().GetEnemy(0)->GetIsDead()) return;
-
-    // ロックオン入力判定
-    if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_THUMB)
-    {
-        // 現在ロックオンしていない場合
-        if (useLockonCamera_ == false)
-        {
-            // クロスヘアUIを生成する
-            UICrosshair* uiCrosshair = new UICrosshair();
-
-            // ロックオンするジョイントを変更可能にする
-            isNextJointAccessible = true;
-        }
-        // 現在ロックオンしている場合
-        else
-        {
-            // 現在使用しているクロスヘアUIを削除する
-            UIManager::Instance().Remove(UIManager::UIType::UICrosshair);
-        }
-
-        useLockonCamera_ = !useLockonCamera_;
-    }
-
-    // ロックオンしていないのでここで終了
-    if (useLockonCamera_ == false) return;
-
-    // ロックオンするジョイントの切り替え判定
-    const float aRx = Input::Instance().GetGamePad().GetAxisRX();
-    // ジョイントを切り替えれる場合
-    if (isNextJointAccessible)
-    {
-        if (aRx > lockonInputThreshold_)
-        {
-            if (currentTargetJointIndex_ > 0) --currentTargetJointIndex_;
-            else currentTargetJointIndex_ = 2;
-
-            isNextJointAccessible = false;
-        }
-        else if (aRx < -lockonInputThreshold_)
-        {
-            if (currentTargetJointIndex_ < 2) ++currentTargetJointIndex_;
-            else currentTargetJointIndex_ = 0;
-
-            isNextJointAccessible = false;
-        }
-    }
-    // ジョイントを切り替えれない場合
-    else
-    {
-        // 入力がなくなったら他のジョイントへアクセスできるようになる
-        if (aRx == 0.0f) isNextJointAccessible = true;
-    }
-
-
-    DirectX::XMFLOAT3 cameraPosition = GetTransform()->GetPosition();
-    DirectX::XMFLOAT3 playerPosition = PlayerManager::Instance().GetTransform()->GetPosition();
-    DirectX::XMFLOAT3 playerHeadPosition = playerPosition;
-    playerHeadPosition.y = 1.7f;
-    DirectX::XMFLOAT3 targetPosition = EnemyManager::Instance().GetEnemy(0)->GetJointPosition(GetCurrentTargetJointName());
-
-    {
-        // XZ平面での処理
-        DirectX::XMFLOAT3 cameraToPlayer = playerPosition - cameraPosition;
-        DirectX::XMFLOAT3 playerToEnemy = targetPosition - playerPosition;
-
-        DirectX::XMFLOAT2 vec0 = XMFloat2Normalize({ cameraToPlayer.x, cameraToPlayer.z });
-        DirectX::XMFLOAT2 vec1 = XMFloat2Normalize({ playerToEnemy.x, playerToEnemy.z });
-
-        const float angle = DirectX::XMVectorGetX(DirectX::XMVector2AngleBetweenNormals(DirectX::XMLoadFloat2(&vec0), DirectX::XMLoadFloat2(&vec1)));
-
-        float cross = XMFloat2Cross(vec0, vec1);
-
-        if (cross < 0)
-        {
-            GetTransform()->AddRotationY(-angle * lockOnRotationSpeed_);
-        }
-        else
-        {
-            GetTransform()->AddRotationY(angle * lockOnRotationSpeed_);
-        }
-    }
-
-    {
-        DirectX::XMFLOAT3 cameraToPlayer = playerHeadPosition - cameraPosition;
-        DirectX::XMFLOAT3 playerToEnemy = targetPosition - playerHeadPosition;
-        DirectX::XMFLOAT2 vec0 = XMFloat2Normalize({ cameraToPlayer.y, XMFloat2Length({cameraToPlayer.x, cameraToPlayer.z}) });
-        DirectX::XMFLOAT2 vec1 = XMFloat2Normalize({ playerToEnemy.y, XMFloat2Length({playerToEnemy.x, playerToEnemy.z}) });
-
-        float angle = DirectX::XMVectorGetX(DirectX::XMVector2AngleBetweenNormals(DirectX::XMLoadFloat2(&vec0), DirectX::XMLoadFloat2(&vec1)));
-
-
-        float cross = XMFloat2Cross(vec0, vec1);
-
-        if (cross < 0)
-        {
-            GetTransform()->AddRotationX(-angle * lockOnRotationSpeed_);
-        }
-        else
-        {
-            GetTransform()->AddRotationX(angle * lockOnRotationSpeed_);
-        }
-    }
-
-
-    // 角度調整
-    DirectX::XMFLOAT3 rotation = GetTransform()->GetRotation();
-    if (rotation.y > DirectX::XM_2PI) rotation.y -= DirectX::XM_2PI;
-    if (rotation.y < 0.0f)            rotation.y += DirectX::XM_2PI;
-    GetTransform()->SetRotation(rotation);
-}
-
 // ----- カメラリセット更新 -----
 void Camera::UpdateCameraReset(const float& elapsedTime)
 {
     return;
-
-    // ロックオンカメラを使用しているのでカメラリセットは使えない
-    if (useLockonCamera_) return;
 
     // カメラリセット入力判定
     if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_LEFT_SHOULDER)

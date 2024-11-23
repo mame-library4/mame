@@ -292,6 +292,13 @@
     <ClCompile Include="Source\Game\UI\UIRush.cpp">
       <Filter>Mame\Game\UI\UIRush</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\Item\ItemManager.cpp">
+      <Filter>Mame\Game\Object\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Item\Item.cpp">
+      <Filter>Mame\Game\Object\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Item\Barrel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -613,6 +620,13 @@
     <ClInclude Include="Source\Game\UI\UIRush.h">
       <Filter>Mame\Game\UI\UIRush</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\Item\ItemManager.h">
+      <Filter>Mame\Game\Object\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Item\Item.h">
+      <Filter>Mame\Game\Object\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Item\Barrel.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -891,6 +905,9 @@
     <Filter Include="Mame\Game\UI\UIRush">
       <UniqueIdentifier>{bfd8a9c5-0c73-4b99-bf8d-e997c242ac35}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mame\Game\Object\Item">
+      <UniqueIdentifier>{0d6111b0-3ad3-4dae-9da0-562b2312420f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -997,9 +1014,6 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shader\blur_ps.hlsl">
-      <Filter>Mame\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Source\Shader\FogPS.hlsl">
       <Filter>Mame\Shader</Filter>
     </FxCompile>
     <FxCompile Include="Source\Shader\FullScreenQuadPS.hlsl">
@@ -1187,6 +1201,9 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\SpriteUVScrollPS.hlsl">
       <Filter>Mame\Shader\Sprite</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\FogPS.hlsl">
+      <Filter>Mame\Shader\PostProcess</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

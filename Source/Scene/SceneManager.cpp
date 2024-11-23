@@ -28,10 +28,6 @@ void SceneManager::Update(const float& elapsedTime)
     if (currentScene)
     {
         currentScene->Update(elapsedTime);
-#ifdef USE_IMGUI
-        currentScene->DrawDebug();
-        DrawDebug();
-#endif
     }
 }
 
@@ -66,6 +62,11 @@ void SceneManager::Render()
 // デバッグ用
 void SceneManager::DrawDebug()
 {
+#ifdef USE_IMGUI
+    if (!currentScene) return;
+
+    currentScene->DrawDebug();
+#endif
 }
 
 // シーンクリア

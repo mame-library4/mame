@@ -411,9 +411,9 @@ namespace ActionDragon
             return ActionBase::State::Failed;
         }
 
-        switch (owner_->GetStep())
+        switch (static_cast<STATE>(owner_->GetStep()))
         {
-        case 0:// 初期化
+        case STATE::Initilaize:// 初期化
             // アニメーション再生 (回転する角度に応じて遷移するステートを決める)
             PlayAnimation();
 
@@ -431,8 +431,10 @@ namespace ActionDragon
             effectDeleteTimer_  = 0.0f;
             intenseBlurFrameCount_ = 0.0f;
 
+            isPlayFlapSE_ = false;
+
             break;
-        case 1:
+        case STATE::Turn:// 旋回処理
             // ルートモーションを使用する
             if (owner_->GetUseRootMotionMovement() == false && owner_->GetIsBlendAnimation() == false)
             {
@@ -446,7 +448,14 @@ namespace ActionDragon
                 owner_->Turn(elapsedTime, targetPosition_);
             }
 
-            //if (owner_->IsPlayAnimation() == false)
+            // 羽ばたきSE再生する
+            if (owner_->GetAnimationSeconds() > 0.2f && isPlayFlapSE_ == false)
+            {
+                AudioManager::Instance().PlaySE(SE::Flap0);
+
+                isPlayFlapSE_ = true;
+            }
+
             if(owner_->GetAnimationSeconds() > turnAnimationEndFrame_)
             {
                 // ルートモーションの使用終了
@@ -455,11 +464,13 @@ namespace ActionDragon
                 owner_->PlayBlendAnimation(Enemy::DragonAnimation::FrontRoar, false, 1.0f, blendStartFrame_);
                 owner_->SetTransitionTime(transition_);
 
-                owner_->SetStep(2);
+                isPlayFlapSE_ = false;
+
+                ChangeState(STATE::Roar);
             }
 
             break;
-        case 2:
+        case STATE::Roar:// 咆哮
 
             // ルートモーションを使用する
             if (owner_->GetUseRootMotionMovement() == false && owner_->GetIsBlendAnimation() == false)
@@ -477,13 +488,24 @@ namespace ActionDragon
             // ラジアルブラー更新
             UpdateRadialBlur(elapsedTime);           
 
-            // コントローラー振動 & カメラシェイク
+            // コントローラー振動 & カメラシェイク & SE再生
             if (owner_->GetAnimationSeconds() > roarStartFrame_ && isPlayVibration_ == false)
             {
                 Input::Instance().GetGamePad().Vibration(gamePadVibrationTime_, gamePadVibrationPower_);
                 Camera::Instance().ScreenVibrate(cameraVibrationPower_, cameraVibrationTime_);
 
+                // 咆哮SEを再生する
+                AudioManager::Instance().PlaySE(SE::Roar);
+
                 isPlayVibration_ = true;
+            }
+
+            // 羽ばたきSE再生する
+            if (owner_->GetAnimationSeconds() > 0.4f && isPlayFlapSE_ == false)
+            {
+                AudioManager::Instance().PlaySE(SE::Flap0);
+
+                isPlayFlapSE_ = true;
             }
 
             // エフェクト
@@ -590,13 +612,13 @@ namespace ActionDragon
         {
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::BackStep, false);
             owner_->SetTransitionTime(transitionTurn_);
-            owner_->SetStep(1);
+            ChangeState(STATE::Turn);
         }
         else
         {
             owner_->PlayBlendAnimation(Enemy::DragonAnimation::FrontRoar, false, 1.0f, blendStartFrame_);
             owner_->SetTransitionTime(transition_);
-            owner_->SetStep(2);
+            ChangeState(STATE::Roar);
         }
 
         // ルートモーションを現時点では使用しない
@@ -1658,6 +1680,8 @@ namespace ActionDragon
                 isPlayFootSteps_[i] = false;
             }
 
+            isPlayFlapSE_ = false;
+
             owner_->SetStep(1);
             break;
         case 1:
@@ -1773,6 +1797,14 @@ namespace ActionDragon
 
             break;
         case 4:// 回転処理
+
+            // 羽ばたきSE再生する
+            if (owner_->GetAnimationSeconds() > 0.2f && isPlayFlapSE_ == false)
+            {
+                AudioManager::Instance().PlaySE(SE::Flap0);
+
+                isPlayFlapSE_ = true;
+            }
 
             if (owner_->GetAnimationSeconds() > 0.4f)
             {

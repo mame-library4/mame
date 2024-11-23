@@ -71,9 +71,6 @@ public:// --- 取得・設定 ---
     void UseCounterCamera();        // カウンターカメラを使用する
     void UseCounterAttackCamera();  // カウンター攻撃カメラを使用する
 
-    // ---------- ロックオンカメラ ----------
-    [[nodiscard]] const std::string GetCurrentTargetJointName() const { return targetJointName_.at(currentTargetJointIndex_); }
-
 private:
 #pragma region---------- 各種カメラの定数 ----------
     enum class EnemyDeathCamera
@@ -101,7 +98,6 @@ private:
 
 
 private:
-    void UpdateLockonCamera(const float& elapsedTime); // ロックオンカメラ更新
     void UpdateCameraReset(const float& elapsedTime);  // カメラリセット更新
 
 
@@ -151,26 +147,6 @@ private:
     float               vibrationTime_          = 0.0f; // 振動時間
     float               vibrationTimer_         = 0.0f; // 振動時間を測るタイマー
 
-
-    
-
-
-
-    bool isAdjustCameraLength_ = false; // 地面に埋まらないように
-
-    float lerpTimer_ = 0.0f;
-
-    // ---------- ロックオンカメラ ----------
-    std::vector<std::string>    targetJointName_;                    // ターゲットにするジョイントの名前
-    int                         currentTargetJointIndex_    = 0;     // 現在選択中のジョイント番号
-    float                       lockonInputThreshold_       = 0.3f;  // ジョイント変更の入力閾値
-    bool                        useLockonCamera_            = false; // ロックオンカメラ使用フラグ
-    bool                        isNextJointAccessible       = true;  // 次のターゲットを選択できるか
-
-    float lockOnRotationSpeed_ = 0.5f; // カメラ回転速度
-
-    float hitWallLerpTimer_ = 0.0f;
-    bool isHitWall_ = false;
 
     // ---------- カメラリセット ----------
     DirectX::XMFLOAT2   resetOldRotation_       = {};    // 処理開始時の角度

@@ -25,12 +25,10 @@ UICrosshair::UICrosshair()
 // ----- 更新 -----
 void UICrosshair::Update(const float& elapsedTime)
 {
+    return;
+
     // 敵(ターゲット)が生きているか判定
     if (JudgementEnemyAlive() == false) return;
-
-    // 現在ロックオンしているジョイントの位置を取得する
-    const std::string jointName = Camera::Instance().GetCurrentTargetJointName();
-    targetJointPosition_ = EnemyManager::Instance().GetEnemy(0)->GetJointPosition(jointName);
 
     // UI描画位置が視界に入ってるかを判定する
     if (JudgementDraw() == false) return;

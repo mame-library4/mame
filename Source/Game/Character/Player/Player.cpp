@@ -39,6 +39,7 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::ComboAttack0_1(this));        // コンボ0_1
         GetStateMachine()->RegisterState(new PlayerState::ComboAttack0_2(this));        // コンボ0_2
         GetStateMachine()->RegisterState(new PlayerState::ComboAttack0_3(this));        // コンボ0_3
+        GetStateMachine()->RegisterState(new PlayerState::PlacingBarrelState(this));        // 樽設置
 
         // 一番初めのステートを設定する
         GetStateMachine()->SetState(static_cast<UINT>(STATE::Idle));

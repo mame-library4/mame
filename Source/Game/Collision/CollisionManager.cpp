@@ -6,6 +6,7 @@
 #include "Projectile/ProjectileManager.h"
 #include "UI/UINumber.h"
 #include "AudioManager.h"
+#include "Item/ItemManager.h"
 
 void CollisionManager::Initialize()
 {
@@ -23,6 +24,9 @@ void CollisionManager::Update(const float& elapsedTime)
 
     // Player と Projectile の判定
     UpdatePlayerVsProjectile();
+
+    // アイテム と 攻撃 の判定
+    UpdateItemVsAttack();
 
     if (PlayerManager::Instance().GetPlayer()->GetCurrentState() == Player::STATE::RushAttack) return;
     for (int i = 0; i < maxEffectHandle_; ++i)
@@ -349,6 +353,9 @@ void CollisionManager::UpdatePlayerDamageVsEnemyAttack()
                 {
                     Input::Instance().GetGamePad().Vibration(0.2f, 1.0f);
                 }
+
+                // ダメージSE再生
+                AudioManager::Instance().PlaySE(SE::Damage);
                 
                 // HPがまだあるのでDamageStateに遷移
                 if (player->GetHealth() > 0.0f)
@@ -641,6 +648,72 @@ void CollisionManager::CounterCheckProjectile()
             }
 
             return;
+        }
+    }
+}
+
+// ----- アイテムと攻撃判定との判定 -----
+void CollisionManager::UpdateItemVsAttack()
+{
+    // プレイヤーの攻撃との判定をする
+    // 攻撃可能フレームなら処理する
+    if (PlayerManager::Instance().GetPlayer()->GetIsAttackValid())
+    {
+        for (int itemIndex = 0; itemIndex < ItemManager::Instance().GetItemCount(); ++itemIndex)
+        {
+            Item* item = ItemManager::Instance().GetItems().at(itemIndex);
+            if (item->GetIsDrawModel() == false) continue;
+            
+            bool isHit = false;
+            Player* player = PlayerManager::Instance().GetPlayer().get();            
+            for (int playerDataIndex = 0; playerDataIndex < player->GetAttackDetectionDataCount(); ++playerDataIndex)
+            {
+                // 既に当たっていたら飛ばす
+                if (isHit) continue;
+
+                const AttackDetectionData playerData = player->GetAttackDetectionData(playerDataIndex);
+
+                const DirectX::XMFLOAT3 itemPosition = item->GetTransform()->GetPosition() + item->GetOffsetPosition();
+
+                // 当たったかチェック
+                if (IntersectSphereVsSphere(
+                    playerData.GetPosition(), playerData.GetRadius(),
+                    itemPosition, item->GetDamageRadius()))
+                {
+                    item->OnHit();
+                    isHit = true;
+                }
+            }
+        }
+    }
+
+    // ドラゴンの攻撃との判定をする
+    // 攻撃判定が有効 & まだ当たってないなら 処理する
+    if (EnemyManager::Instance().GetEnemy(0)->GetIsAttackActive())
+    {
+        for (int itemIndex = 0; itemIndex < ItemManager::Instance().GetItemCount(); ++itemIndex)
+        {
+            Item* item = ItemManager::Instance().GetItems().at(itemIndex);
+            if (item->GetIsDrawModel() == false) continue;
+            
+            bool isHit = false;
+            Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
+            for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetAttackDetectionDataCount(); ++enemyDataIndex)
+            {
+                const AttackDetectionData enemyData = enemy->GetAttackDetectionData(enemyDataIndex);
+                if (enemyData.GetIsActive() == false) continue;
+
+                const DirectX::XMFLOAT3 itemPosition = item->GetTransform()->GetPosition() + item->GetOffsetPosition();
+
+                // 当たったかチェック
+                if (IntersectSphereVsSphere(
+                    enemyData.GetPosition(), enemyData.GetRadius(),
+                    itemPosition, item->GetDamageRadius()))
+                {
+                    item->OnHit();
+                    isHit = true;
+                }
+            }
         }
     }
 }

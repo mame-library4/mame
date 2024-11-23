@@ -369,7 +369,6 @@ namespace PlayerState
         float dashRootMotionValue_ = 4.0f;
     };
 
-
     // ----- カウンター -----
     class CounterState : public State<Player>
     {
@@ -468,6 +467,7 @@ namespace PlayerState
         float currentAnimationFrame_ = 0.0f;
     };
 
+    // ----- 走り攻撃 ----- 
     class RunAttackState : public State<Player>
     {
     public:
@@ -582,5 +582,29 @@ namespace PlayerState
         bool    isPlaySwordSlashSE_ = false;
 
         float rootMotionValue_ = 0.4f;
+    };
+
+    // ----- 樽設置 -----
+    class PlacingBarrelState : public State<Player>
+    {
+    public:
+        PlacingBarrelState(Player* player) : State(player, "PlacingBarrelState") {}
+        ~PlacingBarrelState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+
+    private:
+        float firstAnimationStartFrame_         = 0.35f;
+        float firstAnimationEndFrame_           = 0.5f;
+        float firstAnimationSpeed_              = 1.0f;
+        float firstAnimationTransitionTime_     = 0.1f;
+        float secondAnimationStartFrame_        = 0.8f;
+        float secondAnimationSpeed_             = 1.5f;
+        float secondAniamtionTransitionTime_    = 0.2f;
+
+        float generatePosition_ = 0.7f;
     };
 }
