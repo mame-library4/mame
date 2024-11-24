@@ -324,106 +324,13 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("CloseRangeAttack", "Roar",         0, BehaviorTree::SelectRule::None, new ActionDragon::RoarJudgment(this),         new ActionDragon::RoarAction(this));
 #else
     behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
+    behaviorTree_->AddNode("Attack", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
     behaviorTree_->AddNode("Attack", "Roar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
     behaviorTree_->AddNode("Attack", "StompAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::StompAttackAction(this));
-    behaviorTree_->AddNode("Attack", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
     behaviorTree_->AddNode("Attack", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
     behaviorTree_->AddNode("Attack", "TackleAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
     behaviorTree_->AddNode("Attack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
 
-#endif
-
-
-#if 0
-    behaviorTree_->AddNode("Attack", "ComboSlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAttackAction(this));
-    behaviorTree_->AddNode("Attack", "SuperNova",       0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
-
-    behaviorTree_->AddNode("Attack", "Guard",           0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::GuardAction(this));
-    behaviorTree_->AddNode("Attack", "SlamAttack",      0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
-    behaviorTree_->AddNode("Attack", "TurnAttack",      0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
-    
-    behaviorTree_->AddNode("Attack", "TackleAttack",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));  
-    behaviorTree_->AddNode("Attack", "Walk",            0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));    
-#endif
-    
-    //behaviorTree_->AddNode("Attack", "Meteor", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MeteorAction(this));
-    
-    
-
-#if 0
-    // --------------- ‹¯‚Ý ---------------
-    behaviorTree_->AddNode("Root",   "Flinch",       1, BehaviorTree::SelectRule::Priority, new FlinchJudgment(this), nullptr);
-    behaviorTree_->AddNode("Flinch", "PartDestructionFlinch", 0, BehaviorTree::SelectRule::None, new PartDestructionFlinchJudgment(this), new ActionDragon::PartDestructionFlinchAction(this));
-    behaviorTree_->AddNode("Flinch", "NormalFlinch",          1, BehaviorTree::SelectRule::None, new NormalFlinchJudgment(this), new ActionDragon::FlinchAction(this));
-    behaviorTree_->AddNode("Flinch", "FlyFlinch",             2, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyFlinchAction(this));
-
-    // --------------- ”ñí“¬ ---------------
-    behaviorTree_->AddNode("Root", "NonBattle", 2, BehaviorTree::SelectRule::Priority, new NonBattleJudgment(this), nullptr);
-    behaviorTree_->AddNode("NonBattle", "Idle(NonBattle)", 0, BehaviorTree::SelectRule::None, new NonBattleIdleJudgment(this), new ActionDragon::NonBattleIdleAction(this));
-    behaviorTree_->AddNode("NonBattle", "Walk(NonBattle)", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::NonBattleWalkAction(this));
-
-    // --------------- í“¬ ---------------
-    behaviorTree_->AddNode("Root", "Battle", 3, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
-    behaviorTree_->AddNode("Battle", "Shout", 0, BehaviorTree::SelectRule::Priority, new ShoutJudgment(this), nullptr);
-#if 0
-    behaviorTree_->AddNode("Battle", "Near", 1, BehaviorTree::SelectRule::Random, new NearJudgment(this), nullptr);
-    behaviorTree_->AddNode("Battle", "Far", 2, BehaviorTree::SelectRule::Random, nullptr, nullptr);
-#else
-    behaviorTree_->AddNode("Battle", "Near",  1, BehaviorTree::SelectRule::Priority, new NearJudgment(this), nullptr);
-    
-    //behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Random, nullptr, nullptr);
-    behaviorTree_->AddNode("Battle", "Far",   2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
-#endif
-
-    //behaviorTree_->AddNode("Shout", "Roar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
-    behaviorTree_->AddNode("Shout", "RoarLong",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarLongAction(this));
-
-    
-    behaviorTree_->AddNode("Near", "ComboFlySlam",  0, BehaviorTree::SelectRule::None, new ComboFlySlamJudgment(this), new ActionDragon::ComboFlySlamAction(this));    
-    
-#if 0
-    behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
-
-    behaviorTree_->AddNode("MostNear", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
-    behaviorTree_->AddNode("MostNear", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
-    behaviorTree_->AddNode("MostNear", "ComboSlam", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));
-    behaviorTree_->AddNode("MostNear", "KnockBack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::KnockBackAction(this));
-    behaviorTree_->AddNode("MostNear", "FlyAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));
-#else
-
-
-
-    behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::SequentialLooping, nullptr, nullptr);
-    //behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
-    //behaviorTree_->AddNode("Near", "MostNear",    0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
-
-    
-    behaviorTree_->AddNode("MostNear", "TurnAttack",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
-    behaviorTree_->AddNode("MostNear", "SuperNova",    0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
-    
-    behaviorTree_->AddNode("MostNear", "ComboSlam",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboSlamAction(this));    
-    behaviorTree_->AddNode("MostNear", "KnockBack",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::KnockBackAction(this));
-    behaviorTree_->AddNode("MostNear", "FlyAttack",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FlyAttackAction(this));    
-#if 1
-    behaviorTree_->AddNode("MostNear", "ComboFlySlam", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::ComboFlySlamAction(this));
-    behaviorTree_->AddNode("MostNear", "FireBreath", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireBreath(this));
-    behaviorTree_->AddNode("MostNear", "FireBreathCombo", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireBreathCombo(this));
-    
-    behaviorTree_->AddNode("MostNear", "Tackle", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
-#endif
-
-#endif
-
-    //behaviorTree_->AddNode("Far", "RiseAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RiseAttackAction(this));
-       
-    behaviorTree_->AddNode("Far", "FireBreath",        0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireBreath(this));
-    behaviorTree_->AddNode("Far", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
-    behaviorTree_->AddNode("Far", "FireB1reathCombo",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireBreathCombo(this));
-    behaviorTree_->AddNode("Far", "Tackle",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
-    //behaviorTree_->AddNode("Far", "Move",     0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveAction(this));
-    
-    //behaviorTree_->AddNode("Far", "MoveTurn",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveTurnAction(this));
-    //behaviorTree_->AddNode("Far", "MoveAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::MoveAttackAction(this));
 #endif
 }
 

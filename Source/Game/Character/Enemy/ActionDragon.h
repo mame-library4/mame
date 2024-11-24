@@ -296,45 +296,57 @@ namespace ActionDragon
         enum class STATE
         {
             Initialize, // 初期化
+            Turn,       // 旋回処理
             Attack,     // 攻撃
         };
 
     private:
         void PlayAnimation();
 
-        void Finalize(); // 終了化
+        void Initialize();  // 初期化
+        void Finalize();    // 終了化
         void UpdateAnimationSpeed(); // アニメーションの速度を調整する
 
         
 
         void SetState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
     private:
-        TailParticle* tailParticle_ = nullptr;
-
-        float slowStartFrame_   = 0.5f;   // スロー開始フレーム
-        float slowEndFrame_     = 0.8f; // スロー終了フレーム
-        float slowSpeed_        = 0.3f;
-
-        float recoveryFrame_ = 2.0f; // 攻撃の後隙
-        float recoverySpeed_ = 1.0f;
+        // ----- Particle -----
+        TailParticle*   tailParticle_               = nullptr;
+        bool            isPlayTailParticle_         = false;
+        bool            isPlayTailTrailParticle_    = false;
+        bool            isRemoveParticle_           = false;
 
         const float removeFrame_ = 2.2f;
 
-        bool isPlayTailParticle_        = false;
-        bool isPlayTailTrailParticle_   = false;
-        bool isRemoveParticle_          = false;
+        // ----- Turn -----
+        DirectX::XMFLOAT3   targetPosition_ = {};
+        float               turnStartFrame_ = 0.4f;
+        float               turnEndFrame_   = 1.2f;
+
+        // ----- Slow -----
+        float slowStartFrame_   = 0.5f; // スロー開始フレーム
+        float slowEndFrame_     = 0.8f; // スロー終了フレーム
+        float slowSpeed_        = 0.3f; // スロー速度
+
+        // ----- Recovery -----
+        float recoveryFrame_ = 2.0f; // 攻撃の後隙
+        float recoverySpeed_ = 1.0f;
 
         // ----- TransitionFrame -----
         float transitionWalk_ = 0.2f;
+        float transitionTurn_ = 0.2f;
 
         // ----- BlendFrame -----
         float blendFrameWalk_ = 0.3f;
+        float blendFrameTurn_ = 0.0f;
 
         // ----- Movement -----
         AddForceData addForceData_;
         bool         isAbleMove_ = true;
 
         // ---------- SE ----------
+        bool isPlayFlapSE_ = false;
         bool isPlayTurnSE_ = false;
     };
 

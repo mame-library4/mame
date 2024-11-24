@@ -1254,7 +1254,7 @@ namespace ActionDragon
         switch (static_cast<STATE>(owner_->GetStep()))
         {
         case STATE::Initialize:// 初期設定
-            // アニメーション再生
+            // アニメーション再生 (回転角度によって遷移するステートを変更)
             PlayAnimation();
 
             // 現在の攻撃アクションを設定する
@@ -1262,8 +1262,6 @@ namespace ActionDragon
 
             // 現時点ではルートモーションを使用しない
             owner_->SetUseRootMotion(false);
-
-            // カウンター有効範囲を設定
 
             // パーティクル生成
             tailParticle_ = new TailParticle();
@@ -1278,16 +1276,42 @@ namespace ActionDragon
                 tailParticle_->UpdateJointPosition(jointPosition);
             }
 
-            // 変数初期化
-            addForceData_.Initialize(1.5f, 0.3f, 0.5f);
-            isPlayTailParticle_ = false;
-            isPlayTailTrailParticle_ = false;
-            isRemoveParticle_ = false;
+            // 初期化
+            Initialize();
 
-            isPlayTurnSE_ = false;
+            break;
+        case STATE::Turn:// 旋回処理
+            // ルートモーション使用設定
+            if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+            {
+                owner_->SetUseRootMotion(true);
+            }
 
-            // Attackステートへ
-            SetState(STATE::Attack);
+            // 旋回処理
+            if (owner_->GetAnimationSeconds() > turnStartFrame_)
+            {
+                targetPosition_ = PlayerManager::Instance().GetTransform()->GetPosition();
+                owner_->Turn(elapsedTime, targetPosition_);
+            }
+
+            // 羽ばたきSE再生する
+            if (owner_->GetAnimationSeconds() > 0.2f && isPlayFlapSE_ == false)
+            {
+                AudioManager::Instance().PlaySE(SE::Flap0);
+
+                isPlayFlapSE_ = true;
+            }
+
+            if (owner_->GetAnimationSeconds() > turnEndFrame_)
+            {
+                // ルートモーションの使用終了
+                owner_->SetUseRootMotion(false);
+
+                owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurn, false, 1.0f, blendFrameTurn_);
+                owner_->SetTransitionTime(transitionTurn_);
+
+                SetState(STATE::Attack);
+            }
 
             break;
         case STATE::Attack:
@@ -1378,15 +1402,24 @@ namespace ActionDragon
     {
         if (ImGui::TreeNodeEx("Trun", ImGuiTreeNodeFlags_Framed))
         {
+            if (ImGui::TreeNodeEx("---------- Turn ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("StartFrame", &turnStartFrame_, 0.01f);
+                ImGui::DragFloat("EndFrame", &turnEndFrame_, 0.01f);
+
+                ImGui::TreePop();
+            }            
             if (ImGui::TreeNodeEx("---------- TransitionTime ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::DragFloat("Walk", &transitionWalk_, 0.01f, 0.0f, 0.5f);
+                ImGui::DragFloat("Turn", &transitionTurn_, 0.01f, 0.0f, 0.5f);
 
                 ImGui::TreePop();
             }
             if (ImGui::TreeNodeEx("---------- BlendFrame ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::DragFloat("Walk", &blendFrameWalk_, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("Turn", &blendFrameTurn_, 0.01f, 0.0f, 1.0f);
 
                 ImGui::TreePop();
             }
@@ -1418,6 +1451,21 @@ namespace ActionDragon
     // ----- アニメーション再生 -----
     void TurnAttackAction::PlayAnimation()
     {
+        // -----------------------------------------------------------------
+        //      ownerのForwardから45度以上回転角があれば回転処理に遷移する
+        // -----------------------------------------------------------------
+        targetPosition_ = PlayerManager::Instance().GetTransform()->GetPosition();
+        DirectX::XMFLOAT3 vec = XMFloat3Normalize(targetPosition_ - owner_->GetTransform()->GetPosition());
+        DirectX::XMFLOAT3 forward = XMFloat3Normalize(owner_->GetTransform()->CalcForward());
+        float angle = acosf(std::clamp(XMFloat3Dot(vec, forward), -1.0f, 1.0f));
+        if (angle > DirectX::XM_PIDIV4)
+        {
+            owner_->PlayBlendAnimation(Enemy::DragonAnimation::BackStep, false);
+            owner_->SetTransitionTime(0.1f);
+            SetState(STATE::Turn);
+            return;
+        }
+
         const Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(owner_->GetAnimationIndex());
         float TransitionTime = 0.1f;
         float blendAnimationFrame = 0.0f;
@@ -1430,6 +1478,21 @@ namespace ActionDragon
 
         owner_->PlayBlendAnimation(Enemy::DragonAnimation::AttackTurn, false, 1.0f, blendAnimationFrame);
         owner_->SetTransitionTime(TransitionTime);
+        SetState(STATE::Attack);
+    }
+
+    // ----- 初期化 -----
+    void TurnAttackAction::Initialize()
+    {
+        addForceData_.Initialize(1.5f, 0.3f, 0.5f);
+        
+        // ----- Particle -----
+        isPlayTailParticle_         = false;
+        isPlayTailTrailParticle_    = false;
+        isRemoveParticle_           = false;
+        // ----- SE -----
+        isPlayFlapSE_ = false;
+        isPlayTurnSE_ = false;
     }
 
     // ----- 終了化 -----
