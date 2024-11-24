@@ -231,18 +231,6 @@ namespace PlayerState
 
 #pragma endregion ----- 遷移チェック -----
 
-        // 移動入力判定
-        if (animationSeconds >= owner_->GetMoveInputStartFrame())
-        {
-            // スティック入力があるか
-            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
-            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
-            if (aLx == 0.0f && aLy == 0.0f) return false;
-
-            owner_->ChangeState(Player::STATE::Run);
-            return true;
-        }
-
         // ガード入力判定
         if (owner_->IsGuardCounterButtonDown() && owner_->GetIsGuardGaugeDepleted() == false)
         {
@@ -254,6 +242,18 @@ namespace PlayerState
         if (owner_->IsItemKeyDown())
         {
             owner_->ChangeState(Player::STATE::PlacingBarre);
+            return true;
+        }
+
+        // 移動入力判定
+        if (animationSeconds >= owner_->GetMoveInputStartFrame())
+        {
+            // スティック入力があるか
+            const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLy = Input::Instance().GetGamePad().GetAxisLY();
+            if (aLx == 0.0f && aLy == 0.0f) return false;
+
+            owner_->ChangeState(Player::STATE::Run);
             return true;
         }
 
@@ -436,6 +436,13 @@ namespace PlayerState
 
 #pragma endregion ----- 遷移チェック -----
 
+        // ガード入力判定
+        if (owner_->IsGuardCounterButtonDown() && owner_->GetIsGuardGaugeDepleted() == false)
+        {
+            owner_->ChangeState(Player::STATE::GuardCounter);
+            return true;
+        }
+
         // 移動入力判定
         if (animationSeconds >= owner_->GetMoveInputStartFrame())
         {
@@ -450,13 +457,6 @@ namespace PlayerState
                 owner_->ChangeState(Player::STATE::Idle);
                 return true;
             }
-        }
-
-        // ガード入力判定
-        if (owner_->IsGuardCounterButtonDown() && owner_->GetIsGuardGaugeDepleted() == false)
-        {
-            owner_->ChangeState(Player::STATE::GuardCounter);
-            return true;
         }
 
         return false;
@@ -785,6 +785,17 @@ namespace PlayerState
             owner_->ChangeState(Player::STATE::Dodge);
             return;
         }
+        // 移動入力判定
+        if (owner_->GetAnimationSeconds() > moveInputFrame_)
+        {
+            const float aLX = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLY = Input::Instance().GetGamePad().GetAxisLY();
+            if (fabsf(aLX) >= moveInputThreshold_ || fabsf(aLY) >= moveInputThreshold_)
+            {
+                owner_->ChangeState(Player::STATE::Run);
+                return;
+            }
+        }
 
         if (owner_->IsPlayAnimation() == false)
         {
@@ -814,6 +825,8 @@ namespace PlayerState
     {
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
+            ImGui::DragFloat("MoveInputFrame", &moveInputFrame_, 0.01f);
+            ImGui::DragFloat("MoveInputThresold", &moveInputThreshold_, 0.01f, 0.0f, 1.0f);
 
             ImGui::TreePop();
         }

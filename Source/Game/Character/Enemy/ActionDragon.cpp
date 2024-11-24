@@ -613,6 +613,10 @@ namespace ActionDragon
         // ルートモーションの使用終了
         owner_->SetUseRootMotion(false);
 
+        // ラジアルブラー使用停止
+        PostProcess::Instance().SetUseRadialBlur(false);
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 1;
+
         owner_->SetStep(0);
     }
 
@@ -2509,6 +2513,7 @@ namespace ActionDragon
         
         EffectManager::Instance().GetEffect("Power")->Stop(powerEffectHandle_);
         
+        PostProcess::Instance().SetUseRadialBlur(false);
         PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 1;
 
         // ジャスト回避判定をリセットする

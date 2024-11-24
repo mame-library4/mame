@@ -146,6 +146,10 @@ namespace PlayerState
         void Update(const float& elapsedTime)   override;
         void Finalize()                         override;
         void DrawDebug()                        override;
+
+    private:
+        float moveInputFrame_       = 0.4f;
+        float moveInputThreshold_   = 0.7f;
     };
 
     // ----- ÉKÅ[ÉhîjâÛÇ≥ÇÍÇΩ -----
