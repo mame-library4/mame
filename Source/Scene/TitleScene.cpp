@@ -7,6 +7,7 @@
 #include "Input.h"
 
 #include "PostProcess/PostProcess.h"
+#include "AudioManager.h"
 
 // ----- リソース生成 -----
 void TitleScene::CreateResource()
@@ -61,12 +62,18 @@ void TitleScene::Initialize()
 
     playerObject_->GetTransform()->SetPosition(-1.0f, 0.0f, 2.0f);
     playerObject_->GetTransform()->SetRotation(0.0f, DirectX::XMConvertToRadians(162.0f), 0.0f);
+
+    // タイトルBGM再生
+    AudioManager::Instance().PlayBGM(BGM::Title);
 }
 
 // ----- 終了化 -----
 void TitleScene::Finalize()
 {
     UIManager::Instance().Remove(UIManager::UIType::UITitle);
+
+    // BGM停止
+    AudioManager::Instance().StopBGM(BGM::Title);
 }
 
 // ----- 更新 -----
@@ -105,6 +112,9 @@ void TitleScene::ForwardRender()
 // ----- ImGui用 -----
 void TitleScene::DrawDebug()
 {
+    ImGui::DragFloat("BGMVolume", &bgmVolume_, 0.01f, 0.0f, 1.0f);
+    if (ImGui::Button("SetVolume")) AudioManager::Instance().SetBGMVolume(BGM::Title, bgmVolume_);
+
     GetStateMachine()->DrawDebug();
 
     UIManager::Instance().DrawDebug();

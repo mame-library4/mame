@@ -54,4 +54,7 @@ private:
     std::unique_ptr<Object> stageObject_;
     std::unique_ptr<Object> dragonObject_;
     std::unique_ptr<Object> playerObject_;
+
+    // ----- Debug—p -----
+    float bgmVolume_ = 1.0f;
 };

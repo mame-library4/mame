@@ -20,13 +20,19 @@ void AudioManager::LoadAudio()
     {
         // BGMì«Ç›çûÇ›
         {            
+            bgm_[static_cast<int>(BGM::Title)] = std::make_unique<Audio>(xAudio2_.Get(), L"./Resources/Audio/BGM/Title.wav");
             bgm_[static_cast<int>(BGM::Game)] = std::make_unique<Audio>(xAudio2_.Get(), L"./Resources/Audio/BGM/Game.wav");
         }
 
         // SEì«Ç›çûÇ›
         {
-            // SE::Lockon
-            se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Lockon.wav", 2));
+            // SE::Press, SE::Select
+            se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Title/Press1.wav", 10));
+            se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Title/Select.wav", 10));
+            
+            // SE::Put, SE::Bomb
+            se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Item/Put.wav", 2));
+            se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Item/Bomb.wav", 3));
 
             // SE::Dash, SE::JustDodge, SE::Slow, SE::RushAttackMove
             se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Player/Move/Dash.wav", 2));
@@ -78,6 +84,9 @@ void AudioManager::LoadAudio()
             
             // SE::Roar
             se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Dragon/Roar/Roar.wav", 2));
+            
+            // SE::Down
+            se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Dragon/Down/Down.wav", 2));
         }
     }
 
@@ -85,11 +94,17 @@ void AudioManager::LoadAudio()
     {    
         // BGMâπó í≤êÆ
         {
+            bgm_[static_cast<int>(BGM::Title)]->Volume(0.5f);
             bgm_[static_cast<int>(BGM::Game)]->Volume(0.06f);
         }
 
         // SEâπó í≤êÆ
         {
+            se_[static_cast<int>(SE::Select)].Volume(0.5f);
+            
+            se_[static_cast<int>(SE::Put)].Volume(0.5f);
+            se_[static_cast<int>(SE::Bomb)].Volume(0.2f);
+            
             se_[static_cast<int>(SE::Dash)].Volume(0.5f);
             se_[static_cast<int>(SE::JustDodge)].Volume(0.6f);
             se_[static_cast<int>(SE::Slow)].Volume(0.5f);
@@ -125,6 +140,8 @@ void AudioManager::LoadAudio()
             se_[static_cast<int>(SE::Fire0)].Volume(0.1f);
             se_[static_cast<int>(SE::Explosion2)].Volume(0.5f);
             se_[static_cast<int>(SE::Explosion3)].Volume(0.5f);
+            
+            se_[static_cast<int>(SE::Down)].Volume(0.5f);
         }
     }
 

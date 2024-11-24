@@ -32,7 +32,10 @@ private:
     void UpdatePlayerDamageVsProjectileAttack();
     void CounterCheckProjectile();                  // 発射物に対するカウンター判定
 
+    void UpdateItemVs();       // アイテムとの処理呼び出し
     void UpdateItemVsAttack(); // アイテムと攻撃判定との判定
+    void UpdateItemVsDamage(); // アイテムとダメージ判定
+    void UpdateItemVsItem();   // アイテム同士の判定
 
 private:// 判定用関数
 #pragma region ---------- 判定用関数 ----------

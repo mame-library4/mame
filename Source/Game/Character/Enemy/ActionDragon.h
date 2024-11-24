@@ -441,6 +441,9 @@ namespace ActionDragon
         float   vibrationTime_      = 0.4f;
         bool    isPlayVibration_    = false;
 
+        // ----- SE -----
+        bool isPlayFlapSE_[2] = {};
+        bool isPlayExplosionSE_ = false;
     };
 
     // ----- SuperNovaAction -----

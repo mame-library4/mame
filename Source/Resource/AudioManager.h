@@ -15,7 +15,11 @@ enum class BGM
 
 enum class SE
 {
-    Lockon,
+    Press,
+    Select,
+
+    Put,
+    Bomb,
 
     Dash,
     JustDodge,
@@ -56,6 +60,8 @@ enum class SE
     Explosion3,
     // ----- Roar -----
     Roar,
+    // ----- Down -----
+    Down,
 
     Max,
 };

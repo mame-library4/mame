@@ -171,8 +171,15 @@ void UIHealth::ApplyDamageEffect()
     vibrationTime_   = 0.2f; // 振動時間
     
     // 自動回復するゲージの幅を求める
-    if (currentHealth <= 0.0f) autoRecoveryHealth_ = 0.0f;
-    else autoRecoveryHealth_ = currentHealth + 20.0f;
+    if (currentHealth <= 0.0f)
+    {
+        autoRecoveryHealth_ = 0.0f;
+    }
+    else
+    {
+        autoRecoveryHealth_ = currentHealth + 20.0f;
+        autoRecoveryHealth_ = min(autoRecoveryHealth_, PlayerManager::Instance().GetPlayer()->GetMaxHealth());
+    }
 }
 
 // ----- 振動更新 -----

@@ -16,7 +16,7 @@ UICrosshair::UICrosshair()
     centerDot_->SetName("CenterDot");
     centerDot_->GetTransform()->SetColorA(0.0f);
 
-    AudioManager::Instance().PlaySE(SE::Lockon);
+    //AudioManager::Instance().PlaySE(SE::Lockon);
 
     // •`‰æƒtƒ‰ƒO‚ð—§‚Ä‚é
     SetIsDraw();

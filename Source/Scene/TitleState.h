@@ -55,7 +55,7 @@ namespace TitleState
 
         // ----- Select -----
         STATE   currentState_           = STATE::GameStart; // 現在のステート
-        float   breakTime_              = 0.1f;             // 移動間のディレイ
+        float   breakTime_              = 0.15f;            // 移動間のディレイ
         float   breakTimer_             = 0.0f;             // 移動間のディレイタイマー
         float   stickThreshold_         = 0.8f;             // 入力判定閾値
 

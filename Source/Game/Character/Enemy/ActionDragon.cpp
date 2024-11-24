@@ -107,7 +107,7 @@ namespace ActionDragon
             // 全オーディオ停止
             AudioManager::Instance().StopAllAudio();
             // タイマー設定
-            timer_ = 20.0f;
+            timer_ = 60.0f;
 
 
             owner_->SetStep(1);
@@ -118,8 +118,8 @@ namespace ActionDragon
             timer_ -= elapsedTime;
             if (timer_ <= 0.0f)
             {
-                //uiFader_ = new UIFader(false);
-                //owner_->SetStep(2);
+                uiFader_ = new UIFader(false);
+                owner_->SetStep(2);
             }
 
             break;
@@ -187,6 +187,9 @@ namespace ActionDragon
                 owner_->ResetAllAttackActiveFlag();
                 // ジャスト回避判定を無効化する
                 owner_->ResetAllJustDodgeActiveFlag();
+
+                // ダウンの効果音を再生
+                AudioManager::Instance().PlaySE(SE::Down);
 
                 loopCounter_ = 0;
 
@@ -532,11 +535,6 @@ namespace ActionDragon
 
             if (owner_->IsPlayAnimation() == false)
             {
-                EffectManager::Instance().GetEffect("Roar")->Stop(roarEffectHandle_);
-
-                // ルートモーションの使用終了
-                owner_->SetUseRootMotion(false);
-
                 Finalize();
                 return ActionBase::State::Complete;
             }
@@ -598,6 +596,12 @@ namespace ActionDragon
     // ----- 終了化 -----
     void RoarAction::Finalize()
     {
+        // エフェクト停止
+        EffectManager::Instance().GetEffect("Roar")->Stop(roarEffectHandle_);
+
+        // ルートモーションの使用終了
+        owner_->SetUseRootMotion(false);
+
         owner_->SetStep(0);
     }
 
@@ -630,7 +634,8 @@ namespace ActionDragon
     {
         if (owner_->GetAnimationSeconds() < roarStartFrame_) return;
 
-        DirectX::XMFLOAT3 position = owner_->GetJointPosition("Dragon15_spine2");
+        DirectX::XMFLOAT3 position = owner_->GetJointPosition("Dragon15_head");
+        //DirectX::XMFLOAT3 position = owner_->GetJointPosition("Dragon15_spine2");
         DirectX::XMFLOAT2 center = Sprite::ConvertToScreenPos(position);
         center.x /= SCREEN_WIDTH;
         center.y /= SCREEN_HEIGHT;
@@ -1934,10 +1939,31 @@ namespace ActionDragon
             isAddforceBack_ = false;
             isPlayVibration_ = false;
 
+            isPlayFlapSE_[0] = false;
+            isPlayFlapSE_[1] = false;
+            isPlayExplosionSE_ = false;
+
             owner_->SetStep(1);
 
             break;
         case 1:
+
+            // 効果音処理
+            if (owner_->GetAnimationSeconds() > 0.23f && isPlayFlapSE_[0] == false)
+            {
+                AudioManager::Instance().PlaySE(SE::Flap0);
+                isPlayFlapSE_[0] = true;
+            }
+            if (owner_->GetAnimationSeconds() > 0.76f && isPlayFlapSE_[1] == false)
+            {
+                AudioManager::Instance().PlaySE(SE::Flap0);
+                isPlayFlapSE_[1] = true;
+            }
+            if (owner_->GetAnimationSeconds() > 1.74f && isPlayExplosionSE_ == false)
+            {
+                AudioManager::Instance().PlaySE(SE::Explosion1);
+                isPlayExplosionSE_ = true;
+            }
 
             // 移動処理
             Move(elapsedTime);

@@ -3950,6 +3950,9 @@ namespace PlayerState
                 generatePosition = generatePosition + XMFloat3Normalize(owner_->GetTransform()->CalcForward()) * generatePosition_;
                 Barrel* barrel = new Barrel(generatePosition);
 
+                // Ý’uŒø‰Ê‰¹‚ðÄ¶
+                AudioManager::Instance().PlaySE(SE::Put);
+
                 owner_->PlayBlendAnimation(Player::Animation::DownEnd, false, secondAnimationSpeed_, secondAnimationStartFrame_);
                 owner_->SetTransitionTime(secondAniamtionTransitionTime_);
             }

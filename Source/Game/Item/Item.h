@@ -19,7 +19,10 @@ public:
 public:
     [[nodiscard]] const DirectX::XMFLOAT3 GetOffsetPosition() const { return offsetPosition_; }
     [[nodiscard]] const float GetDamageRadius() const { return damageRadius_; }
+    [[nodiscard]] const float GetAttackRadius() const { return attackRadius_; }
+    [[nodiscard]] const float GetAttackPower() const { return attackPower_; }
     [[nodiscard]] const bool GetIsDrawModel() const { return isDrawModel_; }
+    [[nodiscard]] const bool GetIsAttackActive() const { return isAttackActive_; }
 
     [[nodiscard]] const int GetId() const { return id_; }
     [[nodiscard]] const std::string GetName() const { return name_; }
@@ -27,11 +30,17 @@ public:
 protected:
     DirectX::XMFLOAT3   offsetPosition_ = {};
     float               damageRadius_   = 1.0f;
+    float               attackRadius_   = 2.0f;
+    float               attackPower_    = 20.0f;
 
     float effectScele_ = 0.3f;
     float effectSpeed_ = 3.0f;
 
     bool isDrawModel_ = true;
+    bool isAttackActive_ = false;
+    
+    float attackTimer_ = 0.0f;
+    float attackTime_ = 0.2f;
 
     int         id_     = 0;  // ìoò^î‘çÜ
     std::string name_   = ""; // ñºëO

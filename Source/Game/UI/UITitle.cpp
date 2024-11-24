@@ -4,7 +4,7 @@
 UITitle::UITitle()
     : UI(UIManager::UIType::UITitle)
 {
-    sprite_[static_cast<int>(Type::TitleLogo)] = std::make_unique<Sprite>(L"./Resources/Image/UI/Title/TitleLogo1.png");
+    sprite_[static_cast<int>(Type::TitleLogo)] = std::make_unique<Sprite>(L"./Resources/Image/UI/Title/DragonHunter.png");
 
     sprite_[static_cast<int>(Type::PressAnyButton)] = std::make_unique<Sprite>(L"./Resources/Image/UI/Title/TitleWord.png");
     sprite_[static_cast<int>(Type::Back)]           = std::make_unique<Sprite>(L"./Resources/Image/White.png");
@@ -22,8 +22,8 @@ void UITitle::Initialize()
 {
     // ----- TitleLogo -----
     sprite_[static_cast<int>(Type::TitleLogo)]->SetName("TitleLogo");
-    sprite_[static_cast<int>(Type::TitleLogo)]->GetTransform()->SetPosition(380.0f, 280.0f);
-    sprite_[static_cast<int>(Type::TitleLogo)]->GetTransform()->SetColor(67.0f / 255.0f, 118.0f / 255.0f, 147 / 255.0f, 230 / 255.0f);
+    sprite_[static_cast<int>(Type::TitleLogo)]->GetTransform()->SetPosition(-40.0f, 190.0f);
+    sprite_[static_cast<int>(Type::TitleLogo)]->GetTransform()->SetSize(640.0f, 360.0f);
     
     // ----- PressAnyButton -----
     sprite_[static_cast<int>(Type::PressAnyButton)]->SetName("PressAnyButton");

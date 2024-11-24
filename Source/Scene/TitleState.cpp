@@ -6,6 +6,7 @@
 #include "LoadingScene.h"
 #include "GameScene.h"
 #include "Application.h"
+#include "AudioManager.h"
 
 // ----- IdleState -----
 namespace TitleState
@@ -46,6 +47,8 @@ namespace TitleState
         // 入力をチェックする
         if (CheckInput())
         {
+            AudioManager::Instance().PlaySE(SE::Press);
+
             owner_->ChangeState(TitleScene::STATE::Select);
             return;
         }
@@ -194,7 +197,10 @@ namespace TitleState
         {
             switch (currentState_)
             {
-            case STATE::GameStart: owner_->ChangeState(TitleScene::STATE::GameStart); break;
+            case STATE::GameStart: 
+                AudioManager::Instance().PlaySE(SE::Press);
+                owner_->ChangeState(TitleScene::STATE::GameStart); 
+                break;
             //case STATE::Options:   owner_->ChangeState(TitleScene::STATE::Options);   break;
             case STATE::Quit:      owner_->ChangeState(TitleScene::STATE::Quit);      break;
             }
@@ -225,6 +231,9 @@ namespace TitleState
 
         owner_->GetUITitle()->SetBackSpritePosition(static_cast<int>(currentState_));
         breakTimer_ = breakTime_;
+
+        // カーソル移動音再生
+        AudioManager::Instance().PlaySE(SE::Select);
     }
 }
 

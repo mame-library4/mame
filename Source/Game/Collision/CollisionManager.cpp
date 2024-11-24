@@ -25,8 +25,8 @@ void CollisionManager::Update(const float& elapsedTime)
     // Player と Projectile の判定
     UpdatePlayerVsProjectile();
 
-    // アイテム と 攻撃 の判定
-    UpdateItemVsAttack();
+    // アイテム と 〇〇 の判定
+    UpdateItemVs();
 
     if (PlayerManager::Instance().GetPlayer()->GetCurrentState() == Player::STATE::RushAttack) return;
     for (int i = 0; i < maxEffectHandle_; ++i)
@@ -39,6 +39,7 @@ void CollisionManager::Update(const float& elapsedTime)
     }
 }
 
+#pragma region ---------- Player VS Enemy ----------
 // ----- PlayerとEnemyの判定 -----
 void CollisionManager::UpdatePlayerVsEnemy()
 {
@@ -520,6 +521,9 @@ void CollisionManager::CounterCheckEnemyAttack()
     }
 }
 
+#pragma endregion ---------- Player VS Enemy ----------
+
+#pragma region ---------- Player VS Projectile ----------
 // ----- PlayerとProjectileの判定 -----
 void CollisionManager::UpdatePlayerVsProjectile()
 {
@@ -652,6 +656,21 @@ void CollisionManager::CounterCheckProjectile()
     }
 }
 
+#pragma endregion ---------- Player VS Projectile ----------
+
+#pragma region ---------- Item VS 〇〇 ----------
+void CollisionManager::UpdateItemVs()
+{
+    // アイテムと攻撃判定との判定
+    UpdateItemVsAttack();
+
+    // アイテムとダメージ判定
+    UpdateItemVsDamage();
+
+    // アイテム同士の判定
+    UpdateItemVsItem();
+}
+
 // ----- アイテムと攻撃判定との判定 -----
 void CollisionManager::UpdateItemVsAttack()
 {
@@ -718,6 +737,176 @@ void CollisionManager::UpdateItemVsAttack()
     }
 }
 
+// ----- アイテムとダメージ判定 -----
+void CollisionManager::UpdateItemVsDamage()
+{
+    // プレイヤーのくらい判定との判定をする
+    for (int itemIndex = 0; itemIndex < ItemManager::Instance().GetItemCount(); ++itemIndex)
+    {
+        Item* item = ItemManager::Instance().GetItems().at(itemIndex);
+        // 攻撃判定有効ではない
+        if (item->GetIsAttackActive() == false) continue;
+        
+        Player* player = PlayerManager::Instance().GetPlayer().get();
+        
+        // ダメージ食らっているので処理しない
+        if (player->GetCurrentState() == Player::STATE::Damage ||
+            player->GetCurrentState() == Player::STATE::Death)
+        {
+            continue;
+        }
+
+        bool isHit = false;
+        for (int playerDataIndex = 0; playerDataIndex < player->GetDamageDetectionDataCount(); ++playerDataIndex)
+        {
+            // 既に当たっていたらスキップする
+            if (isHit) continue;
+
+            const DamageDetectionData playerData = player->GetDamageDetectionData(playerDataIndex);
+
+            const DirectX::XMFLOAT3 itemPosition = item->GetTransform()->GetPosition() + item->GetOffsetPosition();
+            
+            // 当たったか判定
+            if (IntersectSphereVsSphere(
+                playerData.GetPosition(), playerData.GetRadius(),
+                itemPosition, item->GetAttackRadius()))
+            {
+                isHit = true;
+
+                // カウンター状態ならカウンター成功
+                if (player->GetIsCounter())
+                {
+                    player->SetIsAbleCounterAttack(true);
+                    return;
+                }
+
+                // ダメージを与える
+                int damage = item->GetAttackPower() * 0.2f;
+                player->AddDamage(damage);
+
+                // コントローラー振動 (ダメージ受けたリアクションとして)
+                if (EnemyManager::Instance().GetEnemy(0)->GetCurrentAttackAction() != Enemy::AttackAction::SuperNova)
+                {
+                    Input::Instance().GetGamePad().Vibration(0.2f, 1.0f);
+                }
+
+                // ダメージSE再生
+                AudioManager::Instance().PlaySE(SE::Damage);
+
+                // HPがまだあるのでDamageStateに遷移
+                if (player->GetHealth() > 0.0f)
+                {
+                    player->ChangeState(Player::STATE::Damage);
+                }
+                // HPがもうないのでDeathStateに遷移
+                else
+                {
+                    player->ChangeState(Player::STATE::Death);
+                }
+            }
+        }
+    }
+
+    // ドラゴンのくらい判定との判定をする
+    for (int itemIndex = 0; itemIndex < ItemManager::Instance().GetItemCount(); ++itemIndex)
+    {
+        Item* item = ItemManager::Instance().GetItems().at(itemIndex);
+        // 攻撃判定有効ではない
+        if (item->GetIsAttackActive() == false) continue;
+
+        Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
+        bool isHit = false;
+        for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetDamageDetectionDataCount(); ++enemyDataIndex)
+        {
+            // 既に当たっていたらスキップする
+            if (isHit) continue;
+
+            DamageDetectionData enemyData = enemy->GetDamageDetectionData(enemyDataIndex);
+
+            // もう既にダメージを食らっているデータ
+            if (enemyData.GetIsHit()) continue;
+
+            const DirectX::XMFLOAT3 itemPosition = item->GetTransform()->GetPosition() + item->GetOffsetPosition();
+
+            // 当たったかチェック
+            if (IntersectSphereVsSphere(
+                enemyData.GetPosition(), enemyData.GetRadius(),
+                itemPosition, item->GetAttackRadius()))
+            {
+                // Hitフラグを立てる, このデータの無敵時間設定
+                isHit = true;
+                enemyData.SetIsHit(true);
+                enemyData.SetHitTimer(0.01f);
+
+                // 弱点部位か判断する
+                bool isWeakPoint = false;
+                const EnemyDragon::DamageData damageDataIndex = static_cast<EnemyDragon::DamageData>(enemyDataIndex);
+                if (damageDataIndex == EnemyDragon::DamageData::Head ||
+                    (damageDataIndex >= EnemyDragon::DamageData::Tail && damageDataIndex <= EnemyDragon::DamageData::TailEnd))
+                {
+                    isWeakPoint = true;
+                }
+
+                // TODO:ヒットエフェクトを再生 ( 弱点部位は違うエフェクトを再生する )
+
+                // TODO:効果音を鳴らす
+
+
+                // 敵が死んでいなかったらダメージ処理をする
+                if (enemy->GetIsDead() == false)
+                {
+                    const float attackPower = item->GetAttackPower();
+                    const float damage = attackPower * enemyData.GetDamage();
+
+                    enemy->AddDamage(damage, enemyDataIndex);
+
+                    const DirectX::XMFLOAT4 defaultColor = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+                    const DirectX::XMFLOAT4 weakPointColor = DirectX::XMFLOAT4(1.0f, 0.55f, 0.0f, 1.0f);
+                    DirectX::XMFLOAT4 color = isWeakPoint ? weakPointColor : defaultColor;
+
+                    UINumber* ui = new UINumber(damage, enemyData.GetPosition(), color);
+                }
+            }
+        }
+    }
+}
+
+// ----- アイテム同士の判定 -----
+void CollisionManager::UpdateItemVsItem()
+{
+    for (int attackItemIndex = 0; attackItemIndex < ItemManager::Instance().GetItemCount(); ++attackItemIndex)
+    {
+        Item* attackItem = ItemManager::Instance().GetItems().at(attackItemIndex);
+        // 攻撃判定有効ではない
+        if (attackItem->GetIsAttackActive() == false) continue;
+
+        for (int damageItemIndex = 0; damageItemIndex < ItemManager::Instance().GetItemCount(); ++damageItemIndex)
+        {
+            // 同じアイテムなので処理しない
+            if (damageItemIndex == attackItemIndex) continue;
+
+            Item* damageItem = ItemManager::Instance().GetItems().at(damageItemIndex);
+
+            if (damageItem->GetIsDrawModel() == false) continue;
+
+            const DirectX::XMFLOAT3 attackItemPosition = attackItem->GetTransform()->GetPosition() + attackItem->GetOffsetPosition();
+            const DirectX::XMFLOAT3 damageItemPosition = damageItem->GetTransform()->GetPosition() + damageItem->GetOffsetPosition();
+
+            // 当たったかチェック
+            if (IntersectSphereVsSphere(
+                attackItemPosition, attackItem->GetAttackRadius(),
+                damageItemPosition, damageItem->GetDamageRadius()))
+            {
+                damageItem->OnHit();
+            }
+        }
+    }
+
+}
+
+#pragma endregion ---------- Item VS 〇〇 ----------
+
+#pragma region ---------- Intersect ----------
 // ---------- 球と球の交差判定 ----------
 const bool CollisionManager::IntersectSphereVsSphere(const DirectX::XMFLOAT3& positionA, const float radiusA, const DirectX::XMFLOAT3& positionB, const float radiusB)
 {
@@ -859,4 +1048,5 @@ const bool CollisionManager::IntersectSphereVsCapsule(const DirectX::XMFLOAT3& s
 
     return false;
 }
-;
+
+#pragma endregion ---------- Intersect ----------
