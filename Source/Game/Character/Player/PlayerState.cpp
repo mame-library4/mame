@@ -122,18 +122,6 @@ namespace PlayerState
     // ----- 更新 -----
     void IdleState::Update(const float& elapsedTime)
     {
-        if (owner_->IsGuardCounterKeyDown() && owner_->GetIsGuardGaugeDepleted() == false)
-        {
-            owner_->ChangeState(Player::STATE::GuardCounter);
-            return;
-        }
-
-        if (owner_->IsItemKeyDown())
-        {
-            owner_->ChangeState(Player::STATE::PlacingBarre);
-            return;
-        }
-
         // 先行入力判定
         if (CheckNextInput()) return;
     }
@@ -255,6 +243,20 @@ namespace PlayerState
             return true;
         }
 
+        // ガード入力判定
+        if (owner_->IsGuardCounterButtonDown() && owner_->GetIsGuardGaugeDepleted() == false)
+        {
+            owner_->ChangeState(Player::STATE::GuardCounter);
+            return true;
+        }
+
+        // アイテム使用入力判定
+        if (owner_->IsItemKeyDown())
+        {
+            owner_->ChangeState(Player::STATE::PlacingBarre);
+            return true;
+        }
+
         return false;
     }
 }
@@ -293,12 +295,6 @@ namespace PlayerState
     // ----- 更新 -----
     void RunState::Update(const float& elapsedTime)
     {
-        if (owner_->IsGuardCounterKeyDown() && owner_->GetIsGuardGaugeDepleted() == false)
-        {
-            owner_->ChangeState(Player::STATE::GuardCounter);
-            return;
-        }
-
         // 先行入力判定
         if (CheckNextInput()) return;
 
@@ -456,6 +452,13 @@ namespace PlayerState
             }
         }
 
+        // ガード入力判定
+        if (owner_->IsGuardCounterButtonDown() && owner_->GetIsGuardGaugeDepleted() == false)
+        {
+            owner_->ChangeState(Player::STATE::GuardCounter);
+            return true;
+        }
+
         return false;
     }
 
@@ -531,10 +534,15 @@ namespace PlayerState
     // ----- 更新 -----
     void GuardCounterState::Update(const float& elapsedTime)
     {
-        GamePad& gamePad = Input::Instance().GetGamePad();
+        // カウンターの入力をチェックする
+        if (owner_->IsCounterStanceKey())
+        {
+            owner_->ChangeState(Player::STATE::Counter);
+            return;
+        }
 
-        const bool guardButton = gamePad.GetButton() & GamePad::BTN_X;
-        if (owner_->GetIsBlendUpperLowerBodyAnimation() == false && guardButton == false)
+        // ガードの入力がなくなってるかチェックする
+        if (owner_->GetIsBlendUpperLowerBodyAnimation() == false && owner_->IsGuardCounterButton() == false)
         {
             owner_->ChangeState(Player::STATE::Idle);
             return;
@@ -551,8 +559,8 @@ namespace PlayerState
         owner_->UseGuardGauge(elapsedTime);
 
         // 移動入力処理
-        const float aLx = gamePad.GetAxisLX();
-        const float aLy = gamePad.GetAxisLY();
+        const float aLx = Input::Instance().GetGamePad().GetAxisLX();
+        const float aLy = Input::Instance().GetGamePad().GetAxisLY();
         if (fabsf(aLx) != 0.0f || fabsf(aLy) != 0.0f)
         {
             owner_->ChangeLowerBodyAnimation(static_cast<int>(Player::Animation::Run));
@@ -586,14 +594,13 @@ namespace PlayerState
             }
             else
             {
-                // 回転処理
+                // ガードした方向に向かせる
                 const DirectX::XMFLOAT3 knockBackDirection_float3 = owner_->GetKnockBackDirection();
                 const DirectX::XMFLOAT3 playerFront_float3 = owner_->GetTransform()->CalcForward();
                 const DirectX::XMFLOAT2 knockBackDirection = XMFloat2Normalize({ knockBackDirection_float3.x, knockBackDirection_float3.z });
                 const DirectX::XMFLOAT2 playerFront = XMFloat2Normalize({ playerFront_float3.x, playerFront_float3.z });
                 
-                float dot = std::clamp(XMFloat2Dot(knockBackDirection, playerFront), -1.0f, 1.0f);
-                float angle = acosf(dot);
+                float angle = acosf(std::clamp(XMFloat2Dot(knockBackDirection, playerFront), -1.0f, 1.0f));
 
                 float cross = XMFloat2Cross(knockBackDirection, playerFront);
                 if (cross > 0)  owner_->GetTransform()->AddRotationY(-angle);
@@ -601,8 +608,7 @@ namespace PlayerState
 
                 // ガードゲージを消費 (ガードゲージがまだあればtrue)
                 if (owner_->UseGuardGaugeOnBlock())
-                {// ガードできた
-                    // ガードした方向に向かせる
+                {// ガードできた                   
 
                     // 無敵状態にする
                     owner_->SetIsInvincible(true);
@@ -642,6 +648,8 @@ namespace PlayerState
         owner_->SetVelocity({});
 
         owner_->SetIsGuardCounterStance(false);
+
+        owner_->SetIsGuardCounterSuccessful(false);
     }
 
     // ----- ImGui用 -----
@@ -697,7 +705,6 @@ namespace PlayerState
     void GuardCounterAttackState::Initialize()
     {
         // アニメーション設定    
-        //owner_->PlayBlendAnimation(Player::Animation::CounterAttack0, false, 1.0f, 0.35f);
         owner_->PlayBlendAnimation(Player::Animation::CounterAttack0, false, 1.0f, 0.5f);
         owner_->SetTransitionTime(0.1f);
 
@@ -766,14 +773,24 @@ namespace PlayerState
     // ----- 更新 -----
     void GuardBlockState::Update(const float& elapsedTime)
     {
-        if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER)
+        // カウンターに派生する入力
+        if(owner_->IsGuardCounterButtonDown())
         {
             owner_->ChangeState(Player::STATE::GuardCounterAttack);
+            return;
+        }
+        // 回避入力
+        if (owner_->IsDodgeKeyDown())
+        {
+            owner_->ChangeState(Player::STATE::Dodge);
             return;
         }
 
         if (owner_->IsPlayAnimation() == false)
         {
+            // 無敵状態解除
+            owner_->SetIsInvincible(false);
+
             owner_->ChangeState(Player::STATE::Idle);
             return;
         }

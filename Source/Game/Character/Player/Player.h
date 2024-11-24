@@ -295,7 +295,8 @@ public:// --- éÊìæÅEê›íË ---
     [[nodiscard]] const bool IsGetUpKeyDown()        const;
     [[nodiscard]] const bool IsDashKey()             const;
     [[nodiscard]] const bool IsItemKeyDown()         const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_X; }
-    [[nodiscard]] const bool IsGuardCounterKeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_LEFT_TRIGGER; }
+    [[nodiscard]] const bool IsGuardCounterButtonDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER; }
+    [[nodiscard]] const bool IsGuardCounterButton()     const { return Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_TRIGGER; }
     [[nodiscard]] const bool IsRushAttackKeyDown()   const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
 
 #pragma endregion [Get, Set] Function
