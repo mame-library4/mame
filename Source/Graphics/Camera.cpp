@@ -565,7 +565,8 @@ const bool Camera::UpdateDragonDeathCamera(const float& elapsedTime)
 {
     // ドラゴン死亡カメラを使用しない
     if (isDragonDeathCameraActive_ == false) return false;
-
+    if (EnemyManager::Instance().GetEnemyCount() == 0) return false;
+    
     Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
 
     std::string nodeName = "Dragon15_spine2";

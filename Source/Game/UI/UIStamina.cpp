@@ -54,14 +54,14 @@ void UIStamina::Initialize()
     staminaFrame_->SetName("StaminaFrame");
     staminaFrame_->GetTransform()->SetPosition(68.0f, 64.0f);
     staminaFrame_->GetTransform()->SetSize(352.0f, 9.0f);
-    staminaFrame_->GetTransform()->SetColor(0.0f, 0.0f, 0.0f, 0.4f);
+    staminaFrame_->GetTransform()->SetColor(0.0f, 0.0f, 0.0f, frameAlpha_);
 
     // ----- ◇ひし形の枠(黒色) -----
     staminaRhombusFrame_->SetName("StaminaRhombusFrame");
     staminaRhombusFrame_->GetTransform()->SetPosition(58.0f, 62.0f);
     staminaRhombusFrame_->GetTransform()->SetSize(13.0f);
     staminaRhombusFrame_->GetTransform()->SetAngle(45.0f);
-    staminaRhombusFrame_->GetTransform()->SetColor(0.0f, 0.0f, 0.0f, 0.4f);
+    staminaRhombusFrame_->GetTransform()->SetColor(0.0f, 0.0f, 0.0f, frameAlpha_);
 
     // ----- スタミナアイコン -----
     staminaIcon_->SetName("StaminaIcon");
@@ -76,6 +76,20 @@ void UIStamina::Initialize()
 void UIStamina::Update(const float& elapsedTime)
 {
     if (isAllUICreated == false) return;
+
+    // フェードアウト
+    if (isFadeOut_)
+    {
+        const float alpha = XMFloatLerp(1.0f, 0.0f, fadeOutTimer_);
+        staminaRhombus_->GetTransform()->SetColorA(alpha);
+        staminaWarning_->GetTransform()->SetColorA(alpha);
+        staminaIcon_->GetTransform()->SetColorA(alpha);
+
+        // Frame
+        const float frameAlpha = XMFloatLerp(frameAlpha_, 0.0f, fadeOutTimer_);
+        staminaFrame_->GetTransform()->SetColorA(frameAlpha);
+        staminaRhombusFrame_->GetTransform()->SetColorA(frameAlpha);
+    }
 
     const float stamina = PlayerManager::Instance().GetPlayer()->GetStamina();
     const float maxStamina = PlayerManager::Instance().GetPlayer()->GetMaxStamina();

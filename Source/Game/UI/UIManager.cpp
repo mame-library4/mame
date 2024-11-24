@@ -103,6 +103,7 @@ void UIManager::Remove(const UIType& type)
     }
 }
 
+// ----- 全削除 -----
 void UIManager::Clear()
 {
     for (UI*& ui : userInterface_)
@@ -111,6 +112,15 @@ void UIManager::Clear()
     }
     userInterface_.clear();
     userInterface_.shrink_to_fit();
+}
+
+// ----- 全UIフェードアウトする -----
+void UIManager::PlayAllUIFadeOut()
+{
+    for (UI*& ui : userInterface_)
+    {
+        ui->SetFadeOut();
+    }
 }
 
 UI* UIManager::GetUI(const UIType& type)

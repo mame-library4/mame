@@ -29,4 +29,6 @@ private:
     float warningFlashTimer_ = 0.0f;
     float warningFlashTime_  = 0.3f;
     bool isFadingIn_ = true;
+
+    float frameAlpha_ = 0.4f;
 };

@@ -54,14 +54,14 @@ void UIGuardGauge::Initialize()
     guardGaugeFrame_->SetName("GuardGaugeFrame");
     guardGaugeFrame_->GetTransform()->SetPosition(68.0f, 96.0f);
     guardGaugeFrame_->GetTransform()->SetSize(302.0f, 9.0f);
-    guardGaugeFrame_->GetTransform()->SetColor(0.0f, 0.0f, 0.0f, 0.4f);
+    guardGaugeFrame_->GetTransform()->SetColor(0.0f, 0.0f, 0.0f, frameAlpha_);
 
     // ----- ◇ひし形の枠(黒色) -----
     guardGaugeRhombusFrame_->SetName("GuardGaugeRhombusFrame");
     guardGaugeRhombusFrame_->GetTransform()->SetPosition(58.0f, 93.0f);
     guardGaugeRhombusFrame_->GetTransform()->SetSize(13.0f);
     guardGaugeRhombusFrame_->GetTransform()->SetAngle(45.0f);
-    guardGaugeRhombusFrame_->GetTransform()->SetColor(0.0f, 0.0f, 0.0f, 0.4f);
+    guardGaugeRhombusFrame_->GetTransform()->SetColor(0.0f, 0.0f, 0.0f, frameAlpha_);
 
     // ----- ガードアイコン -----
     guardGaugeIcon_->SetName("GuardGaugeIcon");
@@ -77,6 +77,20 @@ void UIGuardGauge::Update(const float& elapsedTime)
 {
     // 全てのUIが生成されていない    
     if (isAllUICreated == false) return;
+
+    // フェードアウト
+    if (isFadeOut_)
+    {
+        const float alpha = XMFloatLerp(1.0f, 0.0f, fadeOutTimer_);
+        guardGaugeRhombus_->GetTransform()->SetColorA(alpha);
+        guardGaugeWarning_->GetTransform()->SetColorA(alpha);
+        guardGaugeIcon_->GetTransform()->SetColorA(alpha);
+
+        // Frame
+        const float frameAlpha = XMFloatLerp(frameAlpha_, 0.0f, fadeOutTimer_);
+        guardGaugeFrame_->GetTransform()->SetColorA(frameAlpha);
+        guardGaugeRhombusFrame_->GetTransform()->SetColorA(frameAlpha);
+    }
 
     const float guardGauge = PlayerManager::Instance().GetPlayer()->GetGuardGauge();
     const float maxGuardGauge = PlayerManager::Instance().GetPlayer()->GetMaxGuardGauge();

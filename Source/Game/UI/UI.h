@@ -29,10 +29,17 @@ public:
     void SetNoiseTextureNum(const int& num) { sprite_->SetNoiseTextureNum(num); }
     void SetScrollDirection(const DirectX::XMFLOAT2& direction) { sprite_->SetScrollDirection(direction); }
 
+    void SetFadeOut();
+
 protected:
     const UIManager::UIType type_;
     std::unique_ptr<Sprite> sprite_;
     std::string             name_;
+
+    // ----- FadeOut -----
+    float   startAlpha_     = 0.0f;
+    float   fadeOutTimer_   = 0.0f;
+    bool    isFadeOut_      = false;
 
     bool isDraw_ = false;
 };

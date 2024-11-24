@@ -48,6 +48,8 @@ public:
     void Remove(const UIType& type);    // 削除 指定の種類のUI全て
     void Clear();                       // 全削除
 
+    void PlayAllUIFadeOut(); // 全UIフェードアウトする
+
     // ひとつだけ存在するUIを取得する
     UI* GetUI(const UIType& type);
 

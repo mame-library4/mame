@@ -118,13 +118,24 @@ namespace ActionDragon
             timer_ -= elapsedTime;
             if (timer_ <= 0.0f)
             {
-                uiFader_ = new UIFader(false);
+                timer_ = 0.0f;
+                UIManager::Instance().PlayAllUIFadeOut(); // 全UIをフェードアウトする
                 owner_->SetStep(2);
             }
 
             break;
         case 2:
+            timer_ += elapsedTime;
+            if (timer_ > 1.0f)
+            {
+                UIManager::Instance().Clear();
 
+                uiFader_ = new UIFader(false);
+                owner_->SetStep(3);
+            }
+
+            break;
+        case 3:
             if (uiFader_->GetIsFadeComplete())
             {
                 Finalize();
@@ -1925,6 +1936,14 @@ namespace ActionDragon
 {
     const ActionBase::State StompAttackAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange())
+        {
+            Finalize();
+
+            return ActionBase::State::Failed;
+        }
+
         switch (owner_->GetStep())
         {
         case 0:
@@ -2010,9 +2029,8 @@ namespace ActionDragon
             // アニメーション再生終了
             if (owner_->IsPlayAnimation() == false)
             {
-                owner_->SetUseRootMotion(false);
+                Finalize();
 
-                owner_->SetStep(0);
                 return ActionBase::State::Complete;
             }
 
@@ -2059,6 +2077,15 @@ namespace ActionDragon
 
             ImGui::TreePop();
         }
+    }
+
+    // ----- 終了化 -----
+    void StompAttackAction::Finalize()
+    {
+        // ルートモーションリセット
+        owner_->SetUseRootMotion(false);
+
+        owner_->SetStep(0);
     }
 
     // ----- アニメーション再生 -----

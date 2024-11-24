@@ -62,14 +62,14 @@ void UIHealth::Initialize()
     healthFrame_->SetName("HealthFrame");
     healthFrame_->GetTransform()->SetPosition(healthFramePosition_);
     healthFrame_->GetTransform()->SetSize(453.0f, 12.0f);
-    healthFrame_->GetTransform()->SetColor(0.0f, 0.0f, 0.0f, 0.4f);
+    healthFrame_->GetTransform()->SetColor(0.0f, 0.0f, 0.0f, frameAlpha_);
 
     // ----- ◇ひし形の枠(黒色) -----
     healthRhombusFrame_->SetName("HealthRhombusFrame");
     healthRhombusFrame_->GetTransform()->SetPosition(healthRhombusFramePosition_);
     healthRhombusFrame_->GetTransform()->SetSize(16.0f);
     healthRhombusFrame_->GetTransform()->SetAngle(45.0f);
-    healthRhombusFrame_->GetTransform()->SetColor(0.0f, 0.0f, 0.0f, 0.4f);
+    healthRhombusFrame_->GetTransform()->SetColor(0.0f, 0.0f, 0.0f, frameAlpha_);
 
     // ----- 体力アイコン -----
     healthIcon_->SetName("HealthIcon");
@@ -91,6 +91,20 @@ void UIHealth::Update(const float& elapsedTime)
         oldHealth_ = PlayerManager::Instance().GetPlayer()->GetHealth();
 
         return;
+    }
+
+    // フェードアウト
+    if (isFadeOut_)
+    {
+        const float alpha = XMFloatLerp(1.0f, 0.0f, fadeOutTimer_);
+        healthRhombus_->GetTransform()->SetColorA(alpha);
+        autoRecoveryBar_->GetTransform()->SetColorA(alpha);
+        healthIcon_->GetTransform()->SetColorA(alpha);
+
+        // Frame
+        const float frameAlpha = XMFloatLerp(frameAlpha_, 0.0f, fadeOutTimer_);
+        healthFrame_->GetTransform()->SetColorA(frameAlpha);
+        healthRhombusFrame_->GetTransform()->SetColorA(frameAlpha);
     }
 
     // ダメージ効果をUIに反映させる

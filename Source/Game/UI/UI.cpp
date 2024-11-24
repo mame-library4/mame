@@ -20,6 +20,15 @@ UI::UI(const UIManager::UIType& type, const wchar_t* filename, const std::string
 // ----- 更新 -----
 void UI::Update(const float& elapsedTime)
 {
+    // フェードアウトする
+    if (isFadeOut_)
+    {
+        fadeOutTimer_ += elapsedTime;
+        fadeOutTimer_ = min(fadeOutTimer_, 1.0f);
+        const float alpha = XMFloatLerp(startAlpha_, 0.0f, fadeOutTimer_);
+        GetTransform()->SetColorA(alpha);
+    }
+
     if (sprite_ != nullptr)
     {
         sprite_->Update(elapsedTime);
@@ -47,4 +56,10 @@ void UI::SetSpriteName(const std::string& name)
     {
         sprite_->SetName(name.c_str());
     }
+}
+
+void UI::SetFadeOut()
+{
+    startAlpha_ = GetTransform()->GetColorA();
+    isFadeOut_ = true;
 }

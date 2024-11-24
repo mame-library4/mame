@@ -33,8 +33,8 @@ namespace TitleState
     void IdleState::Update(const float& elapsedTime)
     {
 #ifdef _DEBUG
-        SceneManager::Instance().ChangeScene(new LoadingScene(new GameScene));
-        return;
+        //SceneManager::Instance().ChangeScene(new LoadingScene(new GameScene));
+        //return;
 #endif
 
         lerpTimer_ += lerpSpeed_ * elapsedTime;

@@ -45,6 +45,8 @@ private:
     DirectX::XMFLOAT2 healthRhombusPosition_ = {};
     DirectX::XMFLOAT2 healthRhombusFramePosition_ = {};    
 
+    float frameAlpha_ = 0.4f;
+
     float maxHealthSizeX_ = 450.0f;
 
     float healSpeed_ = 1.0f; // ‰ñ•œ‘¬“x

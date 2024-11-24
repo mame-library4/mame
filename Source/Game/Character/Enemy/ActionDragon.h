@@ -408,6 +408,8 @@ namespace ActionDragon
         const ActionBase::State Run(const float& elapsedTime) override;
         void DrawDebug()                                      override;
 
+        void Finalize(); // 終了化
+
     private:
         void PlayAnimation(); // アニメーション再生
         void Move(const float& elapsedTime);
