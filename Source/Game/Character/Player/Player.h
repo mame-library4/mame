@@ -152,7 +152,7 @@ public:
     void DebugRender(DebugRenderer* debugRenderer);     // îªíËópê}å`ï`âÊ
 
     // ---------- Animation ----------
-    void PlayAnimation(const Animation& index, const bool& loop, const float& speed = 1.0f) { Object::PlayAnimation(static_cast<int>(index), loop, speed); }
+    void PlayAnimation(const Animation& index, const bool& loop, const float& speed = 1.0f, const float& startFrame = 0.0f) { Object::PlayAnimation(static_cast<int>(index), loop, speed, startFrame); }
     void PlayBlendAnimation(const Animation& index, const bool& loop, const float& speed = 1.0f, const float& blendAnimationFrame = 0.0f) { Object::PlayBlendAnimation(static_cast<int>(index), loop, speed, blendAnimationFrame); }
     void SetAnimationSpeed(const float& speed) { Object::SetAnimationSpeed(speed); }
 
