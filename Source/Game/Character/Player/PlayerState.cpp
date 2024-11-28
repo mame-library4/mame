@@ -113,10 +113,6 @@ namespace PlayerState
         owner_->SetNextInputStartFrame();
         owner_->SetNextInputEndFrame();
         owner_->SetNextInputTransitionFrame();
-
-        // 操作UI設定
-        if(UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide) !=nullptr)
-            UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 0.0f);
     }
 
     // ----- 更新 -----
@@ -281,10 +277,6 @@ namespace PlayerState
         owner_->SetNextInputEndFrame();
         owner_->SetNextInputTransitionFrame();
 
-        // 操作UI設定
-        if (UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide) != nullptr)
-            UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 0.0f);
-
         // 足音の効果音再生
         dashSENum_ = AudioManager::Instance().PlaySE(SE::Dash);
 
@@ -306,10 +298,6 @@ namespace PlayerState
 
         // ダッシュ処理
         UpdateDash(elapsedTime);
-
-        // 操作UI設定
-        if(owner_->GetIsDash()) UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(750.0f, 0.0f);
-        else UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 0.0f);
     }
     
     // ----- 終了化 -----
@@ -518,7 +506,7 @@ namespace PlayerState
         owner_->PlayUpperLowerBodyAnimation(static_cast<int>(Player::Animation::BlockLoop), true);
 
         DirectX::XMFLOAT3 position = owner_->GetJointPosition("pelvis");
-        guardEffect_ = EffectManager::Instance().GetEffect("Guard")->Play(position, 1.0f, 1.0f);
+        guardEffect_ = EffectManager::Instance().GetEffect("Guard")->Play(position, guardEffectStartSize_, 1.0f);
 
         owner_->SetIsGuardCounterStance(true);
         owner_->SetIsGuardCounterSuccessful(false); // リセットする
@@ -537,6 +525,7 @@ namespace PlayerState
         // カウンターの入力をチェックする
         if (owner_->IsCounterStanceKey())
         {
+            owner_->PlayAnimation(Player::Animation::Counter, false, 1.0f, 0.15f);
             owner_->ChangeState(Player::STATE::Counter);
             return;
         }
@@ -998,9 +987,6 @@ namespace PlayerState
         // 無敵状態にする
         owner_->SetIsInvincible(true);
 
-        // 操作UI設定
-        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(1500.0f, 700.0f);
-
         // 変数初期化
         addForceData_.Initialize(0.1f, 0.3f, 0.5f);
         isFirstAnimation_ = true;
@@ -1204,9 +1190,6 @@ namespace PlayerState
         // 死亡カメラを使用する
         Camera::Instance().SetUsePlayerDeathCmaera();
 
-        // 操作UI設定
-        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(1500.0f, 700.0f);
-
         // 変数初期化
         deathTimer_ = 0.0f;
         isCreateFadeUi_ = false;
@@ -1274,10 +1257,6 @@ namespace PlayerState
 
         // ジャスト回避判定有効化
         owner_->SetIsJustDodgeCheckEnabled(true);
-
-        // 操作UI設定
-        if (UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide) != nullptr)
-            UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 0.0f);
 
         // 変数初期化
         isRotating_ = false;
@@ -2450,9 +2429,6 @@ namespace PlayerState
         // カウンターカメラを使用する
         Camera::Instance().UseCounterCamera();
 
-        // 操作UI設定
-        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(1500.0f, 0.0f);
-
         // 変数初期化
         addForceBack_.Initialize(0.16f, 0.2f, 0.5f);
         addForceFront_.Initialize(0.66f, 0.30f, 1.0f);
@@ -2624,6 +2600,12 @@ namespace PlayerState
     void CounterState::SetAnimation()
     {
         const Player::STATE oldState = owner_->GetOldState();
+        
+        if (oldState == Player::STATE::GuardCounter)
+        {
+            return;
+        }
+        
         float transitionTime = 0.1f;
 
         if (oldState == Player::STATE::ComboAttack0_0 || oldState == Player::STATE::ComboAttack0_1 ||
@@ -2833,9 +2815,6 @@ namespace PlayerState
         // カウンター攻撃カメラを使用する
         Camera::Instance().UseCounterAttackCamera();
 
-        // 操作UI設定
-        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(1500.0f, 700.0f);
-
         // 変数初期化
         attackData_.Initialize(0.35f, 0.7f);
 
@@ -3020,9 +2999,6 @@ namespace PlayerState
         // ルートモーションを使用しない
         owner_->SetUseRootMotion(false);
 
-        // 操作UI設定
-        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 350.0f);
-
         // 変数初期化
         addForceData_.Initialize(0.2f, 0.4f, 1.0f);
         attackData_.Initialize(0.25f, 0.5f);
@@ -3174,10 +3150,6 @@ namespace PlayerState
         owner_->SetNextInputStartFrame(0.13f, 0.13f, 0.13f, 0.6f);
         owner_->SetNextInputEndFrame(1.583f, 0.75f, 1.5f);
         owner_->SetNextInputTransitionFrame(0.4f, 0.3f, 0.3f);
-
-        // 操作UI設定
-        if (UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide) != nullptr)
-            UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 350.0f);
 
         // 変数初期化
         attackData_.Initialize(0.1f, 0.35f);      
@@ -3404,9 +3376,6 @@ namespace PlayerState
         owner_->SetNextInputEndFrame(1.583f, 0.75f, 1.5f);
         owner_->SetNextInputTransitionFrame(0.4f, 0.3f, 0.3f);
 
-        // 操作UI設定
-        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(750.0f, 350.0f);
-
         // 変数初期化
         attackData_.Initialize(0.06f, 0.3f);
 
@@ -3608,9 +3577,6 @@ namespace PlayerState
         owner_->SetNextInputEndFrame(1.9f, 1.3f, 1.3f);
         owner_->SetNextInputTransitionFrame(1.1f, 0.9f, 0.9f);
         
-        // 操作UI設定
-        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(1500.0f, 350.0f);
-
         // 変数初期化
         attackData_.Initialize(0.7f, 0.9f);
         isPlaySwordSlashSE_ = false;
@@ -3809,9 +3775,6 @@ namespace PlayerState
         owner_->SetNextInputStartFrame(0.7f, 3.0f, 3.0f, 3.0f);
         owner_->SetNextInputEndFrame(2.0f, 3.0f, 3.0f);
         owner_->SetNextInputTransitionFrame(1.3f, 3.0f, 3.0f);
-
-        // 操作UI設定
-        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->GetTransform()->SetTexPos(0.0f, 700.0f);
 
         // 変数初期化
         attackData_.Initialize(0.65f, 0.8f);

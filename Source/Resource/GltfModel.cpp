@@ -806,15 +806,18 @@ std::vector<GltfModel::Node> GltfModel::SetUpperLowerBodyAnimation(const std::ve
 }
 
 // ----- アニメーション再生 -----
-void GltfModel::PlayAnimation(const int& index, const bool& loop, const float& speed)
+void GltfModel::PlayAnimation(const int& index, const bool& loop, const float& speed, const float& startFrame)
 {
     animationIndex_ = index;
-    animationSeconds_ = 0.0f;
+    animationSeconds_ = startFrame;
 
     animationLoopFlag_ = loop;     // アニメーションループフラグを設定する
     animationEndFlag_ = false;    // 再生終了フラグをリセット
     animationSpeed_ = speed;    // アニメーション再生速度を設定
     isAnimationLooped_ = false;
+
+    isBlendAnimation_           = false;
+    isUpperLowerBodyAnimation_  = false;
 }
 
 // ----- ブレンドアニメーション再生 -----

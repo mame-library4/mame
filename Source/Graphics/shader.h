@@ -113,6 +113,12 @@ private:
     // ---------- LightConstants ----------
     LightConstants lightConstants_ = {};
     Microsoft::WRL::ComPtr<ID3D11Buffer> lightConstantsBuffer_;
+
+    // デバッグ用
+    DirectX::XMFLOAT3 pointLightPosition_ = {};
+    float pointLightSpace_ = 5.0f;
+    float pointLightIntensity_ = 1.0f;
+    float pointLightRadius_ = 10.0f;
 };
 
 

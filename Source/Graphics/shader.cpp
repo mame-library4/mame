@@ -65,6 +65,29 @@ Shader::Shader()
 // ----- ImGui—p -----
 void Shader::DrawDebug()
 {
+    if(ImGui::TreeNodeEx("PointLights"))
+    {
+        ImGui::DragFloat3("pointLightPosition_", &pointLightPosition_.x, 0.01f);
+        ImGui::DragFloat("pointLightSpace_", &pointLightSpace_, 0.01f);
+        ImGui::DragFloat("pointLightIntensity_", &pointLightIntensity_, 0.01f);
+        ImGui::DragFloat("pointLightRadius_", &pointLightRadius_, 0.01f);
+
+#if 0
+        for (int z = 0; z < 10; ++z)
+        {
+            for (int x = 0; x < 10; ++x)
+            {
+                lightConstants_.pointLights[x + (z * 10)].position_ = { x * pointLightSpace_ + pointLightPosition_.x, 1.0f + pointLightPosition_.y, z * pointLightSpace_ + pointLightPosition_.z, 1.0f };
+                lightConstants_.pointLights[x + (z * 10)].color_ = { 1,0,0,1 };
+                lightConstants_.pointLights[x + (z * 10)].intensity_ = pointLightIntensity_;
+                lightConstants_.pointLights[x + (z * 10)].range_ = pointLightRadius_;
+            }
+        }
+#endif
+
+        ImGui::TreePop();
+    }
+
     if (ImGui::CollapsingHeader("LightConstants"))
     {
         if (ImGui::BeginChild(ImGui::GetID((void*)0), ImVec2(350, 300), ImGuiWindowFlags_NoTitleBar))
@@ -91,7 +114,8 @@ void Shader::DrawDebug()
     {
         for (int i = 0; i < static_cast<int>(GBufferId::Max); ++i)
         {
-            ImGui::Image(reinterpret_cast<ImTextureID>(gBufferShaderResourceView_[i].Get()), ImVec2(256.0, 256.0));
+            //ImGui::Image(reinterpret_cast<ImTextureID>(gBufferShaderResourceView_[i].Get()), ImVec2(256.0, 256.0));
+            ImGui::Image(reinterpret_cast<ImTextureID>(gBufferShaderResourceView_[i].Get()), ImVec2(512.0f, 512.0f));
         }
 
         ImGui::TreePop();

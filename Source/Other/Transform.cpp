@@ -5,7 +5,7 @@ void Transform::DrawDebug()
 {
     if (ImGui::TreeNode("Transform"))
     {
-        ImGui::DragFloat3("Position", &position_.x, 1.0f, -FLT_MAX, FLT_MAX);
+        ImGui::DragFloat3("Position", &position_.x, 0.1f, -FLT_MAX, FLT_MAX);
         ImGui::DragFloat3("Scale", &scale_.x, 0.001f, -FLT_MAX, FLT_MAX);
 
         DirectX::XMFLOAT3 rot{};

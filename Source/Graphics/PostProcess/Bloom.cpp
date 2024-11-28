@@ -79,22 +79,26 @@ void Bloom::Execute(ID3D11ShaderResourceView* colorMap)
 // ----- ImGui—p -----
 void Bloom::DrawDebug()
 {
-    if (ImGui::TreeNode("Bloom"))
+    ImGui::DragFloat("ExtractionThreshold", &constantBuffer_->GetData()->bloomExtractionThreshold_, 0.01f, 0.0f, 3.0f);
+    ImGui::DragFloat("Intencity", &constantBuffer_->GetData()->bloomIntensity_, 0.01f, 0.0f, 1.0f);
+
+    if (ImGui::TreeNode("Textures"))
     {
-        ImGui::DragFloat("ExtractionThreshold", &constantBuffer_->GetData()->bloomExtractionThreshold_, 0.01f, 0.0f, 3.0f);
-        ImGui::DragFloat("Intencity", &constantBuffer_->GetData()->bloomIntensity_, 0.01f, 0.0f, 1.0f);
-
-        if (ImGui::TreeNode("Textures"))
-        {
-            ImGui::Image(reinterpret_cast<ImTextureID>(luminanceExtraction_->GetColorMap().Get()), ImVec2(256.0, 256.0));
-            ImGui::Image(reinterpret_cast<ImTextureID>(gaussianBlur_[1]->GetColorMap().Get()), ImVec2(256.0, 256.0));
-            ImGui::Image(reinterpret_cast<ImTextureID>(gaussianBlur_[3]->GetColorMap().Get()), ImVec2(256.0, 256.0));
-            ImGui::Image(reinterpret_cast<ImTextureID>(gaussianBlur_[5]->GetColorMap().Get()), ImVec2(256.0, 256.0));
-            ImGui::Image(reinterpret_cast<ImTextureID>(gaussianBlur_[7]->GetColorMap().Get()), ImVec2(256.0, 256.0));
-            ImGui::Image(reinterpret_cast<ImTextureID>(bloom_->GetColorMap().Get()), ImVec2(256.0, 256.0));
-
-            ImGui::TreePop();
-        }
+#if 0
+        ImGui::Image(reinterpret_cast<ImTextureID>(luminanceExtraction_->GetColorMap().Get()), ImVec2(256.0, 256.0));
+        ImGui::Image(reinterpret_cast<ImTextureID>(gaussianBlur_[1]->GetColorMap().Get()), ImVec2(256.0, 256.0));
+        ImGui::Image(reinterpret_cast<ImTextureID>(gaussianBlur_[3]->GetColorMap().Get()), ImVec2(256.0, 256.0));
+        ImGui::Image(reinterpret_cast<ImTextureID>(gaussianBlur_[5]->GetColorMap().Get()), ImVec2(256.0, 256.0));
+        ImGui::Image(reinterpret_cast<ImTextureID>(gaussianBlur_[7]->GetColorMap().Get()), ImVec2(256.0, 256.0));
+        ImGui::Image(reinterpret_cast<ImTextureID>(bloom_->GetColorMap().Get()), ImVec2(256.0, 256.0));
+#else
+        ImGui::Image(reinterpret_cast<ImTextureID>(luminanceExtraction_->GetColorMap().Get()), ImVec2(512.0f, 512.0f));
+        ImGui::Image(reinterpret_cast<ImTextureID>(gaussianBlur_[1]->GetColorMap().Get()), ImVec2(512.0f, 512.0f));
+        ImGui::Image(reinterpret_cast<ImTextureID>(gaussianBlur_[3]->GetColorMap().Get()), ImVec2(512.0f, 512.0f));
+        ImGui::Image(reinterpret_cast<ImTextureID>(gaussianBlur_[5]->GetColorMap().Get()), ImVec2(512.0f, 512.0f));
+        ImGui::Image(reinterpret_cast<ImTextureID>(gaussianBlur_[7]->GetColorMap().Get()), ImVec2(512.0f, 512.0f));
+        ImGui::Image(reinterpret_cast<ImTextureID>(bloom_->GetColorMap().Get()), ImVec2(512.0f, 512.0f));
+#endif
 
         ImGui::TreePop();
     }

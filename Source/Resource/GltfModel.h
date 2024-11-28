@@ -353,7 +353,7 @@ public:
     void DrawDebug();
 
     // ---------- Animation ----------
-    void PlayAnimation(const int& index, const bool& loop, const float& speed);
+    void PlayAnimation(const int& index, const bool& loop, const float& speed, const float& startFrame);
     void PlayBlendAnimation(const int& index, const bool& loop, const float& speed, const float& blendAnimationFrame);
     void UpdateAnimation(const float& elapsedTime);
     [[nodiscard]] const bool IsPlayAnimation();

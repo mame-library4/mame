@@ -1205,5 +1205,8 @@
     <FxCompile Include="Source\Shader\FogPS.hlsl">
       <Filter>Mame\Shader\PostProcess</Filter>
     </FxCompile>
+    <FxCompile Include="Source\Shader\GltfModelLoadingPS.hlsl">
+      <Filter>Mame\Shader\GltfModel</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

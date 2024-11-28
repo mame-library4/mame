@@ -55,6 +55,8 @@ private:
     std::unique_ptr<Object> dragonObject_;
     std::unique_ptr<Object> playerObject_;
 
+    bool isResetUI_ = false;
+
     // ----- Debug—p -----
     float bgmVolume_ = 1.0f;
 };

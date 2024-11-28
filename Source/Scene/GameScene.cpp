@@ -23,6 +23,8 @@
 #include "PostProcess/PostProcess.h"
 #include "AudioManager.h"
 
+#include "Particle/SlamAttackParticle.h"
+
 // ----- ステージの真ん中位置 -----
 DirectX::XMFLOAT3 GameScene::stageCenter_ = {};
 
@@ -87,9 +89,6 @@ void GameScene::CreateResource()
 // ----- 初期化 -----
 void GameScene::Initialize()
 {
-    // 現在のSceneを設定
-    SceneManager::Instance().SetCurrentSceneName(SceneManager::SceneName::Game);
-
     stage_->GetTransform()->SetScaleFactor(100.0f);
     //stage_->GetTransform()->SetScaleFactor(1.5f);
     //stage_->GetTransform()->SetScaleFactor(6000.0f);
@@ -142,6 +141,12 @@ void GameScene::Finalize()
 // ----- 更新 -----
 void GameScene::Update(const float& elapsedTime)
 {
+    // 現在のSceneを設定
+    if (SceneManager::Instance().GetCurrentSceneName() != SceneManager::SceneName::Game)
+    {
+        SceneManager::Instance().SetCurrentSceneName(SceneManager::SceneName::Game);
+    }
+
     // スロー処理を考慮した経過時間
     const float adjustedElapsedTime = SystemManager::Instance().GetAllSlowSpeed() * elapsedTime;
     // プレイヤー用のスロー考慮経過時間
@@ -171,12 +176,20 @@ void GameScene::Update(const float& elapsedTime)
     // UI描画判定更新
     if (isDrawUI_ == false)
     {
+        UIManager::Instance().Remove(UIManager::UIType::UIFader);
+
         UIManager::Instance().GetUI(UIManager::UIType::UIHealth)->SetIsDraw();
         UIManager::Instance().GetUI(UIManager::UIType::UIStamina)->SetIsDraw();
         UIManager::Instance().GetUI(UIManager::UIType::UIGuardGauge)->SetIsDraw();
         UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->SetIsDraw();
 
         isDrawUI_ = true;
+    }
+
+    if (GetAsyncKeyState('N') & 0x01)
+    {
+        SlamAttackParticle* particle = new SlamAttackParticle();
+        particle->PlayExplosionParticle({}, { 1.0, 0.42, 0.13 });
     }
 }
 

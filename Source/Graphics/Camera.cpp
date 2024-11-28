@@ -73,6 +73,9 @@ void Camera::Update(const float& elapsedTime)
     const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
     target_ = XMFloat3Lerp(target_, cameraTargetPosition, lerpWeight_);
 
+    // ターゲットカメラ
+    UpdateTargetCamera(elapsedTime);
+
     // カメラリセット
     UpdateCameraReset(elapsedTime);
 
@@ -145,44 +148,7 @@ void Camera::DrawDebug()
 {
     if (ImGui::BeginMenu("Camera"))
     {
-#pragma region ---------- CounterCamera ----------
-        if (ImGui::TreeNodeEx("CounterCamera", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            ImGui::DragInt("State", &counterState_);
-            if(ImGui::TreeNodeEx("CounterCamera", ImGuiTreeNodeFlags_Framed))
-            {
-                ImGui::Checkbox("Active", &isCounterCameraActive_);
-                ImGui::DragFloat("Time", &counterTime_, 0.01f, 0.0f, 2.0f);
-                ImGui::DragFloat("ReturnTime", &counterReturnTime_, 0.01f, 0.0f, 2.0f);
-                ImGui::DragFloat("Length", &counterLength_, 0.01f, 1.0f, 20.0f);
-                ImGui::DragFloat("LerpWeight", &counterLerpWegiht_, 0.01f, 0.0f, 1.0f);
-                ImGui::DragFloat("MinRotationX", &counterMinRotationX_, 0.01f);
 
-
-                ImGui::TreePop();
-            }
-            if (ImGui::TreeNodeEx("CounterAttackCamera", ImGuiTreeNodeFlags_Framed))
-            {
-                ImGui::Checkbox("Active", &isCounterAttackCameraActive_);
-                ImGui::DragFloat("ZoomTime", &counterAttackZoomTime_, 0.01f, 0.0f, 1.0f);
-                ImGui::DragFloat("ZoomLength", &counterAttackZoomLength_, 0.01f, 1.0f, 20.0f);
-
-                ImGui::DragFloat("SlowTime", &counterAttackSlowTime_, 0.01f, 0.0f, 1.0f);
-                ImGui::DragFloat("SlowLength", &counterAttackSlowLength_, 0.01f, 1.0f, 20.0f);
-
-                ImGui::DragFloat("Time", &counterAttackTime_, 0.01f, 0.0f, 2.0f);
-                ImGui::DragFloat("Length", &counterAttackLength_, 0.01f, 1.0f, 20.0f);
-                ImGui::DragFloat("LerpWeight", &counterAttackLerpWeight_, 0.01f, 0.0f, 1.0f);
-
-                ImGui::DragFloat("LengthReturnSpeed", &gameCameraLengthReturnSpeed_, 0.01f, 0.0f, 10.0f);
-                ImGui::DragFloat("LerpWeightReturnSpeed", &gameCameraLerpWeightReturnSpeed_, 0.01f, 0.0f, 1.0f);
-
-                ImGui::TreePop();
-            }
-
-            ImGui::TreePop();
-        }
-#pragma region ---------- CounterCamera ----------
 
 #pragma region ---------- PlayerDeathCamera ----------
         if (ImGui::TreeNodeEx("PlayerDeathCamera", ImGuiTreeNodeFlags_Framed))
@@ -255,6 +221,58 @@ void Camera::DrawDebug()
         }
 #pragma endregion ---------- DragonDeathCamera ----------
 
+#pragma region ---------- CounterCamera ----------
+        if (ImGui::TreeNodeEx("CounterCamera", ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::DragInt("State", &counterState_);
+            if(ImGui::TreeNodeEx("CounterCamera", ImGuiTreeNodeFlags_Framed))
+            {
+                ImGui::Checkbox("Active", &isCounterCameraActive_);
+                ImGui::DragFloat("Time", &counterTime_, 0.01f, 0.0f, 2.0f);
+                ImGui::DragFloat("ReturnTime", &counterReturnTime_, 0.01f, 0.0f, 2.0f);
+                ImGui::DragFloat("Length", &counterLength_, 0.01f, 1.0f, 20.0f);
+                ImGui::DragFloat("LerpWeight", &counterLerpWegiht_, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("MinRotationX", &counterMinRotationX_, 0.01f);
+
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("CounterAttackCamera", ImGuiTreeNodeFlags_Framed))
+            {
+                ImGui::Checkbox("Active", &isCounterAttackCameraActive_);
+                ImGui::DragFloat("ZoomTime", &counterAttackZoomTime_, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("ZoomLength", &counterAttackZoomLength_, 0.01f, 1.0f, 20.0f);
+
+                ImGui::DragFloat("SlowTime", &counterAttackSlowTime_, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("SlowLength", &counterAttackSlowLength_, 0.01f, 1.0f, 20.0f);
+
+                ImGui::DragFloat("Time", &counterAttackTime_, 0.01f, 0.0f, 2.0f);
+                ImGui::DragFloat("Length", &counterAttackLength_, 0.01f, 1.0f, 20.0f);
+                ImGui::DragFloat("LerpWeight", &counterAttackLerpWeight_, 0.01f, 0.0f, 1.0f);
+
+                ImGui::DragFloat("LengthReturnSpeed", &gameCameraLengthReturnSpeed_, 0.01f, 0.0f, 10.0f);
+                ImGui::DragFloat("LerpWeightReturnSpeed", &gameCameraLerpWeightReturnSpeed_, 0.01f, 0.0f, 1.0f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
+#pragma endregion ---------- CounterCamera ----------
+
+#pragma region ---------- TargetCamera ----------
+        if (ImGui::TreeNodeEx("TargetCamera", ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::DragFloat2("StartRotation", &startRotation_.x);
+            ImGui::DragFloat2("TargetRotation", &targetRotation_.x);
+            ImGui::DragFloat("LerpTimer", &targetCameraLerpTimer_);
+            ImGui::DragFloat("LerpSpeed", &targetCameraLerpSpeed_);
+            ImGui::Checkbox("Active", &isTargetCameraActive_);
+
+            ImGui::TreePop();
+        }
+
+#pragma endregion ---------- TargetCamera ----------
 
         ImGui::DragFloat3("Target", &target_.x);
         ImGui::DragFloat("LerpWegith", &lerpWeight_, 0.01f, 0.0f, 1.0f);
@@ -328,6 +346,18 @@ void Camera::SetTitleCamera()
 // ----- ゲーム用カメラ設定 -----
 void Camera::SetGameCamera()
 {
+}
+
+// ----- ローディング用カメラ設定 -----
+void Camera::SetLoadingCamera()
+{
+    DirectX::XMFLOAT3 rotation = DirectX::XMFLOAT3(0.0f, DirectX::XMConvertToRadians(180.0f), 0.0f);
+    GetTransform()->SetRotation(rotation);
+
+    offset_ = titleCameraOffset_;
+    length_ = titleCameraLength_;
+
+    target_ = {};
 }
 
 // ----- 回転処理 -----
@@ -450,13 +480,47 @@ void Camera::UseCounterAttackCamera()
 
 #pragma endregion ---------- 各種カメラ使用設定 ----------
 
+// ----- ターゲットカメラ -----
+void Camera::UpdateTargetCamera(const float& elapsedTime)
+{
+    if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_LEFT_SHOULDER)
+    {
+        DirectX::XMFLOAT3 dragonPosition = EnemyManager::Instance().GetEnemy(0)->GetTransform()->GetPosition();
+        DirectX::XMFLOAT3 playerPosition = PlayerManager::Instance().GetTransform()->GetPosition();
+        DirectX::XMFLOAT2 targetPosition = DirectX::XMFLOAT2(dragonPosition.x, dragonPosition.z);
+        DirectX::XMFLOAT2 startPosition  = DirectX::XMFLOAT2(playerPosition.x, playerPosition.z);
+        DirectX::XMFLOAT2 cameraPosition = DirectX::XMFLOAT2(view_.eye_.x, view_.eye_.z);
+        DirectX::XMFLOAT2 vec = XMFloat2Normalize(cameraPosition - startPosition);
+        DirectX::XMFLOAT2 targetVec = XMFloat2Normalize(startPosition - targetPosition);
+        float angle = acosf(std::clamp(XMFloat2Dot(vec, targetVec), -1.0f, 1.0f));
+        const float cross = XMFloat2Cross(vec, targetVec);
+        if (cross < 0) angle *= -1;
+        
+        startRotation_ = DirectX::XMFLOAT2(GetTransform()->GetRotationX(), GetTransform()->GetRotationY());
+        targetRotation_ = DirectX::XMFLOAT2(DirectX::XMConvertToRadians(-5.0f), GetTransform()->GetRotationY() + angle);
+
+        targetCameraLerpTimer_  = 0.0f;
+        isTargetCameraActive_   = true;
+    }
+
+    if (isTargetCameraActive_ == false) return;
+
+    targetCameraLerpTimer_ += targetCameraLerpSpeed_ * elapsedTime;
+    targetCameraLerpTimer_ = min(targetCameraLerpTimer_, 1.0f);
+
+    const DirectX::XMFLOAT2 rotation = XMFloat2Lerp(startRotation_, targetRotation_, targetCameraLerpTimer_);
+
+    GetTransform()->SetRotationX(rotation.x);
+    GetTransform()->SetRotationY(rotation.y);
+
+    if (targetCameraLerpTimer_ == 1.0f) isTargetCameraActive_ = false;
+}
+
 // ----- カメラリセット更新 -----
 void Camera::UpdateCameraReset(const float& elapsedTime)
 {
-    return;
-
     // カメラリセット入力判定
-    if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_LEFT_SHOULDER)
+    if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_THUMB)
     {
         // ----- プレイヤーの向きにリセットする -----
         

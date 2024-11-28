@@ -48,9 +48,6 @@ void TitleScene::CreateResource()
 // ----- 初期化 -----
 void TitleScene::Initialize()
 {
-    // 現在のSceneを設定
-    SceneManager::Instance().SetCurrentSceneName(SceneManager::SceneName::Title);
-
     Camera::Instance().SetTitleCamera();
 
     dragonObject_->PlayAnimation(0, true, 1.0f);
@@ -62,6 +59,8 @@ void TitleScene::Initialize()
 
     playerObject_->GetTransform()->SetPosition(-1.0f, 0.0f, 2.0f);
     playerObject_->GetTransform()->SetRotation(0.0f, DirectX::XMConvertToRadians(162.0f), 0.0f);
+
+    isResetUI_ = false;
 
     // タイトルBGM再生
     AudioManager::Instance().PlayBGM(BGM::Title);
@@ -79,6 +78,24 @@ void TitleScene::Finalize()
 // ----- 更新 -----
 void TitleScene::Update(const float& elapsedTime)
 {
+    // 現在のSceneを設定
+    if (SceneManager::Instance().GetCurrentSceneName() != SceneManager::SceneName::Title)
+    {
+        SceneManager::Instance().SetCurrentSceneName(SceneManager::SceneName::Title);
+    }
+
+    if (isResetUI_ == false)
+    {
+        UIManager::Instance().Remove(UIManager::UIType::UIFader);
+
+        if (UIManager::Instance().GetUI(UIManager::UIType::UITitle) != nullptr)
+        {
+            UIManager::Instance().GetUI(UIManager::UIType::UITitle)->SetIsDraw();
+
+            isResetUI_ = true;
+        }
+    }
+
     // ステートマシン更新
     GetStateMachine()->Update(elapsedTime);
 

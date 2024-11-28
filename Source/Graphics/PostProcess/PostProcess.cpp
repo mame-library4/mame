@@ -118,7 +118,7 @@ void PostProcess::DrawDebug()
 
         cascadedShadowMap_.DrawDebug();
 
-        if (ImGui::TreeNode("Bloom_"))
+        if (ImGui::TreeNode("Bloom"))
         {
             ImGui::Image(reinterpret_cast<ImTextureID>(postProcess_->GetColorMap().Get()), ImVec2(256.0, 256.0));
 

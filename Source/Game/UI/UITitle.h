@@ -46,5 +46,7 @@ private:
     // ----- FadeOut -----
     float fadeOutTimer_ = 0.0f;
     float fadeOutSpeed_ = 1.5f;
+
+    bool isAllUICreated = false; // 全てのリソースが生成されたか
 };
 

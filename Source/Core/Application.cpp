@@ -148,7 +148,10 @@ void Application::Render()
 
 
         // SkyMap
-        skymap_.Render();
+        if (SceneManager::Instance().GetCurrentSceneName() != SceneManager::SceneName::Loading)
+        {
+            skymap_.Render();
+        }
 
         deferredRendering_.Draw();
                
@@ -216,7 +219,7 @@ void Application::Render()
     ID3D11ShaderResourceView* views[10]{ nullptr };
     deviceContext->PSSetShaderResources(0, 10, views);
 
-    if (GetAsyncKeyState('P') && 0x0800)isDrawImGui_ = !isDrawImGui_;
+    if (GetAsyncKeyState('P') & 0x01)isDrawImGui_ = !isDrawImGui_;
     if(isDrawImGui_) DrawDebug();
 
     // --- ImGui表示 ---

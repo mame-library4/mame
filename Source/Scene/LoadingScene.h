@@ -2,7 +2,9 @@
 #include "BaseScene.h"
 #include <thread>
 #include <memory>
+#include "Object.h"
 #include "UI/UILoading.h"
+#include "UI/UIFader.h"
 
 class LoadingScene : public BaseScene
 {
@@ -19,7 +21,7 @@ public:// 基本的な関数
     void DeferredRender()                   override;
     void ForwardRender()                    override;
 
-    void Render() override {};
+    void Render() override;
 
     void DrawDebug()    override;
     
@@ -30,5 +32,10 @@ private:// スレッド関係
 
 private:
     UILoading* uiLoading_ = nullptr;
+    UIFader*   uiFader_   = nullptr;
+    bool isCreateUIFader_ = false;
+
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> loadingPlayerPS_;
+    std::unique_ptr<Object> loadingPlayer_;
 };
 

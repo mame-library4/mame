@@ -23,8 +23,9 @@ public:
     void SetPerspectiveFov();
     void DrawDebug();
 
-    void SetTitleCamera();  // タイトル用カメラ設定
-    void SetGameCamera();   // ゲーム用カメラ設定
+    void SetTitleCamera();   // タイトル用カメラ設定
+    void SetGameCamera();    // ゲーム用カメラ設定
+    void SetLoadingCamera(); // ローディング用カメラ設定
 
     // ---------- 回転処理 ---------------
     void Rotate(const float& elapsedTime);
@@ -98,6 +99,8 @@ private:
 
 
 private:
+    void UpdateTargetCamera(const float& elapsedTime); // ターゲットカメラ
+
     void UpdateCameraReset(const float& elapsedTime);  // カメラリセット更新
 
 
@@ -147,6 +150,12 @@ private:
     float               vibrationTime_          = 0.0f; // 振動時間
     float               vibrationTimer_         = 0.0f; // 振動時間を測るタイマー
 
+    // ---------- ターゲットカメラ ----------
+    DirectX::XMFLOAT2   startRotation_          = {};
+    DirectX::XMFLOAT2   targetRotation_         = {};
+    float               targetCameraLerpTimer_  = 0.0f;
+    float               targetCameraLerpSpeed_  = 10.0f;
+    bool                isTargetCameraActive_   = false;
 
     // ---------- カメラリセット ----------
     DirectX::XMFLOAT2   resetOldRotation_       = {};    // 処理開始時の角度

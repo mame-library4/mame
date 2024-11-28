@@ -2,9 +2,10 @@
 
 // ----- コンストラクタ -----
 UILoading::UILoading()
-    : UI(UIManager::UIType::UIFader, L"./Resources/Image/White.png", "UILoading")
+    : UI(UIManager::UIType::UIFader, L"./Resources/Image/UI/LoadDragonHunter.png", "UILoading")
 {
-    GetTransform()->SetColorBlack();
+    GetTransform()->SetPosition(770.0f, 500.0f);
+    GetTransform()->SetSize(320.0f, 180.0f);
 
     // 描画フラグを立てる
     SetIsDraw();
@@ -24,4 +25,5 @@ void UILoading::Render()
 // ----- ImGui用 -----
 void UILoading::DrawDebug()
 {
+    UI::DrawDebug();
 }

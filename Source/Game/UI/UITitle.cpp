@@ -2,8 +2,10 @@
 
 // ----- コンストラクタ -----
 UITitle::UITitle()
-    : UI(UIManager::UIType::UITitle)
+    : UI(UIManager::UIType::UITitle, L"./Resources/Image/White.png", "UITitle")
 {
+    GetTransform()->SetSize(0.0f, 0.0f);
+
     sprite_[static_cast<int>(Type::TitleLogo)] = std::make_unique<Sprite>(L"./Resources/Image/UI/Title/DragonHunter.png");
 
     sprite_[static_cast<int>(Type::PressAnyButton)] = std::make_unique<Sprite>(L"./Resources/Image/UI/Title/TitleWord.png");
@@ -15,6 +17,8 @@ UITitle::UITitle()
 
     // 初期化
     Initialize();
+
+    isAllUICreated = true;
 }
 
 // ----- 初期化 -----
@@ -68,6 +72,8 @@ void UITitle::Initialize()
 // ----- 更新 -----
 void UITitle::Update(const float& elapsedTime)
 {
+    if (isAllUICreated == false) return;
+
     if (sprite_[static_cast<int>(Type::Black)] != nullptr)
     {
         const float speed = isTimerDecreasing_ ? -elapsedTime * backSpriteTimerSpeed_ : elapsedTime * backSpriteTimerSpeed_;
@@ -84,8 +90,13 @@ void UITitle::Update(const float& elapsedTime)
 // ----- 描画 -----
 void UITitle::Render()
 {
+    if (isAllUICreated == false) return;
+
+    if (UI::GetIsDraw() == false) return;
+
     for (int i = 0; i < static_cast<int>(Type::Max); ++i)
     {
+        //if (i == static_cast<int>(Type::PressAnyButton)) continue;
         if(sprite_[i] != nullptr) sprite_[i]->Render();
     }
 }

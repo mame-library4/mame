@@ -717,6 +717,9 @@ void CollisionManager::UpdateItemVsAttack()
             
             bool isHit = false;
             Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
+            // ™ôšK‚Å‚Í’M‚Í‰ó‚ê‚È‚¢
+            if (enemy->GetCurrentAttackAction() == Enemy::AttackAction::Roar) continue;
+
             for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetAttackDetectionDataCount(); ++enemyDataIndex)
             {
                 const AttackDetectionData enemyData = enemy->GetAttackDetectionData(enemyDataIndex);
