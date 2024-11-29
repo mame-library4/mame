@@ -29,8 +29,8 @@ Effect::Effect(const char* filename, const std::string& effectName)
 // ----- Ä¶ -----
 Effekseer::Handle Effect::Play(const DirectX::XMFLOAT3& position, const float& scale, const float& speed)
 {
-    Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
-    
+    Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();    
+
     Effekseer::Handle handle = effekseerManager->Play(effekseerEffect_, position.x, position.y, position.z);
     
     effekseerManager->SetScale(handle, scale, scale, scale);
@@ -51,8 +51,17 @@ void Effect::SetPosition(const Effekseer::Handle& handle, const DirectX::XMFLOAT
 {
     Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
 
-    Effekseer::Vector3D pos = Effekseer::Vector3D(position.x, position.y, position.z);
+    const Effekseer::Vector3D pos = Effekseer::Vector3D(position.x, position.y, position.z);
     effekseerManager->SetLocation(handle, pos);
+}
+
+// ----- Šp“xİ’è -----
+void Effect::SetRotation(const Effekseer::Handle& handle, const DirectX::XMFLOAT3& rotation, const float& angle)
+{
+    Effekseer::ManagerRef effekseerManager = EffectManager::Instance().GetEffekseerManager();
+
+    const Effekseer::Vector3D axis = Effekseer::Vector3D(rotation.x, rotation.y, rotation.z);
+    effekseerManager->SetRotation(handle, axis, angle);
 }
 
 // ----- ‘å‚«‚³İ’è -----

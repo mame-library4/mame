@@ -13,6 +13,7 @@ public:
     void Stop(const Effekseer::Handle& handle);
 
     void SetPosition(const Effekseer::Handle& handle, const DirectX::XMFLOAT3& position); // à íuê›íË
+    void SetRotation(const Effekseer::Handle& handle, const DirectX::XMFLOAT3& rotation, const float& angle); // äpìxê›íË
     void SetScale(const Effekseer::Handle& handle, const float& scale);                   // ëÂÇ´Ç≥ê›íË
     void SetSpeed(const Effekseer::Handle& handle, const float& speed);
     void SetColor(const Effekseer::Handle& handle, const DirectX::XMFLOAT4& color);

@@ -139,7 +139,15 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
 
                 // ヒットエフェクトを再生 ( 弱点部位は違うエフェクトを再生する )
                 {
-                    const std::string hitEffectName = isWeakPoint ? "Attack1" : "Attack";
+                    std::string hitEffectName = hitEffectType_ ? "Hit0" : "Hit1";
+                    hitEffectType_ = (hitEffectType_ == 0) ? 1 : 0;
+
+                    // 弱点部位ならエフェクトを変更する
+                    if (isWeakPoint)
+                    {
+                        hitEffectName = "Attack1";
+                    }
+
                     Effect* hitEffect = EffectManager::Instance().GetEffect(hitEffectName.c_str());
                     const float hitEffectSize = isWeakPoint ? 0.4f : 0.3f;
 
@@ -150,7 +158,9 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                     const float effectSpeed = (player->GetCurrentState() == Player::STATE::RushAttack) ? 0.01f : 1.0f;
 
                     effectHandle_[handleCounter_].name_ = hitEffectName;
-                    effectHandle_[handleCounter_++].effectHandle_ = hitEffect->Play(emitterPosition, hitEffectSize, effectSpeed);
+                    effectHandle_[handleCounter_].effectHandle_ = hitEffect->Play(emitterPosition, hitEffectSize, effectSpeed);
+
+                    ++handleCounter_;
                     if (handleCounter_ >= maxEffectHandle_) handleCounter_ = 0;
                 }
 

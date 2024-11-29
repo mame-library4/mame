@@ -32,11 +32,6 @@ namespace TitleState
     // ----- XV -----
     void IdleState::Update(const float& elapsedTime)
     {
-#ifdef _DEBUG
-        //SceneManager::Instance().ChangeScene(new LoadingScene(new GameScene));
-        //return;
-#endif
-
         lerpTimer_ += lerpSpeed_ * elapsedTime;
         lerpTimer_ = min(lerpTimer_, 1.0f);
         const float rotationY = XMFloatLerp(startRotationY_, targetRotationY_, lerpTimer_);
@@ -197,12 +192,20 @@ namespace TitleState
         {
             switch (currentState_)
             {
-            case STATE::GameStart: 
-                AudioManager::Instance().PlaySE(SE::Press);
-                owner_->ChangeState(TitleScene::STATE::GameStart); 
+            case STATE::GameStart:
+                if (isAllowedToTransition_)
+                {
+                    AudioManager::Instance().PlaySE(SE::Press);
+                    owner_->ChangeState(TitleScene::STATE::GameStart);
+                }
                 break;
             //case STATE::Options:   owner_->ChangeState(TitleScene::STATE::Options);   break;
-            case STATE::Quit:      owner_->ChangeState(TitleScene::STATE::Quit);      break;
+            case STATE::Quit:
+                if (isAllowedToTransition_)
+                {
+                    owner_->ChangeState(TitleScene::STATE::Quit);
+                }
+                break;
             }
         }
 

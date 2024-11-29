@@ -62,28 +62,34 @@ void GameScene::CreateResource()
         iblTextures_[3].GetAddressOf(), &textureDesc);
 #endif
 
-
-    Effect* effect0 = new Effect("./Resources/Effect/Counter.efk", "Counter");
-    
-    Effect* effect1 = new Effect("./Resources/Effect/Mikiri.efk", "Mikiri");
-    
-    Effect* effect2 = new Effect("./Resources/Effect/Fire.efk", "Fire");
-    
-    Effect* effect3 = new Effect("./Resources/Effect/Attack.efk", "Attack");
-    Effect* effect4 = new Effect("./Resources/Effect/Attack1.efk", "Attack1");
-    Effect* effect5 = new Effect("./Resources/Effect/SuperNova.efk", "SuperNova");
-    
-    Effect* effect6 = new Effect("./Resources/Effect/Power.efk", "Power");
-    Effect* effect7 = new Effect("./Resources/Effect/Guard1.efk", "Guard");
-    Effect* effect8 = new Effect("./Resources/Effect/Charge1.efk", "Charge");
-    Effect* effect9 = new Effect("./Resources/Effect/Roar.efk", "Roar");
-    Effect* effect10 = new Effect("./Resources/Effect/Explosion/Explosion.efk", "Explosion");
-    //Effect* effect8 = new Effect("./Resources/Effect/Charge.efk", "Charge");
+    LoadEffect();
     
     UIHealth* uIHealth = new UIHealth();
     UIStamina* uIStamina = new UIStamina();
     UIGuardGauge* uiGuardGauge = new UIGuardGauge();
     UIActionGuide* uIActionGuide = new UIActionGuide();
+}
+
+void GameScene::LoadEffect()
+{
+    Effect* hit0 = new Effect("./Resources/Effect/Hit/Hit0.efk", "Hit0");
+    Effect* hit1 = new Effect("./Resources/Effect/Hit/Hit1.efk", "Hit1");
+
+    Effect* effect0 = new Effect("./Resources/Effect/Counter.efk", "Counter");
+
+    Effect* effect1 = new Effect("./Resources/Effect/Mikiri.efk", "Mikiri");
+
+    Effect* effect2 = new Effect("./Resources/Effect/Fire.efk", "Fire");
+
+    
+    Effect* effect4 = new Effect("./Resources/Effect/Attack1.efk", "Attack1");
+    Effect* effect5 = new Effect("./Resources/Effect/SuperNova.efk", "SuperNova");
+
+    Effect* effect6 = new Effect("./Resources/Effect/Power.efk", "Power");
+    Effect* effect7 = new Effect("./Resources/Effect/Guard1.efk", "Guard");
+    Effect* effect8 = new Effect("./Resources/Effect/Charge1.efk", "Charge");
+    Effect* effect9 = new Effect("./Resources/Effect/Roar.efk", "Roar");
+    Effect* effect10 = new Effect("./Resources/Effect/Explosion/Explosion.efk", "Explosion");
 }
 
 // ----- èâä˙âª -----
@@ -286,9 +292,6 @@ void GameScene::DrawDebug()
     {
         if (ImGui::BeginMainMenuBar())
         {
-            ImGui::DragFloat("bgmVolume", &bgmVolume_, 0.01f, 0.0f, 1.0f);
-            if (ImGui::Button("SetVolume")) AudioManager::Instance().SetBGMVolume(BGM::Game, bgmVolume_);
-
             SystemManager::Instance().DrawDebug();
 
             // ÉvÉåÉCÉÑÅ[ImGui

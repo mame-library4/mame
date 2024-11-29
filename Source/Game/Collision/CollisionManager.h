@@ -84,5 +84,7 @@ private:
     static const int maxEffectHandle_ = 10;
     EffectHandle effectHandle_[maxEffectHandle_] = {};
     int handleCounter_ = 0;
+
+    int hitEffectType_ = 0;
 };
 

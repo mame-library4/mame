@@ -25,6 +25,7 @@ public:
     void DrawDebug()                        override; // ImGui—p
 
 private:
+    void LoadEffect();
     void UpdateCounterCollisions();
 
 public:
@@ -45,6 +46,5 @@ private:
 
     // ----- Debug—p -----
     bool isUseMainMenuBar_ = true;
-    float bgmVolume_ = 0.2f;
 };
 
