@@ -186,6 +186,7 @@ public:
     void RemoveUIRush();
 
     // ---------- 剣の色 ----------
+    void UpdateSwordSpirit(const float& elapsedTime);
     void SetSwordColor(const DirectX::XMFLOAT3& color);
 
 public:// --- 取得・設定 ---
@@ -305,6 +306,9 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const bool IsRushAttackKeyDown()   const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
 
 #pragma endregion [Get, Set] Function
+
+    [[nodiscard]] const float GetSwordSpirit() const { return swordSpirit_; }
+    void SetSwordSpirit(const float& value) { swordSpirit_ = value; }
 
     [[nodiscard]] const float GetMoveInputStartFrame()      const { return moveInputStartFrame_; }
     [[nodiscard]] const float GetDodgeInputStartFrame()     const { return dodgeInputStartFrame_; }
@@ -431,4 +435,8 @@ private:
 
     // ---------- ラッシュ攻撃UI ----------
     UIRush* uiRush_ = nullptr;
+
+    // ---------- 練気ゲージ ----------
+    float swordSpirit_ = 0.0f;
+    float swordSpiritUseSpeed_ = 0.01f;
 };

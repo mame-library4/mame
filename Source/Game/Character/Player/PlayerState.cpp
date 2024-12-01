@@ -120,8 +120,11 @@ namespace PlayerState
     {
         if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y)
         {
-            owner_->ChangeState(Player::STATE::Helmbreaker);
-            return;
+            if (owner_->GetSwordSpirit() != 0.0f)
+            {
+                owner_->ChangeState(Player::STATE::Helmbreaker);
+                return;
+            }
         }
 
         // 先行入力判定
@@ -293,6 +296,15 @@ namespace PlayerState
     // ----- 更新 -----
     void RunState::Update(const float& elapsedTime)
     {
+        if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y)
+        {
+            if (owner_->GetSwordSpirit() != 0.0f)
+            {
+                owner_->ChangeState(Player::STATE::Helmbreaker);
+                return;
+            }
+        }
+
         // 先行入力判定
         if (CheckNextInput()) return;
 
@@ -4042,6 +4054,10 @@ namespace PlayerState
             owner_->SetUseRootMotion(false);
 
             startPositionY_ = owner_->GetTransform()->GetPositionY();
+
+            // 剣の色を無くす
+            owner_->SetSwordSpirit(0.0f);
+            owner_->SetSwordColor({});
         }
 
         if (owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::Attack4_2))

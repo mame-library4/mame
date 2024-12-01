@@ -276,6 +276,7 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                 if (player->GetCurrentState() == Player::STATE::CounterCombo)
                 {
                     PlayerManager::Instance().GetPlayer()->SetSwordColor({ 1,0,0 });
+                    PlayerManager::Instance().GetPlayer()->SetSwordSpirit(1.0f);
                 }
 
                 // “–‚½‚Á‚½‚Ì‚Å”»’è‚ð‚±‚±‚ÅI—¹‚·‚é

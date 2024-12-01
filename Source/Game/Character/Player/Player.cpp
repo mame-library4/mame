@@ -149,6 +149,8 @@ void Player::Update(const float& elapsedTime)
 
     // ƒK[ƒhƒQ[ƒW‰ñ•œ
     UpdateGuardGaugeRecovery(elapsedTime);
+
+    UpdateSwordSpirit(elapsedTime);
 }
 
 // ----- •`‰æ -----
@@ -168,6 +170,9 @@ void Player::DrawDebug()
 {
     if (ImGui::BeginMenu("Player"))
     {
+        ImGui::DragFloat("SwordSpirit", &swordSpirit_, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("SwordSpiritSpeed", &swordSpiritUseSpeed_, 0.01f, 0.0f, 1.0f);
+
         GetStateMachine()->DrawDebug();
 
         if (ImGui::TreeNodeEx("AttackPower", ImGuiTreeNodeFlags_Framed))
@@ -179,6 +184,7 @@ void Player::DrawDebug()
                 "Attack0_0", "Attack0_1", "Attack0_2", "Attack0_3",
                 "RunAttack", "CounterAttack", "CounterComboAttack",
                 "RushAttack0", "RushAttack1", "RushAttack2", "RushAttack3"
+                "Helmbreaker0", "Helmbreaker1",
             };
 
             for (int i = 0; i < static_cast<int>(AttackType::Max); ++i)
@@ -776,6 +782,21 @@ void Player::RemoveUIRush()
     {
         UIManager::Instance().Remove(uiRush_);
         uiRush_ = nullptr;
+    }
+}
+
+void Player::UpdateSwordSpirit(const float& elapsedTime)
+{
+    if (swordSpirit_ == 0.0f) return;
+
+    swordSpirit_ -= swordSpiritUseSpeed_ * elapsedTime;
+
+
+    if (swordSpirit_ <= 0.0f)
+    {
+        swordSpirit_ = 0.0f;
+
+        SetSwordColor({});
     }
 }
 

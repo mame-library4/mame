@@ -31,6 +31,7 @@ public:
         UIGuardGauge,       // |
         UIStamina,          // |
         UIHealth,           // |
+        UISword,            // |
         UIRush,             // |
         UITitle,            // |
         UIFlashOut,         // |

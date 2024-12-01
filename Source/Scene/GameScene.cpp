@@ -12,6 +12,7 @@
 #include "UI/UIHealth.h"
 #include "UI/UIStamina.h"
 #include "UI/UIGuardGauge.h"
+#include "UI/UISword.h"
 
 #include "Projectile/ProjectileManager.h"
 #include "UI/UIPartDestruction.h"
@@ -68,6 +69,7 @@ void GameScene::CreateResource()
     UIStamina* uIStamina = new UIStamina();
     UIGuardGauge* uiGuardGauge = new UIGuardGauge();
     UIActionGuide* uIActionGuide = new UIActionGuide();
+    UISword* uISword = new UISword();
 }
 
 void GameScene::LoadEffect()
@@ -188,6 +190,7 @@ void GameScene::Update(const float& elapsedTime)
         UIManager::Instance().GetUI(UIManager::UIType::UIStamina)->SetIsDraw();
         UIManager::Instance().GetUI(UIManager::UIType::UIGuardGauge)->SetIsDraw();
         UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->SetIsDraw();
+        UIManager::Instance().GetUI(UIManager::UIType::UISword)->SetIsDraw();
 
         isDrawUI_ = true;
     }
