@@ -19,6 +19,7 @@ public:
     void Initialize();
     void Finalize();
     void Update(const float& elapsedTime);
+    void DrawDebug();
 
 private:
     void UpdatePlayerVsEnemy();
@@ -86,5 +87,8 @@ private:
     int handleCounter_ = 0;
 
     int hitEffectType_ = 0;
+
+    float vibrationTime_ = 1.0f;
+    float vibrationVolume_ = 1.0f;
 };
 

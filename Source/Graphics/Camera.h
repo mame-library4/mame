@@ -71,6 +71,7 @@ public:// --- 取得・設定 ---
     void UseDragonDeathCamera();                            // ドラゴンの死亡演出カメラを使用する
     void UseCounterCamera();        // カウンターカメラを使用する
     void UseCounterAttackCamera();  // カウンター攻撃カメラを使用する
+    void UseHelmbreakerCamera();
 
 private:
 #pragma region---------- 各種カメラの定数 ----------
@@ -111,6 +112,8 @@ private:
     // ---------- カウンター攻撃時のカメラ更新 ----------
     void UpdateCounterCamera(const float& elapsedTime);
     void UpdateCounterAttackCamera(const float& elapsedTime);
+    
+    void UpdateHelmbreakerCamera(const float& elapsedTime);
 
     void SetState(const EnemyDeathCamera& state)    { dragonDeathState_ = static_cast<int>(state); }
     void SetState(const CounterAttackCamera& state) { counterState_ = static_cast<int>(state); }
@@ -161,7 +164,7 @@ private:
     DirectX::XMFLOAT2   resetOldRotation_       = {};    // 処理開始時の角度
     DirectX::XMFLOAT2   resetTargetRotation_    = {};    // 目標地点の角度
     float               resetLerpTimer_         = 0.0f;  // lerpに使用
-    float               resetLerpSpeed_         = 15.0f; // lerpの速度
+    float               resetLerpSpeed_         = 10.0f; // lerpの速度
     bool                cameraResetFlag_        = false; // カメラリセットをするかのフラグ
 
     // ---------- カメラ補間 ----------
@@ -185,6 +188,11 @@ private:
 
     float gameCameraLengthReturnSpeed_ = 5.0f;
     float gameCameraLerpWeightReturnSpeed_ = 0.6f;
+
+    // ---------- 必殺技カメラ ----------
+    float   helmbreakerCameraLerpWeight_    = 0.35f;
+    int     helmbreakerCameraState_         = 0;
+    bool    isHelmbreakerCameraActive_      = false;
 
     // ---------- カウンターカメラ ----------
     float               counterTime_                    = 0.2f;

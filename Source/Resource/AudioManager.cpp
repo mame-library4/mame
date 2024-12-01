@@ -20,8 +20,10 @@ void AudioManager::LoadAudio()
     {
         // BGMì«Ç›çûÇ›
         {            
-            bgm_[static_cast<int>(BGM::Title)] = std::make_unique<Audio>(xAudio2_.Get(), L"./Resources/Audio/BGM/Title.wav");
-            bgm_[static_cast<int>(BGM::Game)] = std::make_unique<Audio>(xAudio2_.Get(), L"./Resources/Audio/BGM/Game.wav");
+            bgm_[static_cast<int>(BGM::Title)]              = std::make_unique<Audio>(xAudio2_.Get(), L"./Resources/Audio/BGM/Title.wav");
+            bgm_[static_cast<int>(BGM::Game)]               = std::make_unique<Audio>(xAudio2_.Get(), L"./Resources/Audio/BGM/Game.wav");
+            bgm_[static_cast<int>(BGM::GameClear)]          = std::make_unique<Audio>(xAudio2_.Get(), L"./Resources/Audio/BGM/GameClear.wav");
+            bgm_[static_cast<int>(BGM::GameClearJingle)]    = std::make_unique<Audio>(xAudio2_.Get(), L"./Resources/Audio/BGM/GameClearJingle.wav");
         }
 
         // SEì«Ç›çûÇ›
@@ -96,6 +98,8 @@ void AudioManager::LoadAudio()
         {
             bgm_[static_cast<int>(BGM::Title)]->Volume(0.5f);
             bgm_[static_cast<int>(BGM::Game)]->Volume(0.06f);
+            bgm_[static_cast<int>(BGM::GameClear)]->Volume(0.3f);
+            bgm_[static_cast<int>(BGM::GameClearJingle)]->Volume(0.4f);
         }
 
         // SEâπó í≤êÆ

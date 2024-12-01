@@ -3,6 +3,7 @@
 #include "Camera.h"
 
 #include "Input.h"
+#include "AudioManager.h"
 
 
 #pragma region DEMOƒLƒƒƒ‰
@@ -32,12 +33,12 @@ void DemoChara::DrawDebug()
 
 void DemoScene::CreateResource()
 {
-    demoChara_ = std::make_unique<DemoChara>();
+    //demoChara_ = std::make_unique<DemoChara>();
 }
 
 void DemoScene::Initialize()
 {
-    demoChara_->PlayAnimation(0, true, 1.0f);
+    //demoChara_->PlayAnimation(0, true, 1.0f);
 }
 
 void DemoScene::Finalize()
@@ -48,7 +49,7 @@ void DemoScene::Update(const float& elapsedTime)
 {
     Camera::Instance().SetTarget({});
 
-    demoChara_->Update(elapsedTime);
+    //demoChara_->Update(elapsedTime);
 }
 
 void DemoScene::ShadowRender()
@@ -59,7 +60,7 @@ void DemoScene::DeferredRender()
 {
     ID3D11PixelShader* gBufferPixelShader = Graphics::Instance().GetShader()->GetGBufferPixelShader();
     
-    demoChara_->Render(gBufferPixelShader);
+    //demoChara_->Render(gBufferPixelShader);
 }
 
 void DemoScene::ForwardRender()
@@ -74,7 +75,38 @@ void DemoScene::Render()
 
 void DemoScene::DrawDebug()
 {
-    demoChara_->DrawDebug();
+    ImGui::Begin("Audio");
+
+    if (ImGui::TreeNode("GameClaer"))
+    {
+        ImGui::DragFloat("Volume", &gameClearVolume_, 0.01f);
+        if (ImGui::Button("Play"))
+        {
+            AudioManager::Instance().StopAllAudio();
+            AudioManager::Instance().PlayBGM(BGM::GameClear);
+            AudioManager::Instance().SetBGMVolume(BGM::GameClear, gameClearVolume_);
+        }
+
+        ImGui::TreePop();
+    }
+    if (ImGui::TreeNode("GameClaerJingle"))
+    {
+        ImGui::DragFloat("Volume", &gameClearJingleVolume_, 0.01f);
+
+        if (ImGui::Button("Play"))
+        {
+            AudioManager::Instance().StopAllAudio();
+            AudioManager::Instance().PlayBGM(BGM::GameClearJingle);
+            AudioManager::Instance().SetBGMVolume(BGM::GameClearJingle, gameClearJingleVolume_);
+        }
+
+        ImGui::TreePop();
+    }
+
+
+    ImGui::End();
+
+    //demoChara_->DrawDebug();
 }
 
 

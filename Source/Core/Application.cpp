@@ -4,6 +4,7 @@
 
 #include "../Scene/SceneManager.h"
 #include "../Scene/TitleScene.h"
+#include "../Scene/DemoScene.h"
 
 #include "Camera.h"
 
@@ -45,6 +46,7 @@ bool Application::Initialize()
 
     // --- シーン初期化 ---
     SceneManager::Instance().ChangeScene(new TitleScene);
+    //SceneManager::Instance().ChangeScene(new DemoScene);
 
     // エフェクト初期化
     EffectManager::Instance().Initialize();

@@ -14,6 +14,7 @@
 #include "UI/UICrosshair.h"
 
 #include "GameScene.h"
+#include "AudioManager.h"
 
 // ----- 初期化 -----
 void Camera::Initialize()
@@ -57,7 +58,7 @@ void Camera::Update(const float& elapsedTime)
     UpdateCounterAttackCamera(elapsedTime);
 
     // カウンターカメラを使用していないとき
-    if (isCounterCameraActive_ == false && isCounterAttackCameraActive_ == false)
+    if (isCounterCameraActive_ == false && isCounterAttackCameraActive_ == false && isHelmbreakerCameraActive_== false)
     {
         if (length_ != gameCameraLength_)
         {
@@ -70,7 +71,9 @@ void Camera::Update(const float& elapsedTime)
         }
     }
 
-    const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
+    DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
+    if (isHelmbreakerCameraActive_) cameraTargetPosition = PlayerManager::Instance().GetTransform()->GetPosition();
+    
     target_ = XMFloat3Lerp(target_, cameraTargetPosition, lerpWeight_);
 
     // ターゲットカメラ
@@ -78,6 +81,8 @@ void Camera::Update(const float& elapsedTime)
 
     // カメラリセット
     UpdateCameraReset(elapsedTime);
+
+    UpdateHelmbreakerCamera(elapsedTime);
 
     // カメラ回転処理
     Rotate(elapsedTime);
@@ -478,6 +483,16 @@ void Camera::UseCounterAttackCamera()
     isCounterAttackCameraActive_ = true;  // カウンター攻撃カメラを使用
 }
 
+void Camera::UseHelmbreakerCamera()
+{
+    isCounterCameraActive_          = false;
+    isCounterAttackCameraActive_    = false;
+
+    isHelmbreakerCameraActive_   = true;
+
+    helmbreakerCameraState_ = 0;
+}
+
 #pragma endregion ---------- 各種カメラ使用設定 ----------
 
 // ----- ターゲットカメラ -----
@@ -526,7 +541,7 @@ void Camera::UpdateCameraReset(const float& elapsedTime)
         
         // 現在の回転値を保存 & 回転の目的地を設定
         resetOldRotation_ = { GetTransform()->GetRotationX(), GetTransform()->GetRotationY() };
-        resetTargetRotation_ = { DirectX::XMConvertToRadians(10.0f), PlayerManager::Instance().GetTransform()->GetRotationY() };
+        resetTargetRotation_ = { DirectX::XMConvertToRadians(-5.0f), PlayerManager::Instance().GetTransform()->GetRotationY() };
 
         // 回転角がある場合は処理をする
         const float rotationDeltaY = resetTargetRotation_.y - resetOldRotation_.y;
@@ -789,6 +804,9 @@ const bool Camera::UpdateDragonDeathCamera(const float& elapsedTime)
                 // 敵死亡時カメラを使用終了
                 isDragonDeathCameraActive_ = false;
 
+                AudioManager::Instance().StopBGM(BGM::GameClearJingle);
+                AudioManager::Instance().PlayBGM(BGM::GameClear);
+
                 // ステート変更
                 SetState(EnemyDeathCamera::Death);
             }
@@ -950,6 +968,8 @@ void Camera::UpdateCounterAttackCamera(const float& elapsedTime)
 
         if (animationSeconds > 1.6f)
         {
+            minRotationX_ = gameCameraMinRotationX_;
+
             lerpWeight_ = gameCameraLerpWeight_ * gameCameraLerpWeightReturnSpeed_;
             isCounterAttackCameraActive_ = false;
         }
@@ -961,244 +981,43 @@ void Camera::UpdateCounterAttackCamera(const float& elapsedTime)
 
 #pragma endregion ---------- カウンターカメラ ----------
 
-#if 0
-// ----- カウンター攻撃時のカメラ更新 -----
-const bool Camera::UpdateCounterAttackCamera(const float& elapsedTime)
+// ----- 兜割りカメラ -----
+void Camera::UpdateHelmbreakerCamera(const float& elapsedTime)
 {
-    // カウンター時カメラ使用フラグが立っていないのでここで終了
-    if (useCounterCamera_ == false) return false;
+    // 兜割りカメラを使わない
+    if (isHelmbreakerCameraActive_ == false) return;
 
-    Player* player = PlayerManager::Instance().GetPlayer().get();
+    lerpWeight_ = helmbreakerCameraLerpWeight_;
 
-    switch (static_cast<CounterAttackCamera>(counterState_))
+    switch (helmbreakerCameraState_)
     {
-    case CounterAttackCamera::CounterInitialize:// カウンター初期化
-        // 現在のカメラ項目を保存する
-        oldLength_ = length_;
-        oldRotate_ = GetTransform()->GetRotation();
-
-        // 変数初期化
+    case 0:// 初期化
         easingTimer_ = 0.0f;
-
-        // ステート変更
-        SetState(CounterAttackCamera::CounterZoomOut);
-
-        break;
-    case CounterAttackCamera::CounterZoomOut:// カメラを引く
-    {        
-        if (player->GetAnimationSeconds() < 0.25f) break;
-
-        const float totalFrame = 0.2f;
-        easingTimer_ += elapsedTime;
-        easingTimer_ = min(easingTimer_, totalFrame);
-
-        if (isAdjustCameraLength_ == false)
-        {
-            length_ = Easing::InSine(easingTimer_, totalFrame, 7.0f, oldLength_);
-
-            const float maxRotateX = oldRotate_.x + DirectX::XMConvertToRadians(-1.5f);
-            const float rotateX = Easing::InSine(easingTimer_, totalFrame, maxRotateX, oldRotate_.x);
-            GetTransform()->SetRotationX(rotateX);
-        }
-
-        if (easingTimer_ == totalFrame)
-        {
-            // 変数初期化
-            easingTimer_ = 0.0f;
-
-            // ステート変更
-            SetState(CounterAttackCamera::CounterIdle);
-        }
-    }
-        break;
-    case CounterAttackCamera::CounterIdle:// 次の行動待機
-    {
-        const Player::STATE currentState = player->GetCurrentState();
-
-        if (currentState == Player::STATE::Idle ||
-            currentState == Player::STATE::Damage)
-        {
-            // ステート変更
-            SetState(CounterAttackCamera::CounterFinalize);
-        }
-        if (currentState == Player::STATE::CounterCombo)
-        {
-            // ステート変更
-            SetState(CounterAttackCamera::CounterComboInitialize);
-        }
-    }
-        break;
-    case CounterAttackCamera::CounterFinalize:// カウンター終了化
-    {
-        const float totalFrame = 0.5f;
-        easingTimer_ += elapsedTime;
-        easingTimer_ = min(easingTimer_, totalFrame);
-
-        if (isAdjustCameraLength_ == false)
-        {
-            length_ = Easing::InSine(easingTimer_, totalFrame, oldLength_, 7.0f);
-
-            const float minRotateX = oldRotate_.x + DirectX::XMConvertToRadians(-1.5f);
-            const float rotateX = Easing::InSine(easingTimer_, totalFrame, oldRotate_.x, minRotateX);
-            GetTransform()->SetRotationX(rotateX);
-        }
-
-        if (easingTimer_ == totalFrame)
-        {
-            // 変数初期化
-            easingTimer_ = 0.0f;
-
-            // カウンターカメラ使用終了
-            useCounterCamera_ = false;
-        }
-    }
-        break;
-    case CounterAttackCamera::CounterComboInitialize:// カウンターコンボ初期化
-
-        // 現在のカメラの項目を保存する
         oldLength_ = length_;
-        oldRotate_ = GetTransform()->GetRotation();
+        helmbreakerCameraState_ = 1;
 
-        // 変数初期化
-        easingTimer_ = 0.0f;
-
-        counterDelayTimer_ = 0.0f;
-
-        // ステート変更
-        SetState(CounterAttackCamera::CounterComboZoomIn);
-
-        break;  
-    case CounterAttackCamera::CounterComboZoomIn:
+        break;
+    case 1:
     {
-        const float totalFrame = 0.2f;
-        //const float totalFrame = 0.17f;
-        easingTimer_ += elapsedTime;
-        easingTimer_ = min(easingTimer_, totalFrame);
+        const float playerAnimationSeconds = PlayerManager::Instance().GetPlayer()->GetAnimationSeconds();        
 
-#if 0
-        length_ = Easing::InSine(easingTimer_, totalFrame, 4.5f, oldLength_);
-
-        const float maxRotateX = oldRotate_.x + DirectX::XMConvertToRadians(3.0f);
-        const float rotateX = Easing::InSine(easingTimer_, totalFrame, maxRotateX, oldRotate_.x);
-        GetTransform()->SetRotationX(rotateX);
-#else
-        length_ = Easing::InSine(easingTimer_, totalFrame, 5.5f, oldLength_);
-
-        const float maxRotateX = oldRotate_.x + DirectX::XMConvertToRadians(3.0f);
-        const float rotateX = Easing::InSine(easingTimer_, totalFrame, maxRotateX, oldRotate_.x);
-        GetTransform()->SetRotationX(rotateX);
-#endif
-
-        if (easingTimer_ == totalFrame)
+        if(PlayerManager::Instance().GetPlayer()->GetAnimationIndex() != static_cast<int>(Player::Animation::Attack4_0))
         {
-            counterDelayTimer_ += elapsedTime;
-
-            if (counterDelayTimer_ >= 0.1f)
-            {
-                easingTimer_ = 0.0f;
-
-                counterDelay_ = target_;
-                isCounterDelay_ = true;
-
-                SetState(CounterAttackCamera::CounterComboZoomOut);
-            }
-
-            //easingTimer_ = 0.0f;
-
-            // ステート変更
-            //SetState(CounterAttackCamera::CounterComboZoomOut);
+            helmbreakerCameraState_ = 2;
+        }
+        else
+        {
+            length_ = Easing::InSine(playerAnimationSeconds, 0.4f, 5.5f, oldLength_);
         }
     }
         break;
-    case CounterAttackCamera::CounterComboZoomOut:
-    {
-        const float totalFrame = 0.2f;
-        easingTimer_ += elapsedTime;
-        easingTimer_ = min(easingTimer_, totalFrame);
+    case 2:
 
-#if 0
-        length_ = Easing::InSine(easingTimer_, totalFrame, 9.0f, 4.5f);
-#else
-        length_ = Easing::InSine(easingTimer_, totalFrame, 9.0f, 5.5f);
-#endif
-
-        const float maxRotate = oldRotate_.x + DirectX::XMConvertToRadians(-3.5f);
-        const float minRotate = oldRotate_.x + DirectX::XMConvertToRadians(3.0f);
-        const float rotateX = Easing::InSine(easingTimer_, totalFrame, maxRotate, minRotate);
-        GetTransform()->SetRotationX(rotateX);
-
-        if (easingTimer_ == totalFrame)
+        if (PlayerManager::Instance().GetPlayer()->GetCurrentState() != Player::STATE::Helmbreaker)
         {
-            easingTimer_ = 0.0f;
-            counterDelayTimer_ = 0.0f;
-
-            counterLerpTimer_ = 0.0f;
-
-            // ステート変更
-            SetState(CounterAttackCamera::Finalize);
-        }
-    }
-        break;
-    case CounterAttackCamera::Finalize:
-    {
-        counterDelayTimer_ += elapsedTime;
-        if (counterDelayTimer_ > 0.5f)
-        {
-
-            
-            counterLerpTimer_ += counterLerpSpeed_ * elapsedTime;
-            counterLerpTimer_ = min(counterLerpTimer_, 1.0f);
-
-            if (isCounterDelay_)
-            {
-                const DirectX::XMFLOAT3 cameraTargetPosition = { PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ() };
-                DirectX::XMVECTOR vec = DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&counterDelay_), DirectX::XMLoadFloat3(&cameraTargetPosition), counterLerpTimer_);
-                DirectX::XMFLOAT3 pos = {};
-                DirectX::XMStoreFloat3(&pos, vec);
-
-                // length設定
-                length_ = XMFloatLerp(9.0f, 6.5f, counterLerpTimer_);
-
-                // rotationX設定
-
-                target_ = pos;
-            }
-            if (counterLerpTimer_ == 1.0f)
-            {
-                isCounterDelay_ = false;
-                useCounterCamera_ = false;
-            }
+            isHelmbreakerCameraActive_ = false;
         }
 
-#if 0
-        counterDelayTimer_ += elapsedTime;
-        if (counterDelayTimer_ > 0.5f)
-        {
-
-
-        const float totalFrame = 0.6f;
-
-        easingTimer_ += elapsedTime;
-        easingTimer_ = min(easingTimer_, totalFrame);
-        
-        length_ = Easing::InSine(easingTimer_, totalFrame, 6.0f, 9.0f);
-
-        const float minRotate = oldRotate_.x + DirectX::XMConvertToRadians(-3.5f);
-        const float rotateX = Easing::InSine(easingTimer_, totalFrame, 0.0f, minRotate);
-        GetTransform()->SetRotationX(rotateX);
-
-        if(easingTimer_ == totalFrame)
-        {
-            useCounterCamera_ = false;
-        }
-
-        }
-#endif
-
-    }
         break;
     }
-
-    return true;
 }
-#endif

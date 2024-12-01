@@ -118,6 +118,12 @@ namespace PlayerState
     // ----- 更新 -----
     void IdleState::Update(const float& elapsedTime)
     {
+        if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y)
+        {
+            owner_->ChangeState(Player::STATE::Helmbreaker);
+            return;
+        }
+
         // 先行入力判定
         if (CheckNextInput()) return;
     }
@@ -3799,6 +3805,9 @@ namespace PlayerState
             owner_->SetRootMotionValue(1.0f);
         }
 
+        // 旋回処理
+        
+
         // 攻撃判定処理
         const bool attackFlag = attackData_.Update(owner_->GetAnimationSeconds(), owner_->GetIsAttackHit());
         owner_->SetIsAttackValid(attackFlag);
@@ -3918,6 +3927,11 @@ namespace PlayerState
 
         owner_->SetRootMotionValue(rootMotionValue);
     }
+
+    // ----- 旋回処理 -----
+    void ComboAttack0_3::Turn(const float& elapsedTime)
+    {
+    }
 }
 
 // ----- 樽設置 -----
@@ -3979,5 +3993,171 @@ namespace PlayerState
 
             ImGui::TreePop();
         }
+    }
+}
+
+// ----- 兜割り -----
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void HelmbreakerState::Initialize()
+    {
+        // フラグをリセットする
+        owner_->ResetFlags();
+
+        // アニメーション再生
+        owner_->PlayBlendAnimation(Player::Animation::Attack4_0, false, 1.0f, firstAnimationStartFrame_);
+        owner_->SetTransitionTime(0.2f);
+
+        // 兜割りカメラ使用する
+        Camera::Instance().UseHelmbreakerCamera();
+
+        hitCounter_ = 0;
+    }
+
+    // ----- 更新 -----
+    void HelmbreakerState::Update(const float& elapsedTime)
+    {
+        // 攻撃判定更新
+        UpdateAttackJudgment();
+
+
+        // ルートモーションの設定
+        if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+        {
+            // RootMotionを使用する
+            owner_->SetUseRootMotion(true);
+            owner_->SetRootMotionValue(1.0f);
+        }
+
+        if (owner_->GetAnimationSeconds() > 0.4f)
+        {
+            owner_->SetRootMotionValue(rootMotionMoveValue_);
+        }
+
+        if (owner_->GetAnimationSeconds() > firstAnimationEndFrame_ && owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::Attack4_0))
+        {
+            owner_->PlayBlendAnimation(Player::Animation::Attack4_2, false, secondAnimationSpeed_);
+            owner_->SetTransitionTime(transitionTime_);
+            owner_->SetUseRootMotion(false);
+
+            startPositionY_ = owner_->GetTransform()->GetPositionY();
+        }
+
+        if (owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::Attack4_2))
+        {
+            if (owner_->GetIsBlendAnimation())
+            {
+                owner_->GetTransform()->AddPositionY(moveValueY_ * elapsedTime);
+                startPositionY_ = owner_->GetTransform()->GetPositionY();
+            }
+
+            if (owner_->GetAnimationSeconds() <= totalMoveFrame_)
+            {
+                const float positionY = Easing::InSine(owner_->GetAnimationSeconds(), totalMoveFrame_, 0.0f, startPositionY_);
+                owner_->GetTransform()->SetPositionY(positionY);
+            }
+            else
+            {
+                owner_->GetTransform()->SetPositionY(0.0f);
+            }
+        }
+
+        // アニメーション速度調整
+        UpdateAnimationSpeed();
+
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+
+    }
+
+    // ----- 終了化 -----
+    void HelmbreakerState::Finalize()
+    {
+        owner_->GetTransform()->SetPositionY(0.0f);
+
+        owner_->SetUseRootMotion(false);
+    }
+
+    // ----- ImGui用 -----
+    void HelmbreakerState::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::DragInt("HitCounter", &hitCounter_);
+            ImGui::DragInt("MaxHit", &maxHitNum_);
+
+            ImGui::DragFloat("FirstAnimationStartFrame", &firstAnimationStartFrame_, 0.01f);
+            ImGui::DragFloat("FirstAnimationEndFrame", &firstAnimationEndFrame_, 0.01f);
+            ImGui::DragFloat("FirstAnimationSpeed", &firstAnimationSpeed_, 0.01f);
+
+            ImGui::DragFloat("SecondAnimationSpeed", &secondAnimationSpeed_, 0.01f);
+            
+            ImGui::DragFloat("TransitionTime", &transitionTime_, 0.01f);
+            ImGui::DragFloat("RootMotionMoveValue", &rootMotionMoveValue_, 0.01f);
+
+            ImGui::DragFloat("MoveValueY", &moveValueY_, 0.01f);
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- 攻撃判定更新 -----
+    void HelmbreakerState::UpdateAttackJudgment()
+    {
+        const Player::Animation currentAnimation = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+
+        // 上昇中の攻撃判定
+        if (currentAnimation == Player::Animation::Attack4_0)
+        {
+            // 既に攻撃が当たってる
+            if (owner_->GetIsAttackHit()) return;
+
+            owner_->SetIsAttackValid(true);
+        }
+        // 降下時の攻撃判定設定
+        else
+        {
+            // 攻撃判定有効時間を過ぎている
+            if (owner_->GetAnimationSeconds() >= 0.2f)
+            {
+                owner_->SetIsAttackHit(true);
+                owner_->SetIsAttackValid(false);
+                return;
+            }
+
+            // ヒット回数上限
+            if (hitCounter_ > maxHitNum_) return;
+
+            if (owner_->GetIsAttackHit())
+            {
+                owner_->SetIsAttackHit(false);
+                owner_->SetIsAttackValid(true);
+
+                ++hitCounter_;
+            }
+        }
+    }
+
+    // ----- アニメーション速度調整 -----
+    void HelmbreakerState::UpdateAnimationSpeed()
+    {
+        const Player::Animation curretAnimationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+        const float animationSeconds = owner_->GetAnimationSeconds();
+        float animationSpeed = 1.0f;
+
+        if (curretAnimationIndex == Player::Animation::Attack4_0)
+        {
+            if (animationSeconds > 0.4f) animationSpeed = firstAnimationSpeed_;
+        }
+        else if (curretAnimationIndex == Player::Animation::Attack4_2)
+        {
+            if (animationSeconds < 0.3f) animationSpeed = secondAnimationSpeed_;
+        }
+
+        owner_->SetAnimationSpeed(animationSpeed);
     }
 }

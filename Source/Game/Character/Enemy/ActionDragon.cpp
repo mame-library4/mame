@@ -106,14 +106,19 @@ namespace ActionDragon
             owner_->AddForce({}, 0.0f, 0.0f);
             // 全オーディオ停止
             AudioManager::Instance().StopAllAudio();
+
+            // ゲームクリアジングルを再生
+            AudioManager::Instance().PlayBGM(BGM::GameClearJingle, false);
+
             // タイマー設定
             timer_ = 60.0f;
 
+            owner_->GetTransform()->SetPositionY(0.0f);
 
             owner_->SetStep(1);
 
             break;
-        case 1:
+        case 1:       
 
             timer_ -= elapsedTime;
             if (timer_ <= 0.0f)

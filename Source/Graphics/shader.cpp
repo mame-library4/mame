@@ -114,8 +114,8 @@ void Shader::DrawDebug()
     {
         for (int i = 0; i < static_cast<int>(GBufferId::Max); ++i)
         {
-            //ImGui::Image(reinterpret_cast<ImTextureID>(gBufferShaderResourceView_[i].Get()), ImVec2(256.0, 256.0));
-            ImGui::Image(reinterpret_cast<ImTextureID>(gBufferShaderResourceView_[i].Get()), ImVec2(512.0f, 512.0f));
+            ImGui::Image(reinterpret_cast<ImTextureID>(gBufferShaderResourceView_[i].Get()), ImVec2(256.0, 256.0));
+            //ImGui::Image(reinterpret_cast<ImTextureID>(gBufferShaderResourceView_[i].Get()), ImVec2(512.0f, 512.0f));
         }
 
         ImGui::TreePop();

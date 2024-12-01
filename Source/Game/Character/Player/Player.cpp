@@ -8,7 +8,7 @@
 // ----- コンストラクタ -----
 Player::Player()
     : Character("./Resources/Model/Character/Player/SwordGirl.gltf", 0.01f),
-    weapon_("./Resources/Model/Character/Sword1/Sword.gltf")
+    weapon_("./Resources/Model/Character/Sword/Sword.gltf")
 {
     // --- ステートマシン ---
     {
@@ -28,9 +28,9 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::DeathState(this));            // 死亡
         
         GetStateMachine()->RegisterState(new PlayerState::DodgeState(this));            // 回避
-        GetStateMachine()->RegisterState(new PlayerState::JustDodgeState(this));            // 回避
-        GetStateMachine()->RegisterState(new PlayerState::JustDodgeCancelState(this));            // 回避
-        GetStateMachine()->RegisterState(new PlayerState::RushAttackState(this));            // 回避
+        GetStateMachine()->RegisterState(new PlayerState::JustDodgeState(this));        // 
+        GetStateMachine()->RegisterState(new PlayerState::JustDodgeCancelState(this));  // 
+        GetStateMachine()->RegisterState(new PlayerState::RushAttackState(this));       // 
 
         GetStateMachine()->RegisterState(new PlayerState::CounterState(this));          // カウンター
         GetStateMachine()->RegisterState(new PlayerState::CounterComboState(this));     // カウンターコンボ
@@ -39,7 +39,8 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::ComboAttack0_1(this));        // コンボ0_1
         GetStateMachine()->RegisterState(new PlayerState::ComboAttack0_2(this));        // コンボ0_2
         GetStateMachine()->RegisterState(new PlayerState::ComboAttack0_3(this));        // コンボ0_3
-        GetStateMachine()->RegisterState(new PlayerState::PlacingBarrelState(this));        // 樽設置
+        GetStateMachine()->RegisterState(new PlayerState::PlacingBarrelState(this));    // 樽設置
+        GetStateMachine()->RegisterState(new PlayerState::HelmbreakerState(this));      // 兜割り
 
         // 一番初めのステートを設定する
         GetStateMachine()->SetState(static_cast<UINT>(STATE::Idle));
@@ -112,6 +113,23 @@ void Player::Update(const float& elapsedTime)
     // ルートモーション
     RootMotion();
 
+    // 回転補正
+    UpdateRotationAdjustment(elapsedTime);
+
+    // 移動処理
+    Move(elapsedTime);
+
+    // ステージの外に出ないようにする
+    CollisionCharacterVsStage();
+
+    const DirectX::XMFLOAT3 startPos = weapon_.GetJointPosition("joint1", weaponWorld_);
+    const DirectX::XMFLOAT3 joint2Pos = weapon_.GetJointPosition("joint2", weaponWorld_);
+    const DirectX::XMFLOAT3 endPos = startPos + XMFloat3Normalize(startPos - joint2Pos) * swordTrailEndPosition_;
+    swordTrail_.Update(startPos, endPos);
+
+    // Collisionデータ更新
+    UpdateCollisions(elapsedTime);
+
     // 剣の座標更新
     UpdateSwordTransform();
 
@@ -126,32 +144,11 @@ void Player::Update(const float& elapsedTime)
         return;
     }
 
-    // 回転補正
-    UpdateRotationAdjustment(elapsedTime);
-
-
-    // 移動処理
-    Move(elapsedTime);    
-
-    // ステージの外に出ないようにする
-    CollisionCharacterVsStage();
-
-    const DirectX::XMFLOAT3 startPos = weapon_.GetJointPosition("joint1", weaponWorld_);
-    const DirectX::XMFLOAT3 joint2Pos = weapon_.GetJointPosition("joint2", weaponWorld_);
-    const DirectX::XMFLOAT3 endPos = startPos + XMFloat3Normalize(startPos - joint2Pos) * swordTrailEndPosition_;
-    swordTrail_.Update(startPos, endPos);
-
-    // Collisionデータ更新
-    UpdateCollisions(elapsedTime);
-
     // スタミナ回復
     UpdateStaminaRecovery(elapsedTime);
 
     // ガードゲージ回復
     UpdateGuardGaugeRecovery(elapsedTime);
-
-    sword_.Update(GetJointWorldTransform("hand_r"), GetJointWorldTransform("index_01_r"));
-    //sword_.Update(GetJointPosition("hand_r"));
 }
 
 // ----- 描画 -----
@@ -163,8 +160,6 @@ void Player::Render(ID3D11PixelShader* psShader)
 
 void Player::RenderTrail()
 {
-    if (isSwordPrimitiveDraw_) sword_.Render();
-
     if (isDrawSwordTrail_) swordTrail_.Render();
 }
 
@@ -256,9 +251,6 @@ void Player::DrawDebug()
 
                 ImGui::TreePop();
             }
-
-            ImGui::Checkbox("IsSwordPrimitiveDraw", &isSwordPrimitiveDraw_);            
-            sword_.DrawDebug();
 
             weapon_.DrawDebug();
             ImGui::DragFloat3("weaponLocation", &socketLocation_.x);
@@ -556,7 +548,7 @@ const bool Player::UseGuardGaugeOnBlock()
 void Player::ResetFlags()
 {
     nextInput_              = NextInput::None;  // 先行入力管理フラグ
-    isDodge_            = false;            // 回避入力判定用フラグ
+    isDodge_                = false;            // 回避入力判定用フラグ
     isCounter_              = false;            // カウンター状態かフラグ
     isAbleCounterAttack_    = false;            // カウンター攻撃可能か
     isAttackValid_          = false;
@@ -724,6 +716,8 @@ void Player::SetAttackPower()
     attackPower_[static_cast<int>(AttackType::RushAttack1)]         = 16.0f;
     attackPower_[static_cast<int>(AttackType::RushAttack2)]         = 17.0f;
     attackPower_[static_cast<int>(AttackType::RushAttack3)]         = 18.0f;
+    attackPower_[static_cast<int>(AttackType::Helmbreaker0)]        = 18.0f;
+    attackPower_[static_cast<int>(AttackType::Helmbreaker1)]        = 23.0f;
 }
 
 // ----- 剣の座標更新 -----
@@ -755,7 +749,8 @@ const float Player::GetAttackPower() const
         static_cast<int>(Player::Animation::RunAttack1), static_cast<int>(Player::Animation::Counter),
         static_cast<int>(Player::Animation::CounterAttack1), static_cast<int>(Player::Animation::AttackRush0),
         static_cast<int>(Player::Animation::AttackRush1), static_cast<int>(Player::Animation::AttackRush2),
-        static_cast<int>(Player::Animation::AttackRush3),
+        static_cast<int>(Player::Animation::AttackRush3), static_cast<int>(Player::Animation::Attack4_0),
+        static_cast<int>(Player::Animation::Attack4_2)
     };
     const int animationIndex = GetAnimationIndex();
     for (int i = 0; i < static_cast<int>(AttackType::Max); ++i)
@@ -782,6 +777,11 @@ void Player::RemoveUIRush()
         UIManager::Instance().Remove(uiRush_);
         uiRush_ = nullptr;
     }
+}
+
+void Player::SetSwordColor(const DirectX::XMFLOAT3& color)
+{
+    weapon_.SetEmissiveColor(color);
 }
 
 void Player::UpdateCollisions(const float& elapsedTime)

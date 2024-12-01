@@ -48,11 +48,7 @@ public:// --- 定数 ---
         
         PlacingBarre, // 樽設置
 
-
-        ComboAttack1_0,   // コンボ1
-        ComboAttack1_1,   // コンボ1
-        ComboAttack1_2,   // コンボ1
-
+        Helmbreaker,// 兜割
     };
 
     enum class Animation
@@ -107,6 +103,10 @@ public:// --- 定数 ---
         AttackRush1,
         AttackRush2,
         AttackRush3,
+
+        Attack4_0,
+        Attack4_1,
+        Attack4_2,
     };
 
     // 先行入力の種類
@@ -132,6 +132,8 @@ public:// --- 定数 ---
         RushAttack1,
         RushAttack2,
         RushAttack3,
+        Helmbreaker0,
+        Helmbreaker1,
 
         Max,
     };
@@ -182,6 +184,9 @@ public:
     // ---------- ラッシュ攻撃UI ----------
     void GenerateUIRush();
     void RemoveUIRush();
+
+    // ---------- 剣の色 ----------
+    void SetSwordColor(const DirectX::XMFLOAT3& color);
 
 public:// --- 取得・設定 ---
 #pragma region [Get, Set] Function
@@ -396,9 +401,6 @@ private:
     bool        isGuardGaugeDepleted_       = false;  // ガードゲージが枯渇
 
     SwordTrail swordTrail_;
-    Sword sword_;
-    bool isSwordPrimitiveDraw_ = false;
-    //bool isSwordPrimitiveDraw_ = true;
 
     // ---------- 剣の軌跡 ----------
     bool isDrawSwordTrail_ = false;

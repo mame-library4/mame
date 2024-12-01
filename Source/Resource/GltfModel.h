@@ -214,7 +214,7 @@ public:
 
         struct Cbuffer
         {
-            float   emissiveFactor_[3]  = { 0, 0, 0 };
+            float   emissiveFactor_[3]  = { 1, 1, 1 };
             int     alphaMode_          = 0; // "OPAQUE" : 0, "MASK" : 1, "BLEND" : 2
             float   alphaCutoff_        = 0.5f;
             bool    doubleSided_        = false;
@@ -397,6 +397,8 @@ public:
     void SetRootMotionValue(const DirectX::XMFLOAT3& value) { rootMotionValue_ = value; }
     void SetRootMotionValue(const float& value) { rootMotionValue_ = DirectX::XMFLOAT3(value, value, value); }
 
+    void SetEmissiveColor(const DirectX::XMFLOAT3& color) { effectConstants_->GetData()->emissiveColor_ = DirectX::XMFLOAT4(color.x, color.y, color.z, 1.0f); }
+
 private:
     void FetchNodes(const tinygltf::Model& gltfModel);
     void FetchMeshes(ID3D11Device* device, const tinygltf::Model& gltfModel);
@@ -439,6 +441,12 @@ private:
         DirectX::XMFLOAT4X4 matrices_[maxJoints_];
     };
     std::unique_ptr<ConstantBuffer<JointConstants>> jointConstants_;
+
+    struct EffectConstants
+    {
+        DirectX::XMFLOAT4 emissiveColor_ = {};
+    };
+    std::unique_ptr<ConstantBuffer<EffectConstants>> effectConstants_;
 
     Microsoft::WRL::ComPtr<ID3D11VertexShader>   shadowVertexShader_;
     Microsoft::WRL::ComPtr<ID3D11GeometryShader> shadowGeometryShader_;

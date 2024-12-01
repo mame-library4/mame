@@ -176,6 +176,8 @@ GltfModel::GltfModel(const std::string& filename)
         primitiveConstants_ = std::make_unique<ConstantBuffer<PrimitiveConstants>>();
 
         jointConstants_ = std::make_unique<ConstantBuffer<JointConstants>>();
+
+        effectConstants_ = std::make_unique<ConstantBuffer<EffectConstants>>();
     }
 
     animatedNodes_[0] = nodes_;
@@ -371,6 +373,8 @@ void GltfModel::Render(const float& scaleFactor, ID3D11PixelShader* psShader)
     deviceContext->IASetInputLayout(inputLayout_.Get());
     deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+    effectConstants_->Activate(5);
+
     std::function<void(int)> traverse{ [&](int nodeIndex)->void {
         const Node& node{nodes_.at(nodeIndex)};
         if (node.mesh_ > -1)
@@ -478,6 +482,8 @@ void GltfModel::Render(const DirectX::XMFLOAT4X4 world, ID3D11PixelShader* psSha
     psShader ? deviceContext->PSSetShader(psShader, nullptr, 0) : deviceContext->PSSetShader(pixelShader_.Get(), nullptr, 0);
     deviceContext->IASetInputLayout(inputLayout_.Get());
     deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    effectConstants_->Activate(5);
 
     std::function<void(int)> traverse{ [&](int nodeIndex)->void {
         const Node& node{nodes_.at(nodeIndex)};
@@ -669,6 +675,7 @@ void GltfModel::CastShadow(const float& scaleFactor)
 void GltfModel::DrawDebug()
 {
     GetTransform()->DrawDebug();
+    ImGui::ColorEdit4("EmissiveColor", &effectConstants_->GetData()->emissiveColor_.x);
     if (ImGui::TreeNode("Animation"))
     {
         ImGui::DragInt("AnimationIndex", &animationIndex_);

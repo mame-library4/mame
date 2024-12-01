@@ -577,6 +577,8 @@ namespace PlayerState
 
         void UpdateRootMotionMovement();
 
+        void Turn(const float& elapsedTime);
+
     private:
         AttackData      attackData_;
         bool isVibration_ = false;
@@ -611,4 +613,42 @@ namespace PlayerState
 
         float generatePosition_ = 0.7f;
     };
+
+    // ----- 兜割り -----
+    class HelmbreakerState : public State<Player>
+    {
+    public:
+        HelmbreakerState(Player* player) : State(player, "HelmbreakerState") {}
+        ~HelmbreakerState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+
+    private:
+        void UpdateAttackJudgment(); // 攻撃判定更新
+        void UpdateAnimationSpeed(); // アニメーション速度調整
+
+    private:
+        float firstAnimationStartFrame_ = 0.2f;
+        float firstAnimationEndFrame_   = 0.7f;
+        float firstAnimationSpeed_      = 1.0f;
+
+        float secondAnimationSpeed_     = 0.7f;
+
+        float transitionTime_           = 0.15f;
+
+        float rootMotionMoveValue_      = 2.0f;
+
+        
+        float startPositionY_ = 0.0f;
+        float totalMoveFrame_ = 0.11f;
+
+        float moveValueY_ = 5.0f;
+
+        int hitCounter_ = 0;
+        int maxHitNum_ = 5;
+    };
+
 }

@@ -36,5 +36,8 @@ public:
 
 private:
     std::unique_ptr<DemoChara> demoChara_;
+
+    float gameClearVolume_ = 1.0f;
+    float gameClearJingleVolume_ = 1.0f;
 };
 

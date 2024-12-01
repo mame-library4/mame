@@ -7,6 +7,7 @@
 #include "UI/UINumber.h"
 #include "AudioManager.h"
 #include "Item/ItemManager.h"
+#include "Camera.h"
 
 void CollisionManager::Initialize()
 {
@@ -36,6 +37,17 @@ void CollisionManager::Update(const float& elapsedTime)
         if (effectName == "") continue;
 
         EffectManager::Instance().GetEffect(effectName)->SetSpeed(effectHandle_[i].effectHandle_, 1.0f);
+    }
+}
+
+void CollisionManager::DrawDebug()
+{
+    if (ImGui::TreeNode("CollisionManager"))
+    {
+        ImGui::DragFloat("Volume", &vibrationVolume_, 0.01f);
+        ImGui::DragFloat("Time", &vibrationTime_, 0.01f);
+
+        ImGui::TreePop();
     }
 }
 
@@ -124,11 +136,17 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                 playerData.GetPosition(), playerData.GetRadius(),
                 enemyData.GetPosition(), enemyData.GetRadius()))
             {
-                // Hitフラグを立てる, このデータの無敵時間設定
+                const Player::STATE playerState = PlayerManager::Instance().GetPlayer()->GetCurrentState();
+
+                // ---------------------------------------------
+                //  Hitフラグを立てる ( このデータの無敵時間設定 )
+                // ---------------------------------------------
                 enemyData.SetIsHit(true);
                 enemyData.SetHitTimer(0.01f);                
 
-                // 弱点部位か判断する
+                // ---------------------------------------------
+                //  当たった部位が弱点部位かの判定をする
+                // ---------------------------------------------
                 bool isWeakPoint = false;
                 const EnemyDragon::DamageData damageDataIndex = static_cast<EnemyDragon::DamageData>(enemyDataIndex);
                 if (damageDataIndex == EnemyDragon::DamageData::Head ||
@@ -137,7 +155,9 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                     isWeakPoint = true;
                 }
 
+                // ------------------------------------------------------------
                 // ヒットエフェクトを再生 ( 弱点部位は違うエフェクトを再生する )
+                // ------------------------------------------------------------
                 {
                     std::string hitEffectName = hitEffectType_ ? "Hit0" : "Hit1";
                     hitEffectType_ = (hitEffectType_ == 0) ? 1 : 0;
@@ -164,28 +184,10 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                     if (handleCounter_ >= maxEffectHandle_) handleCounter_ = 0;
                 }
 
+                // ------------------------------------------------------------
                 // 効果音を鳴らす
+                // ------------------------------------------------------------
                 {
-#if 0
-                    const Player::STATE playerState = player->GetCurrentState();
-                    const Player::STATE attackData[] =
-                    {
-                        Player::STATE::ComboAttack0_0, Player::STATE::ComboAttack0_1,
-                        Player::STATE::ComboAttack0_2, //Player::STATE::ComboAttack0_3,
-                    };
-                    const SE seData[] =
-                    {
-                        SE::Attack0, SE::Attack0, SE::Attack0,
-                    };
-                    for (int i = 0; i < _countof(attackData); ++i)
-                    {
-                        if (playerState != attackData[i]) continue;
-
-                        AudioManager::Instance().PlaySE(seData[i]);
-                        break;
-                    }
-#else
-
                     if (player->GetCurrentState() != Player::STATE::RushAttack)
                     {
                         AudioManager::Instance().PlaySE(SE::Attack0);
@@ -194,10 +196,11 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                     {
                         AudioManager::Instance().PlaySE(SE::Attack0);
                     }
-#endif
                 }
 
+                // ------------------------------------------------------------
                 // 敵が死んでいなかったらダメージ処理をする
+                // ------------------------------------------------------------
                 if (enemy->GetIsDead() == false)
                 {
                     // TODO:攻撃によってダメージ倍率を変える
@@ -213,16 +216,22 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                     UINumber* ui = new UINumber(damage, enemyData.GetPosition(), color);
                 }
                 
+                // ------------------------------------------------------------
                 // Playerの攻撃判定を無くす
+                // ------------------------------------------------------------
                 player->SetIsAttackHit(true);
 
+                // ------------------------------------------------------------
                 // ヒットストップ ( 弱点部位はヒットストップを長くする )
-                if (player->GetCurrentState() != Player::STATE::RushAttack)
+                // ------------------------------------------------------------
+                if (playerState != Player::STATE::RushAttack)
                 {
                     PlayerManager::Instance().SetHitStop(isWeakPoint ? PlayerManager::HitStopType::Critical : PlayerManager::HitStopType::Normal);
                 }
 
+                // ------------------------------------------------------------
                 // カウンター攻撃時ならコントローラーを振動させる
+                // ------------------------------------------------------------
                 if (player->GetCurrentState() == Player::STATE::CounterCombo)
                 {
                     Input::Instance().GetGamePad().Vibration(0.3f, 1.0f);
@@ -250,10 +259,23 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                     }                    
                 }
 
+                // ------------------------------------------------------------
                 // プレイヤーのルートの移動値を無くす
-                if (player->GetCurrentState() != Player::STATE::CounterCombo)
+                // ------------------------------------------------------------
+                if (playerState != Player::STATE::Helmbreaker && playerState != Player::STATE::CounterCombo)
                 {
                     PlayerManager::Instance().GetPlayer()->SetRootMotionValue(0.0f);
+                }
+
+
+                if (isWeakPoint)
+                {
+                    Camera::Instance().ScreenVibrate(0.02f, 0.3f);
+                }
+
+                if (player->GetCurrentState() == Player::STATE::CounterCombo)
+                {
+                    PlayerManager::Instance().GetPlayer()->SetSwordColor({ 1,0,0 });
                 }
 
                 // 当たったので判定をここで終了する
@@ -393,6 +415,8 @@ void CollisionManager::UpdatePlayerCollisionVsEnemyCollision()
 
     Player* player = PlayerManager::Instance().GetPlayer().get();
     Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
+
+    if (player->GetCurrentState() == Player::STATE::Helmbreaker) return;
 
     for (int playerDataIndex = 0; playerDataIndex < player->GetCollisionDetectionDataCount(); ++playerDataIndex)
     {

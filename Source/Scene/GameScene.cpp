@@ -316,6 +316,8 @@ void GameScene::DrawDebug()
     }
     else
     {
+        CollisionManager::Instance().DrawDebug();
+
         SystemManager::Instance().DrawDebug();
 
         // ƒvƒŒƒCƒ„[ImGui

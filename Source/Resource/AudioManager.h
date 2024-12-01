@@ -7,8 +7,10 @@
 
 enum class BGM
 {
-    Title,      // タイトル
-    Game,       // ゲーム
+    Title,              // タイトル
+    Game,               // ゲーム
+    GameClear,
+    GameClearJingle,
 
     Max,
 };
