@@ -651,4 +651,45 @@ namespace PlayerState
         int maxHitNum_ = 5;
     };
 
+    // ----- チャージ攻撃 -----
+    class ChargeAttackState : public State<Player>
+    {
+    public:
+        ChargeAttackState(Player* player) : State(player, "ChargeAttackState") {}
+        ~ChargeAttackState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+
+    private:
+        void PlayAnimation(); // アニメーション再生
+
+    private:
+        // ---------- チャージスタート ----------
+        float chargeStartAnimationSpeed_        = 1.0f;
+        float chargeStartAnimationStartFrame_   = 0.25f;
+
+        float transitionIdle_ = 0.15f;
+
+        
+
+        float firstAttackAnimationSpeed_        = 1.0f;
+        float firstAttackAnimationStartFrame_   = 0.18f;
+        float firstAttackAnimationEndFrame_     = 0.3f;
+        float transitionChargeLoop_             = 0.1f;
+
+        float secondAttackAnimationSpeed_       = 1.0f;
+        float secondAttackAnimationStartFrame_  = 0.45f;
+        float secondAttackAnimationEndFrame_    = 0.75f;
+        //float secondAttackAnimationStartFrame_  = 0.16f;
+        //float secondAttackAnimationEndFrame_    = 0.6f;
+        float transitionFirstAttack_            = 0.1f;
+
+        float thirdAttackAnimationSpeed_        = 1.0f;
+        float thirdAttackAnimationStartFrame_   = 0.0f;
+        float transitionSecondAttack_           = 0.3f;
+
+    };
 }

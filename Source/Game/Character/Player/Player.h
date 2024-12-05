@@ -49,6 +49,8 @@ public:// --- ’è” ---
         PlacingBarre, // ’Mİ’u
 
         Helmbreaker,// Š•Š„
+
+        ChargeAttack,
     };
 
     enum class Animation
@@ -107,6 +109,10 @@ public:// --- ’è” ---
         Attack4_0,
         Attack4_1,
         Attack4_2,
+
+        ChargeStart,
+        ChargeLoop,
+        ChargeAttack,
     };
 
     // æs“ü—Í‚Ìí—Ş
@@ -134,6 +140,7 @@ public:// --- ’è” ---
         RushAttack3,
         Helmbreaker0,
         Helmbreaker1,
+        ChargeAttack0,
 
         Max,
     };

@@ -120,6 +120,12 @@ namespace PlayerState
     {
         if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y)
         {
+            owner_->ChangeState(Player::STATE::ChargeAttack);
+            return;
+        }
+
+        if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y)
+        {
             if (owner_->GetSwordSpirit() != 0.0f)
             {
                 owner_->ChangeState(Player::STATE::Helmbreaker);
@@ -303,6 +309,13 @@ namespace PlayerState
                 owner_->ChangeState(Player::STATE::Helmbreaker);
                 return;
             }
+        }
+
+        // アイテム使用入力判定
+        if (owner_->IsItemKeyDown())
+        {
+            owner_->ChangeState(Player::STATE::PlacingBarre);
+            return;
         }
 
         // 先行入力判定
@@ -3179,6 +3192,15 @@ namespace PlayerState
     // ----- 更新 -----
     void ComboAttack0_0::Update(const float& elapsedTime)
     {
+        if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y)
+        {
+            if (owner_->GetSwordSpirit() != 0.0f)
+            {
+                owner_->ChangeState(Player::STATE::Helmbreaker);
+                return;
+            }
+        }
+
         // 先行入力判定
         if (CheckNextInput()) return;
 
@@ -3404,6 +3426,15 @@ namespace PlayerState
     // ----- 更新 -----
     void ComboAttack0_1::Update(const float& elapsedTime)
     {
+        if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y)
+        {
+            if (owner_->GetSwordSpirit() != 0.0f)
+            {
+                owner_->ChangeState(Player::STATE::Helmbreaker);
+                return;
+            }
+        }
+
         // 先行入力処理
         if (CheckNextInput()) return;
 
@@ -3603,6 +3634,15 @@ namespace PlayerState
     // ----- 更新 -----
     void ComboAttack0_2::Update(const float& elapsedTime)
     {
+        if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y)
+        {
+            if (owner_->GetSwordSpirit() != 0.0f)
+            {
+                owner_->ChangeState(Player::STATE::Helmbreaker);
+                return;
+            }
+        }
+
         // 先行入力処理
         if (CheckNextInput()) return;
 
@@ -3803,6 +3843,15 @@ namespace PlayerState
     // ----- 更新 -----
     void ComboAttack0_3::Update(const float& elapsedTime)
     {
+        if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y)
+        {
+            if (owner_->GetSwordSpirit() != 0.0f)
+            {
+                owner_->ChangeState(Player::STATE::Helmbreaker);
+                return;
+            }
+        }
+
         // 先行入力判定
         if (CheckNextInput()) return;
 
@@ -4175,5 +4224,147 @@ namespace PlayerState
         }
 
         owner_->SetAnimationSpeed(animationSpeed);
+    }
+}
+
+// ----- チャージ攻撃 -----
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void ChargeAttackState::Initialize()
+    {
+        // アニメーション再生
+        PlayAnimation();
+
+    }
+
+    // ----- 更新 -----
+    void ChargeAttackState::Update(const float& elapsedTime)
+    {
+        const Player::Animation curretAnimation = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+                
+        // チャージループアニメーションを再生する
+        if (curretAnimation == Player::Animation::ChargeStart && owner_->IsPlayAnimation() == false)
+        {
+            owner_->PlayAnimation(Player::Animation::ChargeLoop, false);
+        }
+        
+        if (curretAnimation == Player::Animation::ChargeLoop && owner_->IsPlayAnimation() == false)
+        {
+            if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_Y)
+            {
+                owner_->PlayAnimation(Player::Animation::ChargeLoop, false);
+            }
+            else
+            {
+                owner_->PlayBlendAnimation(Player::Animation::AttackRush1, false, firstAttackAnimationSpeed_, firstAttackAnimationStartFrame_);
+                owner_->SetTransitionTime(transitionChargeLoop_);
+            }
+        }
+
+#if 0
+        if (curretAnimation == Player::Animation::AttackRush1)
+        {
+            if (owner_->GetAnimationSeconds() > firstAttackAnimationEndFrame_)
+            {
+                owner_->PlayBlendAnimation(Player::Animation::ChargeAttack, false, secondAttackAnimationSpeed_, secondAttackAnimationStartFrame_);
+                owner_->SetTransitionTime(transitionFirstAttack_);
+            }
+        }
+
+        if (curretAnimation == Player::Animation::ChargeAttack)
+        {
+            if (owner_->GetAnimationSeconds() > secondAttackAnimationEndFrame_)
+            {
+                owner_->PlayBlendAnimation(Player::Animation::Attack4_2, false, thirdAttackAnimationSpeed_, thirdAttackAnimationStartFrame_);
+                owner_->SetTransitionTime(transitionSecondAttack_);
+            }
+        }
+#else
+        if (curretAnimation == Player::Animation::AttackRush1)
+        {
+            if (owner_->GetAnimationSeconds() > firstAttackAnimationEndFrame_)
+            {
+                owner_->PlayBlendAnimation(Player::Animation::CounterAttack1, false, secondAttackAnimationSpeed_, secondAttackAnimationStartFrame_);
+                owner_->SetTransitionTime(transitionFirstAttack_);
+            }
+        }
+
+        if (curretAnimation == Player::Animation::CounterAttack1)
+        {
+            if (owner_->GetAnimationSeconds() > secondAttackAnimationEndFrame_)
+            {
+                owner_->PlayBlendAnimation(Player::Animation::Attack4_2, false, thirdAttackAnimationSpeed_, thirdAttackAnimationStartFrame_);
+                owner_->SetTransitionTime(transitionSecondAttack_);
+            }
+        }
+#endif
+        
+
+        if (curretAnimation == Player::Animation::Attack4_2 && owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::Idle);
+            return;
+        }
+    }
+
+    // ----- 終了化 -----
+    void ChargeAttackState::Finalize()
+    {
+    }
+
+    // ----- ImGui用 -----
+    void ChargeAttackState::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- ChargeStart ----------"))
+            {
+                ImGui::DragFloat("AnimationSpeed", &chargeStartAnimationSpeed_, 0.01f, 0.0f, 2.0f);
+                ImGui::DragFloat("StartFrame", &chargeStartAnimationStartFrame_, 0.01f, 0.0f, 2.0f);
+
+                ImGui::DragFloat("TransitionIdle", &transitionIdle_, 0.01f, 0.0f, 1.0f);
+
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNodeEx("---------- FirstAttack ----------"))
+            {
+                ImGui::DragFloat("AnimationSpeed", &firstAttackAnimationSpeed_, 0.01f);
+                ImGui::DragFloat("StartFrame", &firstAttackAnimationStartFrame_, 0.01f);
+                ImGui::DragFloat("EndFrame", &firstAttackAnimationEndFrame_, 0.01f);
+                ImGui::DragFloat("TransitionChargeLoop", &transitionChargeLoop_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- SecondAttack ----------"))
+            {
+                ImGui::DragFloat("AnimationSpeed", &secondAttackAnimationSpeed_, 0.01f);
+                ImGui::DragFloat("StartFrame", &secondAttackAnimationStartFrame_, 0.01f);
+                ImGui::DragFloat("EndFrame", &secondAttackAnimationEndFrame_, 0.01f);
+                ImGui::DragFloat("TransitionFirstAttack", &transitionFirstAttack_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- ThirdAttack ----------"))
+            {
+                ImGui::DragFloat("AnimationSpeed", &thirdAttackAnimationSpeed_, 0.01f);
+                ImGui::DragFloat("StartFrame", &thirdAttackAnimationStartFrame_, 0.01f);
+                ImGui::DragFloat("TransitionSecondAttack", &transitionSecondAttack_, 0.01f);
+
+                ImGui::TreePop();
+            }
+
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- アニメーション再生 -----
+    void ChargeAttackState::PlayAnimation()
+    {
+        owner_->PlayBlendAnimation(Player::Animation::ChargeStart, false, chargeStartAnimationSpeed_, chargeStartAnimationStartFrame_);
+        owner_->SetTransitionTime(transitionIdle_);
+
     }
 }

@@ -136,6 +136,7 @@ private:
     float               verticalRotationSpeed_   = 1.7f;  // ‚’¼‰ñ“]‘¬“x
     float               horizontalRotationSpeed_ = 4.0f;  // …•½‰ñ“]‘¬“x
     bool                invertVertical_          = false; // ã‰º”½“]ƒtƒ‰ƒO
+    //bool                invertVertical_          = true; // ã‰º”½“]ƒtƒ‰ƒO
 
     // ---------- ‰ñ“]Šp§Œä—p ----------
     float               minRotationX_       = DirectX::XMConvertToRadians(-15.0f);

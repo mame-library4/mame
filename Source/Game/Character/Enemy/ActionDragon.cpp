@@ -1020,7 +1020,7 @@ namespace ActionDragon
         if (moveLength_ > maxMoveLength_) moveLength_ = maxMoveLength_;
 
         // –Ú•W’n“_‚ðÝ’è‚·‚é
-        DirectX::XMFLOAT3 direction = XMFloat3Normalize(owner_->CalcDirectionToPlayer());        
+        DirectX::XMFLOAT3 direction = XMFloat3Normalize(owner_->CalcDirectionToPlayerNoConsiderationY());
         targetPosition_ = startPosition_ + direction * moveLength_;
 
         isSetTarget_ = true;
@@ -1809,7 +1809,7 @@ namespace ActionDragon
             // ˆÚ“®ˆ—
             if (addForceData_.Update(owner_->GetAnimationSeconds()))
             {
-                const DirectX::XMFLOAT3 vec = XMFloat3Normalize(owner_->CalcDirectionToPlayer());
+                const DirectX::XMFLOAT3 vec = XMFloat3Normalize(owner_->CalcDirectionToPlayerNoConsiderationY());
 
                 owner_->AddForce(vec, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
             }
@@ -2195,7 +2195,8 @@ namespace ActionDragon
         
         if (animationSeconds > addForceBackFrame_ && animationSeconds < moveForwardFrame_)
         {
-            targetPosition_ = PlayerManager::Instance().GetTransform()->GetPosition();
+            targetPosition_ = DirectX::XMFLOAT3(PlayerManager::Instance().GetTransform()->GetPositionX(), 0.0f, PlayerManager::Instance().GetTransform()->GetPositionZ());
+            //targetPosition_ = PlayerManager::Instance().GetTransform()->GetPosition();
 
             if (isAddforceBack_ == false)
             {

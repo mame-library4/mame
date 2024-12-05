@@ -228,7 +228,7 @@ void Application::Render()
     IMGUI_CTRL_DISPLAY();
 
     // --- 実行 ---
-    UINT syncInterval = 1;
+    UINT syncInterval = 0;
     graphics_.GetSwapChain()->Present(syncInterval, 0);
 }
 
@@ -306,6 +306,7 @@ void Application::CalculateFrameStats()
 #if USE_IMGUI
         // FPS
         outs << L"FPS : " << fps << L" / " << L"Frame Time : " << 1000.0f / fps << L" (ms)";
+        //outs << APPLICATION_NAME;
 #else
         // ゲームタイトル
         outs << APPLICATION_NAME;

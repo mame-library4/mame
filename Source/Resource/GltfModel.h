@@ -399,6 +399,9 @@ public:
 
     void SetEmissiveColor(const DirectX::XMFLOAT3& color) { effectConstants_->GetData()->emissiveColor_ = DirectX::XMFLOAT4(color.x, color.y, color.z, 1.0f); }
 
+    [[nodiscard]] const bool GetIsOutlineActive() const { return isOutlineActive_; }
+    void SetIsOutLineActive(const bool& flag) { isOutlineActive_ = flag; }
+
 private:
     void FetchNodes(const tinygltf::Model& gltfModel);
     void FetchMeshes(ID3D11Device* device, const tinygltf::Model& gltfModel);
@@ -422,9 +425,13 @@ private:
 
     Transform transform_ = {};
 
-    Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader_;
-    Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader_;
-    Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout_;
+    Microsoft::WRL::ComPtr<ID3D11VertexShader>      outlineVS_;
+    Microsoft::WRL::ComPtr<ID3D11GeometryShader>    outlineGS_;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader>       outlinePS_;
+
+    Microsoft::WRL::ComPtr<ID3D11VertexShader>      vertexShader_;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader>       pixelShader_;
+    Microsoft::WRL::ComPtr<ID3D11InputLayout>       inputLayout_;
     struct PrimitiveConstants
     {
         DirectX::XMFLOAT4X4 world_;
@@ -445,6 +452,10 @@ private:
     struct EffectConstants
     {
         DirectX::XMFLOAT4 emissiveColor_ = {};
+        DirectX::XMFLOAT4 outlineColor_ = {};
+        float outlineSize_ = 0.01f;
+
+        DirectX::XMFLOAT3 dummy_ = {};
     };
     std::unique_ptr<ConstantBuffer<EffectConstants>> effectConstants_;
 
@@ -485,4 +496,6 @@ private:
     float               changeLowerBodyAnimationSeconds_        = 0.0f; // 下半身アニメーション変更用
     float               changeLowerBodyweight_                  = 0.0f; // 影響値
     bool                isBlendChangeLowerBodyAnimation_        = false;
+
+    bool                isOutlineActive_                        = false;
 };

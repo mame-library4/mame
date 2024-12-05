@@ -913,6 +913,9 @@
     <Filter Include="Mame\Game\UI\UISword">
       <UniqueIdentifier>{f10a5b2a-c400-4b5f-a243-c30327c20d82}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mame\Shader\GltfModel\Outline">
+      <UniqueIdentifier>{14e6b380-1106-432a-8c97-4198f3828af0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -1015,6 +1018,9 @@
     </None>
     <None Include="Source\Shader\Sprite.hlsli">
       <Filter>Mame\Shader\Sprite</Filter>
+    </None>
+    <None Include="Source\Shader\GltfModelOutLine.hlsli">
+      <Filter>Mame\Shader\GltfModel\Outline</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -1212,6 +1218,15 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\GltfModelLoadingPS.hlsl">
       <Filter>Mame\Shader\GltfModel</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\GltfModelGBufferOutlinePS.hlsl">
+      <Filter>Mame\Shader\GltfModel\Outline</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\GltfModelOutLineGS.hlsl">
+      <Filter>Mame\Shader\GltfModel\Outline</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\GltfModelOutlineVS.hlsl">
+      <Filter>Mame\Shader\GltfModel\Outline</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

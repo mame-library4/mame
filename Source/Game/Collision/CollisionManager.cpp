@@ -44,6 +44,14 @@ void CollisionManager::DrawDebug()
 {
     if (ImGui::TreeNode("CollisionManager"))
     {
+        if (ImGui::TreeNodeEx("DamageUI", ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::ColorEdit4("DamageColor", &damageUIColor_.x);
+            ImGui::ColorEdit4("WeakPointColor", &weakPointDamageUIColor_.x);
+
+            ImGui::TreePop();
+        }
+
         ImGui::DragFloat("Volume", &vibrationVolume_, 0.01f);
         ImGui::DragFloat("Time", &vibrationTime_, 0.01f);
 
@@ -209,9 +217,7 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
 
                     enemy->AddDamage(damage, enemyDataIndex);
 
-                    const DirectX::XMFLOAT4 defaultColor = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-                    const DirectX::XMFLOAT4 weakPointColor = DirectX::XMFLOAT4(1.0f, 0.55f, 0.0f, 1.0f);
-                    DirectX::XMFLOAT4 color = isWeakPoint ? weakPointColor : defaultColor;
+                    DirectX::XMFLOAT4 color = isWeakPoint ? weakPointDamageUIColor_ : damageUIColor_;
 
                     UINumber* ui = new UINumber(damage, enemyData.GetPosition(), color);
                 }

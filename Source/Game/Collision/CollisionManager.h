@@ -90,5 +90,11 @@ private:
 
     float vibrationTime_ = 1.0f;
     float vibrationVolume_ = 1.0f;
+
+    // --------------------
+
+    DirectX::XMFLOAT4 damageUIColor_            = { 1.0f, 1.0f, 1.0f, 1.0f };
+    DirectX::XMFLOAT4 weakPointDamageUIColor_   = { 1.0f, 0.55f, 0.0f, 1.0f };
+
 };
 

@@ -88,5 +88,8 @@ cbuffer PRIMITIVE_JOINT_CONSTANTS : register(b2)
 
 cbuffer EffectConstants : register(b5)
 {
-    float4 emissiveColor_;
+    float4  emissiveColor_;
+    float4  outlineColor_;
+    float   outlineSize_;    
+    float3 dummy_;
 }

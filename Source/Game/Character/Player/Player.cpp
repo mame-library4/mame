@@ -41,6 +41,7 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::ComboAttack0_3(this));        // コンボ0_3
         GetStateMachine()->RegisterState(new PlayerState::PlacingBarrelState(this));    // 樽設置
         GetStateMachine()->RegisterState(new PlayerState::HelmbreakerState(this));      // 兜割り
+        GetStateMachine()->RegisterState(new PlayerState::ChargeAttackState(this));      // 兜割り
 
         // 一番初めのステートを設定する
         GetStateMachine()->SetState(static_cast<UINT>(STATE::Idle));
@@ -150,6 +151,7 @@ void Player::Update(const float& elapsedTime)
     // ガードゲージ回復
     UpdateGuardGaugeRecovery(elapsedTime);
 
+    //swordSpirit_ = 1.0f;
     UpdateSwordSpirit(elapsedTime);
 }
 
@@ -157,6 +159,7 @@ void Player::Update(const float& elapsedTime)
 void Player::Render(ID3D11PixelShader* psShader)
 {
     Object::Render(psShader);
+
     weapon_.Render(weaponWorld_, psShader);
 }
 
@@ -184,7 +187,7 @@ void Player::DrawDebug()
                 "Attack0_0", "Attack0_1", "Attack0_2", "Attack0_3",
                 "RunAttack", "CounterAttack", "CounterComboAttack",
                 "RushAttack0", "RushAttack1", "RushAttack2", "RushAttack3"
-                "Helmbreaker0", "Helmbreaker1",
+                "Helmbreaker0", "Helmbreaker1", "ChargeAttack0"
             };
 
             for (int i = 0; i < static_cast<int>(AttackType::Max); ++i)

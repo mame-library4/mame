@@ -42,6 +42,11 @@ void Camera::Update(const float& elapsedTime)
     if (SceneManager::Instance().GetCurrentSceneName() == SceneManager::SceneName::Title ||
         SceneManager::Instance().GetCurrentSceneName() == SceneManager::SceneName::Loading) return;
 
+    if (GetAsyncKeyState('1') & 0x01)
+    {
+        invertVertical_ = !invertVertical_;
+    }
+
     // TODO:各種死亡カメラが使用されているときはカメラシェイクを行わない
     if (isPlayerDeathCameraActive_ || isDragonDeathCameraActive_)
     {

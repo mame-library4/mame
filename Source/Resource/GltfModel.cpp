@@ -166,6 +166,10 @@ GltfModel::GltfModel(const std::string& filename)
     Graphics::Instance().CreateVsFromCso("./Resources/Shader/gltfModelVs.cso", vertexShader_.ReleaseAndGetAddressOf(),
         inputLayout_.ReleaseAndGetAddressOf(), inputElementDesc, _countof(inputElementDesc));
     Graphics::Instance().CreatePsFromCso("./Resources/Shader/gltfModelPs.cso", pixelShader_.ReleaseAndGetAddressOf());
+    
+    Graphics::Instance().CreateVsFromCso("./Resources/Shader/GltfModelOutlineVS.cso", outlineVS_.ReleaseAndGetAddressOf(), NULL, NULL, 0);
+    Graphics::Instance().CreateGsFromCso("./Resources/Shader/GltfModelOutlineGS.cso", outlineGS_.ReleaseAndGetAddressOf());
+    Graphics::Instance().CreatePsFromCso("./Resources/Shader/GltfModelGBufferOutlinePS.cso", outlinePS_.GetAddressOf());
 
     Graphics::Instance().CreateVsFromCso("./Resources/Shader/GltfModelShadowVS.cso", shadowVertexShader_.ReleaseAndGetAddressOf(), NULL, NULL, 0);
     Graphics::Instance().CreateGsFromCso("./Resources/Shader/GltfModelShadowGS.cso", shadowGeometryShader_.ReleaseAndGetAddressOf());
@@ -373,7 +377,14 @@ void GltfModel::Render(const float& scaleFactor, ID3D11PixelShader* psShader)
     deviceContext->IASetInputLayout(inputLayout_.Get());
     deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    effectConstants_->Activate(5);
+    if (isOutlineActive_)
+    {
+        deviceContext->VSSetShader(outlineVS_.Get(), nullptr, 0);
+        deviceContext->GSSetShader(outlineGS_.Get(), NULL, 0);
+        deviceContext->PSSetShader(outlinePS_.Get(), nullptr, 0);
+    }
+
+    effectConstants_->Activate(5, true, true, false, true);
 
     std::function<void(int)> traverse{ [&](int nodeIndex)->void {
         const Node& node{nodes_.at(nodeIndex)};
@@ -415,7 +426,7 @@ void GltfModel::Render(const float& scaleFactor, ID3D11PixelShader* psShader)
 
                 DirectX::XMStoreFloat4x4(&primitiveConstants_->GetData()->world_,
                     DirectX::XMLoadFloat4x4(&node.globalTransform_) * DirectX::XMLoadFloat4x4(&world));                
-                primitiveConstants_->Activate(0);
+                primitiveConstants_->Activate(0, true, true, false, true);
 
                 // texture
                 {
@@ -470,6 +481,13 @@ void GltfModel::Render(const float& scaleFactor, ID3D11PixelShader* psShader)
     {
         traverse(nodeIndex);
     }
+
+    if (isOutlineActive_)
+    {
+        deviceContext->VSSetShader(nullptr, nullptr, 0);
+        deviceContext->GSSetShader(nullptr, nullptr, 0);
+        deviceContext->PSSetShader(nullptr, nullptr, 0);
+    }
 }
 
 void GltfModel::Render(const DirectX::XMFLOAT4X4 world, ID3D11PixelShader* psShader)
@@ -482,8 +500,15 @@ void GltfModel::Render(const DirectX::XMFLOAT4X4 world, ID3D11PixelShader* psSha
     psShader ? deviceContext->PSSetShader(psShader, nullptr, 0) : deviceContext->PSSetShader(pixelShader_.Get(), nullptr, 0);
     deviceContext->IASetInputLayout(inputLayout_.Get());
     deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    
+    if (isOutlineActive_)
+    {
+        deviceContext->VSSetShader(outlineVS_.Get(), nullptr, 0);
+        deviceContext->GSSetShader(outlineGS_.Get(), NULL, 0);
+        deviceContext->PSSetShader(outlinePS_.Get(), nullptr, 0);
+    }
 
-    effectConstants_->Activate(5);
+    effectConstants_->Activate(5, true, true, false, true);
 
     std::function<void(int)> traverse{ [&](int nodeIndex)->void {
         const Node& node{nodes_.at(nodeIndex)};
@@ -525,7 +550,7 @@ void GltfModel::Render(const DirectX::XMFLOAT4X4 world, ID3D11PixelShader* psSha
 
                 DirectX::XMStoreFloat4x4(&primitiveConstants_->GetData()->world_,
                     DirectX::XMLoadFloat4x4(&node.globalTransform_) * DirectX::XMLoadFloat4x4(&world));
-                primitiveConstants_->Activate(0);
+                primitiveConstants_->Activate(0, true, true, false, true);
 
                 // texture
                 {
@@ -579,6 +604,13 @@ void GltfModel::Render(const DirectX::XMFLOAT4X4 world, ID3D11PixelShader* psSha
     for (std::vector<int>::value_type nodeIndex : scenes_.at(0).nodes_)
     {
         traverse(nodeIndex);
+    }
+
+    if (isOutlineActive_)
+    {
+        deviceContext->VSSetShader(nullptr, nullptr, 0);
+        deviceContext->GSSetShader(nullptr, nullptr, 0);
+        deviceContext->PSSetShader(nullptr, nullptr, 0);
     }
 }
 
@@ -675,7 +707,12 @@ void GltfModel::CastShadow(const float& scaleFactor)
 void GltfModel::DrawDebug()
 {
     GetTransform()->DrawDebug();
+
     ImGui::ColorEdit4("EmissiveColor", &effectConstants_->GetData()->emissiveColor_.x);
+    ImGui::ColorEdit4("OutlineColor", &effectConstants_->GetData()->outlineColor_.x);
+    ImGui::DragFloat("OutlineSize", &effectConstants_->GetData()->outlineSize_, 0.01f);
+    ImGui::Checkbox("OutlineActive", &isOutlineActive_);
+
     if (ImGui::TreeNode("Animation"))
     {
         ImGui::DragInt("AnimationIndex", &animationIndex_);
