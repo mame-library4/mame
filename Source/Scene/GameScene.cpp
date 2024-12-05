@@ -77,6 +77,8 @@ void GameScene::LoadEffect()
     Effect* hit0 = new Effect("./Resources/Effect/Hit/Hit0.efk", "Hit0");
     Effect* hit1 = new Effect("./Resources/Effect/Hit/Hit1.efk", "Hit1");
 
+    Effect* charge0 = new Effect("./Resources/Effect/Charge/Charge.efk", "Charge0");
+    
     Effect* effect0 = new Effect("./Resources/Effect/Counter.efk", "Counter");
 
     Effect* effect1 = new Effect("./Resources/Effect/Mikiri.efk", "Mikiri");

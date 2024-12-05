@@ -196,6 +196,10 @@ public:
     void UpdateSwordSpirit(const float& elapsedTime);
     void SetSwordColor(const DirectX::XMFLOAT3& color);
 
+    // ---------- アウトライン ----------
+    void SetIsOutlineActive(const bool& flag);
+    void SetWeaponOutlineColor(const DirectX::XMFLOAT4& color) { weapon_.SetOutlineColor(color); }
+
 public:// --- 取得・設定 ---
 #pragma region [Get, Set] Function
     // ---------- ステートマシン --------------------

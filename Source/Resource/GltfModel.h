@@ -399,6 +399,9 @@ public:
 
     void SetEmissiveColor(const DirectX::XMFLOAT3& color) { effectConstants_->GetData()->emissiveColor_ = DirectX::XMFLOAT4(color.x, color.y, color.z, 1.0f); }
 
+    // ---------- Outline ----------
+    void SetOutlineColor(const DirectX::XMFLOAT4& color) { effectConstants_->GetData()->outlineColor_ = color; }
+    void SetOutlineSize(const float& size) { effectConstants_->GetData()->outlineSize_ = size; }
     [[nodiscard]] const bool GetIsOutlineActive() const { return isOutlineActive_; }
     void SetIsOutLineActive(const bool& flag) { isOutlineActive_ = flag; }
 
@@ -451,9 +454,9 @@ private:
 
     struct EffectConstants
     {
-        DirectX::XMFLOAT4 emissiveColor_ = {};
-        DirectX::XMFLOAT4 outlineColor_ = {};
-        float outlineSize_ = 0.01f;
+        DirectX::XMFLOAT4 emissiveColor_    = {};
+        DirectX::XMFLOAT4 outlineColor_     = { 0.0f, 0.0f, 0.0f, 1.0f };
+        float outlineSize_                  = 0.01f;
 
         DirectX::XMFLOAT3 dummy_ = {};
     };

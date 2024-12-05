@@ -687,9 +687,47 @@ namespace PlayerState
         //float secondAttackAnimationEndFrame_    = 0.6f;
         float transitionFirstAttack_            = 0.1f;
 
+        float riseAnimationSpeed_       = 1.0f;
+        float riseAnimationStartFrame_  = 0.4f;
+        float riseAnimationEndFrame_    = 0.5f;
+        float riseAnimationMoveValue_   = 1.0f;
+        float transitionSecondAttack_   = 0.1f;
+
         float thirdAttackAnimationSpeed_        = 1.0f;
         float thirdAttackAnimationStartFrame_   = 0.0f;
-        float transitionSecondAttack_           = 0.3f;
 
+        float transitionRise_                   = 0.1f;
+
+        float startPositionY_ = 0.0f;        
+
+        // ---------- É`ÉÉÅ[ÉW ----------
+        DirectX::XMFLOAT4 currentChargeColor_ = {};
+        DirectX::XMFLOAT4 chargeColor_[3] =
+        {
+            { 1.0f, 1.0f, 1.0f, 1.0f }, // îí
+            { 1.0f, 1.0f, 0.0f, 1.0f }, // â©
+            { 1.0f, 0.0f, 0.0f, 1.0f }, // ê‘
+        };
+        int     currentCharge_  = 0;
+        int     maxChargeNum_   = 3;
+        float   chargeTimer_    = 0.0f;
+        float   maxChargeTime_  = 1.0f;
+        float   chargeSpeed_    = 1.2f;
+
+        bool isOutlineActive_ = false;
+
+        // ---------- Vibration ----------
+        float               vibrationTime_      = 0.6f;
+        DirectX::XMFLOAT2   vibrationVolume_[3] =
+        {
+            { 0.6f, 0.3f },
+            { 0.8f, 0.2f },
+            { 1.0f, 0.1f },
+        };
+
+        Effekseer::Handle chargeEffect_ = {};
+
+        float               chargeEffectSize_   = 0.15f;
+        float               chargeEffectSpeed_  = 1.2f;
     };
 }

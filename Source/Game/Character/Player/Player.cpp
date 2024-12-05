@@ -808,6 +808,13 @@ void Player::SetSwordColor(const DirectX::XMFLOAT3& color)
     weapon_.SetEmissiveColor(color);
 }
 
+// ----- アウトライン -----
+void Player::SetIsOutlineActive(const bool& flag)
+{
+    Object::SetIsOutlineActive(flag);
+    weapon_.SetIsOutLineActive(flag);
+}
+
 void Player::UpdateCollisions(const float& elapsedTime)
 {
     // くらい判定更新

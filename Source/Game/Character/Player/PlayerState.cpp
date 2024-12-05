@@ -4234,83 +4234,182 @@ namespace PlayerState
     void ChargeAttackState::Initialize()
     {
         // アニメーション再生
-        PlayAnimation();
+        PlayAnimation();        
 
+        currentCharge_ = 0;
+        chargeTimer_ = 0.5f;
+
+        isOutlineActive_ = false;
     }
 
     // ----- 更新 -----
     void ChargeAttackState::Update(const float& elapsedTime)
     {
         const Player::Animation curretAnimation = static_cast<Player::Animation>(owner_->GetAnimationIndex());
-                
-        // チャージループアニメーションを再生する
-        if (curretAnimation == Player::Animation::ChargeStart && owner_->IsPlayAnimation() == false)
+        const bool isChargeButtonPressed = Input::Instance().GetGamePad().GetButton() & GamePad::BTN_Y;
+
+        switch (curretAnimation)
         {
-            owner_->PlayAnimation(Player::Animation::ChargeLoop, false);
-        }
-        
-        if (curretAnimation == Player::Animation::ChargeLoop && owner_->IsPlayAnimation() == false)
-        {
-            if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_Y)
-            {
-                owner_->PlayAnimation(Player::Animation::ChargeLoop, false);
-            }
-            else
+        case Player::Animation::ChargeStart:
+#pragma region ---------- ChargeStart ----------
+            // チャージループアニメーションを再生する
+            if (owner_->IsPlayAnimation() == false) owner_->PlayAnimation(Player::Animation::ChargeLoop, true);
+
+#pragma endregion ---------- ChargeStart ----------
+            break;
+        case Player::Animation::ChargeLoop:
+#pragma region ---------- ChargeLoop ----------
+            // ボタンを押していなかった場合攻撃に移る
+            if (isChargeButtonPressed == false)
             {
                 owner_->PlayBlendAnimation(Player::Animation::AttackRush1, false, firstAttackAnimationSpeed_, firstAttackAnimationStartFrame_);
                 owner_->SetTransitionTime(transitionChargeLoop_);
-            }
-        }
 
-#if 0
-        if (curretAnimation == Player::Animation::AttackRush1)
-        {
+                owner_->SetIsDrawSwordTrail(true);
+
+                break;
+            }
+
+            // チャージ処理
+            chargeTimer_ += chargeSpeed_ * elapsedTime;
+
+#pragma endregion ---------- ChargeLoop ----------
+            break;
+        case Player::Animation::AttackRush1:
+#pragma region ---------- AttackRush1 ----------
             if (owner_->GetAnimationSeconds() > firstAttackAnimationEndFrame_)
             {
-                owner_->PlayBlendAnimation(Player::Animation::ChargeAttack, false, secondAttackAnimationSpeed_, secondAttackAnimationStartFrame_);
-                owner_->SetTransitionTime(transitionFirstAttack_);
+                // ここで攻撃は終了する
+                if (currentCharge_ < 2)
+                {
+                    owner_->ChangeState(Player::STATE::Idle);
+                    return;
+                }
+                // コンボが続く
+                else
+                {
+                    owner_->PlayBlendAnimation(Player::Animation::CounterAttack1, false, secondAttackAnimationSpeed_, secondAttackAnimationStartFrame_);
+                    owner_->SetTransitionTime(transitionFirstAttack_);
+                }
             }
-        }
 
-        if (curretAnimation == Player::Animation::ChargeAttack)
-        {
+#pragma endregion ---------- AttackRush1 ----------
+            break;
+        case Player::Animation::CounterAttack1:
+#pragma region ---------- CounterAttack1 ----------
+            if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+            {
+                owner_->SetUseRootMotion(true);
+                owner_->SetRootMotionValue(1.0f);
+            }
+
             if (owner_->GetAnimationSeconds() > secondAttackAnimationEndFrame_)
             {
+                // ここで攻撃は終了する
+                if (currentCharge_ < 3)
+                {
+                    owner_->ChangeState(Player::STATE::Idle);
+                    return;
+                }
+                // コンボが続く
+                else
+                {
+                    owner_->PlayBlendAnimation(Player::Animation::Attack4_0, false, riseAnimationSpeed_, riseAnimationStartFrame_);
+                    owner_->SetTransitionTime(transitionSecondAttack_);
+
+                    owner_->SetUseRootMotion(false);
+                }
+            }
+
+#pragma endregion ---------- CounterAttack1 ----------
+            break;
+        case Player::Animation::Attack4_0:
+
+            if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+            {
+                owner_->SetUseRootMotion(true);
+                owner_->SetRootMotionValue(riseAnimationMoveValue_);
+            }
+
+            if (owner_->GetAnimationSeconds() > riseAnimationEndFrame_)
+            {
                 owner_->PlayBlendAnimation(Player::Animation::Attack4_2, false, thirdAttackAnimationSpeed_, thirdAttackAnimationStartFrame_);
-                owner_->SetTransitionTime(transitionSecondAttack_);
+                owner_->SetTransitionTime(transitionRise_);
+
+                owner_->SetUseRootMotion(false);
+
+                startPositionY_ = owner_->GetTransform()->GetPositionY();
+            }
+
+            break;
+        case Player::Animation::Attack4_2:
+#pragma region ---------- Attack4_2 ----------
+        {
+            if (owner_->GetIsBlendAnimation() == false)
+            {
+                if (owner_->GetAnimationSeconds() <= 0.2f)
+                {
+                    const float positionY = Easing::InSine(owner_->GetAnimationSeconds(), 0.2f, 0.0f, startPositionY_);
+                    owner_->GetTransform()->SetPositionY(positionY);
+                }
+                else
+                {
+                    owner_->GetTransform()->SetPositionY(0.0f);
+                }
+            }
+
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->ChangeState(Player::STATE::Idle);
+                return;
             }
         }
-#else
-        if (curretAnimation == Player::Animation::AttackRush1)
-        {
-            if (owner_->GetAnimationSeconds() > firstAttackAnimationEndFrame_)
-            {
-                owner_->PlayBlendAnimation(Player::Animation::CounterAttack1, false, secondAttackAnimationSpeed_, secondAttackAnimationStartFrame_);
-                owner_->SetTransitionTime(transitionFirstAttack_);
-            }
+#pragma endregion ---------- Attack4_2 ----------
+            break;
         }
 
-        if (curretAnimation == Player::Animation::CounterAttack1)
+        if (chargeTimer_ >= maxChargeTime_)
         {
-            if (owner_->GetAnimationSeconds() > secondAttackAnimationEndFrame_)
+            if (currentCharge_ < maxChargeNum_)
             {
-                owner_->PlayBlendAnimation(Player::Animation::Attack4_2, false, thirdAttackAnimationSpeed_, thirdAttackAnimationStartFrame_);
-                owner_->SetTransitionTime(transitionSecondAttack_);
-            }
-        }
-#endif
-        
+                currentChargeColor_ = chargeColor_[currentCharge_];
 
-        if (curretAnimation == Player::Animation::Attack4_2 && owner_->IsPlayAnimation() == false)
-        {
-            owner_->ChangeState(Player::STATE::Idle);
-            return;
+                owner_->SetOutlineColor(currentChargeColor_);
+                owner_->SetWeaponOutlineColor(currentChargeColor_);
+
+                // コントローラー振動させる
+                Input::Instance().GetGamePad().Vibration(vibrationTime_, vibrationVolume_[currentCharge_].x, vibrationVolume_[currentCharge_].y);
+
+                // エフェクトを再生する
+                const DirectX::XMFLOAT3 emitterPosition = owner_->GetJointPosition("spine_02");
+                chargeEffect_ = EffectManager::Instance().GetEffect("Charge0")->Play(emitterPosition, chargeEffectSize_, chargeEffectSpeed_);
+                EffectManager::Instance().GetEffect("Charge0")->SetColor(chargeEffect_, chargeColor_[currentCharge_]);
+
+                // アウトラインを使用する
+                if (isOutlineActive_ == false)
+                {
+                    owner_->SetIsOutlineActive(true);
+                    isOutlineActive_ = true;
+                }
+
+                ++currentCharge_;
+            }
+
+            chargeTimer_ = 0.0f;
         }
     }
 
     // ----- 終了化 -----
     void ChargeAttackState::Finalize()
     {
+        // アウトラインの使用を終了
+        owner_->SetIsOutlineActive(false);
+
+        owner_->SetIsDrawSwordTrail(false);
+
+        owner_->SetUseRootMotion(false);
+        owner_->SetRootMotionValue(1.0f);
     }
 
     // ----- ImGui用 -----
@@ -4318,6 +4417,42 @@ namespace PlayerState
     {
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
+            if (ImGui::TreeNodeEx("---------- ChargeEffect ----------"))
+            {
+                ImGui::DragFloat("Size", &chargeEffectSize_, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("Speed", &chargeEffectSpeed_, 0.01f, 0.0f, 10.0f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- GamePadVibration ----------"))
+            {
+                ImGui::DragFloat("VibrationTime", &vibrationTime_, 0.01f, 0.0f, 10.0f);
+
+                ImGui::DragFloat2("Volume0", &vibrationVolume_[0].x, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat2("Volume1", &vibrationVolume_[1].x, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat2("Volume2", &vibrationVolume_[2].x, 0.01f, 0.0f, 1.0f);
+
+                
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- Outline ----------"))
+            {
+                ImGui::DragInt("CurrentCharge", &currentCharge_);
+                ImGui::DragInt("MaxCharge", &maxChargeNum_);
+                ImGui::DragFloat("ChargeTimer", &chargeTimer_);
+                ImGui::DragFloat("MaxChargeTime", &maxChargeTime_, 0.01f, 0.0f, 10.0f);
+                ImGui::DragFloat("ChargeSpeed", &chargeSpeed_, 0.01f, 0.0f, 10.0f);
+
+                ImGui::ColorEdit4("CurrentColor", &currentChargeColor_.x);
+                ImGui::ColorEdit4("Charge0Color", &chargeColor_[0].x);
+                ImGui::ColorEdit4("Charge1Color", &chargeColor_[1].x);
+                ImGui::ColorEdit4("Charge2Color", &chargeColor_[2].x);
+                                                               
+                ImGui::TreePop();
+            }
+
+
             if (ImGui::TreeNodeEx("---------- ChargeStart ----------"))
             {
                 ImGui::DragFloat("AnimationSpeed", &chargeStartAnimationSpeed_, 0.01f, 0.0f, 2.0f);
@@ -4348,9 +4483,15 @@ namespace PlayerState
             }
             if (ImGui::TreeNodeEx("---------- ThirdAttack ----------"))
             {
+                ImGui::DragFloat("RiseAnimationSpeed", &riseAnimationSpeed_, 0.01f);
+                ImGui::DragFloat("RiseAnimationStartFrame", &riseAnimationStartFrame_, 0.01f);
+                ImGui::DragFloat("RiseAnimationEndFrame", &riseAnimationEndFrame_, 0.01f);
+                ImGui::DragFloat("RiseAnimationMoveValue", &riseAnimationMoveValue_, 0.01f);
+                ImGui::DragFloat("TransitionSecondAttack", &transitionSecondAttack_, 0.01f);
+
                 ImGui::DragFloat("AnimationSpeed", &thirdAttackAnimationSpeed_, 0.01f);
                 ImGui::DragFloat("StartFrame", &thirdAttackAnimationStartFrame_, 0.01f);
-                ImGui::DragFloat("TransitionSecondAttack", &transitionSecondAttack_, 0.01f);
+                ImGui::DragFloat("TransitionRise", &transitionRise_, 0.01f);
 
                 ImGui::TreePop();
             }

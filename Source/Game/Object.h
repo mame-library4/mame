@@ -58,6 +58,11 @@ public:
     void ChangeLowerBodyAnimation(const int& index) { gltfModel_.ChangeLowerBodyAnimation(index); }
     [[nodiscard]] const bool GetIsBlendUpperLowerBodyAnimation() const { return gltfModel_.GetIsBlendUpperLowerBodyAnimation(); }
 
+    // ---------- Outline ----------
+    void SetOutlineColor(const DirectX::XMFLOAT4& color) { gltfModel_.SetOutlineColor(color); }
+    void SetOutlineSize(const float& size) { gltfModel_.SetOutlineSize(size); }
+    void SetIsOutlineActive(const bool& flag) { gltfModel_.SetIsOutLineActive(flag); }
+
 private:
     GltfModel   gltfModel_;
     const float scaleFactor_;
