@@ -1,4 +1,5 @@
 #include "ComputeParticle.hlsli"
+#include "ComputeParticleEmit.hlsli"
 
 RWStructuredBuffer<ParticleData> particleDataBuffer : register(u0); // パーティクル管理バッファ
 ConsumeStructuredBuffer<uint> particlePoolBuffer : register(u1); // パーティクル番号管理バッファ (末尾から取出専用)
@@ -17,7 +18,14 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
     particleDataBuffer[particleIndex].parameter_.z = 1.0f;
     particleDataBuffer[particleIndex].parameter_.w = emitParticleBuffer[emitIndex].parameter_.w;
     
-    particleDataBuffer[particleIndex].position_             = emitParticleBuffer[emitIndex].position_;
+    
+    // 位置設定    
+    particleDataBuffer[particleIndex].position_ = emitParticleBuffer[emitIndex].position_;
+    if(emitParticleBuffer[emitIndex].sphere_.x > 0.0f)
+    {        
+        particleDataBuffer[particleIndex].position_ = emitParticleBuffer[emitIndex].position_ + float4(CalculateSpherePosition(emitIndex), 0);
+    }
+    
     particleDataBuffer[particleIndex].rotation_             = emitParticleBuffer[emitIndex].rotation_;
     particleDataBuffer[particleIndex].scale_                = emitParticleBuffer[emitIndex].scale_;
     particleDataBuffer[particleIndex].velocity_             = emitParticleBuffer[emitIndex].velocity_;

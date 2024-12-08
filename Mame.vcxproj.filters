@@ -1052,6 +1052,9 @@
     <None Include="Source\Shader\ComputeParticle.hlsli">
       <Filter>Mame\Shader\ComputeParticle</Filter>
     </None>
+    <None Include="Source\Shader\ComputeParticleEmit.hlsli">
+      <Filter>Mame\Shader\ComputeParticle</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shader\blur_ps.hlsl">

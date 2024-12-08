@@ -431,6 +431,7 @@
     <None Include="Source\Shader\Bloom.hlsli" />
     <None Include="Source\Shader\Common.hlsli" />
     <None Include="Source\Shader\ComputeParticle.hlsli" />
+    <None Include="Source\Shader\ComputeParticleEmit.hlsli" />
     <None Include="Source\Shader\Constants.hlsli" />
     <None Include="Source\Shader\CoreBurstParticle.hlsli" />
     <None Include="Source\Shader\CsmOpaque.hlsli" />

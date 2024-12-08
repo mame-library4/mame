@@ -44,6 +44,8 @@ public:
         //@F‚ÌU‚ê•
         DirectX::XMFLOAT4 colorAmplitud_ = { 0,0,0,0 };
 
+        DirectX::XMFLOAT4 sphere_ = {};
+
         void DrawDebug();
     };
 

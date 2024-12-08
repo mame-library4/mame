@@ -58,6 +58,15 @@ void ComputeParticleEmitter::EmitParameter::DrawDebug()
 			ImGui::TreePop();
 		}
 
+		if (ImGui::TreeNode("Sphere"))
+		{
+			int activeFlag = sphere_.x;
+			ImGui::DragInt("IsActive", &activeFlag, 1, 0, 1);
+			sphere_.x = activeFlag;
+
+			ImGui::TreePop();
+		}
+
         ImGui::TreePop();
     }
 }
@@ -189,6 +198,9 @@ void ComputeParticleEmitter::EmitParticle(const EmitParameter& param)
 		data.color_.w = param.color_.w + XMFloatRandomRange(-colorAmp.w, colorAmp.w);
 
 		data.color_ = data.color_ * param.intensity_;
+
+		data.sphere_ = param.sphere_;
+
 		ComputeParticleSystem::Instance().Emit(data);
 	}
 }
@@ -329,6 +341,8 @@ ComputeParticleEmitter::EmitParameter ComputeParticleEmitter::GetJsonEmitParamet
 	emitParam.intensity_ = mJson["brightness"];
 	emitParam.color_ = { mJson["color"][0],mJson["color"][1],mJson["color"][2],mJson["color"][3] };
 	emitParam.colorAmplitud_ = { mJson["colorAmplitude"][0],mJson["colorAmplitude"][1],mJson["colorAmplitude"][2],mJson["colorAmplitude"][3] };
+	
+	emitParam.sphere_ = { mJson["sphere"][0],mJson["sphere"][1],mJson["sphere"][2],mJson["sphere"][3] };
 
 	return emitParam;
 }
@@ -371,6 +385,7 @@ void ComputeParticleEmitter::AssetCreation(const EmitParameter& param, const std
 	mJson["brightness"] = param.intensity_;
 	mJson["color"] = { param.color_.x,param.color_.y,param.color_.z,param.color_.w };
 	mJson["colorAmplitude"] = { param.colorAmplitud_.x,param.colorAmplitud_.y,param.colorAmplitud_.z,param.colorAmplitud_.w };
+	mJson["sphere"] = { param.sphere_.x,param.sphere_.y,param.sphere_.z,param.sphere_.w };
 
 	using namespace std;
 	ofstream writingFile;

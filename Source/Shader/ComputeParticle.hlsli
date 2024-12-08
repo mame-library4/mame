@@ -22,6 +22,8 @@ struct EmitParticleData
     float4 scaleAcceleration_;
     
     float4 color_;
+    
+    float4 sphere_;
 };
 
 // パーティクル構造体

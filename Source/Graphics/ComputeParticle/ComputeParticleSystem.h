@@ -29,6 +29,8 @@ public:
         DirectX::XMFLOAT4 scaleAcceleration_    = {}; // スケール加速度
 
         DirectX::XMFLOAT4 color_                = {}; // 色
+
+        DirectX::XMFLOAT4 sphere_ = {};
     };
 
     // パーティクル構造体
