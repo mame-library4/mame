@@ -190,6 +190,10 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
 
                     ++handleCounter_;
                     if (handleCounter_ >= maxEffectHandle_) handleCounter_ = 0;
+
+                    hitEffectName = isWeakPoint ? "HitEffect1" : "HitEffect";
+                    computeParticleEmitter_.SetEmitPosition(emitterPosition);
+                    computeParticleEmitter_.EmitParticle(hitEffectName);
                 }
 
                 // ------------------------------------------------------------
@@ -219,8 +223,13 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
 
                     DirectX::XMFLOAT4 color = isWeakPoint ? weakPointDamageUIColor_ : damageUIColor_;
 
-                    UINumber* ui = new UINumber(damage, enemyData.GetPosition(), color);
+                    DirectX::XMFLOAT3 emitterPosition = playerData.GetPosition() + XMFloat3Normalize(enemyData.GetPosition() - playerData.GetPosition()) * playerData.GetRadius();
+                    UINumber* ui = new UINumber(damage, emitterPosition, color);
                 }
+
+                // UIと同じ位置にエフェクトを生成する
+                //computeParticleEmitter_.SetEmitPosition(effectEmitPosition);
+                //computeParticleEmitter_.EmitParticle("HitEffect");
                 
                 // ------------------------------------------------------------
                 // Playerの攻撃判定を無くす

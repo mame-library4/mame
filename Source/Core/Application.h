@@ -42,6 +42,7 @@ public:
 
 	static void GameEnd() { isGameEnd_ = true; }
 
+
 private:
 	bool Initialize();
 	bool Finalize();
@@ -57,6 +58,7 @@ private:
 		DirectX::XMFLOAT4	cameraPosition_;
 		DirectX::XMFLOAT4X4	inverseProjection_;
 		DirectX::XMFLOAT4X4 inverseViewProjection_;
+		DirectX::XMFLOAT4X4 inverseView_;
 	};
 
 private:

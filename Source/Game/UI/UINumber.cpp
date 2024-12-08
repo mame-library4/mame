@@ -8,9 +8,9 @@ UINumber::UINumber(const int& num, const DirectX::XMFLOAT3& hitPos, const Direct
     num_(num), hitPos_(hitPos)
 {
     // ƒ‰ƒ“ƒ_ƒ€‚ÅaddPos‚ðŒˆ‚ß‚é
-    addPos_.x = (rand() % 10 - 5) / 10.0f;
-    addPos_.y = (rand() % 10 - 5) / 10.0f;
-    addPos_.z = (rand() % 10 - 5) / 10.0f;
+    //addPos_.x = (rand() % 10 - 5) / 10.0f;
+    //addPos_.y = (rand() % 10 - 5) / 10.0f;
+    //addPos_.z = (rand() % 10 - 5) / 10.0f;
 
     // Œ…”‚ð‹‚ß‚é
     if(num >= 1000)      digit_ = 4;

@@ -2,6 +2,7 @@
 #include <DirectXMath.h>
 #include <string>
 #include "Effect/EffectManager.h"
+#include "ComputeParticle/ComputeParticleEmitter.h"
 
 class CollisionManager
 {
@@ -96,5 +97,6 @@ private:
     DirectX::XMFLOAT4 damageUIColor_            = { 1.0f, 1.0f, 1.0f, 1.0f };
     DirectX::XMFLOAT4 weakPointDamageUIColor_   = { 1.0f, 0.55f, 0.0f, 1.0f };
 
+    ComputeParticleEmitter computeParticleEmitter_ = {};
 };
 

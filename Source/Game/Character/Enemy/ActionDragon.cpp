@@ -24,6 +24,8 @@
 #include "LoadingScene.h"
 #include "TitleScene.h"
 
+#include "ComputeParticle/ComputeParticleEmitter.h"
+
 // ----- GamePadVibration -----
 namespace ActionDragon
 {
@@ -2070,6 +2072,23 @@ namespace ActionDragon
                 {
                     Camera::Instance().ScreenVibrate(vibrationPower_, vibrationTime_);
                 }
+
+                const DirectX::XMFLOAT3 rightHandPosition = owner_->GetJointPosition("Dragon15_r_hand");
+                const DirectX::XMFLOAT3 leftHandPosition = owner_->GetJointPosition("Dragon15_l_hand");
+                const DirectX::XMFLOAT3 rightLegPosition = owner_->GetJointPosition("Dragon15_r_toe1");
+                const DirectX::XMFLOAT3 leftLegPosition = owner_->GetJointPosition("Dragon15_l_toe1");
+
+                // エフェクトを出す
+                ComputeParticleEmitter computeParticleEmitter;
+                computeParticleEmitter.SetEmitPosition(rightHandPosition);
+                computeParticleEmitter.EmitParticle("DustCloud");
+                computeParticleEmitter.SetEmitPosition(leftHandPosition);
+                computeParticleEmitter.EmitParticle("DustCloud");
+                computeParticleEmitter.SetEmitPosition(rightLegPosition);
+                computeParticleEmitter.EmitParticle("DustCloud");
+                computeParticleEmitter.SetEmitPosition(leftLegPosition);
+                computeParticleEmitter.EmitParticle("DustCloud");
+
 
                 isPlayVibration_ = true;
             }

@@ -5,6 +5,8 @@
 
 #include "Effect/Effect.h"
 
+#include "ComputeParticle/ComputeParticleEmitter.h"
+
 class GameScene : public BaseScene
 {
 public:
@@ -46,5 +48,7 @@ private:
 
     // ----- Debug—p -----
     bool isUseMainMenuBar_ = true;
+
+    ComputeParticleEmitter computeParticleEmitter_;
 };
 

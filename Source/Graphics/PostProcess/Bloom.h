@@ -48,7 +48,7 @@ private:
     struct BloomConstants
     {
         float bloomExtractionThreshold_ = 1.0f;    // 輝度抽出閾値
-        float bloomIntensity_           = 0.25f;    // ブルーム強度
+        float bloomIntensity_           = 1.0f;    // ブルーム強度
         float dummy_[2]                 = {};       // ダミー
     };
     std::unique_ptr<ConstantBuffer<BloomConstants>> constantBuffer_;

@@ -77,6 +77,10 @@ void EnemyDragon::Initialize()
 
     // 攻撃力設定
     SetAttackPower();
+
+    // アウトラインを使用する
+    SetIsOutlineActive(true);
+    SetOutlineColor({ 0.7f, 0.0f, 0.0f, 1.0f });
 }
 
 // ----- 終了化 -----

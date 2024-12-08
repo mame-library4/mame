@@ -123,8 +123,9 @@ void Application::Render()
     //sceneConstants_.GetData()->lightDirection_ = Graphics::Instance().GetShader()->GetViewPosition();
     sceneConstants_.GetData()->cameraPosition_ = { camera.GetEye().x, camera.GetEye().y, camera.GetEye().z, 0 };
 
-    DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->inverseProjection_, DirectX::XMMatrixInverse(NULL, camera.GetProjectionMatrix()));
+    DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->inverseProjection_,     DirectX::XMMatrixInverse(NULL, camera.GetProjectionMatrix()));
     DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->inverseViewProjection_, DirectX::XMMatrixInverse(NULL, camera.GetViewMatrix() * camera.GetProjectionMatrix()));
+    DirectX::XMStoreFloat4x4(&sceneConstants_.GetData()->inverseView_,           DirectX::XMMatrixInverse(NULL, camera.GetViewMatrix()));
     sceneConstants_.Activate(1, true, true, true, true);
 
     // Make cascade shadow map

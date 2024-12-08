@@ -26,6 +26,8 @@
 
 #include "Particle/SlamAttackParticle.h"
 
+#include "ComputeParticle/ComputeParticleSystem.h"
+
 // ----- ステージの真ん中位置 -----
 DirectX::XMFLOAT3 GameScene::stageCenter_ = {};
 
@@ -183,6 +185,8 @@ void GameScene::Update(const float& elapsedTime)
     // パーティクル
     ParticleManager::Instance().Update(adjustedElapsedTime);
 
+    ComputeParticleSystem::Instance().Update(adjustedElapsedTime);
+
     // UI描画判定更新
     if (isDrawUI_ == false)
     {
@@ -197,10 +201,20 @@ void GameScene::Update(const float& elapsedTime)
         isDrawUI_ = true;
     }
 
-    if (GetAsyncKeyState('N') & 0x01)
+    if (GetAsyncKeyState('N') & 0x8000)
     {
         SlamAttackParticle* particle = new SlamAttackParticle();
         particle->PlayExplosionParticle({}, { 1.0, 0.42, 0.13 });
+    }
+
+    if (GetAsyncKeyState('U') & 0x8000)
+    {
+        //ComputeParticleSystem::EmitParticleData data = {};
+        //data.parameter_ = { 0.0f, 10.0f, 0.0f, 0.0f };
+        //data.scale_ = { 10.0f, 10.0f ,10.0f, 10.0f };
+        //data.color_ = { 1,1,1,1 };
+        //ComputeParticleSystem::Instance().Emit(data);
+        computeParticleEmitter_.EmitParticle();
     }
 }
 
@@ -255,6 +269,16 @@ void GameScene::Render()
     PlayerManager::Instance().RenderTrail();
 
     ParticleManager::Instance().Render();
+
+    Graphics::Instance().SetBlendState(Shader::BLEND_STATE::ALPHA);
+    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
+    Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_ON_ZW_OFF);
+    //Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_OFF_ZW_OFF);
+    ComputeParticleSystem::Instance().Render();
+
+    Graphics::Instance().SetBlendState(Shader::BLEND_STATE::ALPHA);
+    Graphics::Instance().SetRasterizerState(Shader::RASTER_STATE::CULL_NONE);
+    Graphics::Instance().SetDepthStencileState(Shader::DEPTH_STATE::ZT_ON_ZW_ON);
 
     DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
 //#ifdef _DEBUG
@@ -343,6 +367,9 @@ void GameScene::DrawDebug()
         PostProcess::Instance().DrawDebug();
     }
     
+    computeParticleEmitter_.DrawDebug();
+    ComputeParticleSystem::Instance().DrawDebug(); 
+
     ImGui::Checkbox("Debug", &isDebugRenderer_);
     ImGui::DragFloat("stageRadius", &stageRadius1_);    
 

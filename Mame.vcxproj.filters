@@ -300,6 +300,12 @@
     </ClCompile>
     <ClCompile Include="Source\Game\Item\Barrel.cpp" />
     <ClCompile Include="Source\Game\UI\UISword.cpp" />
+    <ClCompile Include="Source\Graphics\ComputeParticle\ComputeParticleSystem.cpp">
+      <Filter>Mame\Graphics\ComputeParticle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\ComputeParticle\ComputeParticleEmitter.cpp">
+      <Filter>Mame\Graphics\ComputeParticle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -629,6 +635,18 @@
     </ClInclude>
     <ClInclude Include="Source\Game\Item\Barrel.h" />
     <ClInclude Include="Source\Game\UI\UISword.h" />
+    <ClInclude Include="Source\Graphics\ComputeParticle\ComputeParticleSystem.h">
+      <Filter>Mame\Graphics\ComputeParticle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\ComputeParticle\ComputeParticleEmitter.h">
+      <Filter>Mame\Graphics\ComputeParticle</Filter>
+    </ClInclude>
+    <ClInclude Include="External\nlohmann\json.hpp">
+      <Filter>External\Nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="External\nlohmann\json_fwd.hpp">
+      <Filter>External\Nlohmann</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -916,6 +934,15 @@
     <Filter Include="Mame\Shader\GltfModel\Outline">
       <UniqueIdentifier>{14e6b380-1106-432a-8c97-4198f3828af0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mame\Graphics\ComputeParticle">
+      <UniqueIdentifier>{46f5fcb0-f355-4841-85dd-0ab34f61e049}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Shader\ComputeParticle">
+      <UniqueIdentifier>{260aff09-2742-43c9-83a2-e3fcaf7e442b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\Nlohmann">
+      <UniqueIdentifier>{2a907d71-c396-40bc-ac28-5ec77423cf83}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -1021,6 +1048,9 @@
     </None>
     <None Include="Source\Shader\GltfModelOutLine.hlsli">
       <Filter>Mame\Shader\GltfModel\Outline</Filter>
+    </None>
+    <None Include="Source\Shader\ComputeParticle.hlsli">
+      <Filter>Mame\Shader\ComputeParticle</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -1227,6 +1257,30 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\GltfModelOutlineVS.hlsl">
       <Filter>Mame\Shader\GltfModel\Outline</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\ComputeParticleInitCS.hlsl">
+      <Filter>Mame\Shader\ComputeParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\ComputeParticleEmitCS.hlsl">
+      <Filter>Mame\Shader\ComputeParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\ComputeParticleUpdateCS.hlsl">
+      <Filter>Mame\Shader\ComputeParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\ComputeParticleRenderVS.hlsl">
+      <Filter>Mame\Shader\ComputeParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\ComputeParticleRenderGS.hlsl">
+      <Filter>Mame\Shader\ComputeParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\ComputeParticleRenderPS.hlsl">
+      <Filter>Mame\Shader\ComputeParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\ComputeParticleBeginFrameCS.hlsl">
+      <Filter>Mame\Shader\ComputeParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\ComputeParticleEndFrameCS.hlsl">
+      <Filter>Mame\Shader\ComputeParticle</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

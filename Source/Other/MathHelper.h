@@ -2,7 +2,44 @@
 #include <DirectXMath.h>
 #include <algorithm>
 
-// ----- Zp‰‰Zq -----
+// =============================================
+//                  Zp‰‰Zq
+// =============================================
+#pragma region XMFLOAT4
+// ----- float4 * float -----
+inline const DirectX::XMFLOAT4 operator*(
+    const DirectX::XMFLOAT4& float4,
+    const float& f)
+{
+    const DirectX::XMFLOAT4 result =
+    {
+        float4.x * f,
+        float4.y * f,
+        float4.z * f,
+        float4.w * f,
+    };
+
+    return result;
+}
+
+// ----- float4 / float -----
+inline const DirectX::XMFLOAT4 operator/(
+    const DirectX::XMFLOAT4& float4,
+    const float& f)
+{
+    const DirectX::XMFLOAT4 result =
+    {
+        float4.x / f,
+        float4.y / f,
+        float4.z / f,
+        float4.w / f,
+    };
+
+    return result;
+}
+
+#pragma endregion XMFLOAT4
+
 #pragma region XMFLOAT3
 // ----- float3 + float3 -----
 inline const DirectX::XMFLOAT3 operator+(
@@ -22,7 +59,7 @@ inline const DirectX::XMFLOAT3 operator+(
 // ----- float3 + float -----
 inline const DirectX::XMFLOAT3 operator+(
     const DirectX::XMFLOAT3& float3,
-    const float f)
+    const float& f)
 {
     const DirectX::XMFLOAT3 result =
     {
@@ -52,7 +89,7 @@ inline const DirectX::XMFLOAT3 operator-(
 // ----- float3 - float -----
 inline const DirectX::XMFLOAT3 operator-(
     const DirectX::XMFLOAT3& float3,
-    const float f)
+    const float& f)
 {
     const DirectX::XMFLOAT3 result = 
     {
@@ -82,7 +119,7 @@ inline const DirectX::XMFLOAT3 operator*(
 // ----- float3 * float -----
 inline const DirectX::XMFLOAT3 operator*(
     const DirectX::XMFLOAT3& float3,
-    const float f)
+    const float& f)
 {
     const DirectX::XMFLOAT3 result = 
     {
@@ -112,7 +149,7 @@ inline const DirectX::XMFLOAT3 operator/(
 // ----- float3 / float -----
 inline const DirectX::XMFLOAT3 operator/(
     const DirectX::XMFLOAT3& float3,
-    const float f)
+    const float& f)
 {
     const DirectX::XMFLOAT3 result = 
     {
@@ -126,57 +163,6 @@ inline const DirectX::XMFLOAT3 operator/(
 
 #pragma endregion XMFLOAT3
 
-// ----- ZpŠÖ” -----
-#pragma region XMFLOAT3
-
-// ----- XMFLOAT3“¯m‚Ì“àÏ‚ğŒvZ -----
-inline const float XMFloat3Dot(
-    const DirectX::XMFLOAT3& v1,
-    const DirectX::XMFLOAT3& v2)
-{
-    return ((v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z));
-}
-
-// ----- XMFLOAT3“¯m‚Ì‹——£‚ğŒvZ -----
-inline const float XMFloat3Length(const DirectX::XMFLOAT3& v)
-{
-    return ::sqrtf(XMFloat3Dot(v, v));
-}
-
-// ----- XMFLOAT3“¯m‚Ì‹——£‚Ì“ñæ‚ğŒvZ -----
-inline const float XMFloat3LengthSq(const DirectX::XMFLOAT3& v)
-{
-    return XMFloat3Dot(v, v);
-}
-
-// ----- XMFLOAT3‚Ì³‹K‰» ( ’PˆÊƒxƒNƒgƒ‹‰» ) -----
-inline const DirectX::XMFLOAT3 XMFloat3Normalize(const DirectX::XMFLOAT3& v)
-{
-    const float length = XMFloat3Length(v);
-
-    if (length <= 0.0f) return DirectX::XMFLOAT3(0, 0, 0);
-
-    return (v / length);
-}
-
-// ----- XMFLOAT3“¯m‚ÌŠOÏ‚ğŒvZ ( ‡”Ô‚É’ˆÓ ) -----
-inline const DirectX::XMFLOAT3 XMFloat3Cross(
-    const DirectX::XMFLOAT3& v1,
-    const DirectX::XMFLOAT3& v2)
-{
-    const DirectX::XMFLOAT3 cross =
-    {
-        (v1.y * v2.z) - (v1.z * v2.y),
-        (v1.z * v2.x) - (v1.x * v2.z),
-        (v1.x * v2.y) - (v1.y * v2.x),
-    };
-
-    return cross;
-}
-
-#pragma endregion XMFLOAT3
-
-// ----- Zp‰‰Zq -----
 #pragma region XMFLOAT2
 // ----- float2 + float2 -----
 inline const DirectX::XMFLOAT2 operator+(
@@ -196,7 +182,7 @@ inline const DirectX::XMFLOAT2 operator+(
 inline const DirectX::XMFLOAT2 operator +=(
     DirectX::XMFLOAT2& float2_1,
     const DirectX::XMFLOAT2& float2_2)
-{    
+{
     float2_1.x += float2_2.x;
     float2_1.y += float2_2.y;
 
@@ -273,9 +259,9 @@ inline const DirectX::XMFLOAT2 operator/(
 // ----- float2 / float -----
 inline const DirectX::XMFLOAT2 operator/(
     const DirectX::XMFLOAT2& float2,
-    const float f)
+    const float& f)
 {
-    const DirectX::XMFLOAT2 result = 
+    const DirectX::XMFLOAT2 result =
     {
         float2.x / f,
         float2.y / f,
@@ -286,7 +272,59 @@ inline const DirectX::XMFLOAT2 operator/(
 
 #pragma endregion XMFLOAT2
 
-// ----- ZpŠÖ” -----
+
+// =============================================
+//                  ZpŠÖ”
+// =============================================
+#pragma region XMFLOAT3
+
+// ----- XMFLOAT3“¯m‚Ì“àÏ‚ğŒvZ -----
+inline const float XMFloat3Dot(
+    const DirectX::XMFLOAT3& v1,
+    const DirectX::XMFLOAT3& v2)
+{
+    return ((v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z));
+}
+
+// ----- XMFLOAT3“¯m‚Ì‹——£‚ğŒvZ -----
+inline const float XMFloat3Length(const DirectX::XMFLOAT3& v)
+{
+    return ::sqrtf(XMFloat3Dot(v, v));
+}
+
+// ----- XMFLOAT3“¯m‚Ì‹——£‚Ì“ñæ‚ğŒvZ -----
+inline const float XMFloat3LengthSq(const DirectX::XMFLOAT3& v)
+{
+    return XMFloat3Dot(v, v);
+}
+
+// ----- XMFLOAT3‚Ì³‹K‰» ( ’PˆÊƒxƒNƒgƒ‹‰» ) -----
+inline const DirectX::XMFLOAT3 XMFloat3Normalize(const DirectX::XMFLOAT3& v)
+{
+    const float length = XMFloat3Length(v);
+
+    if (length <= 0.0f) return DirectX::XMFLOAT3(0, 0, 0);
+
+    return (v / length);
+}
+
+// ----- XMFLOAT3“¯m‚ÌŠOÏ‚ğŒvZ ( ‡”Ô‚É’ˆÓ ) -----
+inline const DirectX::XMFLOAT3 XMFloat3Cross(
+    const DirectX::XMFLOAT3& v1,
+    const DirectX::XMFLOAT3& v2)
+{
+    const DirectX::XMFLOAT3 cross =
+    {
+        (v1.y * v2.z) - (v1.z * v2.y),
+        (v1.z * v2.x) - (v1.x * v2.z),
+        (v1.x * v2.y) - (v1.y * v2.x),
+    };
+
+    return cross;
+}
+
+#pragma endregion XMFLOAT3
+
 #pragma region XMFLOAT2
 // ----- XMFLOAT2“¯m‚Ì“àÏ‚ğŒvZ -----
 inline const float XMFloat2Dot(
@@ -321,6 +359,7 @@ inline const float XMFloat2Cross(
 }
 
 #pragma endregion XMFLOAT2
+
 
 inline const DirectX::XMFLOAT3 XMFloat3Lerp(
     const DirectX::XMFLOAT3& start,
@@ -375,4 +414,15 @@ inline const int XMIntLerp(
     const float& timer)
 {
     return (int)(start + timer * (end - start));
+}
+
+inline const float XMFloatRandomRange(
+    const float& min,
+    const float& max)
+{
+    // 0.0 ~ 1.0‚ÌŠÔ‚Ü‚Å‚Ìƒ‰ƒ“ƒ_ƒ€’l
+    float value = static_cast<float>(rand()) / RAND_MAX;
+    
+    // min ~ max ‚Ü‚Å‚Ìƒ‰ƒ“ƒ_ƒ€’l‚É•ÏŠ·
+    return min + (max - min) * value;
 }
