@@ -12,6 +12,7 @@ public:
         return instance;
     }
 
+    void Update();
     void DrawDebug(); // ImGui—p
 
 public:

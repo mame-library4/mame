@@ -51,6 +51,10 @@ public:// --- 定数 ---
         Helmbreaker,// 兜割
 
         ChargeAttack,
+
+        // ----- Mage -----
+        MageIdle,
+        MageRun,
     };
 
     enum class Animation
@@ -135,6 +139,12 @@ public:// --- 定数 ---
         Max,
     };
 
+    enum class PlayerRole
+    {
+        SwordsMan,
+        Mage,
+    };
+
 #pragma endregion ----- 定数 -----
 
 public:
@@ -172,8 +182,8 @@ public:
     void UpdateCollisions(const float& elapsedTime) override;
     void UpdateCollisionDetectionData();    // 押し出し判定位置更新
 
-    // ---------- 剣の座標更新 ----------
-    void UpdateSwordTransform();
+    // ---------- 武器の座標更新 ----------
+    void UpdateWeaponTransfrom();
 
     // ---------- 攻撃力取得 ----------
     [[nodiscard]] const float GetAttackPower() const;
@@ -197,6 +207,7 @@ public:// --- 取得・設定 ---
     void ChangeState(const STATE& state);
     [[nodiscard]] const STATE GetCurrentState() const { return currentState_; }
     [[nodiscard]] const STATE GetOldState() const { return oldState_; }
+    void ChangePlayerRole(); // 役職を変更する
 
     // ---------- 移動 ------------------------------
     void SetMoveDirection(const DirectX::XMFLOAT3 direction) { moveDirection_ = direction; } // 移動方向
@@ -332,6 +343,7 @@ private:
 private:
     // ---------- 武器 ----------
     GltfModel weapon_;
+    GltfModel staff_;
 
     // ---------- ステートマシン --------------------
     std::unique_ptr<StateMachine<State<Player>>> stateMachine_;
@@ -417,6 +429,11 @@ private:
     DirectX::XMFLOAT4X4 weaponWorld_;
     float swordTrailEndPosition_ = -0.05f;
 
+    // ---------- 杖 ----------
+    DirectX::XMFLOAT3 staffLocation_   = { -1200.0f, 0.0f, 0.0f };
+    DirectX::XMFLOAT3 staffRotation_   = { 0.0f, -110.0f, 0.0f };
+    DirectX::XMFLOAT3 staffScale_      = { 50.0f, 50.0f, -50.0f };
+
     // ---------- ガードカウンター　----------
     float guardCounterRadius_       = 0.9f;
     bool  isGuardCounterStance_     = false; // ガードカウンター状態か
@@ -440,4 +457,7 @@ private:
     // ---------- 練気ゲージ ----------
     float swordSpirit_ = 0.0f;
     float swordSpiritUseSpeed_ = 0.01f;
+
+    // ---------- 役職 ----------
+    PlayerRole playerRole_ = PlayerRole::SwordsMan;
 };

@@ -8,7 +8,8 @@
 // ----- コンストラクタ -----
 Player::Player()
     : Character("./Resources/Model/Character/Player/SwordGirl.gltf", 0.01f),
-    weapon_("./Resources/Model/Character/Sword/Sword.gltf")
+    weapon_("./Resources/Model/Character/Sword/Sword.gltf"),
+    staff_("./Resources/Model/Character/Staff/Staff.gltf")
 {
     // --- ステートマシン ---
     {
@@ -42,6 +43,10 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::PlacingBarrelState(this));    // 樽設置
         GetStateMachine()->RegisterState(new PlayerState::HelmbreakerState(this));      // 兜割り
         GetStateMachine()->RegisterState(new PlayerState::ChargeAttackState(this));      // 兜割り
+        
+        // ------------ Mage ------------
+        GetStateMachine()->RegisterState(new PlayerState::MageIdleState(this));      // 兜割り
+        GetStateMachine()->RegisterState(new PlayerState::MageRunState(this));      // 兜割り
 
         // 一番初めのステートを設定する
         GetStateMachine()->SetState(static_cast<UINT>(STATE::Idle));
@@ -131,8 +136,8 @@ void Player::Update(const float& elapsedTime)
     // Collisionデータ更新
     UpdateCollisions(elapsedTime);
 
-    // 剣の座標更新
-    UpdateSwordTransform();
+    // 武器の座標更新
+    UpdateWeaponTransfrom();
 
     // TODO:テスト用
     if (GetHealth() <= 0.0f)
@@ -159,8 +164,15 @@ void Player::Update(const float& elapsedTime)
 void Player::Render(ID3D11PixelShader* psShader)
 {
     Object::Render(psShader);
-
-    weapon_.Render(weaponWorld_, psShader);
+    
+    if (playerRole_ == PlayerRole::SwordsMan)
+    {
+        weapon_.Render(weaponWorld_, psShader);
+    }
+    else if (playerRole_ == PlayerRole::Mage)
+    {
+        staff_.Render(weaponWorld_, psShader);
+    }
 }
 
 void Player::RenderTrail()
@@ -730,7 +742,7 @@ void Player::SetAttackPower()
 }
 
 // ----- 剣の座標更新 -----
-void Player::UpdateSwordTransform()
+void Player::UpdateWeaponTransfrom()
 {
     const float toRadian = 0.01745f;
     const float toMetric = 0.01f;
@@ -738,11 +750,26 @@ void Player::UpdateSwordTransform()
     const GltfModel::Node node = GetNodes()->at(weaponJointIndex);
 
     DirectX::XMMATRIX boneTransform = DirectX::XMLoadFloat4x4(&node.globalTransform_);
-    DirectX::XMMATRIX socketTransform = DirectX::XMMatrixScaling(socketScale_.x, socketScale_.y, socketScale_.z)
-        * DirectX::XMMatrixRotationX(-socketRotation_.x * toRadian)
-        * DirectX::XMMatrixRotationX(-socketRotation_.y * toRadian)
-        * DirectX::XMMatrixRotationX(socketRotation_.z * toRadian)
-        * DirectX::XMMatrixTranslation(socketLocation_.x * toMetric, socketLocation_.y * toMetric, socketLocation_.z * toMetric);
+
+    DirectX::XMMATRIX socketTransform = {};
+
+    if (playerRole_ == PlayerRole::SwordsMan)
+    {
+        socketTransform = DirectX::XMMatrixScaling(socketScale_.x, socketScale_.y, socketScale_.z)
+            * DirectX::XMMatrixRotationX(-socketRotation_.x * toRadian)
+            * DirectX::XMMatrixRotationX(-socketRotation_.y * toRadian)
+            * DirectX::XMMatrixRotationX(socketRotation_.z * toRadian)
+            * DirectX::XMMatrixTranslation(socketLocation_.x * toMetric, socketLocation_.y * toMetric, socketLocation_.z * toMetric);
+    }
+    else if (playerRole_ == PlayerRole::Mage)
+    {
+        socketTransform = DirectX::XMMatrixScaling(staffScale_.x, staffScale_.y, staffScale_.z)
+            * DirectX::XMMatrixRotationX(-staffRotation_.x * toRadian)
+            * DirectX::XMMatrixRotationX(-staffRotation_.y * toRadian)
+            * DirectX::XMMatrixRotationX(staffRotation_.z * toRadian)
+            * DirectX::XMMatrixTranslation(staffLocation_.x * toMetric, staffLocation_.y * toMetric, staffLocation_.z * toMetric);
+    }
+
     DirectX::XMMATRIX dxUE5 = DirectX::XMMatrixSet(-1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1); // LHS Y-Up Z-Forward(DX) -> LHS Z-Up Y-Forward(UE5) 
     DirectX::XMMATRIX UE5Gltf = DirectX::XMMatrixSet(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1); // LHS Z-Up Y-Forward(UE5) -> RHS Y-Up Z-Forward(glTF) 
     DirectX::XMStoreFloat4x4(&weaponWorld_, dxUE5 * socketTransform * UE5Gltf * boneTransform * GetTransform()->CalcWorldMatrix(GetScaleFactor()));
@@ -861,4 +888,20 @@ void Player::ChangeState(const STATE& state)
     currentState_ = state;
 
     stateMachine_.get()->ChangeState(static_cast<int>(state));
+}
+
+// ----- 役職を変更 -----
+void Player::ChangePlayerRole()
+{
+    // 現在剣士の場合
+    if (playerRole_ == PlayerRole::SwordsMan)
+    {
+        ChangeState(STATE::MageIdle);
+        playerRole_ = PlayerRole::Mage;
+    }
+    else
+    {
+        ChangeState(STATE::Idle);
+        playerRole_ = PlayerRole::SwordsMan;
+    }
 }

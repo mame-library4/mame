@@ -40,6 +40,9 @@ namespace PlayerState
         isAddforce_ = true;
         return true;
     }
+
+
+
 }
 
 // ----- AttackData -----
@@ -97,6 +100,7 @@ namespace PlayerState
     }
 }
 
+#pragma region ---------- SwordMan ----------
 // ----- 待機 -----
 namespace PlayerState
 {
@@ -4509,3 +4513,109 @@ namespace PlayerState
 
     }
 }
+
+#pragma endregion ---------- SwordMan ----------
+
+#pragma region ---------- Mage ----------
+// ----- 待機 -----
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void MageIdleState::Initialize()
+    {
+        // アニメーション再生
+        owner_->PlayBlendAnimation(Player::Animation::MageIdle, true);
+    }
+
+    // ----- 更新 -----
+    void MageIdleState::Update(const float& elapsedTime)
+    {
+        // 先行入力判定
+        if (CheckNextInput()) return;
+    }
+
+    // ----- 終了化 -----
+    void MageIdleState::Finalize()
+    {
+    }
+
+    // ----- ImGui用 -----
+    void MageIdleState::DrawDebug()
+    {
+    }
+
+    // ----- 先行入力判定 -----
+    const bool MageIdleState::CheckNextInput()
+    {
+        const float aLX = Input::Instance().GetGamePad().GetAxisLX();
+        const float aLY = Input::Instance().GetGamePad().GetAxisLY();
+        if (aLX != 0.0f || aLY != 0.0f)
+        {
+            owner_->ChangeState(Player::STATE::MageRun);
+            return true;
+        }
+
+        return false;
+    }
+}
+
+// ----- 走り -----
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void MageRunState::Initialize()
+    {
+        // アニメーション設定
+        owner_->PlayBlendAnimation(Player::Animation::MageRun, true);
+        //owner_->PlayBlendAnimation(Player::Animation::MageRunFast, true);
+
+        // 最大速度を設定
+        owner_->SetMaxSpeed(5.0f);
+    }
+
+    // ----- 更新 -----
+    void MageRunState::Update(const float& elapsedTime)
+    {
+        // 先行入力判定
+        if (CheckNextInput());
+
+        // 旋回
+        owner_->Turn(elapsedTime);
+    }
+
+    // ----- 終了化 -----
+    void MageRunState::Finalize()
+    {
+    }
+
+    // ----- ImGui用 -----
+    void MageRunState::DrawDebug()
+    {
+    }
+
+    // ----- 先行入力判定 -----
+    const bool MageRunState::CheckNextInput()
+    {
+        const float aLX = Input::Instance().GetGamePad().GetAxisLX();
+        const float aLY = Input::Instance().GetGamePad().GetAxisLY();
+        if (aLX == 0.0f && aLY == 0.0f)
+        {
+            owner_->ChangeState(Player::STATE::MageIdle);
+            return true;
+        }
+
+        return false;
+    }
+}
+
+namespace PlayerState
+{
+
+}
+
+namespace PlayerState
+{
+
+}
+
+#pragma endregion ---------- Mage ----------

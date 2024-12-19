@@ -46,6 +46,7 @@ namespace PlayerState
     };
 }
 
+// ---------- SwordMan ----------
 namespace PlayerState
 {
     // ----- ‘Ò‹@ -----
@@ -729,5 +730,43 @@ namespace PlayerState
 
         float               chargeEffectSize_   = 0.15f;
         float               chargeEffectSpeed_  = 1.2f;
+    };
+}
+
+// ---------- Mage ----------
+namespace PlayerState
+{
+    // ----- ‘Ò‹@ -----
+    class MageIdleState : public State<Player>
+    {
+    public:
+        MageIdleState(Player* player) : State(player, "MageIdleState") {}
+        ~MageIdleState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+
+    private:
+        [[nodiscatd]] const bool CheckNextInput();
+
+    };
+
+    // ----- ‘–‚è -----
+    class MageRunState : public State<Player>
+    {
+    public:
+        MageRunState(Player* player) : State(player, "MageRunState") {}
+        ~MageRunState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+
+    private:
+        [[nodiscard]] const bool CheckNextInput();
+
     };
 }
