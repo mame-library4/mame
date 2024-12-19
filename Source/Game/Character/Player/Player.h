@@ -56,6 +56,7 @@ public:// --- 定数 ---
         MageIdle,
         MageRun,
         MageDodge,
+        MageDamage,
     };
 
     enum class Animation
@@ -105,7 +106,7 @@ public:// --- 定数 ---
         MageRollRight,
         MageRollLeft,
         MageDodgeFront,
-        MageDown,
+        MageDamage,
         MageGetUp,
 
     };
@@ -206,6 +207,8 @@ public:// --- 取得・設定 ---
     // ---------- ステートマシン --------------------
     StateMachine<State<Player>>* GetStateMachine() { return stateMachine_.get(); }
     void ChangeState(const STATE& state);
+    void ChangeDamageState();
+    void ChangeDeathState();
     [[nodiscard]] const STATE GetCurrentState() const { return currentState_; }
     [[nodiscard]] const STATE GetOldState() const { return oldState_; }
     void ChangePlayerRole(); // 役職を変更する

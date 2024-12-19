@@ -766,8 +766,12 @@ namespace PlayerState
         void DrawDebug()                        override;
 
     private:
+        void PlayAnimation(); // アニメーション再生
         [[nodiscard]] const bool CheckNextInput();
         void UpdateDash(const float& elapsedTime);
+
+    private:
+        float transitionDodge_ = 0.2f;
     };
 
     // ----- 回避 -----
@@ -815,5 +819,53 @@ namespace PlayerState
         bool                isDodgeFirstTime_   = true;  // 連続で回避しているか
         bool                isRotating_         = false; // 旋回処理を行うか
         bool                isInputStick_       = false; // スティック入力があるか
+    };
+
+    // ----- ダメージ -----
+    class MageDamageState : public State<Player>
+    {
+    public:
+        MageDamageState(Player* player) : State(player, "MageDamageState") {}
+        ~MageDamageState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+
+    private:
+        void Turn();        // 旋回処理
+        void SetVignette(); // ビネット設定
+        void UpdateAnimationSpeed();
+
+    private:
+        // ----- Animation -----
+        float   playAnimationSpeed_ = 1.2f;
+        float   transitionDamage_   = 0.1f;
+        bool    isFirstAnimation_   = false;
+
+        float getUpStartFrame_  = 1.2f;
+        float getUpEndFrame_    = 1.8f;
+
+        float dodgeStateChangeFrame_ = 1.25f;
+
+        // ----- AddForceData -----
+        AddForceData        addForceData_       = {};
+        DirectX::XMFLOAT3   addForceDirection_  = {};
+
+        // ----- CameraShake -----
+        float   cameraShakeStartFrame_  = 0.15f;
+        float   cameraShakePower_       = 0.1f;
+        float   cameraShakeTime_        = 0.3f;
+        bool    isCameraShakeActive_    = false;
+
+        // ----- Vignette -----
+        DirectX::XMFLOAT4 normalDamageColor_        = { 1.0f, 0.0f, 0.0f, 1.0f };
+        DirectX::XMFLOAT4 highDamageColor_          = { 1.0f, 0.4f, 0.0f, 1.0f };
+        float             vignetteTimer_            = 0.0f;
+        float             vignetteFadeOutSpeed_     = 0.7f;
+        float             normalDamageMaxIntensity_ = 0.7f;
+        float             highDamageMaxIntensity_   = 1.5f;
+        bool              isHighDamage_             = false;
     };
 }

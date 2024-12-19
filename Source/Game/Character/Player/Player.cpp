@@ -48,6 +48,7 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::MageIdleState(this));      // 兜割り
         GetStateMachine()->RegisterState(new PlayerState::MageRunState(this));      // 兜割り
         GetStateMachine()->RegisterState(new PlayerState::MageDodgeState(this));      // 兜割り
+        GetStateMachine()->RegisterState(new PlayerState::MageDamageState(this));      // 兜割り
 
         // 一番初めのステートを設定する
         GetStateMachine()->SetState(static_cast<UINT>(STATE::Idle));
@@ -519,7 +520,8 @@ void Player::UpdateStaminaRecovery(const float& elapsedTime)
     const STATE currentState = GetCurrentState();
     if (currentState == STATE::Dodge || currentState == STATE::Counter ||
         currentState == STATE::CounterCombo || currentState == STATE::JustDodge ||
-        currentState == STATE::RushAttack)
+        currentState == STATE::RushAttack ||
+        currentState == STATE::MageDodge)
     {
         return;
     }
@@ -895,6 +897,25 @@ void Player::ChangeState(const STATE& state)
     currentState_ = state;
 
     stateMachine_.get()->ChangeState(static_cast<int>(state));
+}
+
+// ----- ダメージステートへ遷移 -----
+void Player::ChangeDamageState()
+{
+    Player::STATE playerState = Player::STATE::Damage;
+
+    if (playerRole_ == PlayerRole::Mage)
+    {
+        playerState = Player::STATE::MageDamage;
+    }
+
+    ChangeState(playerState);
+}
+
+// ----- 死亡ステートへ遷移 -----
+void Player::ChangeDeathState()
+{
+    ChangeState(Player::STATE::Death);
 }
 
 // ----- 役職を変更 -----

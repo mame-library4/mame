@@ -409,12 +409,12 @@ void CollisionManager::UpdatePlayerDamageVsEnemyAttack()
                 // HP‚ª‚Ü‚¾‚ ‚é‚Ì‚ÅDamageState‚É‘JˆÚ
                 if (player->GetHealth() > 0.0f)
                 {
-                    player->ChangeState(Player::STATE::Damage);
+                    player->ChangeDamageState();
                 }
                 // HP‚ª‚à‚¤‚È‚¢‚Ì‚ÅDeathState‚É‘JˆÚ
                 else
                 {
-                    player->ChangeState(Player::STATE::Death);
+                    player->ChangeDeathState();
                 }
                 
                 return;
@@ -628,12 +628,12 @@ void CollisionManager::UpdatePlayerDamageVsProjectileAttack()
                 // HP‚ª‚Ü‚¾‚ ‚é‚Ì‚ÅDamageState‚É‘JˆÚ
                 if (player->GetHealth() > 0.0f)
                 {
-                    player->ChangeState(Player::STATE::Damage);
+                    player->ChangeDamageState();
                 }
                 // HP‚ª‚à‚¤‚È‚¢‚Ì‚ÅDeathState‚É‘JˆÚ
                 else
                 {
-                    player->ChangeState(Player::STATE::Death);
+                    player->ChangeDeathState();
                 }
                 return;
             }
@@ -849,12 +849,12 @@ void CollisionManager::UpdateItemVsDamage()
                 // HP‚ª‚Ü‚¾‚ ‚é‚Ì‚ÅDamageState‚É‘JˆÚ
                 if (player->GetHealth() > 0.0f)
                 {
-                    player->ChangeState(Player::STATE::Damage);
+                    player->ChangeDamageState();
                 }
                 // HP‚ª‚à‚¤‚È‚¢‚Ì‚ÅDeathState‚É‘JˆÚ
                 else
                 {
-                    player->ChangeState(Player::STATE::Death);
+                    player->ChangeDeathState();
                 }
             }
         }

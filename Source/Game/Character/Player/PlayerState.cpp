@@ -4576,9 +4576,8 @@ namespace PlayerState
         // フラグをリセット
         owner_->ResetFlags();
 
-        // アニメーション設定
-        owner_->PlayBlendAnimation(Player::Animation::MageRun, true);
-        //owner_->PlayBlendAnimation(Player::Animation::MageRunFast, true);
+        // アニメーション再生
+        PlayAnimation();
 
         // 最大速度を設定
         owner_->SetMaxSpeed(5.0f);
@@ -4608,6 +4607,35 @@ namespace PlayerState
     // ----- ImGui用 -----
     void MageRunState::DrawDebug()
     {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- Animation ----------"))
+            {
+                ImGui::DragFloat("TransitionDodge", &transitionDodge_, 0.01f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- アニメーション再生 -----
+    void MageRunState::PlayAnimation()
+    {
+        const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+
+        float transitionTime = 0.1f;
+
+        // 回避からの遷移
+        if (animationIndex == Player::Animation::MageRollFront || animationIndex == Player::Animation::MageRollBack ||
+            animationIndex == Player::Animation::MageRollRight || animationIndex == Player::Animation::MageRollLeft)
+        {
+            transitionTime = transitionDodge_;
+        }
+        owner_->SetTransitionTime(transitionTime);
+
+        owner_->PlayBlendAnimation(Player::Animation::MageRun, true);
     }
 
     // ----- 先行入力判定 -----
@@ -4983,6 +5011,221 @@ namespace PlayerState
 
         return false;
     }
+}
+
+// ----- ダメージ -----
+namespace PlayerState
+{
+    // ----- 初期化 -----
+    void MageDamageState::Initialize()
+    {
+        // フラグをリセット
+        owner_->ResetFlags();
+
+        // アニメーション再生
+        owner_->PlayAnimation(Player::Animation::MageDamage, false, playAnimationSpeed_);
+
+        // 無敵状態にする
+        owner_->SetIsInvincible(true);
+
+        // AddForceData 初期化
+        addForceData_.Initialize(0.1f, 0.3f, 0.5f);
+        DirectX::XMFLOAT3 playerPosition = owner_->GetTransform()->GetPosition();
+        DirectX::XMFLOAT3 dragonPosition = EnemyManager::Instance().GetEnemy(0)->GetTransform()->GetPosition();
+        playerPosition.y = dragonPosition.y = 0.0f;
+        addForceDirection_ = XMFloat3Normalize(playerPosition - dragonPosition);
+
+        // 旋回
+        Turn();
+
+        // ビネット設定
+        SetVignette();
+
+        // 変数初期化
+        isFirstAnimation_       = true;
+        isCameraShakeActive_    = false;
+    }
+
+    // ----- 更新 -----
+    void MageDamageState::Update(const float& elapsedTime)
+    {
+        // アニメーション再生速度更新
+        UpdateAnimationSpeed();
+
+        // カメラシェイク処理
+        if (isCameraShakeActive_ == false)
+        {
+            if (owner_->GetAnimationSeconds() > cameraShakeStartFrame_)
+            {
+                Camera::Instance().ScreenVibrate(cameraShakePower_, cameraShakeTime_);
+                isCameraShakeActive_ = true;
+            }
+        }
+
+        // ビネット更新
+        vignetteTimer_ += vignetteFadeOutSpeed_ * elapsedTime;
+        vignetteTimer_ = std::min(vignetteTimer_, 1.0f);
+        const float maxIntensity = isHighDamage_ ? highDamageMaxIntensity_ : normalDamageMaxIntensity_;
+        const float intensity = XMFloatLerp(maxIntensity, 0.0f, vignetteTimer_);
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteIntensity_ = intensity;
+
+        // 移動処理
+        if (addForceData_.Update(owner_->GetAnimationSeconds()))
+        {
+            owner_->AddForce(addForceDirection_, addForceData_.GetForce(), addForceData_.GetDecelerationForce());
+        }
+
+        // ----- ダメージアニメーション -----
+        if (isFirstAnimation_)
+        {
+            // 入力があれば起き上がる
+            if (owner_->GetAnimationSeconds() > getUpStartFrame_ && owner_->IsGetUpKeyDown())
+            {
+                owner_->PlayBlendAnimation(Player::Animation::MageGetUp, false);
+                owner_->SetTransitionTime(transitionDamage_);
+                isFirstAnimation_ = false;
+            }
+
+            // アニメーション再生終了
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->PlayBlendAnimation(Player::Animation::MageGetUp, false);
+                owner_->SetTransitionTime(transitionDamage_);
+                isFirstAnimation_ = false;
+            }
+        }
+        // ----- 起き上がりアニメーション -----
+        else
+        {
+            // 回避に遷移チェック
+            if (owner_->GetAnimationIndex() > dodgeStateChangeFrame_)
+            {
+                if (owner_->IsDodgeKeyDown())
+                {
+                    owner_->ChangeState(Player::STATE::MageDodge);
+                    return;
+                }
+            }
+
+            if (owner_->GetAnimationSeconds() > getUpEndFrame_)
+            {
+                owner_->ChangeState(Player::STATE::MageIdle);
+                return;
+            }
+        }
+    }
+
+    // ----- 終了化 -----
+    void MageDamageState::Finalize()
+    {
+        // 無敵状態を解除する
+        owner_->SetIsInvincible(false);
+
+        // ビネット使用終了
+        PostProcess::Instance().SetUseVignette(false);
+    }
+
+    // ----- ImGui用 -----
+    void MageDamageState::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- Animation ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("PlayAnimationSpeed", &playAnimationSpeed_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- CameraShake ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("CameraShakeStartFrame", &cameraShakeStartFrame_, 0.01f);
+                ImGui::DragFloat("CameraShakePower", &cameraShakePower_, 0.01f);
+                ImGui::DragFloat("CameraShakeTime", &cameraShakeTime_, 0.01f);
+                ImGui::Checkbox("IsCameraShakeActive", &isCameraShakeActive_);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- 旋回処理 -----
+    void MageDamageState::Turn()
+    {
+        DirectX::XMFLOAT2 ownerFront = XMFloat2Normalize({ owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z });
+        DirectX::XMFLOAT2 addForceDirection = XMFloat2Normalize(DirectX::XMFLOAT2(addForceDirection_.x, addForceDirection_.z) * -1.0f);
+
+        float dot = std::clamp(XMFloat2Dot(addForceDirection, ownerFront), -1.0f, 1.0f);
+        float angle = acosf(dot);
+        float cross = XMFloat2Cross(addForceDirection, ownerFront);
+
+        if (cross > 0)
+        {
+            owner_->GetTransform()->SetRotationY(-angle);
+        }
+        else
+        {
+            owner_->GetTransform()->SetRotationY(angle);
+        }
+    }
+
+    // ----- ビネット設定 -----
+    void MageDamageState::SetVignette()
+    {
+        // HighDamageかの判定
+        isHighDamage_ = (EnemyManager::Instance().GetEnemy(0)->GetAnimationIndex() == static_cast<int>(Enemy::DragonAnimation::Nova1));
+
+        PostProcess::Instance().SetUseVignette();
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteCenter_ = { 0.5f, 0.5f };
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteSmoothness_ = 2.2f;
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteIntensity_ = isHighDamage_ ? highDamageMaxIntensity_ : normalDamageMaxIntensity_;
+        PostProcess::Instance().GetVignetteConstants()->GetData()->vignetteColor_ = isHighDamage_ ? highDamageColor_ : normalDamageColor_;
+
+        vignetteTimer_ = 0.0f;
+    }
+
+    // ----- アニメーション再生速度更新 -----
+    void MageDamageState::UpdateAnimationSpeed()
+    {
+        const float animationSeconds = owner_->GetAnimationSeconds();
+
+        // 一つ目のアニメーション ( 吹き飛ばされ )
+        if (isFirstAnimation_)
+        {
+            if (animationSeconds > 1.2f)
+            {// 起き上がるまでの時間を延ばす
+                owner_->SetAnimationSpeed(0.4f);
+            }
+            else if (animationSeconds > 1.0f)
+            {
+                owner_->SetAnimationSpeed(1.0f);
+            }
+        }
+        // 二つ目のアニメーション ( 起き上がり )
+        else
+        {
+            if (animationSeconds > 1.0f)
+            {
+                owner_->SetAnimationSpeed(1.5f);
+            }
+        }
+    }
+}
+
+namespace PlayerState
+{
+
+}
+
+namespace PlayerState
+{
+
+}
+
+namespace PlayerState
+{
+
 }
 
 namespace PlayerState
