@@ -12,7 +12,7 @@ private:
     struct PostEffectConstants
     {
         DirectX::XMFLOAT3   colorize_   = { 1, 1, 1 };
-        float               exposure_   = 0.1f;
+        float               exposure_   = 0.22f;
         float               brightness_ = -0.05f;
         float               contrast_   = 0.2f;
         float               hue_        = 0.0f;

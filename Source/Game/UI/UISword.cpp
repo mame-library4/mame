@@ -41,6 +41,16 @@ void UISword::Update(const float& elapsedTime)
         swordFrame_->GetTransform()->SetSizeX(sizeX);
         swordFrame_->GetTransform()->SetTexSizeX(sizeX);
     }
+
+    // フェードアウト
+    if (isFadeOut_)
+    {
+        const float alpha = XMFloatLerp(1.0f, 0.0f, fadeOutTimer_);
+        swordFrameBlack_->GetTransform()->SetColorA(alpha);
+        swordFrame_->GetTransform()->SetColorA(alpha);
+    }
+
+    UI::Update(elapsedTime);
 }
 
 // ----- 描画 -----

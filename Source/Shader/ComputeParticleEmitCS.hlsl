@@ -18,18 +18,30 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
     particleDataBuffer[particleIndex].parameter_.z = 1.0f;
     particleDataBuffer[particleIndex].parameter_.w = emitParticleBuffer[emitIndex].parameter_.w;
     
-    
     // 位置設定    
     particleDataBuffer[particleIndex].position_ = emitParticleBuffer[emitIndex].position_;
+
+    // 速度、速力設定
+    particleDataBuffer[particleIndex].velocity_ = emitParticleBuffer[emitIndex].velocity_;
+    particleDataBuffer[particleIndex].acceleration_ = emitParticleBuffer[emitIndex].acceleration_;
+    
+    // 球状にパーティクルを配置
     if(emitParticleBuffer[emitIndex].sphere_.x > 0.0f)
     {        
-        particleDataBuffer[particleIndex].position_ = emitParticleBuffer[emitIndex].position_ + float4(CalculateSpherePosition(emitIndex), 0);
+        // 中心位置から配置位置に向けたベクトルを作成
+        particleDataBuffer[particleIndex].position_ = emitParticleBuffer[emitIndex].position_ + float4(CalculateSpherePosition(emitIndex), 0);        
+        float3 vec = normalize(particleDataBuffer[particleIndex].position_.xyz - emitParticleBuffer[emitIndex].position_.xyz);
+        
+        // 半径に応じた位置を設定する
+        particleDataBuffer[particleIndex].position_.xyz = emitParticleBuffer[emitIndex].position_.xyz + vec * emitParticleBuffer[emitIndex].sphere_.y;
+        
+        particleDataBuffer[particleIndex].velocity_ = float4(vec * -1.0f * emitParticleBuffer[emitIndex].sphere_.z, 1);
+        particleDataBuffer[particleIndex].acceleration_ = float4(vec * emitParticleBuffer[emitIndex].sphere_.w, 1);
     }
     
     particleDataBuffer[particleIndex].rotation_             = emitParticleBuffer[emitIndex].rotation_;
     particleDataBuffer[particleIndex].scale_                = emitParticleBuffer[emitIndex].scale_;
-    particleDataBuffer[particleIndex].velocity_             = emitParticleBuffer[emitIndex].velocity_;
-    particleDataBuffer[particleIndex].acceleration_         = emitParticleBuffer[emitIndex].acceleration_;
+
     particleDataBuffer[particleIndex].rotationVelocity_     = emitParticleBuffer[emitIndex].rotationVelocity_;
     particleDataBuffer[particleIndex].rotationAcceleration_ = emitParticleBuffer[emitIndex].rotationAcceleration_;
     particleDataBuffer[particleIndex].scaleVelocity_        = emitParticleBuffer[emitIndex].scaleVelocity_;

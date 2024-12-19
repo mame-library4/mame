@@ -24,6 +24,12 @@ struct EmitParticleData
     float4 color_;
     
     float4 sphere_;
+    
+    //float4 sphereParameter_;
+    
+    //float sphereSpeed_;
+    //float sphereAcceleration_;
+    //float2 sphereDummy_;
 };
 
 // パーティクル構造体

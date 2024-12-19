@@ -56,7 +56,6 @@ public:// --- 定数 ---
     enum class Animation
     {
         Idle,           // 待機
-        Walk,           // 歩き
         Run,            // 走り
         RollFront,      // 回避前
         RollBack,       // 回避後ろ
@@ -73,46 +72,37 @@ public:// --- 定数 ---
         CounterAttack1, // カウンター攻撃0
         Damage,         // ダメージ
         GetUp,          // 起き上がり
-        HitFront,       // 弱ダメージ前
-        HitBack,        // 弱ダメージ後ろ
-        HitRight,       // 弱ダメージ右
-        HitLeft,        // 弱ダメージ左
         DownStart,      // ダウン開始
         DownLoop,       // ダウンループ
         DownEnd,        // ダウン終わり
         DownDeath,      // ダウン死亡
-        Attack1_0,      // 攻撃1_0
-        Attack1_1,      // 攻撃1_1
-        Attack1_2,      // 攻撃1_2
-        Attack1_3,      // 攻撃1_3
-        RunAttack0,     // 走り攻撃0
         RunAttack1,     // 走り攻撃1
         Counter,        // カウンター
+        DodgeFront,     // 回避前
+        BlockHit,       // ガード
+        BlockBreak,     // ガード
+        Death,          // 死亡
+        AttackRush0,    // ラッシュ攻撃
+        AttackRush1,    // ラッシュ攻撃
+        AttackRush2,    // ラッシュ攻撃
+        AttackRush3,    // ラッシュ攻撃
+        Attack4_0,      // 上昇攻撃
+        Attack4_2,      // 上昇攻撃
+        ChargeStart,    // チャージ
+        ChargeLoop,     // チャージ
 
-        DodgeFront, // 回避前
-        DodgeBack,  // 回避後ろ
-        DodgeRight, // 回避右
-        DodgeLeft,  // 回避左
+        // Mage
+        MageIdle,
+        MageRun,
+        MageRunFast,
+        MageRollFront,
+        MageRollBack,
+        MageRollRight,
+        MageRollLeft,
+        MageDodgeFront,
+        MageDown,
+        MageGetUp,
 
-        BlockHit,
-        BlockBreak,
-        Death,
-        Parry,
-
-        Attack2_0,
-
-        AttackRush0,
-        AttackRush1,
-        AttackRush2,
-        AttackRush3,
-
-        Attack4_0,
-        Attack4_1,
-        Attack4_2,
-
-        ChargeStart,
-        ChargeLoop,
-        ChargeAttack,
     };
 
     // 先行入力の種類

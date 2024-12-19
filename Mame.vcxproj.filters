@@ -299,12 +299,14 @@
       <Filter>Mame\Game\Object\Item</Filter>
     </ClCompile>
     <ClCompile Include="Source\Game\Item\Barrel.cpp" />
-    <ClCompile Include="Source\Game\UI\UISword.cpp" />
     <ClCompile Include="Source\Graphics\ComputeParticle\ComputeParticleSystem.cpp">
       <Filter>Mame\Graphics\ComputeParticle</Filter>
     </ClCompile>
     <ClCompile Include="Source\Graphics\ComputeParticle\ComputeParticleEmitter.cpp">
       <Filter>Mame\Graphics\ComputeParticle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\UI\UISword.cpp">
+      <Filter>Mame\Game\UI\UISword</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -634,7 +636,6 @@
       <Filter>Mame\Game\Object\Item</Filter>
     </ClInclude>
     <ClInclude Include="Source\Game\Item\Barrel.h" />
-    <ClInclude Include="Source\Game\UI\UISword.h" />
     <ClInclude Include="Source\Graphics\ComputeParticle\ComputeParticleSystem.h">
       <Filter>Mame\Graphics\ComputeParticle</Filter>
     </ClInclude>
@@ -646,6 +647,9 @@
     </ClInclude>
     <ClInclude Include="External\nlohmann\json_fwd.hpp">
       <Filter>External\Nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\UI\UISword.h">
+      <Filter>Mame\Game\UI\UISword</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

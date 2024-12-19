@@ -44,7 +44,10 @@ public:
         //　色の振れ幅
         DirectX::XMFLOAT4 colorAmplitud_ = { 0,0,0,0 };
 
-        DirectX::XMFLOAT4 sphere_ = {};
+        // ----- Sphere -----
+        DirectX::XMFLOAT4 sphere_ = { -1.0f, 1.0f, 0.0f, 0.0f }; // x:Sphereの使用フラグ, y:半径,z:速度,w:加速度
+
+        //DirectX::XMFLOAT4 sphereParameter_ = { 1, 1, 0, 0 };
 
         void DrawDebug();
     };
