@@ -767,6 +767,53 @@ namespace PlayerState
 
     private:
         [[nodiscard]] const bool CheckNextInput();
+        void UpdateDash(const float& elapsedTime);
+    };
 
+    // ----- 回避 -----
+    class MageDodgeState : public State<Player>
+    {
+    public:
+        MageDodgeState(Player* player) : State(player, "MageDodgeState") {}
+        ~MageDodgeState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+
+    private:
+        void PlayAnimation();                                // アニメーション再生
+        void UpdateAnimationSpeed(const float& elapsedTime); // アニメーション再生速度更新
+        void Turn(const float& elapsedTime);                 // 旋回処理
+        void ResetState();                                   // このステートをリセット(初期化)する
+        
+        [[noidscard]] const bool CheckNextInput(); // 先行入力判定
+
+    private:
+        // ----- Animation -----
+        float playAnimationSpeed_        = 1.4f; // 再生速度
+        float changeAnimationSpeed_      = 1.0f; // 再生速度
+        float animationSpeedChangeFrame_ = 0.6f;
+        
+        float animationStartFrame_  = 0.15f;    // 再生開始フレーム
+        
+        float transitionDodge_      = 0.05f;    // 回避モーションからの遷移
+
+        float rootMotionMoveValue_  = 1.2f;     // ルートモーションの移動値
+
+        float invincibleFrame_      = 0.45f;    // 無敵フレーム
+
+        
+
+        // ----- 先行入力 -----
+        float nextInputStartFrame_      = 0.5f;
+        float dodgeStateChangeFrame_    = 0.9f;
+        float runStateChangeFrame_      = 0.8f;
+
+        DirectX::XMFLOAT2   inputDirection_     = {};
+        bool                isDodgeFirstTime_   = true;  // 連続で回避しているか
+        bool                isRotating_         = false; // 旋回処理を行うか
+        bool                isInputStick_       = false; // スティック入力があるか
     };
 }

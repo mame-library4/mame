@@ -47,6 +47,7 @@ Player::Player()
         // ------------ Mage ------------
         GetStateMachine()->RegisterState(new PlayerState::MageIdleState(this));      // 兜割り
         GetStateMachine()->RegisterState(new PlayerState::MageRunState(this));      // 兜割り
+        GetStateMachine()->RegisterState(new PlayerState::MageDodgeState(this));      // 兜割り
 
         // 一番初めのステートを設定する
         GetStateMachine()->SetState(static_cast<UINT>(STATE::Idle));
@@ -277,6 +278,12 @@ void Player::DrawDebug()
             ImGui::DragFloat3("weaponLocation", &socketLocation_.x);
             ImGui::DragFloat3("weaponRotation", &socketRotation_.x);
             ImGui::DragFloat3("socketScale", &socketScale_.x);
+
+            ImGui::TreePop();
+        }
+        if (ImGui::TreeNodeEx("Staff", ImGuiTreeNodeFlags_Framed))
+        {
+            staff_.DrawDebug();
 
             ImGui::TreePop();
         }

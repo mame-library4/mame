@@ -55,6 +55,7 @@ public:// --- ’è” ---
         // ----- Mage -----
         MageIdle,
         MageRun,
+        MageDodge,
     };
 
     enum class Animation

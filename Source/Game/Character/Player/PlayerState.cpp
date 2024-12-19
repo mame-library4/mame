@@ -40,9 +40,6 @@ namespace PlayerState
         isAddforce_ = true;
         return true;
     }
-
-
-
 }
 
 // ----- AttackData -----
@@ -4523,6 +4520,9 @@ namespace PlayerState
     // ----- 初期化 -----
     void MageIdleState::Initialize()
     {
+        // フラグをリセット
+        owner_->ResetFlags();
+
         // アニメーション再生
         owner_->PlayBlendAnimation(Player::Animation::MageIdle, true);
     }
@@ -4547,8 +4547,16 @@ namespace PlayerState
     // ----- 先行入力判定 -----
     const bool MageIdleState::CheckNextInput()
     {
+        // ----- 回避に遷移 -----
+        if (owner_->IsDodgeKeyDown())
+        {
+            owner_->ChangeState(Player::STATE::MageDodge);
+            return true;
+        }
+
         const float aLX = Input::Instance().GetGamePad().GetAxisLX();
         const float aLY = Input::Instance().GetGamePad().GetAxisLY();
+        // ----- 移動入力があれば走りに遷移 -----
         if (aLX != 0.0f || aLY != 0.0f)
         {
             owner_->ChangeState(Player::STATE::MageRun);
@@ -4565,6 +4573,9 @@ namespace PlayerState
     // ----- 初期化 -----
     void MageRunState::Initialize()
     {
+        // フラグをリセット
+        owner_->ResetFlags();
+
         // アニメーション設定
         owner_->PlayBlendAnimation(Player::Animation::MageRun, true);
         //owner_->PlayBlendAnimation(Player::Animation::MageRunFast, true);
@@ -4577,15 +4588,21 @@ namespace PlayerState
     void MageRunState::Update(const float& elapsedTime)
     {
         // 先行入力判定
-        if (CheckNextInput());
+        if (CheckNextInput()) return;
 
         // 旋回
         owner_->Turn(elapsedTime);
+
+        // ダッシュ処理
+        UpdateDash(elapsedTime);
     }
 
     // ----- 終了化 -----
     void MageRunState::Finalize()
     {
+        owner_->SetMoveDirection({});
+        owner_->SetVelocity({});
+        owner_->SetIsDash(false);
     }
 
     // ----- ImGui用 -----
@@ -4596,8 +4613,16 @@ namespace PlayerState
     // ----- 先行入力判定 -----
     const bool MageRunState::CheckNextInput()
     {
+        // ----- 回避に遷移 -----
+        if (owner_->IsDodgeKeyDown())
+        {
+            owner_->ChangeState(Player::STATE::MageDodge);
+            return true;
+        }
+
         const float aLX = Input::Instance().GetGamePad().GetAxisLX();
         const float aLY = Input::Instance().GetGamePad().GetAxisLY();
+        // ----- 移動入力が無ければ待機に遷移 -----
         if (aLX == 0.0f && aLY == 0.0f)
         {
             owner_->ChangeState(Player::STATE::MageIdle);
@@ -4606,11 +4631,358 @@ namespace PlayerState
 
         return false;
     }
+
+    // ----- ダッシュ処理 -----
+    void MageRunState::UpdateDash(const float& elapsedTime)
+    {
+        const bool isDashKey = owner_->IsDashKey();
+
+        // スタミナが底をついた場合速度を遅くする
+        if (owner_->GetIsStaminaDepleted())
+        {
+            owner_->SetAnimationSpeed(0.8f);
+
+            // 最大速度を設定
+            owner_->SetMaxSpeed(3.0f);
+
+            owner_->UseDashStamina(elapsedTime);
+
+            // ダッシュしているか設定
+            owner_->SetIsDash(isDashKey);
+
+            return;
+        }
+
+        // ダッシュの処理
+        if (isDashKey)
+        {
+            owner_->SetAnimationSpeed(owner_->GetDashAnimationSpeed());
+
+            // 最大速度を設定
+            owner_->SetMaxSpeed(owner_->GetDashSpeed());
+
+            owner_->SetIsDash(true);
+
+            owner_->UseDashStamina(elapsedTime);
+        }
+        else
+        {
+            owner_->SetAnimationSpeed(1.0f);
+
+            // 最大速度を設定
+            owner_->SetMaxSpeed(5.0f);
+
+            owner_->SetIsDash(false);
+        }
+    }
 }
 
+// ----- 回避 -----
 namespace PlayerState
 {
+    // ----- 初期化 -----
+    void MageDodgeState::Initialize()
+    {
+        // フラグをリセット
+        owner_->ResetFlags();
 
+        // アニメーション再生
+        PlayAnimation();
+
+        // 無敵状態にする
+        owner_->SetIsInvincible(true);
+
+        // スタミナ消費
+        owner_->UseDodgeStamina();
+
+        // 変数初期化
+        isRotating_         = false;
+        isDodgeFirstTime_   = false;
+    }
+
+    // ----- 更新 -----
+    void MageDodgeState::Update(const float& elapsedTime)
+    {
+        // ルートモーションの設定
+        if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+        {
+            owner_->SetUseRootMotion(true);
+            owner_->SetRootMotionValue(rootMotionMoveValue_);
+        }
+
+        // 先行入力処理
+        if (CheckNextInput()) return;
+
+        // 旋回処理
+        Turn(elapsedTime);
+
+        // アニメーション速度更新
+        UpdateAnimationSpeed(elapsedTime);
+
+        // 無敵判定更新
+        if (owner_->GetIsInvincible() && owner_->GetAnimationSeconds() > invincibleFrame_)
+        {
+            owner_->SetIsInvincible(false);
+        }
+
+        // 回避終了判定
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::MageIdle);
+            return;
+        }
+    }
+
+    // ----- 終了化 -----
+    void MageDodgeState::Finalize()
+    {
+        // ルートモーションリセット
+        owner_->SetUseRootMotion(false);
+
+        // 変数リセット
+        isDodgeFirstTime_ = true;
+    }
+
+    // ----- ImGui用 -----
+    void MageDodgeState::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- Animation ----------"))
+            {
+                ImGui::DragFloat("PlayAnimationSpeed", &playAnimationSpeed_, 0.01f);
+                ImGui::DragFloat("ChangeAnimationSpeed", &changeAnimationSpeed_, 0.01f);
+
+                ImGui::DragFloat("AniamtionStartFrame", &animationStartFrame_, 0.01f);
+                ImGui::DragFloat("TransitionDodge", &transitionDodge_, 0.01f);
+
+                ImGui::Checkbox("IsDodgeFirstTime", &isDodgeFirstTime_);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- RootMotion ----------"))
+            {
+                ImGui::DragFloat("RootMotionMoveValue", &rootMotionMoveValue_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- NextInput ----------"))
+            {
+                ImGui::DragFloat("NextInputStartFrame", &nextInputStartFrame_, 0.01f);
+                
+                ImGui::DragFloat("DodgeStateChangeFrame", &dodgeStateChangeFrame_, 0.01f);
+                ImGui::DragFloat("RunStateChangeFrame", &runStateChangeFrame_, 0.01f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- アニメーション再生 -----
+    void MageDodgeState::PlayAnimation()
+    {
+        // --------------------------------------------------
+        //  回避を連続して出している場合
+        // --------------------------------------------------
+        if (isDodgeFirstTime_ == false)
+        {
+            // 前方向のアニメーション再生
+            owner_->PlayBlendAnimation(Player::Animation::MageRollFront, false, playAnimationSpeed_, animationStartFrame_);
+            owner_->SetTransitionTime(transitionDodge_);
+            return;
+        }
+
+        // ------------------------------------------------------------
+        // プレイヤーの姿勢に合わせてアニメーションの方向を設定する
+        // ------------------------------------------------------------
+        const float aLX = Input::Instance().GetGamePad().GetAxisLX();
+        const float aLY = Input::Instance().GetGamePad().GetAxisLY();
+        Player::Animation animationIndex = Player::Animation::MageRollFront;
+        // ----- 入力値がある場合 -----
+        if (aLX != 0.0f || aLY != 0.0f)
+        {
+            // カメラから見たスティックの入力方向を算出
+            DirectX::XMFLOAT2 cameraInput = Camera::Instance().ConvertTo2DVectorFromCamera(DirectX::XMFLOAT2(aLX, aLY));
+            DirectX::XMFLOAT2 ownerFront = XMFloat2Normalize({ owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z });
+
+            // 内積で角度を算出
+            float dot = std::clamp(XMFloat2Dot(cameraInput, ownerFront), -1.0f, 1.0f);
+            float angle = acosf(dot);
+
+            // 左右判定
+            float cross = XMFloat2Cross(cameraInput, ownerFront);
+
+            // ----- 90度よりも小さければ、前,右,左 の三択 -----
+            if (angle < DirectX::XM_PIDIV2)
+            {
+                // ----- 回転角が４５度よりも小さければ 前方向 -----
+                if (angle < DirectX::XM_PIDIV4)
+                {
+                    animationIndex = Player::Animation::MageRollFront;
+                }
+                else
+                {
+                    // ----- 右方向 -----
+                    if (cross < 0)  animationIndex = Player::Animation::MageRollRight;
+                    // ----- 左方向 -----
+                    else            animationIndex = Player::Animation::MageRollLeft;
+                }
+            }
+            // ----- 90度よりも大きければ、後,右,左 の三択 -----
+            else
+            {
+                // ----- 135度よりも大きければ 後方向 -----
+                if (angle > DirectX::XM_PIDIV2 + DirectX::XM_PIDIV4)
+                {
+                    animationIndex = Player::Animation::MageRollBack;
+                }
+                else
+                {
+                    // ----- 右方向 -----
+                    if (cross < 0)  animationIndex = Player::Animation::MageRollRight;
+                    // ----- 左方向 -----
+                    else            animationIndex = Player::Animation::MageRollLeft;
+                }
+            }
+        }
+        // ----- 入力値がない場合、前方向のアニメーションを設定 -----
+        else
+        {
+            animationIndex = Player::Animation::MageRollFront;
+        }
+        owner_->PlayBlendAnimation(animationIndex, false, playAnimationSpeed_, animationStartFrame_);
+
+        owner_->SetTransitionTime(0.05f);
+    }
+
+    // ----- アニメーション速度更新 -----
+    void MageDodgeState::UpdateAnimationSpeed(const float& elapsedTime)
+    {
+        if (owner_->GetAnimationSeconds() > animationSpeedChangeFrame_)
+        {
+            owner_->SetAnimationSpeed(changeAnimationSpeed_);
+        }
+    }
+
+    // ----- 旋回処理 -----
+    void MageDodgeState::Turn(const float& elapsedTime)
+    {
+        // 旋回処理をしない
+        if (isRotating_ == false) return;
+        // 入力値がないので回転する必要なし
+        if (isInputStick_ == false) return;
+
+        DirectX::XMFLOAT2 playerForward = { owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z };
+        playerForward = XMFloat2Normalize(playerForward);
+
+        float dot = std::clamp(XMFloat2Dot(inputDirection_, playerForward), -1.0f, 1.0f);
+        float angle = acosf(dot);
+
+        if (angle < DirectX::XMConvertToRadians(1))
+        {
+            isRotating_ = false;
+            return;
+        }
+
+        float cross = XMFloat2Cross(inputDirection_, playerForward);
+
+        const float speed = owner_->GetRotateSpeed() * elapsedTime;
+        float rotateY = angle * speed;
+
+        if (cross > 0)
+        {
+            owner_->GetTransform()->AddRotationY(-rotateY);
+        }
+        else
+        {
+            owner_->GetTransform()->AddRotationY(rotateY);
+        }
+    }
+
+    // ----- このステートをリセット(初期化)する -----
+    void MageDodgeState::ResetState()
+    {
+        // 旋回処理を行う
+        isRotating_ = true;
+
+        // アニメーション再生
+        PlayAnimation();
+
+        // フラグをリセット
+        owner_->ResetFlags();
+
+        // スタミナ消費
+        owner_->UseDodgeStamina();
+
+        // ルートモーションリセット
+        owner_->SetUseRootMotion(false);
+    }
+
+    // ----- 先行入力判定 -----
+    const bool MageDodgeState::CheckNextInput()
+    {
+        const float currentAnimationFrame = owner_->GetAnimationSeconds();
+
+        // ----------------------------------------
+        //              先行入力受付
+        // ----------------------------------------
+        if (currentAnimationFrame > nextInputStartFrame_)
+        {
+            // ----- 回避入力受付 -----
+            if (owner_->IsDodgeKeyDown() && owner_->GetAnimationIndex() != static_cast<int>(Player::Animation::MageRollBack))
+            {
+                owner_->SetNextInput(Player::NextInput::Dodge);
+
+                const float aLX = Input::Instance().GetGamePad().GetAxisLX();
+                const float aLY = Input::Instance().GetGamePad().GetAxisLY();
+                // 移動入力がある
+                if (aLX != 0.0f || aLY != 0.0f)
+                {
+                    inputDirection_ = Camera::Instance().ConvertTo2DVectorFromCamera(DirectX::XMFLOAT2(aLX, aLY));
+                    inputDirection_ = XMFloat2Normalize(inputDirection_);
+
+                    isInputStick_ = true;
+                }
+                // 移動入力なし
+                else
+                {
+                    isInputStick_ = false;
+                }
+            }
+        }
+
+        // ----------------------------------------
+        //         先行入力によるステート変更
+        // ----------------------------------------
+
+        // ----- 回避へ遷移 -----
+        if (owner_->GetNextInput() == Player::NextInput::Dodge)
+        {
+            if (currentAnimationFrame > dodgeStateChangeFrame_)
+            {
+                // 回避は現在と同じステートの為、リセットを呼ぶ
+                ResetState();
+                return true;
+            }
+        }
+        // ----- 走りへ遷移 -----
+        else if (currentAnimationFrame > runStateChangeFrame_)
+        {
+            const float aLX = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLY = Input::Instance().GetGamePad().GetAxisLY();
+
+            // 移動値があれば遷移する
+            if (aLX != 0.0f || aLY != 0.0f)
+            {
+                owner_->ChangeState(Player::STATE::MageRun);
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 namespace PlayerState
