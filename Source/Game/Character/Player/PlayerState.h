@@ -912,5 +912,70 @@ namespace PlayerState
         float playAnimationSpeed_ = 1.0f;
         float animationStartFrame_ = 0.0f;
         float transitionAttack0_0_ = 0.1f;
+
+        float attack0_0ChangeFrame_ = 0.3f;
+    };
+
+    // ----- çUåÇ1_0 -----
+    class MageAttack1_0 : public State<Player>
+    {
+    public:
+        MageAttack1_0(Player* player) : State(player, "MageAttack1_0") {}
+        ~MageAttack1_0() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+
+    private:
+        void PlayAnimation(); // ÉAÉjÉÅÅ[ÉVÉáÉìçƒê∂
+
+    private:
+        float playAniamtionSpeed_   = 1.0f;
+        float animationStartFrame_  = 0.0f;
+
+    };
+
+    // ----- çUåÇ1_1 -----
+    class MageAttack1_1 : public State<Player>
+    {
+    public:
+        MageAttack1_1(Player* player) : State(player, "MageAttack1_1") {}
+        ~MageAttack1_1() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+
+    };
+
+    // ----- çUåÇ1_2 -----
+    class MageAttack1_2 : public State<Player>
+    {
+    public:
+        MageAttack1_2(Player* player) : State(player, "MageAttack1_2") {}
+        ~MageAttack1_2() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+
+    };
+
+    // ----- çUåÇ1_0 -----
+    class MageAttack1_3 : public State<Player>
+    {
+    public:
+        MageAttack1_3(Player* player) : State(player, "MageAttack1_3") {}
+        ~MageAttack1_3() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+
     };
 }

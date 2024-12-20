@@ -51,6 +51,7 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::MageDamageState(this)); // ダメージ
         GetStateMachine()->RegisterState(new PlayerState::MageAttack0_0(this));   // 攻撃0_0
         GetStateMachine()->RegisterState(new PlayerState::MageAttack0_1(this));   // 攻撃0_1
+        GetStateMachine()->RegisterState(new PlayerState::MageAttack1_0(this));   // 攻撃1_0
 
         // 一番初めのステートを設定する
         GetStateMachine()->SetState(static_cast<UINT>(STATE::Idle));

@@ -59,6 +59,7 @@ public:// --- íËêî ---
         MageDamage,
         MageAttack0_0,
         MageAttack0_1,
+        MageAttack1_0,
     };
 
     enum class Animation
@@ -322,6 +323,7 @@ public:// --- éÊìæÅEê›íË ---
     // ---------- ÉLÅ[ì¸óÕ ----------
     [[nodiscard]] const bool IsComboAttack0KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
     [[nodiscard]] const bool IsMageAttack0KeyDown()  const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
+    [[nodiscard]] const bool IsMageAttack1KeyDown()  const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y; }
     [[nodiscard]] const bool IsDodgeKeyDown()        const;
     [[nodiscard]] const bool IsCounterStanceKey()    const;
     [[nodiscard]] const bool IsGetUpKeyDown()        const;

@@ -351,7 +351,6 @@ ComputeParticleEmitter::EmitParameter ComputeParticleEmitter::GetJsonEmitParamet
 	emitParam.colorAmplitud_ = { mJson["colorAmplitude"][0],mJson["colorAmplitude"][1],mJson["colorAmplitude"][2],mJson["colorAmplitude"][3] };
 	
 	emitParam.sphere_ = { mJson["sphere"][0],mJson["sphere"][1],mJson["sphere"][2],mJson["sphere"][3] };
-	//emitParam.sphereParameter_ = { mJson["sphereParameter_"][0],mJson["sphereParameter_"][1],mJson["sphereParameter_"][2],mJson["sphereParameter_"][3] };
 
 	return emitParam;
 }
@@ -395,12 +394,10 @@ void ComputeParticleEmitter::AssetCreation(const EmitParameter& param, const std
 	mJson["color"] = { param.color_.x,param.color_.y,param.color_.z,param.color_.w };
 	mJson["colorAmplitude"] = { param.colorAmplitud_.x,param.colorAmplitud_.y,param.colorAmplitud_.z,param.colorAmplitud_.w };
 	mJson["sphere"] = { param.sphere_.x,param.sphere_.y,param.sphere_.z,param.sphere_.w };
-	//mJson["sphereParameter_"] = { param.sphereParameter_.x,param.sphereParameter_.y,param.sphereParameter_.z,param.sphereParameter_.w };
 
-	using namespace std;
-	ofstream writingFile;
-	string filepath = "./Resources/JsonParameters/ParticleEmitParameters/" + filename;
-	writingFile.open(filepath, ios::out);
-	writingFile << mJson.dump() << endl;
+	std::ofstream writingFile;
+	std::string filepath = "./Resources/JsonParameters/ParticleEmitParameters/" + filename;
+	writingFile.open(filepath, std::ios::out);
+	writingFile << mJson.dump() << std::endl;
 	writingFile.close();
 }
