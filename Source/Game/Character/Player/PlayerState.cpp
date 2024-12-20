@@ -16,6 +16,8 @@
 #include "AudioManager.h"
 #include "Item/Barrel.h"
 
+#include "Projectile/HailBolt.h"
+
 // ----- AddForceData -----
 namespace PlayerState
 {
@@ -5408,11 +5410,38 @@ namespace PlayerState
 
         // アニメーション再生
         PlayAnimation();
+
+        // 変数初期化
+        isCreateHailBolt_ = false;
     }
 
     // ----- 更新 -----
     void MageAttack1_0::Update(const float& elapsedTime)
     {
+        // 先行入力判定
+        if (CheckNextInput()) return;
+
+        // ルートモーションの設定
+        if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+        {
+            owner_->SetUseRootMotion(true);
+        }
+
+        // 魔法の弾発射
+        if (owner_->GetAnimationSeconds() > hailBoltLaunchFrame_ && isCreateHailBolt_ == false)
+        {
+            const DirectX::XMFLOAT3 emitPosition = owner_->GetJointPosition("index_03_l");
+            const DirectX::XMFLOAT3 fingerPosition = owner_->GetJointPosition("index_02_l");
+            DirectX::XMFLOAT3 moveDirection = emitPosition - fingerPosition;
+            moveDirection.y = 0.0f;
+            moveDirection = XMFloat3Normalize(moveDirection);
+
+            HailBolt* hailBolt = new HailBolt();
+            hailBolt->Launch(emitPosition, moveDirection, hailBoltMoveSpeed_);
+
+            isCreateHailBolt_ = true;
+        }
+
         // 攻撃終了判定
         if (owner_->IsPlayAnimation() == false)
         {
@@ -5424,11 +5453,31 @@ namespace PlayerState
     // ----- 終了化 -----
     void MageAttack1_0::Finalize()
     {
+        // ルートモーション使用終了
+        owner_->SetUseRootMotion(false);
     }
 
     // ----- ImGui用 -----
     void MageAttack1_0::DrawDebug()
     {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- HailBolt ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("LaunchFrame", &hailBoltLaunchFrame_, 0.01f);
+                ImGui::DragFloat("MoveSpeed", &hailBoltMoveSpeed_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- NextInput ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("Attack1_1ChangeFrame", &attack1_1ChangeFrame_, 0.01f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
     }
 
     // ----- アニメーション再生 -----
@@ -5438,6 +5487,25 @@ namespace PlayerState
 
         owner_->SetTransitionTime(0.15f);
     }
+
+    // ----- 先行入力判定 -----
+    const bool MageAttack1_0::CheckNextInput()
+    {
+        if (owner_->IsMageAttack1KeyDown())
+        {
+            owner_->SetNextInput(Player::NextInput::MageAttack1);
+        }
+
+        const float curretAnimationSeconds = owner_->GetAnimationSeconds();
+
+        if (owner_->GetNextInput() == Player::NextInput::MageAttack1 && curretAnimationSeconds > attack1_1ChangeFrame_)
+        {
+            owner_->ChangeState(Player::STATE::MageAttack1_1);
+            return true;
+        }
+
+        return false;
+    }
 }
 
 // ----- 攻撃1_1 -----
@@ -5446,55 +5514,203 @@ namespace PlayerState
     // ----- 初期化 -----
     void MageAttack1_1::Initialize()
     {
+        // フラグをリセット
+        owner_->ResetFlags();
+
+        // アニメーション再生
+        PlayAnimation();
     }
 
     // ----- 更新 -----
     void MageAttack1_1::Update(const float& elapsedTime)
     {
+        // 先行入力判定
+        if (CheckNextInput()) return;
+
+        // ルートモーションの設定
+        if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+        {
+            owner_->SetUseRootMotion(true);
+        }
+
+        // 攻撃終了判定
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::MageIdle);
+            return;
+        }
     }
 
     // ----- 終了化 -----
     void MageAttack1_1::Finalize()
     {
+        // ルートモーション使用終了
+        owner_->SetUseRootMotion(false);
     }
 
     // ----- ImGui用 -----
     void MageAttack1_1::DrawDebug()
     {
     }
+
+    // ----- アニメーション再生 -----
+    void MageAttack1_1::PlayAnimation()
+    {
+        owner_->PlayBlendAnimation(Player::Animation::MageAttack1_1, false, playAnimationSpeed_, animationStartFrame_);
+
+        owner_->SetTransitionTime(0.15f);
+    }
+
+    // ----- 先行入力判定 -----
+    const bool MageAttack1_1::CheckNextInput()
+    {
+        if (owner_->IsMageAttack1KeyDown())
+        {
+            owner_->SetNextInput(Player::NextInput::MageAttack1);
+        }
+
+        const float curretAnimationSeconds = owner_->GetAnimationSeconds();
+
+        if (owner_->GetNextInput() == Player::NextInput::MageAttack1 && curretAnimationSeconds > attack1_2ChangeFrame_)
+        {
+            owner_->ChangeState(Player::STATE::MageAttack1_2);
+            return true;
+        }
+
+        return false;
+    }
 }
 
 // ----- 攻撃1_2 -----
 namespace PlayerState
 {
+    // ----- 初期化 -----
     void MageAttack1_2::Initialize()
     {
+        // フラグをリセット
+        owner_->ResetFlags();
+
+        // アニメーション再生
+        PlayAnimation();
     }
+
+    // ----- 更新 -----
     void MageAttack1_2::Update(const float& elapsedTime)
     {
+        // 先行入力判定
+        if (CheckNextInput()) return;
+
+        // ルートモーションの設定
+        if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+        {
+            owner_->SetUseRootMotion(true);
+        }
+
+        // 攻撃終了判定
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::MageIdle);
+            return;
+        }
     }
+
+    // ----- 終了化 -----
     void MageAttack1_2::Finalize()
     {
+        // ルートモーション使用終了
+        owner_->SetUseRootMotion(false);
     }
+
+    // ----- ImGui用 -----
     void MageAttack1_2::DrawDebug()
     {
+    }
+    
+    // ----- アニメーション再生 -----
+    void MageAttack1_2::PlayAnimation()
+    {
+        owner_->PlayBlendAnimation(Player::Animation::MageAttack1_2, false, playAnimationSpeed_, animationStartFrame_);
+
+        owner_->SetTransitionTime(0.15f);
+    }
+
+    // ----- 先行入力判定 -----
+    const bool MageAttack1_2::CheckNextInput()
+    {
+        if (owner_->IsMageAttack1KeyDown())
+        {
+            owner_->SetNextInput(Player::NextInput::MageAttack1);
+        }
+
+        const float curretAnimationSeconds = owner_->GetAnimationSeconds();
+
+        if (owner_->GetNextInput() == Player::NextInput::MageAttack1 && curretAnimationSeconds > attack1_3ChangeFrame_)
+        {
+            owner_->ChangeState(Player::STATE::MageAttack1_3);
+            return true;
+        }
+
+        return false;
     }
 }
 
 // ----- 攻撃1_3 -----
 namespace PlayerState
 {
+    // ----- 初期化 -----
     void MageAttack1_3::Initialize()
     {
+        // フラグをリセット
+        owner_->ResetFlags();
+
+        // アニメーション再生
+        PlayAnimation();
     }
+
+    // ----- 更新 -----
     void MageAttack1_3::Update(const float& elapsedTime)
     {
+        // 先行入力判定
+        if (CheckNextInput()) return;
+
+        // ルートモーションの設定
+        if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+        {
+            owner_->SetUseRootMotion(true);
+        }
+
+        // 攻撃終了判定
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::MageIdle);
+            return;
+        }
     }
+
+    // ----- 終了化 -----
     void MageAttack1_3::Finalize()
     {
+        // ルートモーション使用終了
+        owner_->SetUseRootMotion(false);
     }
+
+    // ----- ImGui用 -----
     void MageAttack1_3::DrawDebug()
     {
+    }
+
+    // ----- アニメーション再生 -----
+    void MageAttack1_3::PlayAnimation()
+    {
+        owner_->PlayBlendAnimation(Player::Animation::MageAttack1_3, false, playAnimationSpeed_, animationStartFrame_);
+
+        owner_->SetTransitionTime(0.15f);
+    }
+
+    // ----- 先行入力判定 -----
+    const bool MageAttack1_3::CheckNextInput()
+    {
+        return false;
     }
 }
 

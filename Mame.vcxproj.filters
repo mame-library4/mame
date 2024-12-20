@@ -308,6 +308,9 @@
     <ClCompile Include="Source\Game\UI\UISword.cpp">
       <Filter>Mame\Game\UI\UISword</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\HailBolt.cpp">
+      <Filter>Mame\Game\Object\Projectile\HailBolt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -651,6 +654,9 @@
     <ClInclude Include="Source\Game\UI\UISword.h">
       <Filter>Mame\Game\UI\UISword</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\HailBolt.h">
+      <Filter>Mame\Game\Object\Projectile\HailBolt</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -946,6 +952,9 @@
     </Filter>
     <Filter Include="External\Nlohmann">
       <UniqueIdentifier>{2a907d71-c396-40bc-ac28-5ec77423cf83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\Object\Projectile\HailBolt">
+      <UniqueIdentifier>{3312a726-6fd5-4ca1-a363-5e336210166f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

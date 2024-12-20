@@ -227,6 +227,7 @@
     <ClCompile Include="Source\Game\Item\ItemManager.cpp" />
     <ClCompile Include="Source\Game\Object.cpp" />
     <ClCompile Include="Source\Game\Projectile\Fireball.cpp" />
+    <ClCompile Include="Source\Game\Projectile\HailBolt.cpp" />
     <ClCompile Include="Source\Game\Projectile\Projectile.cpp" />
     <ClCompile Include="Source\Game\Projectile\ProjectileManager.cpp" />
     <ClCompile Include="Source\Game\Projectile\Rock.cpp" />
@@ -339,6 +340,7 @@
     <ClInclude Include="Source\Game\Item\ItemManager.h" />
     <ClInclude Include="Source\Game\Object.h" />
     <ClInclude Include="Source\Game\Projectile\Fireball.h" />
+    <ClInclude Include="Source\Game\Projectile\HailBolt.h" />
     <ClInclude Include="Source\Game\Projectile\Projectile.h" />
     <ClInclude Include="Source\Game\Projectile\ProjectileManager.h" />
     <ClInclude Include="Source\Game\Projectile\Rock.h" />

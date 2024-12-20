@@ -931,10 +931,17 @@ namespace PlayerState
     private:
         void PlayAnimation(); // アニメーション再生
 
+        [[nodiscard]] const bool CheckNextInput(); // 先行入力判定
+
     private:
         float playAniamtionSpeed_   = 1.0f;
         float animationStartFrame_  = 0.0f;
 
+        float   hailBoltLaunchFrame_    = 0.38f;
+        float   hailBoltMoveSpeed_      = 30.0f;
+        bool    isCreateHailBolt_       = false;
+
+        float attack1_1ChangeFrame_ = 0.5f;
     };
 
     // ----- 攻撃1_1 -----
@@ -949,6 +956,16 @@ namespace PlayerState
         void Finalize()                         override;
         void DrawDebug()                        override;
 
+    private:
+        void PlayAnimation(); // アニメーション再生
+
+        [[nodiscard]] const bool CheckNextInput(); // 先行入力判定
+
+    private:
+        float playAnimationSpeed_   = 1.0f;
+        float animationStartFrame_  = 0.0f;
+
+        float attack1_2ChangeFrame_ = 0.6f;
     };
 
     // ----- 攻撃1_2 -----
@@ -963,6 +980,16 @@ namespace PlayerState
         void Finalize()                         override;
         void DrawDebug()                        override;
 
+    private:
+        void PlayAnimation(); // アニメーション再生
+
+        [[nodiscard]] const bool CheckNextInput(); // 先行入力判定
+
+    private:
+        float playAnimationSpeed_ = 1.0f;
+        float animationStartFrame_ = 0.0f;
+
+        float attack1_3ChangeFrame_ = 1.0f;
     };
 
     // ----- 攻撃1_0 -----
@@ -977,5 +1004,13 @@ namespace PlayerState
         void Finalize()                         override;
         void DrawDebug()                        override;
 
+    private:
+        void PlayAnimation(); // アニメーション再生
+
+        [[nodiscard]] const bool CheckNextInput(); // 先行入力判定
+
+    private:
+        float playAnimationSpeed_ = 1.0f;
+        float animationStartFrame_ = 0.0f;
     };
 }

@@ -60,6 +60,9 @@ public:// --- 定数 ---
         MageAttack0_0,
         MageAttack0_1,
         MageAttack1_0,
+        MageAttack1_1,
+        MageAttack1_2,
+        MageAttack1_3,
     };
 
     enum class Animation
@@ -128,6 +131,7 @@ public:// --- 定数 ---
         Dodge,          // 回避
         Counter,        // カウンター
         MageAttack0,
+        MageAttack1,
     };
 
     // 攻撃の種類
