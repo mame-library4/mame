@@ -868,4 +868,49 @@ namespace PlayerState
         float             highDamageMaxIntensity_   = 1.5f;
         bool              isHighDamage_             = false;
     };
+
+    // ----- 攻撃0_0 -----
+    class MageAttack0_0 : public State<Player>
+    {
+    public:
+        MageAttack0_0(Player* player) : State(player, "MageAttack0_0") {}
+        ~MageAttack0_0() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+
+    private:
+        void PlayAnimation(); // アニメーション再生
+        [[nodiscard]] const bool CheckNextInput(); // 先行入力判定
+
+    private:
+        float playAnimationSpeed_   = 1.0f;
+        float animationStartFrame_  = 0.65f;
+        
+        float attack0_1ChangeFrame_ = 0.9f;
+    };
+
+    // ----- 攻撃0_1 -----
+    class MageAttack0_1 : public State<Player>
+    {
+    public:
+        MageAttack0_1(Player* player) : State(player, "MageAttack0_1") {}
+        ~MageAttack0_1() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+
+    private:
+        void PlayAnimation(); // アニメーション再生
+        [[nodiscard]] const bool CheckNextInput(); // 先行入力判定
+
+    private:
+        float playAnimationSpeed_ = 1.0f;
+        float animationStartFrame_ = 0.0f;
+        float transitionAttack0_0_ = 0.1f;
+    };
 }

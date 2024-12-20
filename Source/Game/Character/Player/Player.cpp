@@ -45,10 +45,12 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::ChargeAttackState(this));      // 兜割り
         
         // ------------ Mage ------------
-        GetStateMachine()->RegisterState(new PlayerState::MageIdleState(this));      // 兜割り
-        GetStateMachine()->RegisterState(new PlayerState::MageRunState(this));      // 兜割り
-        GetStateMachine()->RegisterState(new PlayerState::MageDodgeState(this));      // 兜割り
-        GetStateMachine()->RegisterState(new PlayerState::MageDamageState(this));      // 兜割り
+        GetStateMachine()->RegisterState(new PlayerState::MageIdleState(this));   // 待機
+        GetStateMachine()->RegisterState(new PlayerState::MageRunState(this));    // 走り
+        GetStateMachine()->RegisterState(new PlayerState::MageDodgeState(this));  // 回避
+        GetStateMachine()->RegisterState(new PlayerState::MageDamageState(this)); // ダメージ
+        GetStateMachine()->RegisterState(new PlayerState::MageAttack0_0(this));   // 攻撃0_0
+        GetStateMachine()->RegisterState(new PlayerState::MageAttack0_1(this));   // 攻撃0_1
 
         // 一番初めのステートを設定する
         GetStateMachine()->SetState(static_cast<UINT>(STATE::Idle));

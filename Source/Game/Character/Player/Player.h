@@ -57,6 +57,8 @@ public:// --- 定数 ---
         MageRun,
         MageDodge,
         MageDamage,
+        MageAttack0_0,
+        MageAttack0_1,
     };
 
     enum class Animation
@@ -97,18 +99,24 @@ public:// --- 定数 ---
         ChargeStart,    // チャージ
         ChargeLoop,     // チャージ
 
-        // Mage
-        MageIdle,
-        MageRun,
-        MageRunFast,
-        MageRollFront,
-        MageRollBack,
-        MageRollRight,
-        MageRollLeft,
-        MageDodgeFront,
-        MageDamage,
-        MageGetUp,
-
+        // ----- Mage -----
+        MageIdle,       // 待機
+        MageRun,        // 走り
+        MageRunFast,    // 
+        MageRollFront,  // 回避前
+        MageRollBack,   // 回避後ろ
+        MageRollRight,  // 回避右
+        MageRollLeft,   // 回避左
+        MageDodgeFront, // 
+        MageDamage,     // ダメージ
+        MageGetUp,      // 起き上がり
+        MageAttack0_0,
+        MageAttack0_1,
+        MageAttackSkill,
+        MageAttack1_0,
+        MageAttack1_1,
+        MageAttack1_2,
+        MageAttack1_3,
     };
 
     // 先行入力の種類
@@ -116,8 +124,9 @@ public:// --- 定数 ---
     {
         None,           // 先行入力なし
         ComboAttack0,   // コンボ攻撃
-        Dodge,      // 回避
+        Dodge,          // 回避
         Counter,        // カウンター
+        MageAttack0,
     };
 
     // 攻撃の種類
@@ -312,6 +321,7 @@ public:// --- 取得・設定 ---
 
     // ---------- キー入力 ----------
     [[nodiscard]] const bool IsComboAttack0KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
+    [[nodiscard]] const bool IsMageAttack0KeyDown()  const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
     [[nodiscard]] const bool IsDodgeKeyDown()        const;
     [[nodiscard]] const bool IsCounterStanceKey()    const;
     [[nodiscard]] const bool IsGetUpKeyDown()        const;
