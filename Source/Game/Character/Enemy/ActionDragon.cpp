@@ -10,7 +10,6 @@
 
 #include "Projectile/ProjectileManager.h"
 #include "Projectile/Fireball.h"
-#include "Projectile/Rock.h"
 
 #include "sprite.h"
 #include "Application.h"
@@ -2685,96 +2684,6 @@ namespace ActionDragon
 #pragma endregion ---------- 攻撃 ----------
 
 #pragma region ---------- 未完成 ----------
-// ----- Meteor -----
-namespace ActionDragon
-{
-    const ActionBase::State MeteorAction::Run(const float& elapsedTime)
-    {
-        switch (owner_->GetStep())
-        {
-        case 0:
-            // アニメーション再生
-            PlayAnimation();
-
-            meteorParticle_ = new MeteorParticle();
-
-            owner_->SetStep(1);
-
-            break;
-        case 1:
-
-            // アニメーションの速度を調整
-            UpdateAnimationSpeed();
-
-            if (owner_->GetAnimationSeconds() > 1.4f && meteorParticle_->GetIsPlayMeteorGlowEffect() == false)
-            {
-                DirectX::XMFLOAT3 targetPosition = PlayerManager::Instance().GetTransform()->GetPosition();
-                meteorParticle_->PlayMeteorGlowEffect(targetPosition);
-                
-                targetPosition.y = 0.0f;
-                DirectX::XMFLOAT3 createPosition = owner_->GetTransform()->GetPosition();
-                createPosition.y = 30.0f;
-                Rock* rock = new Rock(createPosition, targetPosition);
-            }
-
-            if (owner_->IsPlayAnimation() == false)
-            {
-                owner_->SetStep(0);
-                return ActionBase::State::Complete;
-            }
-
-            break;
-        }
-
-        return ActionBase::State::Run;
-    }
-
-    // ----- ImGui用 -----
-    void MeteorAction::DrawDebug()
-    {
-        if (ImGui::TreeNodeEx("Meteor", ImGuiTreeNodeFlags_Framed))
-        {
-            if (ImGui::TreeNodeEx("---------- Slow ----------", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                ImGui::DragFloat("SlowSpeed", &slowAnimationSpeed_, 0.01f, 0.0f, 1.0f);
-
-                ImGui::TreePop();
-            }
-
-            ImGui::TreePop();
-        }
-    }
-
-    // ----- アニメーション再生 -----
-    void MeteorAction::PlayAnimation()
-    {
-        owner_->PlayBlendAnimation(Enemy::DragonAnimation::FrontRoar, false);
-    }
-
-    // ----- アニメーションの速度を調整 -----
-    void MeteorAction::UpdateAnimationSpeed()
-    {
-        const float animationSeconds = owner_->GetAnimationSeconds();
-        float animationSpeed = 1.0f;
-
-        if (animationSeconds > 1.5f)
-        {
-            animationSpeed = slowAnimationSpeed_;
-        }
-
-        owner_->SetAnimationSpeed(animationSpeed);
-    }
-
-    // ----- 終了化 -----
-    void MeteorAction::Finalize()
-    {
-        if (meteorParticle_ != nullptr)
-        {
-            ParticleManager::Instance().Remove(meteorParticle_);
-            meteorParticle_ = nullptr;
-        }
-    }
-}
 
 // ----- FireBreathAction -----
 namespace ActionDragon

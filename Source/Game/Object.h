@@ -9,6 +9,7 @@ public:
 
     void Update(const float& elapsedTime);
     void Render(ID3D11PixelShader* psShader = nullptr);
+    void Render(const DirectX::XMFLOAT4X4 world, ID3D11PixelShader* psShader = nullptr);
     void CastShadow();
     void DrawDebug();
 
@@ -62,6 +63,12 @@ public:
     void SetOutlineColor(const DirectX::XMFLOAT4& color) { gltfModel_.SetOutlineColor(color); }
     void SetOutlineSize(const float& size) { gltfModel_.SetOutlineSize(size); }
     void SetIsOutlineActive(const bool& flag) { gltfModel_.SetIsOutLineActive(flag); }
+
+    // ---------- Emissive ----------
+    void SetEmissiveColor(const DirectX::XMFLOAT3& color) { gltfModel_.SetEmissiveColor(color); }
+
+    void SetScrollDirection(const DirectX::XMFLOAT2& direction) { gltfModel_.SetScrollDirection(direction); }
+    void AddScrollTimer(const float& elapsedTime) { gltfModel_.AddScrollTimer(elapsedTime); }
 
 private:
     GltfModel   gltfModel_;

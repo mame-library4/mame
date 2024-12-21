@@ -62,9 +62,11 @@ void ProjectileManager::Update(const float& elapsedTime)
 // ----- •`‰æ -----
 void ProjectileManager::Render(ID3D11PixelShader* psShader)
 {
+    const int currentDrawType = psShader == nullptr ? static_cast<int>(DrawType::Normal) : static_cast<int>(DrawType::GBuffer);
+
     for (Projectile*& projectile : projectiles_)
     {
-        projectile->Render(psShader);
+        if (projectile->GetDrawType() == currentDrawType) projectile->Render(psShader);
     }
 }
 

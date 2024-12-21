@@ -228,9 +228,9 @@
     <ClCompile Include="Source\Game\Object.cpp" />
     <ClCompile Include="Source\Game\Projectile\Fireball.cpp" />
     <ClCompile Include="Source\Game\Projectile\HailBolt.cpp" />
+    <ClCompile Include="Source\Game\Projectile\IceArrow.cpp" />
     <ClCompile Include="Source\Game\Projectile\Projectile.cpp" />
     <ClCompile Include="Source\Game\Projectile\ProjectileManager.cpp" />
-    <ClCompile Include="Source\Game\Projectile\Rock.cpp" />
     <ClCompile Include="Source\Game\Stage\Stage.cpp" />
     <ClCompile Include="Source\Game\Stage\StageNormal.cpp" />
     <ClCompile Include="Source\Game\Sword\Sword.cpp" />
@@ -341,9 +341,9 @@
     <ClInclude Include="Source\Game\Object.h" />
     <ClInclude Include="Source\Game\Projectile\Fireball.h" />
     <ClInclude Include="Source\Game\Projectile\HailBolt.h" />
+    <ClInclude Include="Source\Game\Projectile\IceArrow.h" />
     <ClInclude Include="Source\Game\Projectile\Projectile.h" />
     <ClInclude Include="Source\Game\Projectile\ProjectileManager.h" />
-    <ClInclude Include="Source\Game\Projectile\Rock.h" />
     <ClInclude Include="Source\Game\Stage\Stage.h" />
     <ClInclude Include="Source\Game\Stage\StageNormal.h" />
     <ClInclude Include="Source\Game\Sword\Sword.h" />
@@ -705,6 +705,12 @@
     <FxCompile Include="Source\Shader\gltfModelVs.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\IceArrowPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="Source\Shader\LavaCrawlerGS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>

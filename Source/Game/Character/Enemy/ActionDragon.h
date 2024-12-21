@@ -547,25 +547,6 @@ namespace ActionDragon
 
 
 #pragma region ---------- ñ¢äÆê¨ ----------
-    // ----- Meteor -----
-    class MeteorAction : public ActionBase
-    {
-    public:
-        MeteorAction(Enemy* owner) : ActionBase(owner) {}
-        const ActionBase::State Run(const float& elapsedTime) override;
-        void DrawDebug()                                      override;
-
-    private:
-        void PlayAnimation();
-        void UpdateAnimationSpeed();
-        void Finalize();
-
-    private:
-        MeteorParticle* meteorParticle_ = nullptr;
-
-        float slowAnimationSpeed_ = 0.5f;
-    };
-
     // ----- FireBreath -----
     class FireBreathAction : public ActionBase
     {

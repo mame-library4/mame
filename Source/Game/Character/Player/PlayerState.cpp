@@ -4586,6 +4586,13 @@ namespace PlayerState
 // ----- 走り -----
 namespace PlayerState
 {
+    // ----- コンストラクタ -----
+    MageRunState::MageRunState(Player* player)
+        : State(player, "MageRunState")
+    {
+        footPrints_.SetEmitParameter("FootPrints");
+    }
+
     // ----- 初期化 -----
     void MageRunState::Initialize()
     {
@@ -4597,6 +4604,9 @@ namespace PlayerState
 
         // 最大速度を設定
         owner_->SetMaxSpeed(5.0f);
+
+        // 変数初期化
+        isLeftFootPrintEffectActive_ = true;
     }
 
     // ----- 更新 -----
@@ -4610,6 +4620,9 @@ namespace PlayerState
 
         // ダッシュ処理
         UpdateDash(elapsedTime);
+
+        // エフェクト処理
+        GenerateFootPrintsEffect();
     }
 
     // ----- 終了化 -----
@@ -4628,6 +4641,7 @@ namespace PlayerState
             if (ImGui::TreeNodeEx("---------- Animation ----------"))
             {
                 ImGui::DragFloat("TransitionDodge", &transitionDodge_, 0.01f);
+                ImGui::DragFloat("TransitionAttack1_0", &transitionAttack1_0_, 0.01f);
 
                 ImGui::TreePop();
             }
@@ -4649,6 +4663,11 @@ namespace PlayerState
         {
             transitionTime = transitionDodge_;
         }
+        // 攻撃1_0からの遷移
+        else if (animationIndex == Player::Animation::MageAttack1_0)
+        {
+            transitionTime = transitionAttack1_0_;
+        }
         owner_->SetTransitionTime(transitionTime);
 
         owner_->PlayBlendAnimation(Player::Animation::MageRun, true);
@@ -4661,6 +4680,13 @@ namespace PlayerState
         if (owner_->IsDodgeKeyDown())
         {
             owner_->ChangeState(Player::STATE::MageDodge);
+            return true;
+        }
+
+        // ----- 攻撃1_0に遷移 -----
+        if (owner_->IsMageAttack1KeyDown())
+        {
+            owner_->ChangeState(Player::STATE::MageAttack1_0);
             return true;
         }
 
@@ -4717,6 +4743,38 @@ namespace PlayerState
             owner_->SetMaxSpeed(5.0f);
 
             owner_->SetIsDash(false);
+        }
+    }
+
+    // ----- 足跡のエフェクト生成 -----
+    void MageRunState::GenerateFootPrintsEffect()
+    {
+        const float currentAnimationSeconds = owner_->GetAnimationSeconds();
+
+        // 両足エフェクトを出し終わっている
+        if (isLeftFootPrintEffectActive_ && currentAnimationSeconds >= rightFootPrintFrame_) return;
+
+        // 左足にエフェクトを生成
+        if (isLeftFootPrintEffectActive_ && currentAnimationSeconds >= leftFootPrintFrame_)
+        {
+            footPrints_.SetEmitParameter("FootPrints");
+
+            footPrints_.SetEmitPosition(owner_->GetJointPosition("ball_l"));
+            footPrints_.EmitParticle();
+
+            isLeftFootPrintEffectActive_ = false;
+            return;
+        }
+
+        // 右足にエフェクトを生成
+        if (currentAnimationSeconds >= rightFootPrintFrame_)
+        {
+            footPrints_.SetEmitParameter("FootPrints");
+
+            footPrints_.SetEmitPosition(owner_->GetJointPosition("ball_r"));
+            footPrints_.EmitParticle();
+
+            isLeftFootPrintEffectActive_ = true;
         }
     }
 }
@@ -5426,18 +5484,21 @@ namespace PlayerState
         {
             owner_->SetUseRootMotion(true);
         }
+        
+        // 旋回処理
+        Turn(elapsedTime);
 
         // 魔法の弾発射
         if (owner_->GetAnimationSeconds() > hailBoltLaunchFrame_ && isCreateHailBolt_ == false)
         {
-            const DirectX::XMFLOAT3 emitPosition = owner_->GetJointPosition("index_03_l");
-            const DirectX::XMFLOAT3 fingerPosition = owner_->GetJointPosition("index_02_l");
-            DirectX::XMFLOAT3 moveDirection = emitPosition - fingerPosition;
-            moveDirection.y = 0.0f;
-            moveDirection = XMFloat3Normalize(moveDirection);
-
             HailBolt* hailBolt = new HailBolt();
-            hailBolt->Launch(emitPosition, moveDirection, hailBoltMoveSpeed_);
+            hailBolt->Launch(owner_->GetJointPosition("index_03_l"), owner_->GetTransform()->CalcForward(), hailBoltMoveSpeed_);
+
+            // カメラシェイク
+            Camera::Instance().ScreenVibrate(cameraShakePower_, cameraShakeTime_);
+
+            // コントローラー振動
+            Input::Instance().GetGamePad().Vibration(gamePadVibrationTime_, gamePadVibrationPower_.x, gamePadVibrationPower_.y);
 
             isCreateHailBolt_ = true;
         }
@@ -5462,6 +5523,20 @@ namespace PlayerState
     {
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
+            if (ImGui::TreeNodeEx("---------- Turn ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("TurnEndFrame", &turnEndFrame_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- NextInput ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("RunStateChangeFrame", &runStateChangeFrame_, 0.01f);
+                ImGui::DragFloat("DodgeStateChangeFrame", &dodgeStateChangeFrame_, 0.01f);
+                ImGui::DragFloat("Attack1_1ChangeFrame", &attack1_1ChangeFrame_, 0.01f);
+
+                ImGui::TreePop();
+            }
             if (ImGui::TreeNodeEx("---------- HailBolt ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::DragFloat("LaunchFrame", &hailBoltLaunchFrame_, 0.01f);
@@ -5469,9 +5544,17 @@ namespace PlayerState
 
                 ImGui::TreePop();
             }
-            if (ImGui::TreeNodeEx("---------- NextInput ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::TreeNodeEx("---------- GamePadVibration ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                ImGui::DragFloat("Attack1_1ChangeFrame", &attack1_1ChangeFrame_, 0.01f);
+                ImGui::DragFloat2("Power", &gamePadVibrationPower_.x, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("Time", &gamePadVibrationTime_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- CameraShake ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("Power", &cameraShakePower_, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("Time", &cameraShakeTime_, 0.01f);
 
                 ImGui::TreePop();
             }
@@ -5491,20 +5574,84 @@ namespace PlayerState
     // ----- 先行入力判定 -----
     const bool MageAttack1_0::CheckNextInput()
     {
+        if (owner_->IsDodgeKeyDown())
+        {
+            owner_->SetNextInput(Player::NextInput::Dodge);
+        }
+
         if (owner_->IsMageAttack1KeyDown())
         {
             owner_->SetNextInput(Player::NextInput::MageAttack1);
         }
 
         const float curretAnimationSeconds = owner_->GetAnimationSeconds();
-
-        if (owner_->GetNextInput() == Player::NextInput::MageAttack1 && curretAnimationSeconds > attack1_1ChangeFrame_)
+                
+        // ----- 回避に遷移 -----
+        if(owner_->GetNextInput() == Player::NextInput::Dodge && curretAnimationSeconds >= dodgeStateChangeFrame_)
+        {
+            owner_->ChangeState(Player::STATE::MageDodge);
+            return true;
+        }
+        // ----- 攻撃1_1に遷移 -----
+        else if (owner_->GetNextInput() == Player::NextInput::MageAttack1 && curretAnimationSeconds >= attack1_1ChangeFrame_)
         {
             owner_->ChangeState(Player::STATE::MageAttack1_1);
             return true;
-        }
+        }        
+        
 
+        // ----- 走りに遷移 -----
+        if (curretAnimationSeconds >= runStateChangeFrame_)
+        {
+            const float aLX = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLY = Input::Instance().GetGamePad().GetAxisLY();
+            // 移動入力がない
+            if (aLX == 0.0f && aLY == 0.0f) return false;
+
+            owner_->ChangeState(Player::STATE::MageRun);
+            return true;
+        }
+        // =============================================
+        // ========== これより下に何も書かない ===========
+        // =============================================
         return false;
+    }
+
+    // ----- 旋回処理 -----
+    void MageAttack1_0::Turn(const float& elapsedTime)
+    {
+        const float currentAnimationSeconds = owner_->GetAnimationSeconds();
+
+        // 旋回処理を行わない
+        if (currentAnimationSeconds > turnEndFrame_) return;
+
+        const float aLX = Input::Instance().GetGamePad().GetAxisLX();
+        const float aLY = Input::Instance().GetGamePad().GetAxisLY();
+        // 入力がないので旋回しない
+        if (aLX == 0.0f && aLY == 0.0f) return;
+
+        DirectX::XMFLOAT2 ownerForward = XMFloat2Normalize({ owner_->GetTransform()->CalcForward().x, owner_->GetTransform()->CalcForward().z });
+        DirectX::XMFLOAT2 leftStick = Camera::Instance().ConvertTo2DVectorFromCamera(DirectX::XMFLOAT2(aLX, aLY));
+
+        // 回転角度を算出
+        const float angle = acosf(std::clamp(XMFloat2Dot(leftStick, ownerForward), -1.0f, 1.0f));
+
+        // 回転角度が微量なので旋回しない
+        if (angle < DirectX::XMConvertToRadians(1)) return;
+
+        //どっち方向に回転するか
+        float forwardCross = XMFloat2Cross(leftStick, ownerForward);
+
+        const float rotationY = angle * owner_->GetRotateSpeed() * elapsedTime;
+
+        if (forwardCross > 0)
+        {
+            owner_->GetTransform()->AddRotationY(-rotationY);
+        }
+        else
+        {
+            owner_->GetTransform()->AddRotationY(rotationY);
+        }
     }
 }
 
@@ -5584,6 +5731,19 @@ namespace PlayerState
 // ----- 攻撃1_2 -----
 namespace PlayerState
 {
+    // ----- コンストラクタ -----
+    MageAttack1_2::MageAttack1_2(Player* player)
+        : State(player, "MageAttack1_2")
+    {
+        iceArrow_ = new IceArrow();
+    }
+
+    // ----- デストラクタ -----
+    MageAttack1_2::~MageAttack1_2()
+    {
+        iceArrow_ = nullptr;
+    }
+
     // ----- 初期化 -----
     void MageAttack1_2::Initialize()
     {
@@ -5611,6 +5771,15 @@ namespace PlayerState
         {
             owner_->ChangeState(Player::STATE::MageIdle);
             return;
+        }
+
+        if (owner_->GetAnimationSeconds() > 0.7f && iceArrow_->GetIsDrawActive())
+        {
+            iceArrow_->SetIsDrawActive(false);
+        }
+        else if (owner_->GetAnimationSeconds() < 0.7f && owner_->GetAnimationSeconds() > 0.565f && iceArrow_->GetIsDrawActive() == false)
+        {
+            iceArrow_->SetIsDrawActive(true);
         }
     }
 

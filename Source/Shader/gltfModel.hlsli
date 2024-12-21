@@ -91,5 +91,6 @@ cbuffer EffectConstants : register(b5)
     float4  emissiveColor_;
     float4  outlineColor_;
     float   outlineSize_;    
-    float3 dummy_;
+    float2  scrollDirection_;
+    float   scrollTimer_;
 }

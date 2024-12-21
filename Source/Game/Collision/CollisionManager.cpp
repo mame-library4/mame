@@ -24,7 +24,7 @@ void CollisionManager::Update(const float& elapsedTime)
     UpdatePlayerVsEnemy();
 
     // Player ‚Æ Projectile ‚Ì”»’è
-    UpdatePlayerVsProjectile();
+    //UpdatePlayerVsProjectile();
 
     // ƒAƒCƒeƒ€ ‚Æ ZZ ‚Ì”»’è
     UpdateItemVs();

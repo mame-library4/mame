@@ -713,6 +713,9 @@ void GltfModel::DrawDebug()
     ImGui::DragFloat("OutlineSize", &effectConstants_->GetData()->outlineSize_, 0.01f);
     ImGui::Checkbox("OutlineActive", &isOutlineActive_);
 
+    ImGui::DragFloat2("ScrollDirection", &effectConstants_->GetData()->scrollDirection_.x, 0.01f, -1.0f, 1.0f);
+    ImGui::DragFloat("ScrollSpeed", &effectConstants_->GetData()->scrollTimer_, 0.01f);
+
     if (ImGui::TreeNode("Animation"))
     {
         ImGui::DragInt("AnimationIndex", &animationIndex_);

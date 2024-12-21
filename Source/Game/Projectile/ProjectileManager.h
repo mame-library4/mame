@@ -9,7 +9,14 @@ class ProjectileManager
 private:
     ProjectileManager() {}
     ~ProjectileManager() {}
-    
+
+public:
+    enum class DrawType
+    {
+        Normal,
+        GBuffer,
+    };
+
 public:
     static ProjectileManager& Instance()
     {
@@ -21,6 +28,7 @@ public:
     void Finalize();                                    // 終了化
     void Update(const float& elapsedTime);              // 更新
     void Render(ID3D11PixelShader* psShader = nullptr); // 描画
+
     void DrawDebug();                                   // ImGui用
     void DebugRender(DebugRenderer* debugRenderer);
 

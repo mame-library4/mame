@@ -5,13 +5,13 @@
 class Projectile : public Object
 {
 public:
-    Projectile(const std::string filename, const float& scaleFactor, const std::string& name = "");
+    Projectile(const std::string filename, const float& scaleFactor, const std::string& name = "", const int drawType = 0);
     virtual ~Projectile() {}
 
-    virtual void Initialize()                                   = 0;
-    virtual void Finalize()                                     = 0;
-    virtual void Update(const float& elapsedTime)               = 0;
-    virtual void Render(ID3D11PixelShader* psShader = nullptr)  = 0;
+    virtual void Initialize() = 0;
+    virtual void Finalize() = 0;
+    virtual void Update(const float& elapsedTime) = 0;
+    virtual void Render(ID3D11PixelShader* psShader = nullptr) = 0;
     virtual void DrawDebug();
 
     virtual void OnHit() = 0;
@@ -20,7 +20,7 @@ public:// [Get, Set] Function
     // ----- Damage -----
     [[nodiscard]] const float GetDamage() const { return damage_; }
     void SetDamage(const float& damage) { damage_ = damage; }
-    
+
     [[nodiscard]] const float GetRadius() const { return radius_; }
     void SetRadius(const float& radius) { radius_ = radius; }
 
@@ -30,6 +30,8 @@ public:// [Get, Set] Function
     [[nodiscard]] const int GetId() const { return id_; }
 
     [[nodiscard]] const std::string GetName() const { return name_; }
+
+    [[nodiscard]] const int GetDrawType() const { return drawType_; }
 
 private:
 
@@ -41,5 +43,7 @@ private:
     int id_ = 0; // ìoò^î‘çÜ
 
     std::string name_ = "";
+
+    const int drawType_;
 };
 

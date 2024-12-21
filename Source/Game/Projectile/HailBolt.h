@@ -1,5 +1,6 @@
 #pragma once
 #include "Projectile.h"
+#include "ComputeParticle/ComputeParticleEmitter.h"
 
 class HailBolt : public Projectile
 {
@@ -10,7 +11,7 @@ public:
     void Initialize()                                   override;
     void Finalize()                                     override;
     void Update(const float& elapsedTime)               override;
-    void Render(ID3D11PixelShader* psShader = nullptr)  override {}
+    void Render(ID3D11PixelShader* psShader = nullptr)  override;
     void DrawDebug()                                    override;
     void OnHit()                                        override;
 
@@ -23,5 +24,7 @@ private:
     bool isEffectGeneratable_ = true;
 
     float lifeTimer_ = 0.0f;
+
+    ComputeParticleEmitter computeParticleEmitter_ = {};
 };
 

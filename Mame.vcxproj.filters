@@ -271,9 +271,6 @@
     <ClCompile Include="Source\Game\Projectile\Fireball.cpp">
       <Filter>Mame\Game\Object\Projectile\FireBall</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Game\Projectile\Rock.cpp">
-      <Filter>Mame\Game\Object\Projectile\Rock</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Game\Projectile\Projectile.cpp">
       <Filter>Mame\Game\Object\Projectile\Core</Filter>
     </ClCompile>
@@ -310,6 +307,9 @@
     </ClCompile>
     <ClCompile Include="Source\Game\Projectile\HailBolt.cpp">
       <Filter>Mame\Game\Object\Projectile\HailBolt</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\IceArrow.cpp">
+      <Filter>Mame\Game\Object\Projectile\IceArrow</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -611,9 +611,6 @@
     <ClInclude Include="Source\Game\Projectile\Fireball.h">
       <Filter>Mame\Game\Object\Projectile\FireBall</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\Projectile\Rock.h">
-      <Filter>Mame\Game\Object\Projectile\Rock</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Game\Projectile\Projectile.h">
       <Filter>Mame\Game\Object\Projectile\Core</Filter>
     </ClInclude>
@@ -656,6 +653,9 @@
     </ClInclude>
     <ClInclude Include="Source\Game\Projectile\HailBolt.h">
       <Filter>Mame\Game\Object\Projectile\HailBolt</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\IceArrow.h">
+      <Filter>Mame\Game\Object\Projectile\IceArrow</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -908,9 +908,6 @@
     <Filter Include="Mame\Game\Object\Projectile\Core">
       <UniqueIdentifier>{34e48869-df04-4b06-abf3-460dc2e96073}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Mame\Game\Object\Projectile\Rock">
-      <UniqueIdentifier>{df67bfc8-966b-4e2d-a8e4-12bb6416315e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Mame\Graphics\Particle\RockParticle">
       <UniqueIdentifier>{fbd64829-c842-4039-af94-3ed67557a164}</UniqueIdentifier>
     </Filter>
@@ -955,6 +952,9 @@
     </Filter>
     <Filter Include="Mame\Game\Object\Projectile\HailBolt">
       <UniqueIdentifier>{3312a726-6fd5-4ca1-a363-5e336210166f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\Object\Projectile\IceArrow">
+      <UniqueIdentifier>{dd90cd89-f52a-4a01-b326-f60550e76637}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1297,6 +1297,9 @@
     </FxCompile>
     <FxCompile Include="Source\Shader\ComputeParticleEndFrameCS.hlsl">
       <Filter>Mame\Shader\ComputeParticle</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\IceArrowPS.hlsl">
+      <Filter>Mame\Shader\GltfModel</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

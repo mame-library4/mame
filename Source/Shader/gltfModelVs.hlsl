@@ -38,7 +38,8 @@ VS_OUT main(VS_IN vin)
     vout.wTangent = normalize(mul(vin.tangent, world));
     vout.wTangent.w = sigma;
 
-    vout.texcoord = vin.texcoord;
+    //vout.texcoord = vin.texcoord;
+    vout.texcoord = vin.texcoord + scrollDirection_ * scrollTimer_;
 
     return vout;
 }

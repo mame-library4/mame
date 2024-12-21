@@ -399,6 +399,9 @@ public:
 
     void SetEmissiveColor(const DirectX::XMFLOAT3& color) { effectConstants_->GetData()->emissiveColor_ = DirectX::XMFLOAT4(color.x, color.y, color.z, 1.0f); }
 
+    void SetScrollDirection(const DirectX::XMFLOAT2& direction) { effectConstants_->GetData()->scrollDirection_ = direction; }
+    void AddScrollTimer(const float& elapsedTime) { effectConstants_->GetData()->scrollTimer_ += elapsedTime; }
+
     // ---------- Outline ----------
     void SetOutlineColor(const DirectX::XMFLOAT4& color) { effectConstants_->GetData()->outlineColor_ = color; }
     void SetOutlineSize(const float& size) { effectConstants_->GetData()->outlineSize_ = size; }
@@ -458,7 +461,8 @@ private:
         DirectX::XMFLOAT4 outlineColor_     = { 0.0f, 0.0f, 0.0f, 1.0f };
         float outlineSize_                  = 0.01f;
 
-        DirectX::XMFLOAT3 dummy_ = {};
+        DirectX::XMFLOAT2   scrollDirection_  = {};
+        float               scrollTimer_      = 0.0f;
     };
     std::unique_ptr<ConstantBuffer<EffectConstants>> effectConstants_;
 

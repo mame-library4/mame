@@ -1,6 +1,8 @@
 #pragma once
 #include "StateMachine/State.h"
 #include "Player.h"
+#include "ComputeParticle/ComputeParticleEmitter.h"
+#include "Projectile/IceArrow.h"
 
 namespace PlayerState
 {
@@ -757,7 +759,7 @@ namespace PlayerState
     class MageRunState : public State<Player>
     {
     public:
-        MageRunState(Player* player) : State(player, "MageRunState") {}
+        MageRunState(Player* player);
         ~MageRunState() {}
 
         void Initialize()                       override;
@@ -769,9 +771,18 @@ namespace PlayerState
         void PlayAnimation(); // アニメーション再生
         [[nodiscard]] const bool CheckNextInput();
         void UpdateDash(const float& elapsedTime);
+        
+        void GenerateFootPrintsEffect();
 
     private:
-        float transitionDodge_ = 0.2f;
+        ComputeParticleEmitter footPrints_ = {};
+
+        float leftFootPrintFrame_   = 0.05f;
+        float rightFootPrintFrame_  = 0.35f;
+        bool isLeftFootPrintEffectActive_ = false;
+
+        float transitionDodge_      = 0.2f;
+        float transitionAttack1_0_  = 0.2f;
     };
 
     // ----- 回避 -----
@@ -933,6 +944,8 @@ namespace PlayerState
 
         [[nodiscard]] const bool CheckNextInput(); // 先行入力判定
 
+        void Turn(const float& elapsedTime); // 旋回処理
+
     private:
         float playAniamtionSpeed_   = 1.0f;
         float animationStartFrame_  = 0.0f;
@@ -941,7 +954,20 @@ namespace PlayerState
         float   hailBoltMoveSpeed_      = 30.0f;
         bool    isCreateHailBolt_       = false;
 
+        float turnEndFrame_ = 0.3f;
+
+        // ----- NextInput -----
         float attack1_1ChangeFrame_ = 0.5f;
+        float runStateChangeFrame_  = 0.7f;
+        float dodgeStateChangeFrame_ = 0.5f;
+
+        // ----- CameraShake -----
+        float cameraShakePower_ = 0.05f;
+        float cameraShakeTime_  = 0.1f;
+
+        // ----- GamePadVibration -----
+        DirectX::XMFLOAT2   gamePadVibrationPower_  = { 1.0f, 1.0f };
+        float               gamePadVibrationTime_   = 0.1f;
     };
 
     // ----- 攻撃1_1 -----
@@ -972,8 +998,8 @@ namespace PlayerState
     class MageAttack1_2 : public State<Player>
     {
     public:
-        MageAttack1_2(Player* player) : State(player, "MageAttack1_2") {}
-        ~MageAttack1_2() {}
+        MageAttack1_2(Player* player);
+        ~MageAttack1_2();
 
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
@@ -986,6 +1012,8 @@ namespace PlayerState
         [[nodiscard]] const bool CheckNextInput(); // 先行入力判定
 
     private:
+        IceArrow* iceArrow_ = nullptr;
+
         float playAnimationSpeed_ = 1.0f;
         float animationStartFrame_ = 0.0f;
 
