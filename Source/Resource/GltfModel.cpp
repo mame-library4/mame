@@ -708,7 +708,8 @@ void GltfModel::DrawDebug()
 {
     GetTransform()->DrawDebug();
 
-    ImGui::ColorEdit4("EmissiveColor", &effectConstants_->GetData()->emissiveColor_.x);
+    ImGui::ColorEdit3("EmissiveColor", &effectConstants_->GetData()->emissiveColor_.x);
+    ImGui::DragFloat("EmissiveIntensity", &effectConstants_->GetData()->emissiveColor_.w, 0.01f, 0.0f, 100.0f);
     ImGui::ColorEdit4("OutlineColor", &effectConstants_->GetData()->outlineColor_.x);
     ImGui::DragFloat("OutlineSize", &effectConstants_->GetData()->outlineSize_, 0.01f);
     ImGui::Checkbox("OutlineActive", &isOutlineActive_);

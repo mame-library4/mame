@@ -109,6 +109,9 @@ void Player::Initialize()
 
     // 攻撃力設定
     SetAttackPower();
+
+    // 杖のエミッシブを設定
+    staff_.SetEmissive({ 1, 1, 1 }, 10.0f);
 }
 
 void Player::Finalize()

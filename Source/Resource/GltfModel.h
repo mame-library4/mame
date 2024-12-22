@@ -398,6 +398,7 @@ public:
     void SetRootMotionValue(const float& value) { rootMotionValue_ = DirectX::XMFLOAT3(value, value, value); }
 
     void SetEmissiveColor(const DirectX::XMFLOAT3& color) { effectConstants_->GetData()->emissiveColor_ = DirectX::XMFLOAT4(color.x, color.y, color.z, 1.0f); }
+    void SetEmissive(const DirectX::XMFLOAT3& color, const float& intensity) { effectConstants_->GetData()->emissiveColor_ = DirectX::XMFLOAT4(color.x, color.y, color.z, intensity); }
 
     void SetScrollDirection(const DirectX::XMFLOAT2& direction) { effectConstants_->GetData()->scrollDirection_ = direction; }
     void AddScrollTimer(const float& elapsedTime) { effectConstants_->GetData()->scrollTimer_ += elapsedTime; }
