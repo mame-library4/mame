@@ -4669,6 +4669,10 @@ namespace PlayerState
         {
             transitionTime = transitionAttack1_0_;
         }
+        else if (animationIndex == Player::Animation::MageAttack1_1)
+        {
+            transitionTime = transitionAttack1_1_;
+        }
         owner_->SetTransitionTime(transitionTime);
 
         owner_->PlayBlendAnimation(Player::Animation::MageRun, true);
@@ -5721,6 +5725,14 @@ namespace PlayerState
 
                 ImGui::TreePop();
             }
+            if (ImGui::TreeNodeEx("---------- NextInput ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("RunStateChangeFrame", &runStateChangeFrame_, 0.01f);
+                ImGui::DragFloat("DodgeStateChangeFrame", &dodgeStateChangeFrame_, 0.01f);
+                ImGui::DragFloat("Attack1_2ChangeFrame", &attack1_2ChangeFrame_, 0.01f);
+
+                ImGui::TreePop();
+            }
             if (ImGui::TreeNodeEx("---------- GamePadVibration ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::DragFloat2("Power", &gamePadVibrationPower_.x, 0.01f, 0.0f, 1.0f);
@@ -5751,19 +5763,54 @@ namespace PlayerState
     // ----- 先行入力判定 -----
     const bool MageAttack1_1::CheckNextInput()
     {
+        const float curretAnimationSeconds = owner_->GetAnimationSeconds();
+        
+        // ----------------------------------------
+        //              先行入力受付
+        // ----------------------------------------
+
+        // ----- 回避入力受付 -----
+        if (owner_->IsDodgeKeyDown())
+        {
+            owner_->SetNextInput(Player::NextInput::Dodge);
+        }
+        // ----- 攻撃1_2入力受付 -----
         if (owner_->IsMageAttack1KeyDown())
         {
             owner_->SetNextInput(Player::NextInput::MageAttack1);
         }
 
-        const float curretAnimationSeconds = owner_->GetAnimationSeconds();
+        // ----------------------------------------
+        //         先行入力によるステート変更
+        // ----------------------------------------
 
-        if (owner_->GetNextInput() == Player::NextInput::MageAttack1 && curretAnimationSeconds > attack1_2ChangeFrame_)
+        // ----- 回避へ遷移 -----
+        if (owner_->GetNextInput() == Player::NextInput::Dodge && curretAnimationSeconds >= dodgeStateChangeFrame_)
         {
-            //owner_->ChangeState(Player::STATE::MageAttack1_2);
-            //return true;
+            owner_->ChangeState(Player::STATE::MageDodge);
+            return true;
+        }
+        // ----- 攻撃1_2へ遷移 -----
+        else if (owner_->GetNextInput() == Player::NextInput::MageAttack1 && curretAnimationSeconds >= attack1_2ChangeFrame_)
+        {
+            owner_->ChangeState(Player::STATE::MageAttack1_2);
+            return true;
         }
 
+        // ----- 走りに遷移 -----
+        if (curretAnimationSeconds >= runStateChangeFrame_)
+        {
+            const float aLX = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLY = Input::Instance().GetGamePad().GetAxisLY();
+            // 移動入力がない
+            if (aLX == 0.0f && aLY == 0.0f) return false;
+
+            owner_->ChangeState(Player::STATE::MageRun);
+            return true;
+        }
+        // =============================================
+        // ========== これより下に何も書かない ===========
+        // =============================================
         return false;
     }
 

@@ -2,6 +2,7 @@
 #include "Projectile.h"
 #include "ConstantBuffer.h"
 #include <memory>
+#include "ComputeParticle/ComputeParticleEmitter.h"
 
 class AquaBullet : public Projectile
 {
@@ -30,6 +31,10 @@ private:
     std::unique_ptr<ConstantBuffer<AquaBulletConstants>> aquaBulletConstants_;
     Microsoft::WRL::ComPtr<ID3D11PixelShader>           aquaBulletPS_;
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>    shaderResourceView_;
+
+    ComputeParticleEmitter  aquaBulletTrailEmitter_     = {};
+    bool                    isTrailEffectGeneratable_   = false;
+
 
     DirectX::XMFLOAT3   moveDirection_  = {};
     float               moveSpeed_      = 0.0f;

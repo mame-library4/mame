@@ -784,6 +784,7 @@ namespace PlayerState
 
         float transitionDodge_      = 0.2f;
         float transitionAttack1_0_  = 0.2f;
+        float transitionAttack1_1_  = 0.2f;
     };
 
     // ----- ‰ñ”ð -----
@@ -995,7 +996,9 @@ namespace PlayerState
         float animationStartFrame_  = 0.0f;
 
         // ----- NextInput -----
-        float attack1_2ChangeFrame_ = 0.6f;
+        float attack1_2ChangeFrame_     = 0.6f;
+        float runStateChangeFrame_      = 1.0f;
+        float dodgeStateChangeFrame_    = 0.7f;
 
         // ----- AquaBullet -----
         ComputeParticleEmitter aquaBulletChargeEmitter_ = {};

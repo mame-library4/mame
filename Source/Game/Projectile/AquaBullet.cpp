@@ -21,6 +21,8 @@ void AquaBullet::Initialize()
     Object::SetScrollDirection({ 1.0f, 1.0f });
 
     lifeTimer_ = 3.0f;
+
+    aquaBulletTrailEmitter_.SetEmitParameter("AquaBulletTrail");
 }
 
 void AquaBullet::Finalize()
@@ -33,6 +35,12 @@ void AquaBullet::Update(const float& elapsedTime)
     GetTransform()->AddPosition(moveDirection_ * moveSpeed_ * elapsedTime);
 
     Object::AddScrollTimer(elapsedTime);
+
+    if (isTrailEffectGeneratable_)
+    {
+        aquaBulletTrailEmitter_.SetEmitPosition(GetTransform()->GetPosition());
+        aquaBulletTrailEmitter_.EmitParticle();
+    }
 
     lifeTimer_ -= elapsedTime;
     if (lifeTimer_ <= 0.0f)
@@ -74,4 +82,6 @@ void AquaBullet::Launch(const DirectX::XMFLOAT3& moveDirection, const float& mov
 {
     moveDirection_ = moveDirection;
     moveSpeed_ = moveSpeed;
-}
+    
+    isTrailEffectGeneratable_ = true;
+};
