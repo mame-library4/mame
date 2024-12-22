@@ -353,6 +353,9 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const float GetCounterInputEndFrame()     const { return counterInputEndFrame_; }
     [[nodiscard]] const float GetCounterTransitionFrame()   const { return counterTransitionFrame_; }
 
+    // ----- 杖のジョイント位置取得 -----
+    [[nodiscard]] const DirectX::XMFLOAT3 GetStaffJointPosition(const std::string& jointName) { return staff_.GetJointPosition(jointName, weaponWorld_); }
+
 private:
     // ---------- Collision ----------
     void RegisterCollisionData();
@@ -452,7 +455,7 @@ private:
     // ---------- 杖 ----------
     DirectX::XMFLOAT3 staffLocation_   = { -1200.0f, 0.0f, 0.0f };
     DirectX::XMFLOAT3 staffRotation_   = { 0.0f, -110.0f, 0.0f };
-    DirectX::XMFLOAT3 staffScale_      = { 50.0f, 50.0f, -50.0f };
+    DirectX::XMFLOAT3 staffScale_      = { 0.5f, 0.5f, -0.5f };
 
     // ---------- ガードカウンター　----------
     float guardCounterRadius_       = 0.9f;

@@ -311,6 +311,9 @@
     <ClCompile Include="Source\Game\Projectile\IceArrow.cpp">
       <Filter>Mame\Game\Object\Projectile\IceArrow</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\AquaBullet.cpp">
+      <Filter>Mame\Game\Object\Projectile\AquaBullet</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -657,6 +660,9 @@
     <ClInclude Include="Source\Game\Projectile\IceArrow.h">
       <Filter>Mame\Game\Object\Projectile\IceArrow</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\AquaBullet.h">
+      <Filter>Mame\Game\Object\Projectile\AquaBullet</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -955,6 +961,12 @@
     </Filter>
     <Filter Include="Mame\Game\Object\Projectile\IceArrow">
       <UniqueIdentifier>{dd90cd89-f52a-4a01-b326-f60550e76637}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Shader\GltfModel\MeshEffect">
+      <UniqueIdentifier>{2cb491aa-da60-4b3d-a4e1-0851d995e7a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\Object\Projectile\AquaBullet">
+      <UniqueIdentifier>{764e4fab-1d3e-4ab6-bbc3-8007081d84d1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1299,7 +1311,10 @@
       <Filter>Mame\Shader\ComputeParticle</Filter>
     </FxCompile>
     <FxCompile Include="Source\Shader\IceArrowPS.hlsl">
-      <Filter>Mame\Shader\GltfModel</Filter>
+      <Filter>Mame\Shader\GltfModel\MeshEffect</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\AquaBulletPS.hlsl">
+      <Filter>Mame\Shader\GltfModel\MeshEffect</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

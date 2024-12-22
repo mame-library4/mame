@@ -295,6 +295,10 @@ void Player::DrawDebug()
         {
             staff_.DrawDebug();
 
+            ImGui::DragFloat3("StaffLocation", &staffLocation_.x);
+            ImGui::DragFloat3("StaffRotation", &staffRotation_.x);
+            ImGui::DragFloat3("StaffScake", &staffScale_.x);
+
             ImGui::TreePop();
         }
 

@@ -18,6 +18,7 @@
 
 #include "Projectile/HailBolt.h"
 
+
 // ----- AddForceData -----
 namespace PlayerState
 {
@@ -4757,8 +4758,6 @@ namespace PlayerState
         // 左足にエフェクトを生成
         if (isLeftFootPrintEffectActive_ && currentAnimationSeconds >= leftFootPrintFrame_)
         {
-            footPrints_.SetEmitParameter("FootPrints");
-
             footPrints_.SetEmitPosition(owner_->GetJointPosition("ball_l"));
             footPrints_.EmitParticle();
 
@@ -4769,8 +4768,6 @@ namespace PlayerState
         // 右足にエフェクトを生成
         if (currentAnimationSeconds >= rightFootPrintFrame_)
         {
-            footPrints_.SetEmitParameter("FootPrints");
-
             footPrints_.SetEmitPosition(owner_->GetJointPosition("ball_r"));
             footPrints_.EmitParticle();
 
@@ -5658,6 +5655,14 @@ namespace PlayerState
 // ----- 攻撃1_1 -----
 namespace PlayerState
 {
+    // ----- コンストラクタ -----
+    MageAttack1_1::MageAttack1_1(Player* player)
+        : State(player, "MageAttack1_1")
+    {
+        aquaBulletChargeEmitter_.SetEmitParameter("AquaBulletCharge");
+        aquaBulletLaunchEmitter_.SetEmitParameter("AquaBulletLaunch");
+    }
+
     // ----- 初期化 -----
     void MageAttack1_1::Initialize()
     {
@@ -5666,6 +5671,9 @@ namespace PlayerState
 
         // アニメーション再生
         PlayAnimation();
+
+        isAquaBulletCreated_ = false;
+        isAquaBulletLaunched_ = false;
     }
 
     // ----- 更新 -----
@@ -5680,6 +5688,9 @@ namespace PlayerState
             owner_->SetUseRootMotion(true);
         }
 
+        // 弾の処理
+        UpdateAquaBullet();
+
         // 攻撃終了判定
         if (owner_->IsPlayAnimation() == false)
         {
@@ -5693,11 +5704,40 @@ namespace PlayerState
     {
         // ルートモーション使用終了
         owner_->SetUseRootMotion(false);
+
+        aquaBullet_ = nullptr;
     }
 
     // ----- ImGui用 -----
     void MageAttack1_1::DrawDebug()
     {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- AquaBullet ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("CreateStartFrame", &aquaBulletCreateStartFrame_, 0.01f);
+                ImGui::DragFloat("CreateEndFrame", &aquaBulletCreateEndFrame_, 0.01f);
+                ImGui::DragFloat("MoveSpeed", &aquaBulletMoveSpeed_, 0.1f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- GamePadVibration ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat2("Power", &gamePadVibrationPower_.x, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("Time", &gamePadVibrationTime_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- CameraShake ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("Power", &cameraShakePower_, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("Time", &cameraShakeTime_, 0.01f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
     }
 
     // ----- アニメーション再生 -----
@@ -5720,11 +5760,64 @@ namespace PlayerState
 
         if (owner_->GetNextInput() == Player::NextInput::MageAttack1 && curretAnimationSeconds > attack1_2ChangeFrame_)
         {
-            owner_->ChangeState(Player::STATE::MageAttack1_2);
-            return true;
+            //owner_->ChangeState(Player::STATE::MageAttack1_2);
+            //return true;
         }
 
         return false;
+    }
+
+    // ----- 水の弾更新 -----
+    void MageAttack1_1::UpdateAquaBullet()
+    {
+        // 既に発射済み
+        if (isAquaBulletLaunched_) return;
+
+        const float currentAniamtionSeconds = owner_->GetAnimationSeconds();
+
+        // 生成フレームに達していない
+        if (currentAniamtionSeconds < aquaBulletCreateStartFrame_) return;
+
+        // 弾生成処理
+        if (isAquaBulletCreated_ == false)
+        {
+            aquaBullet_ = new AquaBullet();
+            aquaBullet_->GetTransform()->SetPosition(owner_->GetStaffJointPosition("joint1"));
+
+            // チャージエフェクト生成
+            aquaBulletChargeEmitter_.SetEmitPosition(owner_->GetStaffJointPosition("joint1"));
+            aquaBulletChargeEmitter_.EmitParticle();
+
+            isAquaBulletCreated_ = true;
+        }
+
+        // 徐々に大きくする
+        if (currentAniamtionSeconds <= aquaBulletCreateEndFrame_)
+        {
+            const float totalFrame = aquaBulletCreateEndFrame_ - aquaBulletCreateStartFrame_;
+            const float currentFrame = currentAniamtionSeconds - aquaBulletCreateStartFrame_;
+
+            aquaBullet_->GetTransform()->SetScaleFactor(XMFloatLerp(0.0f, 0.25f, currentFrame / totalFrame));
+        }
+        // 発射
+        else
+        {
+            const DirectX::XMFLOAT3 ownerForward = owner_->GetTransform()->CalcForward();
+
+            aquaBullet_->Launch(ownerForward, aquaBulletMoveSpeed_);
+
+            // 発射エフェクト再生
+            aquaBulletLaunchEmitter_.SetEmitPosition(owner_->GetStaffJointPosition("joint1"));
+            aquaBulletLaunchEmitter_.EmitParticle();
+
+            // カメラシェイク
+            Camera::Instance().ScreenVibrate(cameraShakePower_, cameraShakeTime_);
+
+            // コントローラ振動
+            Input::Instance().GetGamePad().Vibration(gamePadVibrationTime_, gamePadVibrationPower_.x, gamePadVibrationPower_.y);
+
+            isAquaBulletLaunched_ = true;
+        }
     }
 }
 

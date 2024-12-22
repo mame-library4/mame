@@ -2,6 +2,7 @@
 #include "StateMachine/State.h"
 #include "Player.h"
 #include "ComputeParticle/ComputeParticleEmitter.h"
+#include "Projectile/AquaBullet.h"
 #include "Projectile/IceArrow.h"
 
 namespace PlayerState
@@ -974,7 +975,7 @@ namespace PlayerState
     class MageAttack1_1 : public State<Player>
     {
     public:
-        MageAttack1_1(Player* player) : State(player, "MageAttack1_1") {}
+        MageAttack1_1(Player* player);
         ~MageAttack1_1() {}
 
         void Initialize()                       override;
@@ -987,11 +988,32 @@ namespace PlayerState
 
         [[nodiscard]] const bool CheckNextInput(); // êÊçsì¸óÕîªíË
 
+        void UpdateAquaBullet();
+
     private:
         float playAnimationSpeed_   = 1.0f;
         float animationStartFrame_  = 0.0f;
 
+        // ----- NextInput -----
         float attack1_2ChangeFrame_ = 0.6f;
+
+        // ----- AquaBullet -----
+        ComputeParticleEmitter aquaBulletChargeEmitter_ = {};
+        ComputeParticleEmitter aquaBulletLaunchEmitter_ = {};
+        AquaBullet* aquaBullet_                 = nullptr;
+        float       aquaBulletCreateStartFrame_ = 0.28f;
+        float       aquaBulletCreateEndFrame_   = 0.44f;
+        float       aquaBulletMoveSpeed_        = 30.0f;
+        bool        isAquaBulletCreated_        = false;
+        bool        isAquaBulletLaunched_       = false;
+
+        // ----- CameraShake -----
+        float cameraShakePower_ = 0.1f;
+        float cameraShakeTime_  = 0.4f;
+
+        // ----- GamePadVibration -----
+        DirectX::XMFLOAT2   gamePadVibrationPower_ = { 1.0f, 1.0f };
+        float               gamePadVibrationTime_ = 0.2f;
     };
 
     // ----- çUåÇ1_2 -----

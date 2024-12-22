@@ -226,6 +226,7 @@
     <ClCompile Include="Source\Game\Item\Item.cpp" />
     <ClCompile Include="Source\Game\Item\ItemManager.cpp" />
     <ClCompile Include="Source\Game\Object.cpp" />
+    <ClCompile Include="Source\Game\Projectile\AquaBullet.cpp" />
     <ClCompile Include="Source\Game\Projectile\Fireball.cpp" />
     <ClCompile Include="Source\Game\Projectile\HailBolt.cpp" />
     <ClCompile Include="Source\Game\Projectile\IceArrow.cpp" />
@@ -339,6 +340,7 @@
     <ClInclude Include="Source\Game\Item\Item.h" />
     <ClInclude Include="Source\Game\Item\ItemManager.h" />
     <ClInclude Include="Source\Game\Object.h" />
+    <ClInclude Include="Source\Game\Projectile\AquaBullet.h" />
     <ClInclude Include="Source\Game\Projectile\Fireball.h" />
     <ClInclude Include="Source\Game\Projectile\HailBolt.h" />
     <ClInclude Include="Source\Game\Projectile\IceArrow.h" />
@@ -493,6 +495,12 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Source\Shader\AquaBulletPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="Source\Shader\BloomPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
