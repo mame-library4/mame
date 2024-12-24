@@ -45,17 +45,18 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::ChargeAttackState(this));      // Š•Š„‚è
         
         // ------------ Mage ------------
-        GetStateMachine()->RegisterState(new PlayerState::MageIdleState(this));   // ‘Ò‹@
-        GetStateMachine()->RegisterState(new PlayerState::MageRunState(this));    // ‘–‚è
-        GetStateMachine()->RegisterState(new PlayerState::MageDodgeState(this));  // ‰ñ”ð
-        GetStateMachine()->RegisterState(new PlayerState::MageDamageState(this)); // ƒ_ƒ[ƒW
-        GetStateMachine()->RegisterState(new PlayerState::MageAttackState(this)); // UŒ‚
-        GetStateMachine()->RegisterState(new PlayerState::MageAttack0_0(this));   // UŒ‚0_0
-        GetStateMachine()->RegisterState(new PlayerState::MageAttack0_1(this));   // UŒ‚0_1
-        GetStateMachine()->RegisterState(new PlayerState::MageAttack1_0(this));   // UŒ‚1_0
-        GetStateMachine()->RegisterState(new PlayerState::MageAttack1_1(this));   // UŒ‚1_1
-        GetStateMachine()->RegisterState(new PlayerState::MageAttack1_2(this));   // UŒ‚1_2
-        GetStateMachine()->RegisterState(new PlayerState::MageAttack1_3(this));   // UŒ‚1_3
+        GetStateMachine()->RegisterState(new PlayerState::MageIdleState(this));         // ‘Ò‹@
+        GetStateMachine()->RegisterState(new PlayerState::MageRunState(this));          // ‘–‚è
+        GetStateMachine()->RegisterState(new PlayerState::MageDodgeState(this));        // ‰ñ”ð
+        GetStateMachine()->RegisterState(new PlayerState::MageDashDodgeState(this));    // ƒ_ƒbƒVƒ…‰ñ”ð
+        GetStateMachine()->RegisterState(new PlayerState::MageDamageState(this));       // ƒ_ƒ[ƒW
+        GetStateMachine()->RegisterState(new PlayerState::MageAttackState(this));       // UŒ‚
+        GetStateMachine()->RegisterState(new PlayerState::MageAttack0_0(this));         // UŒ‚0_0
+        GetStateMachine()->RegisterState(new PlayerState::MageAttack0_1(this));         // UŒ‚0_1
+        GetStateMachine()->RegisterState(new PlayerState::MageAttack1_0(this));         // UŒ‚1_0
+        GetStateMachine()->RegisterState(new PlayerState::MageAttack1_1(this));         // UŒ‚1_1
+        GetStateMachine()->RegisterState(new PlayerState::MageAttack1_2(this));         // UŒ‚1_2
+        GetStateMachine()->RegisterState(new PlayerState::MageAttack1_3(this));         // UŒ‚1_3
 
         // ˆê”Ô‰‚ß‚ÌƒXƒe[ƒg‚ðÝ’è‚·‚é
         GetStateMachine()->SetState(static_cast<UINT>(STATE::Idle));

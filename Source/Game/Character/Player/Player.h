@@ -58,6 +58,7 @@ public:// --- ’è” ---
         MageIdle,
         MageRun,
         MageDodge,
+        MageDashDodge,
         MageDamage,
         MageAttack,
         MageAttack0_0,
@@ -127,7 +128,6 @@ public:// --- ’è” ---
 
         MageDush,
         MageAttackStart,
-        MageAttackLoop,
         MageAttackEnd,
     };
 

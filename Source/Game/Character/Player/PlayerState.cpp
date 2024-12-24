@@ -4558,11 +4558,9 @@ namespace PlayerState
         }
 
         // ----- 攻撃に遷移 -----
-        //// ----- 攻撃0_0に遷移 -----
         if (owner_->IsMageAttack0KeyDown())
         {
             owner_->ChangeState(Player::STATE::MageAttack);
-        //    owner_->ChangeState(Player::STATE::MageAttack0_0);
             return true;
         }
 
@@ -4686,7 +4684,15 @@ namespace PlayerState
         // ----- 回避に遷移 -----
         if (owner_->IsDodgeKeyDown())
         {
-            owner_->ChangeState(Player::STATE::MageDodge);
+            // ダッシュ中
+            if (owner_->IsDashKey())
+            {
+                owner_->ChangeState(Player::STATE::MageDashDodge);
+            }
+            else
+            {
+                owner_->ChangeState(Player::STATE::MageDodge);
+            }
             return true;
         }
 
@@ -5130,6 +5136,85 @@ namespace PlayerState
     }
 }
 
+// ----- ダッシュ回避 -----
+namespace PlayerState
+{
+    // ----- コンストラクタ -----
+    MageDashDodgeState::MageDashDodgeState(Player* player)
+        : State(player, "MageDashDodgeState")
+    {
+        computeParticleEmitter_.SetEmitParameter("DashDodge");
+    }
+
+    // ----- 初期化 -----
+    void MageDashDodgeState::Initialize()
+    {
+        // フラグをリセット
+        owner_->ResetFlags();
+
+        // アニメーション再生
+        PlayAnimation();
+    }
+
+    // ----- 更新 -----
+    void MageDashDodgeState::Update(const float& elapsedTime)
+    {
+        // ルートモーションを使用する
+        if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+        {
+            owner_->SetUseRootMotion(true);
+        }
+
+        computeParticleEmitter_.SetEmitParameter("DashDodge");
+        
+        computeParticleEmitter_.SetEmitPosition(owner_->GetJointPosition("foot_l"));
+        computeParticleEmitter_.EmitParticle();
+
+        computeParticleEmitter_.SetEmitPosition(owner_->GetJointPosition("foot_r"));
+        computeParticleEmitter_.EmitParticle();
+
+
+        // 回避終了チェック
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::MageIdle);
+            return;
+        }
+    }
+
+    // ----- 終了化 -----
+    void MageDashDodgeState::Finalize()
+    {
+        // ルートモーション使用終了
+        owner_->SetUseRootMotion(false);
+    }
+
+    // ----- ImGui用 -----
+    void MageDashDodgeState::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- Animation ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("AnimationStartFrame", &animationStartFrame_, 0.01f);
+                ImGui::DragFloat("PlayAnimationSpeed", &playAnimationSpeed_, 0.01f);
+                ImGui::DragFloat("TransitionRun", &transitionRun_, 0.01f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- アニメーション再生 -----
+    void MageDashDodgeState::PlayAnimation()
+    {
+        owner_->PlayBlendAnimation(Player::Animation::MageDush, false, playAnimationSpeed_, animationStartFrame_);
+        owner_->SetTransitionTime(transitionRun_);
+    }
+}
+
 // ----- ダメージ -----
 namespace PlayerState
 {
@@ -5429,7 +5514,7 @@ namespace PlayerState
         }
         owner_->SetTransitionTime(transitionTime);
 
-        owner_->PlayBlendAnimation(Player::Animation::MageAttackLoop, false);
+        owner_->PlayBlendAnimation(Player::Animation::MageAttackStart, false);
     }
 }
 

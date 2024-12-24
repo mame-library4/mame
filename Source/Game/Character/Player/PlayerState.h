@@ -836,6 +836,30 @@ namespace PlayerState
         bool                isInputStick_       = false; // スティック入力があるか
     };
 
+    // ----- ダッシュ回避 -----
+    class MageDashDodgeState : public State<Player>
+    {
+    public:
+        MageDashDodgeState(Player* player);
+        ~MageDashDodgeState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+
+    private:
+        void PlayAnimation(); // アニメーション再生
+
+    private:
+        // ---------- Animation ----------
+        float playAnimationSpeed_   = 1.0f;
+        float animationStartFrame_  = 0.045f;
+        float transitionRun_        = 0.1f;
+
+        ComputeParticleEmitter computeParticleEmitter_ = {};
+    };
+
     // ----- ダメージ -----
     class MageDamageState : public State<Player>
     {
