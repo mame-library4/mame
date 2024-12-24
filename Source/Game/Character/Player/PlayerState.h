@@ -791,7 +791,7 @@ namespace PlayerState
     class MageDodgeState : public State<Player>
     {
     public:
-        MageDodgeState(Player* player) : State(player, "MageDodgeState") {}
+        MageDodgeState(Player* player);
         ~MageDodgeState() {}
 
         void Initialize()                       override;
@@ -821,7 +821,9 @@ namespace PlayerState
 
         float invincibleFrame_      = 0.45f;    // 無敵フレーム
 
-        
+        ComputeParticleEmitter dodgePrintsEffectEmitter_ = {};
+        float dodgePrintsEffectCreateFrame_ = 0.45f;
+        bool isDodgePrintsEffectCreated_ = false;
 
         // ----- 先行入力 -----
         float nextInputStartFrame_      = 0.5f;
@@ -903,6 +905,31 @@ namespace PlayerState
         float animationStartFrame_  = 0.65f;
         
         float attack0_1ChangeFrame_ = 0.9f;
+    };
+
+    class MageAttackState : public State<Player>
+    {
+    public:
+        MageAttackState(Player* player);
+        ~MageAttackState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+
+    private:
+        void PlayAnimation(); // アニメーション再生
+
+    private:
+        ComputeParticleEmitter smokeParticleEmitter_ = {};
+
+        // ---------- Animation ----------
+        float transitionIdle_   = 0.3f;
+        float transitionRun_    = 0.2f;
+
+        bool isFirstAnimation_ = false;
+        bool isDarkFireballInitialized_ = false;
     };
 
     // ----- 攻撃0_1 -----

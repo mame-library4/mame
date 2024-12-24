@@ -12,6 +12,8 @@
 
 #include "UI/UIRush.h"
 
+#include "Projectile/DarkFireballEmitter.h"
+
 class Player : public Character
 {
 public:// --- 定数 ---
@@ -57,6 +59,7 @@ public:// --- 定数 ---
         MageRun,
         MageDodge,
         MageDamage,
+        MageAttack,
         MageAttack0_0,
         MageAttack0_1,
         MageAttack1_0,
@@ -121,6 +124,11 @@ public:// --- 定数 ---
         MageAttack1_1,
         MageAttack1_2,
         MageAttack1_3,
+
+        MageDush,
+        MageAttackStart,
+        MageAttackLoop,
+        MageAttackEnd,
     };
 
     // 先行入力の種類
@@ -356,6 +364,9 @@ public:// --- 取得・設定 ---
     // ----- 杖のジョイント位置取得 -----
     [[nodiscard]] const DirectX::XMFLOAT3 GetStaffJointPosition(const std::string& jointName) { return staff_.GetJointPosition(jointName, weaponWorld_); }
 
+    // ----- 闇の火球生成数設定 -----
+    void SetDarkFireballEmittNum(const int& num);
+
 private:
     // ---------- Collision ----------
     void RegisterCollisionData();
@@ -483,4 +494,8 @@ private:
 
     // ---------- 役職 ----------
     PlayerRole playerRole_ = PlayerRole::SwordsMan;
+
+    // ---------- 闇の炎球生成管理 ----------
+    DarkFireballEmitter darkFireballEmitter_            = {};
+    bool                isDarkFireballEmitterActive_    = false;
 };

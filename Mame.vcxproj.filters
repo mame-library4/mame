@@ -314,6 +314,12 @@
     <ClCompile Include="Source\Game\Projectile\AquaBullet.cpp">
       <Filter>Mame\Game\Object\Projectile\AquaBullet</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\DarkFireball.cpp">
+      <Filter>Mame\Game\Object\Projectile\DarkFireball</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\DarkFireballEmitter.cpp">
+      <Filter>Mame\Game\Object\Projectile\DarkFireball</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -663,6 +669,12 @@
     <ClInclude Include="Source\Game\Projectile\AquaBullet.h">
       <Filter>Mame\Game\Object\Projectile\AquaBullet</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\DarkFireball.h">
+      <Filter>Mame\Game\Object\Projectile\DarkFireball</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\DarkFireballEmitter.h">
+      <Filter>Mame\Game\Object\Projectile\DarkFireball</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -967,6 +979,9 @@
     </Filter>
     <Filter Include="Mame\Game\Object\Projectile\AquaBullet">
       <UniqueIdentifier>{764e4fab-1d3e-4ab6-bbc3-8007081d84d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\Object\Projectile\DarkFireball">
+      <UniqueIdentifier>{346d2a10-d37c-43dd-85f3-4bdc9d907975}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

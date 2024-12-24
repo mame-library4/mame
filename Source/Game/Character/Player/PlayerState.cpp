@@ -4557,10 +4557,12 @@ namespace PlayerState
             return true;
         }
 
-        // ----- 攻撃0_0に遷移 -----
+        // ----- 攻撃に遷移 -----
+        //// ----- 攻撃0_0に遷移 -----
         if (owner_->IsMageAttack0KeyDown())
         {
-            owner_->ChangeState(Player::STATE::MageAttack0_0);
+            owner_->ChangeState(Player::STATE::MageAttack);
+        //    owner_->ChangeState(Player::STATE::MageAttack0_0);
             return true;
         }
 
@@ -4688,6 +4690,13 @@ namespace PlayerState
             return true;
         }
 
+        // ----- 攻撃に遷移 -----
+        if (owner_->IsMageAttack0KeyDown())
+        {
+            owner_->ChangeState(Player::STATE::MageAttack);
+            return true;
+        }
+
         // ----- 攻撃1_0に遷移 -----
         if (owner_->IsMageAttack1KeyDown())
         {
@@ -4783,6 +4792,17 @@ namespace PlayerState
 // ----- 回避 -----
 namespace PlayerState
 {
+#define USE_DODGE_EFFECT 0
+
+    // ----- コンストラクタ -----
+    MageDodgeState::MageDodgeState(Player* player)
+        : State(player, "MageDodgeState")
+    {
+#if USE_DODGE_EFFECT
+        dodgePrintsEffectEmitter_.SetEmitParameter("DodgePrints");
+#endif
+    }
+
     // ----- 初期化 -----
     void MageDodgeState::Initialize()
     {
@@ -4801,6 +4821,10 @@ namespace PlayerState
         // 変数初期化
         isRotating_         = false;
         isDodgeFirstTime_   = false;
+
+#if USE_DODGE_EFFECT
+        isDodgePrintsEffectCreated_ = false;
+#endif
     }
 
     // ----- 更新 -----
@@ -4828,6 +4852,20 @@ namespace PlayerState
             owner_->SetIsInvincible(false);
         }
 
+#if USE_DODGE_EFFECT
+        if (owner_->GetAnimationSeconds() > dodgePrintsEffectCreateFrame_ && isDodgePrintsEffectCreated_ == false)
+        {
+            dodgePrintsEffectEmitter_.SetEmitParameter("DodgePrints");
+            
+            DirectX::XMFLOAT3 emitPosition = owner_->GetTransform()->GetPosition();
+            emitPosition.y = 0.1f;
+            dodgePrintsEffectEmitter_.SetEmitPosition(emitPosition);
+            dodgePrintsEffectEmitter_.EmitParticle();
+
+            isDodgePrintsEffectCreated_ = true;
+        }
+#endif
+
         // 回避終了判定
         if (owner_->IsPlayAnimation() == false)
         {
@@ -4851,6 +4889,10 @@ namespace PlayerState
     {
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
+#if USE_DODGE_EFFECT
+            ImGui::DragFloat("dodgePrintsEffectCreateFrame_", &dodgePrintsEffectCreateFrame_, 0.01f);
+#endif
+
             if (ImGui::TreeNodeEx("---------- Animation ----------"))
             {
                 ImGui::DragFloat("PlayAnimationSpeed", &playAnimationSpeed_, 0.01f);
@@ -5285,6 +5327,109 @@ namespace PlayerState
                 owner_->SetAnimationSpeed(1.5f);
             }
         }
+    }
+}
+
+// ----- 攻撃 -----
+namespace PlayerState
+{
+    // ----- コンストラクタ -----
+    MageAttackState::MageAttackState(Player* player)
+        : State(player, "MageAttackState")
+    {
+        smokeParticleEmitter_.SetEmitParameter("DarkSmoke");
+    }
+
+    // ----- 初期化 -----
+    void MageAttackState::Initialize()
+    {
+        // フラグをリセット
+        owner_->ResetFlags();
+
+        // アニメーション再生
+        PlayAnimation();
+
+        // 変数初期化
+        isFirstAnimation_ = true;
+        isDarkFireballInitialized_ = false;
+    }
+
+    // ----- 更新 -----
+    void MageAttackState::Update(const float& elapsedTime)
+    {
+        if (isDarkFireballInitialized_ == false && isFirstAnimation_ && owner_->GetAnimationSeconds() > 0.6f)
+        {
+            owner_->SetDarkFireballEmittNum(8);
+            isDarkFireballInitialized_ = true;
+        }
+
+        // 煙エフェクト生成
+        if (owner_->GetIsBlendAnimation() == false && isFirstAnimation_)
+        {
+            smokeParticleEmitter_.SetEmitPosition(owner_->GetStaffJointPosition("joint1"));
+            smokeParticleEmitter_.EmitParticle();
+        }
+
+        // 終了チェック & アニメーション変更チェック
+        if (owner_->IsPlayAnimation() == false)
+        {
+            if (isFirstAnimation_)
+            {
+                owner_->PlayAnimation(Player::Animation::MageAttackEnd, false);
+
+                // ルートモーション使用
+                owner_->SetUseRootMotion(true);
+
+                isFirstAnimation_ = false;
+            }
+            else
+            {
+                owner_->ChangeState(Player::STATE::MageIdle);
+                return;
+            }
+        }
+    }
+
+    // ----- 終了化 -----
+    void MageAttackState::Finalize()
+    {
+        // ルートモーション使用終了
+        owner_->SetUseRootMotion(false);
+    }
+
+    // ----- ImGui用 -----
+    void MageAttackState::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- Animation ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("TransitionIdle", &transitionIdle_, 0.01f);
+                ImGui::DragFloat("TransitionRun", &transitionRun_, 0.01f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- アニメーション再生 -----
+    void MageAttackState::PlayAnimation()
+    {     
+        const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+        float transitionTime = 0.1f;
+        if (animationIndex == Player::Animation::MageIdle)
+        {
+            transitionTime = transitionIdle_;
+        }
+        else if (animationIndex == Player::Animation::MageRun)
+        {
+            transitionTime = transitionRun_;
+        }
+        owner_->SetTransitionTime(transitionTime);
+
+        owner_->PlayBlendAnimation(Player::Animation::MageAttackLoop, false);
     }
 }
 

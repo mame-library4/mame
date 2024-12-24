@@ -49,6 +49,7 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::MageRunState(this));    // ‘–‚è
         GetStateMachine()->RegisterState(new PlayerState::MageDodgeState(this));  // ‰ñ”ð
         GetStateMachine()->RegisterState(new PlayerState::MageDamageState(this)); // ƒ_ƒ[ƒW
+        GetStateMachine()->RegisterState(new PlayerState::MageAttackState(this)); // UŒ‚
         GetStateMachine()->RegisterState(new PlayerState::MageAttack0_0(this));   // UŒ‚0_0
         GetStateMachine()->RegisterState(new PlayerState::MageAttack0_1(this));   // UŒ‚0_1
         GetStateMachine()->RegisterState(new PlayerState::MageAttack1_0(this));   // UŒ‚1_0
@@ -169,6 +170,12 @@ void Player::Update(const float& elapsedTime)
 
     //swordSpirit_ = 1.0f;
     UpdateSwordSpirit(elapsedTime);
+
+    // ˆÅ‚Ì‰Î‹… ¶¬XV
+    if (isDarkFireballEmitterActive_)
+    {
+        isDarkFireballEmitterActive_ = darkFireballEmitter_.Update(elapsedTime);
+    }
 }
 
 // ----- •`‰æ -----
@@ -301,6 +308,7 @@ void Player::DrawDebug()
 
             ImGui::TreePop();
         }
+        darkFireballEmitter_.DrawDebug();
 
         if (ImGui::TreeNode("RotationAdjustment"))
         {
@@ -699,6 +707,13 @@ const bool Player::IsDashKey() const
     if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_SHOULDER) return true;
 
     return false;
+}
+
+// ----- ˆÅ‚Ì‰Î‹…¶¬”Ý’è -----
+void Player::SetDarkFireballEmittNum(const int& num)
+{
+    darkFireballEmitter_.Initilaize(num, GetStaffJointPosition("joint1"), GetTransform()->CalcForward(), GetTransform()->CalcRight());
+    isDarkFireballEmitterActive_ = true;
 }
 
 // ----- CollisionData“o˜^ -----
