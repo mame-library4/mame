@@ -850,12 +850,28 @@ namespace PlayerState
 
     private:
         void PlayAnimation(); // アニメーション再生
+        void UpdateRadialBlur(const float& elapsedTime); // ラジアルブラー更新
+
+        [[nodiscard]] const bool CheckNextInput(); // 先行入力判定
 
     private:
         // ---------- Animation ----------
         float playAnimationSpeed_   = 1.0f;
         float animationStartFrame_  = 0.045f;
+        float rootMotionMoveValue_  = 1.5f;
         float transitionRun_        = 0.1f;
+
+        // ---------- RadialBlur ----------
+        float radialBlurStrength_   = 0.1f;
+        float radialBlurStartFrame_ = 0.1f;
+        float radialBlurEndFrame_   = 0.49f;
+        float radialBlurEndTime_    = 0.2f;
+
+        // ---------- GamePadVibration ----------
+        DirectX::XMFLOAT2   gamePadVibrationPower_  = { 1.0f, 1.0f };
+        float               gamePadVibrationTime_   = 0.1f;
+        float               gamePadVibrationFrame_  = 0.15f;
+        bool                isGamePadVibration_     = false;
 
         ComputeParticleEmitter computeParticleEmitter_ = {};
     };

@@ -129,6 +129,14 @@ public:// --- ’è” ---
         MageDush,
         MageAttackStart,
         MageAttackEnd,
+
+        MageAttackDodge,
+        MageAttackDodge1,
+
+        MageAttack2_0,
+        MageAttack2_1,
+        MageAttack2_2,
+        MageAttack2_3,
     };
 
     // æs“ü—Í‚Ìí—Ş

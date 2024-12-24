@@ -5154,6 +5154,14 @@ namespace PlayerState
 
         // アニメーション再生
         PlayAnimation();
+
+        // ラジアルブラーを使用する
+        PostProcess::Instance().SetUseRadialBlur(true);
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 5;
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = 0.0f;
+
+        // 変数初期化
+        isGamePadVibration_ = false;
     }
 
     // ----- 更新 -----
@@ -5163,16 +5171,24 @@ namespace PlayerState
         if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
         {
             owner_->SetUseRootMotion(true);
+            owner_->SetRootMotionValue(rootMotionMoveValue_);
         }
-
-        computeParticleEmitter_.SetEmitParameter("DashDodge");
         
+        // パーティクル生成
         computeParticleEmitter_.SetEmitPosition(owner_->GetJointPosition("foot_l"));
         computeParticleEmitter_.EmitParticle();
-
         computeParticleEmitter_.SetEmitPosition(owner_->GetJointPosition("foot_r"));
         computeParticleEmitter_.EmitParticle();
 
+        // ラジアルブラー更新
+        UpdateRadialBlur(elapsedTime);
+
+        // コントローラー振動
+        if (isGamePadVibration_ == false && owner_->GetAnimationSeconds() >= gamePadVibrationFrame_)
+        {
+            Input::Instance().GetGamePad().Vibration(gamePadVibrationTime_, gamePadVibrationPower_.x, gamePadVibrationPower_.y);
+            isGamePadVibration_ = true;
+        }
 
         // 回避終了チェック
         if (owner_->IsPlayAnimation() == false)
@@ -5187,6 +5203,10 @@ namespace PlayerState
     {
         // ルートモーション使用終了
         owner_->SetUseRootMotion(false);
+
+        // ラジアルブラー使用終了
+        PostProcess::Instance().SetUseRadialBlur(false);
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->sampleCount_ = 1;
     }
 
     // ----- ImGui用 -----
@@ -5198,7 +5218,25 @@ namespace PlayerState
             {
                 ImGui::DragFloat("AnimationStartFrame", &animationStartFrame_, 0.01f);
                 ImGui::DragFloat("PlayAnimationSpeed", &playAnimationSpeed_, 0.01f);
+                ImGui::DragFloat("RootMotionMoveValue", &rootMotionMoveValue_, 0.01f);
                 ImGui::DragFloat("TransitionRun", &transitionRun_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- RadialBlur ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("RadialBlurStrength", &radialBlurStrength_, 0.01f);
+                ImGui::DragFloat("RadialBlurStartFrame", &radialBlurStartFrame_, 0.01f);
+                ImGui::DragFloat("RadialBlurEndFrame", &radialBlurEndFrame_, 0.01f);
+                ImGui::DragFloat("RadialBlurEndTime", &radialBlurEndTime_, 0.01f);
+                
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- GamePadVibration ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat2("Power", &gamePadVibrationPower_.x, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("Time", &gamePadVibrationTime_, 0.01f);
+                ImGui::DragFloat("Frame", &gamePadVibrationFrame_, 0.01f);
 
                 ImGui::TreePop();
             }
@@ -5212,6 +5250,49 @@ namespace PlayerState
     {
         owner_->PlayBlendAnimation(Player::Animation::MageDush, false, playAnimationSpeed_, animationStartFrame_);
         owner_->SetTransitionTime(transitionRun_);
+    }
+
+    // ----- ラジアルブラー更新 -----
+    void MageDashDodgeState::UpdateRadialBlur(const float& elapsedTime)
+    {
+        // =========================
+        //      中心点を決める
+        // =========================
+        DirectX::XMFLOAT2 center = Sprite::ConvertToScreenPos(owner_->GetTransform()->GetPosition());
+        center.x /= SCREEN_WIDTH;
+        center.y /= SCREEN_HEIGHT;
+        // 中心点を 0.0 ~ 1.0 の間に収める
+        center.x = std::clamp(center.x, 0.0f, 1.0f);
+        center.y = std::clamp(center.y, 0.0f, 1.0f);
+        PostProcess::Instance().GetRadialBlurConstants()->GetData()->uvOffset_ = center;
+
+        // =========================
+        //      強度を設定する
+        // =========================
+        const float currentAnimationSeconds = owner_->GetAnimationSeconds();
+        if (currentAnimationSeconds <= radialBlurStartFrame_)
+        {
+            const float strength = Easing::InSine(currentAnimationSeconds, radialBlurStartFrame_, radialBlurStrength_, 0.0f);
+            PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = strength;
+        }
+        else if(currentAnimationSeconds >= radialBlurEndFrame_)
+        {
+            const float strength = Easing::InSine(currentAnimationSeconds - radialBlurEndFrame_, radialBlurEndTime_, 0.0f, radialBlurStrength_);
+            PostProcess::Instance().GetRadialBlurConstants()->GetData()->strength_ = std::max(strength, 0.0f);
+        }
+    }
+
+    // ----- 先行入力判定 -----
+    const bool MageDashDodgeState::CheckNextInput()
+    {
+        // 回避
+
+        // 攻撃
+
+        // 移動
+
+
+        return false;
     }
 }
 
