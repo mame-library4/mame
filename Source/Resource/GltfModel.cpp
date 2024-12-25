@@ -729,6 +729,8 @@ void GltfModel::DrawDebug()
         ImGui::DragFloat("TransitionTime", &transitionTime_);
         ImGui::Checkbox("IsBlendAnimation", &isBlendAnimation_);
 
+        ImGui::DragFloat3("RootMotion", &rootMotionValue_.x, 0.01f);
+
         ImGui::Checkbox("AnimationLoopFlag", &animationLoopFlag_);
         ImGui::Checkbox("AnimationEndFlag", &animationEndFlag_);
         ImGui::TreePop();

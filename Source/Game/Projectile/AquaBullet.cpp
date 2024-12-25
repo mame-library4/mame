@@ -62,6 +62,11 @@ void AquaBullet::DrawDebug()
 {
     if (ImGui::TreeNodeEx(GetName().c_str(), ImGuiTreeNodeFlags_DefaultOpen))
     {
+        ImGui::DragFloat("LifeTimer", &lifeTimer_);
+        ImGui::Checkbox("IsTrailEffectGeneratable", &isTrailEffectGeneratable_);
+        ImGui::DragFloat3("MoveDirection", &moveDirection_.x);
+        ImGui::DragFloat("MoveSpeed", &moveSpeed_, 0.01f);
+
         Projectile::DrawDebug();
 
         ImGui::ColorEdit3("BaseColor", &aquaBulletConstants_->GetData()->baseColor_.x);

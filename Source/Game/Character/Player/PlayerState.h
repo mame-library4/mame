@@ -852,7 +852,7 @@ namespace PlayerState
         void PlayAnimation(); // アニメーション再生
         void UpdateRadialBlur(const float& elapsedTime); // ラジアルブラー更新
 
-        [[nodiscard]] const bool CheckNextInput(); // 先行入力判定
+        void CheckNextInput(); // 先行入力判定
 
     private:
         // ---------- Animation ----------
@@ -861,6 +861,9 @@ namespace PlayerState
         float rootMotionMoveValue_  = 1.5f;
         float transitionRun_        = 0.1f;
 
+        // ---------- NextInput ----------
+        float checkNextInputFrame_ = 0.25f;
+
         // ---------- RadialBlur ----------
         float radialBlurStrength_   = 0.1f;
         float radialBlurStartFrame_ = 0.1f;
@@ -868,9 +871,9 @@ namespace PlayerState
         float radialBlurEndTime_    = 0.2f;
 
         // ---------- GamePadVibration ----------
-        DirectX::XMFLOAT2   gamePadVibrationPower_  = { 1.0f, 1.0f };
-        float               gamePadVibrationTime_   = 0.1f;
-        float               gamePadVibrationFrame_  = 0.15f;
+        DirectX::XMFLOAT2   gamePadVibrationPower_  = { 1.0f, 0.0f };
+        float               gamePadVibrationTime_   = 0.25f;
+        float               gamePadVibrationFrame_  = 0.1f;
         bool                isGamePadVibration_     = false;
 
         ComputeParticleEmitter computeParticleEmitter_ = {};
@@ -924,29 +927,7 @@ namespace PlayerState
         bool              isHighDamage_             = false;
     };
 
-    // ----- 攻撃0_0 -----
-    class MageAttack0_0 : public State<Player>
-    {
-    public:
-        MageAttack0_0(Player* player) : State(player, "MageAttack0_0") {}
-        ~MageAttack0_0() {}
-
-        void Initialize()                       override;
-        void Update(const float& elapsedTime)   override;
-        void Finalize()                         override;
-        void DrawDebug()                        override;
-
-    private:
-        void PlayAnimation(); // アニメーション再生
-        [[nodiscard]] const bool CheckNextInput(); // 先行入力判定
-
-    private:
-        float playAnimationSpeed_   = 1.0f;
-        float animationStartFrame_  = 0.65f;
-        
-        float attack0_1ChangeFrame_ = 0.9f;
-    };
-
+    // ----- 攻撃 -----
     class MageAttackState : public State<Player>
     {
     public:
@@ -965,35 +946,12 @@ namespace PlayerState
         ComputeParticleEmitter smokeParticleEmitter_ = {};
 
         // ---------- Animation ----------
-        float transitionIdle_   = 0.3f;
-        float transitionRun_    = 0.2f;
+        float transitionIdle_       = 0.3f;
+        float transitionRun_        = 0.2f;
+        float transitionDashDodge_  = 0.3f;
 
         bool isFirstAnimation_ = false;
         bool isDarkFireballInitialized_ = false;
-    };
-
-    // ----- 攻撃0_1 -----
-    class MageAttack0_1 : public State<Player>
-    {
-    public:
-        MageAttack0_1(Player* player) : State(player, "MageAttack0_1") {}
-        ~MageAttack0_1() {}
-
-        void Initialize()                       override;
-        void Update(const float& elapsedTime)   override;
-        void Finalize()                         override;
-        void DrawDebug()                        override;
-
-    private:
-        void PlayAnimation(); // アニメーション再生
-        [[nodiscard]] const bool CheckNextInput(); // 先行入力判定
-
-    private:
-        float playAnimationSpeed_ = 1.0f;
-        float animationStartFrame_ = 0.0f;
-        float transitionAttack0_0_ = 0.1f;
-
-        float attack0_0ChangeFrame_ = 0.3f;
     };
 
     // ----- 攻撃1_0 -----
@@ -1016,8 +974,11 @@ namespace PlayerState
         void Turn(const float& elapsedTime); // 旋回処理
 
     private:
+        // ---------- Animation ----------
         float playAniamtionSpeed_   = 1.0f;
-        float animationStartFrame_  = 0.0f;
+
+        float dashDodgeBlendFrame_ = 0.3f;
+        float transitionDashDodge_ = 0.2f;
 
         float   hailBoltLaunchFrame_    = 0.38f;
         float   hailBoltMoveSpeed_      = 30.0f;
@@ -1025,16 +986,16 @@ namespace PlayerState
 
         float turnEndFrame_ = 0.3f;
 
-        // ----- NextInput -----
+        // ---------- NextInput ----------
         float attack1_1ChangeFrame_ = 0.5f;
         float runStateChangeFrame_  = 0.7f;
         float dodgeStateChangeFrame_ = 0.5f;
 
-        // ----- CameraShake -----
+        // ---------- CameraShake ----------
         float cameraShakePower_ = 0.05f;
         float cameraShakeTime_  = 0.1f;
 
-        // ----- GamePadVibration -----
+        // ---------- GamePadVibration ----------
         DirectX::XMFLOAT2   gamePadVibrationPower_  = { 1.0f, 1.0f };
         float               gamePadVibrationTime_   = 0.1f;
     };
@@ -1091,7 +1052,7 @@ namespace PlayerState
     {
     public:
         MageAttack1_2(Player* player);
-        ~MageAttack1_2();
+        ~MageAttack1_2() {}
 
         void Initialize()                       override;
         void Update(const float& elapsedTime)   override;
@@ -1104,19 +1065,23 @@ namespace PlayerState
         [[nodiscard]] const bool CheckNextInput(); // 先行入力判定
 
     private:
-        IceArrow* iceArrow_ = nullptr;
+        // ---------- Animation ----------
+        float playAnimationSpeed_   = 1.0f;
+        float animationStartFrame_  = 0.15f;
+        float transitionAttack1_1_  = 0.3f;
+        float rootMotionMoveValue_  = 3.0f;
 
-        float playAnimationSpeed_ = 1.0f;
-        float animationStartFrame_ = 0.0f;
-
-        float attack1_3ChangeFrame_ = 1.0f;
+        // ---------- NextInput ----------
+        float runStateChangeFrame_      = 1.0f;
+        float dodgeStateChangeFrame_    = 0.8f;
+        float attack1_3ChangeFrame_     = 0.35f;
     };
 
-    // ----- 攻撃1_0 -----
+    // ----- 攻撃1_3 -----
     class MageAttack1_3 : public State<Player>
     {
     public:
-        MageAttack1_3(Player* player) : State(player, "MageAttack1_3") {}
+        MageAttack1_3(Player* player);
         ~MageAttack1_3() {}
 
         void Initialize()                       override;
@@ -1127,10 +1092,10 @@ namespace PlayerState
     private:
         void PlayAnimation(); // アニメーション再生
 
-        [[nodiscard]] const bool CheckNextInput(); // 先行入力判定
-
     private:
+        // ---------- Animation ----------
         float playAnimationSpeed_ = 1.0f;
-        float animationStartFrame_ = 0.0f;
+        float animationStartFrame_ = 0.34f;
+        float transitionAttack1_2_ = 0.2f;
     };
 }

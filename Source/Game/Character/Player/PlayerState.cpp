@@ -4558,7 +4558,7 @@ namespace PlayerState
         }
 
         // ----- 攻撃に遷移 -----
-        if (owner_->IsMageAttack0KeyDown())
+        if (owner_->IsMageAttackKeyDown())
         {
             owner_->ChangeState(Player::STATE::MageAttack);
             return true;
@@ -4697,7 +4697,7 @@ namespace PlayerState
         }
 
         // ----- 攻撃に遷移 -----
-        if (owner_->IsMageAttack0KeyDown())
+        if (owner_->IsMageAttackKeyDown())
         {
             owner_->ChangeState(Player::STATE::MageAttack);
             return true;
@@ -4885,6 +4885,7 @@ namespace PlayerState
     {
         // ルートモーションリセット
         owner_->SetUseRootMotion(false);
+        owner_->SetRootMotionValue(1.0f);
 
         // 変数リセット
         isDodgeFirstTime_ = true;
@@ -5167,6 +5168,9 @@ namespace PlayerState
     // ----- 更新 -----
     void MageDashDodgeState::Update(const float& elapsedTime)
     {
+        // 先行入力判定
+        CheckNextInput();
+
         // ルートモーションを使用する
         if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
         {
@@ -5193,7 +5197,11 @@ namespace PlayerState
         // 回避終了チェック
         if (owner_->IsPlayAnimation() == false)
         {
-            owner_->ChangeState(Player::STATE::MageIdle);
+            if (owner_->GetNextInput() == Player::NextInput::MageAttack)        owner_->ChangeState(Player::STATE::MageAttack);
+            else if (owner_->GetNextInput() == Player::NextInput::MageAttack1)  owner_->ChangeState(Player::STATE::MageAttack1_0);
+            else if (owner_->GetNextInput() == Player::NextInput::Dodge)        owner_->ChangeState(Player::STATE::MageDodge);
+            else                                                                owner_->ChangeState(Player::STATE::MageIdle);
+
             return;
         }
     }
@@ -5203,6 +5211,7 @@ namespace PlayerState
     {
         // ルートモーション使用終了
         owner_->SetUseRootMotion(false);
+        owner_->SetRootMotionValue(1.0f);
 
         // ラジアルブラー使用終了
         PostProcess::Instance().SetUseRadialBlur(false);
@@ -5214,6 +5223,7 @@ namespace PlayerState
     {
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
+            ImGui::DragFloat("CheckNextInputFrame", &checkNextInputFrame_, 0.01f);
             if (ImGui::TreeNodeEx("---------- Animation ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::DragFloat("AnimationStartFrame", &animationStartFrame_, 0.01f);
@@ -5283,16 +5293,25 @@ namespace PlayerState
     }
 
     // ----- 先行入力判定 -----
-    const bool MageDashDodgeState::CheckNextInput()
+    void MageDashDodgeState::CheckNextInput()
     {
+        if (owner_->GetAnimationSeconds() < checkNextInputFrame_) return;
+
         // 回避
-
+        if (owner_->IsDodgeKeyDown())
+        {
+            owner_->SetNextInput(Player::NextInput::Dodge);
+        }
         // 攻撃
-
-        // 移動
-
-
-        return false;
+        if (owner_->IsMageAttackKeyDown())
+        {
+            owner_->SetNextInput(Player::NextInput::MageAttack);
+        }
+        // 攻撃1_0
+        if (owner_->IsMageAttack1KeyDown())
+        {
+            owner_->SetNextInput(Player::NextInput::MageAttack1);
+        }
     }
 }
 
@@ -5541,7 +5560,7 @@ namespace PlayerState
         {
             if (isFirstAnimation_)
             {
-                owner_->PlayAnimation(Player::Animation::MageAttackEnd, false);
+                owner_->PlayAnimation(Player::Animation::MageSkillAttack0_1, false);
 
                 // ルートモーション使用
                 owner_->SetUseRootMotion(true);
@@ -5572,6 +5591,7 @@ namespace PlayerState
             {
                 ImGui::DragFloat("TransitionIdle", &transitionIdle_, 0.01f);
                 ImGui::DragFloat("TransitionRun", &transitionRun_, 0.01f);
+                ImGui::DragFloat("TransitionDashDodge", &transitionDashDodge_, 0.01f);
 
                 ImGui::TreePop();
             }
@@ -5593,179 +5613,13 @@ namespace PlayerState
         {
             transitionTime = transitionRun_;
         }
+        else if (animationIndex == Player::Animation::MageDush)
+        {
+            transitionTime = transitionDashDodge_;
+        }
         owner_->SetTransitionTime(transitionTime);
 
-        owner_->PlayBlendAnimation(Player::Animation::MageAttackStart, false);
-    }
-}
-
-// ----- 攻撃0_0 -----
-namespace PlayerState
-{
-    // ----- 初期化 -----
-    void MageAttack0_0::Initialize()
-    {
-        // フラグをリセット
-        owner_->ResetFlags();
-
-        // アニメーション再生
-        PlayAnimation();
-    }
-
-    // ----- 更新 -----
-    void MageAttack0_0::Update(const float& elapsedTime)
-    {
-        // 先行入力判定
-        if (CheckNextInput()) return;
-
-        // 発射物生成
-
-        // 攻撃終了判定
-        if (owner_->IsPlayAnimation() == false)
-        {
-            owner_->ChangeState(Player::STATE::MageIdle);
-            return;
-        }
-    }
-
-    // ----- 終了化 -----
-    void MageAttack0_0::Finalize()
-    {
-    }
-
-    // ----- ImGui用 -----
-    void MageAttack0_0::DrawDebug()
-    {
-        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
-        {
-            if (ImGui::TreeNodeEx("----- Animation -----", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                ImGui::DragFloat("PlayAnimationSpeed", &playAnimationSpeed_, 0.01f);
-                ImGui::DragFloat("AniamtionStartFrame", &animationStartFrame_, 0.01f);
-
-                ImGui::TreePop();
-            }
-            if (ImGui::TreeNodeEx("----- NextInput -----", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                ImGui::DragFloat("Attack0_1ChangeFrame", &attack0_1ChangeFrame_, 0.01f);
-
-                ImGui::TreePop();
-            }
-            
-
-            ImGui::TreePop();
-        }
-    }
-
-    // ----- アニメーション再生 -----
-    void MageAttack0_0::PlayAnimation()
-    {
-        owner_->PlayBlendAnimation(Player::Animation::MageAttack0_0, false, playAnimationSpeed_, animationStartFrame_);
-                
-        owner_->SetTransitionTime(0.15f);
-    }
-
-    // ----- 先行入力判定 -----
-    const bool MageAttack0_0::CheckNextInput()
-    {
-        if (owner_->IsMageAttack0KeyDown())
-        {
-            owner_->SetNextInput(Player::NextInput::MageAttack0);
-        }
-
-        const float curretAnimationSeconds = owner_->GetAnimationSeconds();
-
-        if (owner_->GetNextInput() == Player::NextInput::MageAttack0 && curretAnimationSeconds > attack0_1ChangeFrame_)
-        {
-            owner_->ChangeState(Player::STATE::MageAttack0_1);
-            return true;
-        }
-
-        return false;
-    }
-}
-
-// ----- 攻撃0_1 -----
-namespace PlayerState
-{
-    // ----- 初期化 -----
-    void MageAttack0_1::Initialize()
-    {
-        // フラグをリセット
-        owner_->ResetFlags();
-
-        // アニメーション再生
-        PlayAnimation();
-    }
-
-    // ----- 更新 -----
-    void MageAttack0_1::Update(const float& elapsedTime)
-    {
-        // 先行入力判定
-        if (CheckNextInput()) return;
-
-        // 攻撃終了判定
-        if (owner_->IsPlayAnimation() == false)
-        {
-            owner_->ChangeState(Player::STATE::MageIdle);
-            return;
-        }
-    }
-
-    // ----- 終了化 -----
-    void MageAttack0_1::Finalize()
-    {
-    }
-
-    // ----- ImGui用 -----
-    void MageAttack0_1::DrawDebug()
-    {
-        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
-        {
-            if (ImGui::TreeNodeEx("---------- Animation ----------", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                ImGui::DragFloat("PlayAnimationSpeed", &playAnimationSpeed_, 0.01f);
-                ImGui::DragFloat("AnimationStartFrame", &animationStartFrame_, 0.01f);
-                ImGui::DragFloat("TransitionAttack0_0", &transitionAttack0_0_, 0.01f);
-
-                ImGui::TreePop();
-            }
-            if (ImGui::TreeNodeEx("----- NextInput -----", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                ImGui::DragFloat("Attack0_1ChangeFrame", &attack0_0ChangeFrame_, 0.01f);
-
-                ImGui::TreePop();
-            }
-
-            ImGui::TreePop();
-        }
-    }
-
-    // ----- アニメーション再生 -----
-    void MageAttack0_1::PlayAnimation()
-    {
-        owner_->PlayBlendAnimation(Player::Animation::MageAttack0_1, false, playAnimationSpeed_, animationStartFrame_);
-        
-        owner_->SetTransitionTime(transitionAttack0_0_);
-    }
-
-    // ----- 先行入力判定 -----
-    const bool MageAttack0_1::CheckNextInput()
-    {
-        if (owner_->IsMageAttack0KeyDown())
-        {
-            owner_->SetNextInput(Player::NextInput::MageAttack0);
-        }
-
-        const float curretAnimationSeconds = owner_->GetAnimationSeconds();
-
-        if (owner_->GetNextInput() == Player::NextInput::MageAttack0 && curretAnimationSeconds > attack0_0ChangeFrame_)
-        {
-            owner_->ChangeState(Player::STATE::MageAttack0_0);
-            return true;
-        }
-
-        return false;
+        owner_->PlayBlendAnimation(Player::Animation::MageSkillAttack0_0, false);
     }
 }
 
@@ -5835,6 +5689,13 @@ namespace PlayerState
     {
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
+            if (ImGui::TreeNodeEx("---------- Animation ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("DashDodgeBlendFrame", &dashDodgeBlendFrame_, 0.01f);
+                ImGui::DragFloat("TransitionDashDodge", &transitionDashDodge_, 0.01f);
+
+                ImGui::TreePop();
+            }
             if (ImGui::TreeNodeEx("---------- Turn ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::DragFloat("TurnEndFrame", &turnEndFrame_, 0.01f);
@@ -5878,9 +5739,17 @@ namespace PlayerState
     // ----- アニメーション再生 -----
     void MageAttack1_0::PlayAnimation()
     {
-        owner_->PlayBlendAnimation(Player::Animation::MageAttack1_0, false, playAniamtionSpeed_, animationStartFrame_);
+        const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+        float animationStartFrame = 0.0f;
+        float transitionTime = 0.15f;
+        if (animationIndex == Player::Animation::MageDush)
+        {
+            animationStartFrame = dashDodgeBlendFrame_;
+            transitionTime = transitionDashDodge_;
+        }
 
-        owner_->SetTransitionTime(0.15f);
+        owner_->PlayBlendAnimation(Player::Animation::MageAttack1_0, false, playAniamtionSpeed_, animationStartFrame);
+        owner_->SetTransitionTime(transitionTime);
     }
 
     // ----- 先行入力判定 -----
@@ -6186,13 +6055,6 @@ namespace PlayerState
     MageAttack1_2::MageAttack1_2(Player* player)
         : State(player, "MageAttack1_2")
     {
-        iceArrow_ = new IceArrow();
-    }
-
-    // ----- デストラクタ -----
-    MageAttack1_2::~MageAttack1_2()
-    {
-        iceArrow_ = nullptr;
     }
 
     // ----- 初期化 -----
@@ -6211,10 +6073,11 @@ namespace PlayerState
         // 先行入力判定
         if (CheckNextInput()) return;
 
-        // ルートモーションの設定
+        // ルートモーションを使用する
         if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
         {
             owner_->SetUseRootMotion(true);
+            owner_->SetRootMotionValue(rootMotionMoveValue_);
         }
 
         // 攻撃終了判定
@@ -6223,53 +6086,101 @@ namespace PlayerState
             owner_->ChangeState(Player::STATE::MageIdle);
             return;
         }
-
-        if (owner_->GetAnimationSeconds() > 0.7f && iceArrow_->GetIsDrawActive())
-        {
-            iceArrow_->SetIsDrawActive(false);
-        }
-        else if (owner_->GetAnimationSeconds() < 0.7f && owner_->GetAnimationSeconds() > 0.565f && iceArrow_->GetIsDrawActive() == false)
-        {
-            iceArrow_->SetIsDrawActive(true);
-        }
     }
 
     // ----- 終了化 -----
     void MageAttack1_2::Finalize()
     {
         // ルートモーション使用終了
-        owner_->SetUseRootMotion(false);
+        owner_->SetUseRootMotion(false);    
+        owner_->SetRootMotionValue(1.0f);
     }
 
     // ----- ImGui用 -----
     void MageAttack1_2::DrawDebug()
     {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- Animation ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("PlayAnimationSpeed", &playAnimationSpeed_, 0.01f);
+                ImGui::DragFloat("AnimationStartFrame", &animationStartFrame_, 0.01f);
+                ImGui::DragFloat("TransitionAttack1_1", &transitionAttack1_1_, 0.01f);
+                ImGui::DragFloat("RootMotionMoveValue", &rootMotionMoveValue_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- NextInput ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("RunStateChangeFrame", &runStateChangeFrame_, 0.01f);
+                ImGui::DragFloat("DodgeStateChangeFrame", &dodgeStateChangeFrame_, 0.01f);
+                ImGui::DragFloat("Attack1_3ChangeFrame", &attack1_3ChangeFrame_, 0.01f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
     }
-    
+
     // ----- アニメーション再生 -----
     void MageAttack1_2::PlayAnimation()
     {
         owner_->PlayBlendAnimation(Player::Animation::MageAttack1_2, false, playAnimationSpeed_, animationStartFrame_);
-
-        owner_->SetTransitionTime(0.15f);
+        owner_->SetTransitionTime(transitionAttack1_1_);
     }
 
     // ----- 先行入力判定 -----
     const bool MageAttack1_2::CheckNextInput()
     {
+        const float curretAnimationSeconds = owner_->GetAnimationSeconds();
+
+        // ----------------------------------------
+        //              先行入力受付
+        // ----------------------------------------
+
+        // ----- 回避入力受付 -----
+        if (owner_->IsDodgeKeyDown())
+        {
+            owner_->SetNextInput(Player::NextInput::Dodge);
+        }
+        // ----- 攻撃1_3入力受付 -----
         if (owner_->IsMageAttack1KeyDown())
         {
             owner_->SetNextInput(Player::NextInput::MageAttack1);
         }
 
-        const float curretAnimationSeconds = owner_->GetAnimationSeconds();
+        // ----------------------------------------
+        //         先行入力によるステート変更
+        // ----------------------------------------
 
-        if (owner_->GetNextInput() == Player::NextInput::MageAttack1 && curretAnimationSeconds > attack1_3ChangeFrame_)
+        // ----- 回避へ遷移 -----
+        if (owner_->GetNextInput() == Player::NextInput::Dodge && curretAnimationSeconds >= dodgeStateChangeFrame_)
+        {
+            owner_->ChangeState(Player::STATE::MageDodge);
+            return true;
+        }
+        // ----- 攻撃1_2へ遷移 -----
+        else if (owner_->GetNextInput() == Player::NextInput::MageAttack1 && curretAnimationSeconds >= attack1_3ChangeFrame_)
         {
             owner_->ChangeState(Player::STATE::MageAttack1_3);
             return true;
         }
 
+        // ----- 走りに遷移 -----
+        if (curretAnimationSeconds >= runStateChangeFrame_)
+        {
+            const float aLX = Input::Instance().GetGamePad().GetAxisLX();
+            const float aLY = Input::Instance().GetGamePad().GetAxisLY();
+            // 移動入力がない
+            if (aLX == 0.0f && aLY == 0.0f) return false;
+
+            owner_->ChangeState(Player::STATE::MageRun);
+            return true;
+        }
+        // =============================================
+        // ========== これより下に何も書かない ===========
+        // =============================================
         return false;
     }
 }
@@ -6277,6 +6188,12 @@ namespace PlayerState
 // ----- 攻撃1_3 -----
 namespace PlayerState
 {
+    // ----- コンストラクタ -----
+    MageAttack1_3::MageAttack1_3(Player* player)
+        : State(player, "MageAttack1_3")
+    {
+    }
+
     // ----- 初期化 -----
     void MageAttack1_3::Initialize()
     {
@@ -6290,10 +6207,7 @@ namespace PlayerState
     // ----- 更新 -----
     void MageAttack1_3::Update(const float& elapsedTime)
     {
-        // 先行入力判定
-        if (CheckNextInput()) return;
-
-        // ルートモーションの設定
+        // ルートモーションを使用する
         if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
         {
             owner_->SetUseRootMotion(true);
@@ -6302,8 +6216,23 @@ namespace PlayerState
         // 攻撃終了判定
         if (owner_->IsPlayAnimation() == false)
         {
-            owner_->ChangeState(Player::STATE::MageIdle);
-            return;
+            if (owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::MageAttack1_3Start))
+            {
+                owner_->PlayBlendAnimation(Player::Animation::MageAttack1_3Loop, false);
+                owner_->SetTransitionTime(0.1f);
+                owner_->SetUseRootMotion(false);
+            }
+            else if (owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::MageAttack1_3Loop))
+            {
+                owner_->PlayBlendAnimation(Player::Animation::MageAttack1_3End, false);
+                owner_->SetTransitionTime(0.1f);
+                owner_->SetUseRootMotion(false);
+            }
+            else
+            {
+                owner_->ChangeState(Player::STATE::MageIdle);
+                return;
+            }
         }
     }
 
@@ -6317,26 +6246,27 @@ namespace PlayerState
     // ----- ImGui用 -----
     void MageAttack1_3::DrawDebug()
     {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- Animation ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("PlayAnimationSpeed", &playAnimationSpeed_, 0.01f);
+                ImGui::DragFloat("AnimationStartFrame", &animationStartFrame_, 0.01f);
+                ImGui::DragFloat("TransitionAttack1_2", &transitionAttack1_2_, 0.01f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
     }
 
     // ----- アニメーション再生 -----
     void MageAttack1_3::PlayAnimation()
     {
-        owner_->PlayBlendAnimation(Player::Animation::MageAttack1_3, false, playAnimationSpeed_, animationStartFrame_);
-
-        owner_->SetTransitionTime(0.15f);
+        owner_->PlayBlendAnimation(Player::Animation::MageAttack1_3Start, false, playAnimationSpeed_, animationStartFrame_);
+        owner_->SetTransitionTime(transitionAttack1_2_);
     }
-
-    // ----- 先行入力判定 -----
-    const bool MageAttack1_3::CheckNextInput()
-    {
-        return false;
-    }
-}
-
-namespace PlayerState
-{
-
 }
 
 namespace PlayerState

@@ -61,8 +61,6 @@ public:// --- 定数 ---
         MageDashDodge,
         MageDamage,
         MageAttack,
-        MageAttack0_0,
-        MageAttack0_1,
         MageAttack1_0,
         MageAttack1_1,
         MageAttack1_2,
@@ -118,25 +116,23 @@ public:// --- 定数 ---
         MageDodgeFront, // 
         MageDamage,     // ダメージ
         MageGetUp,      // 起き上がり
-        MageAttack0_0,
-        MageAttack0_1,
         MageAttackSkill,
         MageAttack1_0,
         MageAttack1_1,
-        MageAttack1_2,
-        MageAttack1_3,
 
         MageDush,
-        MageAttackStart,
-        MageAttackEnd,
+
+        MageSkillAttack0_0,
+        MageSkillAttack0_1,
 
         MageAttackDodge,
-        MageAttackDodge1,
+        
+        MageAttack1_2,
+        MageAttack1_2_2,
 
-        MageAttack2_0,
-        MageAttack2_1,
-        MageAttack2_2,
-        MageAttack2_3,
+        MageAttack1_3Start,
+        MageAttack1_3Loop,
+        MageAttack1_3End,
     };
 
     // 先行入力の種類
@@ -146,6 +142,7 @@ public:// --- 定数 ---
         ComboAttack0,   // コンボ攻撃
         Dodge,          // 回避
         Counter,        // カウンター
+        MageAttack,
         MageAttack0,
         MageAttack1,
     };
@@ -342,7 +339,7 @@ public:// --- 取得・設定 ---
 
     // ---------- キー入力 ----------
     [[nodiscard]] const bool IsComboAttack0KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
-    [[nodiscard]] const bool IsMageAttack0KeyDown()  const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
+    [[nodiscard]] const bool IsMageAttackKeyDown()   const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
     [[nodiscard]] const bool IsMageAttack1KeyDown()  const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y; }
     [[nodiscard]] const bool IsDodgeKeyDown()        const;
     [[nodiscard]] const bool IsCounterStanceKey()    const;
