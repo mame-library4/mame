@@ -946,17 +946,21 @@ void Player::ChangeDeathState()
 }
 
 // ----- –ğE‚ğ•ÏX -----
-void Player::ChangePlayerRole()
+void Player::ChangePlayerRole(const PlayerRole& playerRole)
 {
-    // Œ»İŒ•m‚Ìê‡
-    if (playerRole_ == PlayerRole::SwordsMan)
-    {
-        ChangeState(STATE::MageIdle);
-        playerRole_ = PlayerRole::Mage;
-    }
-    else
+    // Œ»İ‚Ì–ğE‚Æ“¯‚¶
+    if (playerRole_ == playerRole) return;
+
+    // Œ•m‚Ìê‡
+    if (playerRole == PlayerRole::SwordsMan)
     {
         ChangeState(STATE::Idle);
         playerRole_ = PlayerRole::SwordsMan;
+    }
+    // –‚–@g‚¢‚Ìê‡
+    else if(playerRole == PlayerRole::Mage)
+    {
+        ChangeState(STATE::MageIdle);
+        playerRole_ = PlayerRole::Mage;
     }
 }

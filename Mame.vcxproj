@@ -231,7 +231,6 @@
     <ClCompile Include="Source\Game\Projectile\DarkFireballEmitter.cpp" />
     <ClCompile Include="Source\Game\Projectile\Fireball.cpp" />
     <ClCompile Include="Source\Game\Projectile\HailBolt.cpp" />
-    <ClCompile Include="Source\Game\Projectile\IceArrow.cpp" />
     <ClCompile Include="Source\Game\Projectile\Projectile.cpp" />
     <ClCompile Include="Source\Game\Projectile\ProjectileManager.cpp" />
     <ClCompile Include="Source\Game\Stage\Stage.cpp" />
@@ -254,6 +253,7 @@
     <ClCompile Include="Source\Game\UI\UIRush.cpp" />
     <ClCompile Include="Source\Game\UI\UIStamina.cpp" />
     <ClCompile Include="Source\Game\UI\UISword.cpp" />
+    <ClCompile Include="Source\Game\UI\UISystem.cpp" />
     <ClCompile Include="Source\Game\UI\UITitle.cpp" />
     <ClCompile Include="Source\Graphics\Camera.cpp" />
     <ClCompile Include="Source\Graphics\CascadedShadowMap.cpp" />
@@ -347,7 +347,6 @@
     <ClInclude Include="Source\Game\Projectile\DarkFireballEmitter.h" />
     <ClInclude Include="Source\Game\Projectile\Fireball.h" />
     <ClInclude Include="Source\Game\Projectile\HailBolt.h" />
-    <ClInclude Include="Source\Game\Projectile\IceArrow.h" />
     <ClInclude Include="Source\Game\Projectile\Projectile.h" />
     <ClInclude Include="Source\Game\Projectile\ProjectileManager.h" />
     <ClInclude Include="Source\Game\Stage\Stage.h" />
@@ -370,6 +369,7 @@
     <ClInclude Include="Source\Game\UI\UIRush.h" />
     <ClInclude Include="Source\Game\UI\UIStamina.h" />
     <ClInclude Include="Source\Game\UI\UISword.h" />
+    <ClInclude Include="Source\Game\UI\UISystem.h" />
     <ClInclude Include="Source\Game\UI\UITitle.h" />
     <ClInclude Include="Source\Graphics\Camera.h" />
     <ClInclude Include="Source\Graphics\CascadedShadowMap.h" />

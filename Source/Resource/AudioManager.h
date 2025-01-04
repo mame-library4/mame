@@ -65,6 +65,10 @@ enum class SE
     // ----- Down -----
     Down,
 
+    // ----- Mage -----
+    HailBoltLaunch,
+    AquaBulletLaunch,
+
     Max,
 };
 

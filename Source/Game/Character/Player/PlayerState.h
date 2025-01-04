@@ -3,7 +3,6 @@
 #include "Player.h"
 #include "ComputeParticle/ComputeParticleEmitter.h"
 #include "Projectile/AquaBullet.h"
-#include "Projectile/IceArrow.h"
 
 namespace PlayerState
 {

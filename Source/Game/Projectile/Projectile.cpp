@@ -2,8 +2,8 @@
 #include "ProjectileManager.h"
 
 // ----- コンストラクタ -----
-Projectile::Projectile(const std::string filename, const float& scaleFactor, const std::string& name, const int drawType)
-    : Object(filename, scaleFactor), drawType_(drawType)
+Projectile::Projectile(const std::string filename, const float& scaleFactor, const std::string& name, const int& drawType, const int& attackType)
+    : Object(filename, scaleFactor), drawType_(drawType), attackType_(attackType)
 {
     // マネージャーに登録
     ProjectileManager::Instance().Register(this);

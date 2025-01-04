@@ -77,7 +77,7 @@ void Fireball::DrawDebug()
 }
 
 // ----- 当たった時に呼び出される処理 -----
-void Fireball::OnHit()
+void Fireball::OnHit(const DirectX::XMFLOAT3& hitPosition)
 {
     fireBallParticle_->SetToExplode(); // エフェクトの動きを爆発に切り替える
 }

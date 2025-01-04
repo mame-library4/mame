@@ -3,16 +3,17 @@
 #include "Graphics.h"
 #include "Texture.h"
 #include "MathHelper.h"
+#include "AudioManager.h"
 
 // ----- コンストラクタ -----
 AquaBullet::AquaBullet()
-    : Projectile("./Resources/Model/Sphere.gltf", 1.0f, "AquaBullet", static_cast<int>(ProjectileManager::DrawType::Normal))
+    : Projectile("./Resources/Model/Sphere.gltf", 1.0f, "AquaBullet", 
+        static_cast<int>(ProjectileManager::DrawType::Normal), static_cast<int>(ProjectileManager::AttackType::Enemy))
 {
     aquaBulletConstants_ = std::make_unique<ConstantBuffer<AquaBulletConstants>>();
 
     Graphics::Instance().CreatePsFromCso("./Resources/Shader/AquaBulletPS.cso", aquaBulletPS_.GetAddressOf());
     D3D11_TEXTURE2D_DESC desc = {};
-    //Texture::Instance().LoadTexture(L"./Resources/Image/Mask/Mask1.png", shaderResourceView_.GetAddressOf(), &desc);
     Texture::Instance().LoadTexture(L"./Resources/Image/Mask/Noise1.png", shaderResourceView_.GetAddressOf(), &desc);
 }
 
@@ -23,6 +24,11 @@ void AquaBullet::Initialize()
     lifeTimer_ = 3.0f;
 
     aquaBulletTrailEmitter_.SetEmitParameter("AquaBulletTrail");
+
+    SetRadius(0.5f);
+
+    // HitEffect
+    hitEffectEmitter_.SetEmitParameter("AquaBulleHitEffect");
 }
 
 void AquaBullet::Finalize()
@@ -78,8 +84,19 @@ void AquaBullet::DrawDebug()
     }
 }
 
-void AquaBullet::OnHit()
+// ----- 当たった時に呼ばれる -----
+void AquaBullet::OnHit(const DirectX::XMFLOAT3& hitPosition)
 {
+    // Hitエフェクト再生
+    hitEffectEmitter_.SetEmitParameter("AquaBulleHitEffect");
+    hitEffectEmitter_.SetEmitPosition(hitPosition);
+    hitEffectEmitter_.EmitParticle();
+
+    // 効果音を再生
+    //AudioManager::Instance().PlaySE()
+
+    // 自分自身を削除する
+    ProjectileManager::Instance().Remove(this);
 }
 
 // ----- 発射 -----
@@ -89,4 +106,7 @@ void AquaBullet::Launch(const DirectX::XMFLOAT3& moveDirection, const float& mov
     moveSpeed_ = moveSpeed;
     
     isTrailEffectGeneratable_ = true;
+
+    // 発射SEを再生
+    AudioManager::Instance().PlaySE(SE::AquaBulletLaunch);
 };

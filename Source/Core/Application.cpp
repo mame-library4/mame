@@ -13,6 +13,8 @@
 #include "Effect/EffectManager.h"
 #include "UI/UIManager.h"
 
+#include "System/SystemManager.h"
+
 bool Application::isGameEnd_ = false;
 
 // ----- コンストラクタ -----
@@ -80,17 +82,25 @@ void Application::Update(const float& elapsedTime)
     // ImGui更新
     IMGUI_CTRL_CLEAR_FRAME();
 
+    bool isUpdatable = true;
+    // システム更新
+    isUpdatable = SystemManager::Instance().Update();
+
     // 入力更新処理
     input_.Update(elapsedTime);
 
-    // シーン更新処理
-    SceneManager::Instance().Update(elapsedTime);
+    // 更新可能なら更新する
+    if (isUpdatable)
+    {
+        // シーン更新処理
+        SceneManager::Instance().Update(elapsedTime);
 
-    // カメラ更新
-    Camera::Instance().Update(elapsedTime);
+        // カメラ更新
+        Camera::Instance().Update(elapsedTime);
 
-    // エフェクト更新
-    EffectManager::Instance().Update(elapsedTime);
+        // エフェクト更新
+        EffectManager::Instance().Update(elapsedTime);
+    }
 
     UIManager::Instance().Update(elapsedTime);
 

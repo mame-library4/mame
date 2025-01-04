@@ -308,9 +308,6 @@
     <ClCompile Include="Source\Game\Projectile\HailBolt.cpp">
       <Filter>Mame\Game\Object\Projectile\HailBolt</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Game\Projectile\IceArrow.cpp">
-      <Filter>Mame\Game\Object\Projectile\IceArrow</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Game\Projectile\AquaBullet.cpp">
       <Filter>Mame\Game\Object\Projectile\AquaBullet</Filter>
     </ClCompile>
@@ -319,6 +316,9 @@
     </ClCompile>
     <ClCompile Include="Source\Game\Projectile\DarkFireballEmitter.cpp">
       <Filter>Mame\Game\Object\Projectile\DarkFireball</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\UI\UISystem.cpp">
+      <Filter>Mame\Game\UI\UISystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -663,9 +663,6 @@
     <ClInclude Include="Source\Game\Projectile\HailBolt.h">
       <Filter>Mame\Game\Object\Projectile\HailBolt</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\Projectile\IceArrow.h">
-      <Filter>Mame\Game\Object\Projectile\IceArrow</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Game\Projectile\AquaBullet.h">
       <Filter>Mame\Game\Object\Projectile\AquaBullet</Filter>
     </ClInclude>
@@ -674,6 +671,9 @@
     </ClInclude>
     <ClInclude Include="Source\Game\Projectile\DarkFireballEmitter.h">
       <Filter>Mame\Game\Object\Projectile\DarkFireball</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\UI\UISystem.h">
+      <Filter>Mame\Game\UI\UISystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -971,9 +971,6 @@
     <Filter Include="Mame\Game\Object\Projectile\HailBolt">
       <UniqueIdentifier>{3312a726-6fd5-4ca1-a363-5e336210166f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Mame\Game\Object\Projectile\IceArrow">
-      <UniqueIdentifier>{dd90cd89-f52a-4a01-b326-f60550e76637}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Mame\Shader\GltfModel\MeshEffect">
       <UniqueIdentifier>{2cb491aa-da60-4b3d-a4e1-0851d995e7a6}</UniqueIdentifier>
     </Filter>
@@ -982,6 +979,9 @@
     </Filter>
     <Filter Include="Mame\Game\Object\Projectile\DarkFireball">
       <UniqueIdentifier>{346d2a10-d37c-43dd-85f3-4bdc9d907975}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\UI\UISystem">
+      <UniqueIdentifier>{c8044ed4-82f0-44df-bc64-6b6f6b3e159d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

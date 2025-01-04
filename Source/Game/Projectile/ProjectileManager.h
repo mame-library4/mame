@@ -16,6 +16,12 @@ public:
         Normal,
         GBuffer,
     };
+    enum class AttackType
+    {
+        All,
+        Player,
+        Enemy,
+    };
 
 public:
     static ProjectileManager& Instance()
@@ -35,6 +41,8 @@ public:
     void Register(Projectile* projectile);
     void Remove(Projectile* projectile);
     void Clear();
+
+    [[nodiscard]] const int GetProjectileCount() const { return projectiles_.size(); }
 
     std::vector<Projectile*> GetProjectiles() { return projectiles_; }
     Projectile* GetProjectile(const int& id);

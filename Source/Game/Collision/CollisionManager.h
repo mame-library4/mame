@@ -23,16 +23,47 @@ public:
     void DrawDebug();
 
 private:
-    void UpdatePlayerVsEnemy();
-    void CheckJustDodgeCollision(); // ƒWƒƒƒXƒg‰ñ”ğ”»’è
-    void UpdatePlayerAttackVsEnemyDamage();
-    void UpdatePlayerDamageVsEnemyAttack();
-    void UpdatePlayerCollisionVsEnemyCollision();
-    void CounterCheckEnemyAttack();                 // “G‚ÌUŒ‚‚É‘Î‚·‚éƒJƒEƒ“ƒ^[”»’è
+    // ========== Player VS ZZ ==========
+#pragma region ========== Player VS ZZ ==========
+    void UpdatePlayerVs();
+    // ----- ƒWƒƒƒXƒg‰ñ”ğ”»’è -----
+    void UpdatePlayerJustDodge();               // PlayerJustDodge
+    void PlayerJustDodgeVsEnemyAttack();        // Player VS Enemy
+    void PlayerJustDodgeVsProjectileAttack();   // Player VS Projectile
+    // ----- UŒ‚”»’è -----
+    void UpdatePlayerAttack();              // PlayerAttack
+    void PlayerAttackVsEnemyDamage();       // Player VS Enemy
+    // ----- ƒJƒEƒ“ƒ^[”»’è -----
+    void UpdatePlayerCounter();             // PlayerCounter
+    void PlayerCounterVsEnemy();            // Player VS Enemy
+    void PlayerGuardCounterVsEnemy();       // Player VS Enemy
+    void PlayerCounterVsProjectile();       // Player VS Projectile
+    void PlayerGuardCounterVsProjectile();  // Player VS Projectile
+    // ----- ‚­‚ç‚¢”»’è -----
+    void UpdatePlayerDamage();              // PlayerDamage
+    void PlayerFlinchVsEnemyAttack();       // Player VS Enemy
+    void PlayerDamageVsEnemyAttack();       // Player VS Enemy
+    void PlayerDamageVsProjectileAttack();  // Player VS Projectile
+    // ----- ‰Ÿ‚µo‚µ”»’è -----
+    void UpdatePlayerCollision();           // PlayerCollision
+    void PlayerVsEnemy();                   // Player VS Enemy
+#pragma endregion ========== Player VS ZZ ==========
 
-    void UpdatePlayerVsProjectile();
-    void UpdatePlayerDamageVsProjectileAttack();
-    void CounterCheckProjectile();                  // ”­Ë•¨‚É‘Î‚·‚éƒJƒEƒ“ƒ^[”»’è
+    // ========== Enemy VS ZZ ==========
+#pragma region ========== Enemy VS ZZ ==========
+    void UpdateEnemyVs();
+    // ----- ‚­‚ç‚¢”»’è -----
+    void UpdateEnemyDamage();               // EnemyDamage
+    void EnemyDamageVsProjectileAttack();   // Enemy VS Proejctile
+
+#pragma endregion ========== Enemy VS ZZ ==========
+    
+    // ========== Projectile VS ZZ ==========
+#pragma region ========== Projectile VS ZZ ==========
+    void UpdateProjectileVs();
+
+#pragma endregion ========== Projectile VS ZZ ==========
+
 
     void UpdateItemVs();       // ƒAƒCƒeƒ€‚Æ‚Ìˆ—ŒÄ‚Ño‚µ
     void UpdateItemVsAttack(); // ƒAƒCƒeƒ€‚ÆUŒ‚”»’è‚Æ‚Ì”»’è
@@ -98,5 +129,12 @@ private:
     DirectX::XMFLOAT4 weakPointDamageUIColor_   = { 1.0f, 0.55f, 0.0f, 1.0f };
 
     ComputeParticleEmitter computeParticleEmitter_ = {};
+
+    
+    // ----- HitEffect -----
+    float hitEffectDefaultSize_     = 0.3f;
+    float hitEffectWeakPointSize_   = 0.4f;
+    float hitEffectDefaultSpeed_    = 1.0f;
+    float hitEffectSlowSpeed_       = 0.01f;
 };
 

@@ -20,11 +20,15 @@ void CollisionManager::Finalize()
 // ----- 更新 -----
 void CollisionManager::Update(const float& elapsedTime)
 {
-    // Player と Enemy の判定
-    UpdatePlayerVsEnemy();
+    // Player VS 〇〇
+    UpdatePlayerVs();
 
-    // Player と Projectile の判定
-    //UpdatePlayerVsProjectile();
+    // Enemy VS 〇〇
+    UpdateEnemyVs();
+
+    // Projectile VS 〇〇
+    UpdateProjectileVs();
+
 
     // アイテム と 〇〇 の判定
     UpdateItemVs();
@@ -59,47 +63,55 @@ void CollisionManager::DrawDebug()
     }
 }
 
-#pragma region ---------- Player VS Enemy ----------
-// ----- PlayerとEnemyの判定 -----
-void CollisionManager::UpdatePlayerVsEnemy()
+#pragma region ==================== Player VS 〇〇 ====================
+// ----- Player VS 〇〇 -----
+void CollisionManager::UpdatePlayerVs()
 {
-    // Enemyが存在しない場合はここで終了
-    if (EnemyManager::Instance().GetEnemyCount() == 0) return;
-
-    // -------------------------------------------------------
-    //   ここから下の処理はプレイヤーから見た処理になっています
-    // -------------------------------------------------------
     // ジャスト回避判定
-    CheckJustDodgeCollision();
+    UpdatePlayerJustDodge();
 
     // 攻撃判定
-    UpdatePlayerAttackVsEnemyDamage();
+    UpdatePlayerAttack();
 
     // カウンター判定
-    CounterCheckEnemyAttack();
+    UpdatePlayerCounter();
 
     // くらい判定
-    UpdatePlayerDamageVsEnemyAttack();
+    UpdatePlayerDamage();
 
     // 押し出し判定
-    UpdatePlayerCollisionVsEnemyCollision();
+    UpdatePlayerCollision();
 }
 
+#pragma region ---------- ジャスト回避判定 ----------
 // ----- ジャスト回避判定 -----
-void CollisionManager::CheckJustDodgeCollision()
+void CollisionManager::UpdatePlayerJustDodge()
 {
-    Player* player = PlayerManager::Instance().GetPlayer().get();
- 
-    // ジャスト回避判定をしない
-    if (player->GetIsJustDodgeCheckEnabled() == false) return;
-    
-    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
-    const DirectX::XMFLOAT3 playerPosition = player->GetTransform()->GetPosition();
+    // Player VS Enemy
+    PlayerJustDodgeVsEnemyAttack();
 
-    for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetJustDodgeDetectionDataCount(); ++enemyDataIndex)
+    // Player VS Projectile
+    PlayerJustDodgeVsProjectileAttack();
+}
+
+// ----- Player VS Enemy -----
+void CollisionManager::PlayerJustDodgeVsEnemyAttack()
+{
+    // Enemyが存在しない
+    if (EnemyManager::Instance().GetEnemyCount() <= 0) return;
+    // ジャスト回避判定をしない
+    if (PlayerManager::Instance().GetPlayer()->GetIsJustDodgeCheckEnabled() == false) return;
+
+    Player* player = PlayerManager::Instance().GetPlayer().get();
+    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
+
+    const DirectX::XMFLOAT3 playerPosition = player->GetTransform()->GetPosition();
+    const int maxEnemyData = enemy->GetJustDodgeDetectionDataCount();
+
+    for (int enemyDataIndex = 0; enemyDataIndex < maxEnemyData; ++enemyDataIndex)
     {
         const JustDodgeDetectionData enemyData = enemy->GetJustDodgeDetectionData(enemyDataIndex);
-        
+
         // 現在有効ではない
         if (enemyData.GetIsActive() == false) continue;
 
@@ -116,27 +128,46 @@ void CollisionManager::CheckJustDodgeCollision()
     }
 }
 
-// ----- Playerの攻撃判定と Enemyのくらい判定をチェック -----
-void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
+// ----- Player VS Projectile -----
+void CollisionManager::PlayerJustDodgeVsProjectileAttack()
 {
-    // 既に攻撃が当たった
-    if (PlayerManager::Instance().GetPlayer()->GetIsAttackHit()) return;
+}
 
-    // 攻撃可能フレーム外なのでここで終了
+#pragma endregion ---------- ジャスト回避判定 ----------
+
+#pragma region ---------- 攻撃判定 ----------
+// ----- 攻撃判定 -----
+void CollisionManager::UpdatePlayerAttack()
+{
+    // Player VS Enemy
+    PlayerAttackVsEnemyDamage();
+}
+
+// ----- Player VS Enemy -----
+void CollisionManager::PlayerAttackVsEnemyDamage()
+{
+    // Enemyが存在しない
+    if (EnemyManager::Instance().GetEnemyCount() <= 0) return;
+    // 既に攻撃が当たっている
+    if (PlayerManager::Instance().GetPlayer()->GetIsAttackHit()) return;
+    // 攻撃可能フレーム外
     if (PlayerManager::Instance().GetPlayer()->GetIsAttackValid() == false) return;
 
     Player* player = PlayerManager::Instance().GetPlayer().get();
     Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
 
-    for (int playerDataIndex = 0; playerDataIndex < player->GetAttackDetectionDataCount(); ++playerDataIndex)
+    const int maxPlayerData = player->GetAttackDetectionDataCount();
+    const int maxEnemyData = enemy->GetDamageDetectionDataCount();
+
+    for (int playerDataIndex = 0; playerDataIndex < maxPlayerData; ++playerDataIndex)
     {
         const AttackDetectionData playerData = player->GetAttackDetectionData(playerDataIndex);
 
-        for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetDamageDetectionDataCount(); ++enemyDataIndex)
+        for (int enemyDataIndex = 0; enemyDataIndex < maxEnemyData; ++enemyDataIndex)
         {
             DamageDetectionData enemyData = enemy->GetDamageDetectionData(enemyDataIndex);
 
-            // もう既にダメージを食らっているデータ
+            // このデータは、既にダメージをくらっている
             if (enemyData.GetIsHit()) continue;
 
             // 当たったかチェック
@@ -144,17 +175,17 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                 playerData.GetPosition(), playerData.GetRadius(),
                 enemyData.GetPosition(), enemyData.GetRadius()))
             {
-                const Player::STATE playerState = PlayerManager::Instance().GetPlayer()->GetCurrentState();
+                const Player::STATE playerState = player->GetCurrentState();
 
-                // ---------------------------------------------
+                // ============================================================
                 //  Hitフラグを立てる ( このデータの無敵時間設定 )
-                // ---------------------------------------------
+                // ============================================================
                 enemyData.SetIsHit(true);
-                enemyData.SetHitTimer(0.01f);                
+                enemyData.SetHitTimer(0.01f);
 
-                // ---------------------------------------------
+                // ============================================================
                 //  当たった部位が弱点部位かの判定をする
-                // ---------------------------------------------
+                // ============================================================
                 bool isWeakPoint = false;
                 const EnemyDragon::DamageData damageDataIndex = static_cast<EnemyDragon::DamageData>(enemyDataIndex);
                 if (damageDataIndex == EnemyDragon::DamageData::Head ||
@@ -163,90 +194,81 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                     isWeakPoint = true;
                 }
 
-                // ------------------------------------------------------------
+                // ============================================================
                 // ヒットエフェクトを再生 ( 弱点部位は違うエフェクトを再生する )
-                // ------------------------------------------------------------
-                {
-                    std::string hitEffectName = hitEffectType_ ? "Hit0" : "Hit1";
-                    hitEffectType_ = (hitEffectType_ == 0) ? 1 : 0;
+                // ============================================================
+                std::string hitEffectName = hitEffectType_ ? "Hit0" : "Hit1"; // エフェクトに幅を持たせる
+                hitEffectType_ = (hitEffectType_ == 0) ? 1 : 0;
 
-                    // 弱点部位ならエフェクトを変更する
-                    if (isWeakPoint)
-                    {
-                        hitEffectName = "Attack1";
-                    }
+                // 弱点部位ならエフェクト変更
+                if (isWeakPoint) hitEffectName = "Attack1";
 
-                    Effect* hitEffect = EffectManager::Instance().GetEffect(hitEffectName.c_str());
-                    const float hitEffectSize = isWeakPoint ? 0.4f : 0.3f;
+                // 生成位置を求める
+                const DirectX::XMFLOAT3 generatePosition = playerData.GetPosition() + XMFloat3Normalize(enemyData.GetPosition() - playerData.GetPosition()) * playerData.GetRadius();
+                // 再生速度を決定
+                const float effectSpeed = (playerState == Player::STATE::RushAttack) ? hitEffectSlowSpeed_ : hitEffectDefaultSpeed_;
+                // エフェクトサイズを決定
+                const float hitEffectSize = isWeakPoint ? hitEffectWeakPointSize_ : hitEffectDefaultSize_;
 
-                    // 生成位置を決める
-                    DirectX::XMFLOAT3 emitterPosition = playerData.GetPosition() + XMFloat3Normalize(enemyData.GetPosition() - playerData.GetPosition()) * playerData.GetRadius();
+                Effect* hitEffect = EffectManager::Instance().GetEffect(hitEffectName.c_str());
 
-                    // 再生速度を決める
-                    const float effectSpeed = (player->GetCurrentState() == Player::STATE::RushAttack) ? 0.01f : 1.0f;
+                // 生成したエフェクトの情報を登録する
+                effectHandle_[handleCounter_].name_ = hitEffectName;
+                effectHandle_[handleCounter_].effectHandle_ = hitEffect->Play(generatePosition, hitEffectSize, effectSpeed);
 
-                    effectHandle_[handleCounter_].name_ = hitEffectName;
-                    effectHandle_[handleCounter_].effectHandle_ = hitEffect->Play(emitterPosition, hitEffectSize, effectSpeed);
+                // エフェクトハンドル情報を更新
+                ++handleCounter_;
+                if (handleCounter_ >= maxEffectHandle_) handleCounter_ = 0;
 
-                    ++handleCounter_;
-                    if (handleCounter_ >= maxEffectHandle_) handleCounter_ = 0;
+                // GPU Particle Effectを再生する
+                hitEffectName = isWeakPoint ? "HitEffect1" : "HitEffect";
+                computeParticleEmitter_.SetEmitPosition(generatePosition);
+                computeParticleEmitter_.EmitParticle(hitEffectName);
 
-                    hitEffectName = isWeakPoint ? "HitEffect1" : "HitEffect";
-                    computeParticleEmitter_.SetEmitPosition(emitterPosition);
-                    computeParticleEmitter_.EmitParticle(hitEffectName);
-                }
-
-                // ------------------------------------------------------------
+                // ============================================================
                 // 効果音を鳴らす
-                // ------------------------------------------------------------
+                // ============================================================
+                if (playerState != Player::STATE::RushAttack)
                 {
-                    if (player->GetCurrentState() != Player::STATE::RushAttack)
-                    {
-                        AudioManager::Instance().PlaySE(SE::Attack0);
-                    }
-                    else
-                    {
-                        AudioManager::Instance().PlaySE(SE::Attack0);
-                    }
+                    AudioManager::Instance().PlaySE(SE::Attack0);
+                }
+                else
+                {
+                    AudioManager::Instance().PlaySE(SE::Attack0);
                 }
 
-                // ------------------------------------------------------------
+                // ============================================================
                 // 敵が死んでいなかったらダメージ処理をする
-                // ------------------------------------------------------------
+                // ============================================================
                 if (enemy->GetIsDead() == false)
                 {
-                    // TODO:攻撃によってダメージ倍率を変える
                     const float attackPower = player->GetAttackPower();
                     const float damage = attackPower * enemyData.GetDamage();
 
                     enemy->AddDamage(damage, enemyDataIndex);
 
-                    DirectX::XMFLOAT4 color = isWeakPoint ? weakPointDamageUIColor_ : damageUIColor_;
+                    const DirectX::XMFLOAT4 color = isWeakPoint ? weakPointDamageUIColor_ : damageUIColor_;
 
-                    DirectX::XMFLOAT3 emitterPosition = playerData.GetPosition() + XMFloat3Normalize(enemyData.GetPosition() - playerData.GetPosition()) * playerData.GetRadius();
-                    UINumber* ui = new UINumber(damage, emitterPosition, color);
+                    // ダメージUIを生成する
+                    UINumber* ui = new UINumber(damage, generatePosition, color);
                 }
 
-                // UIと同じ位置にエフェクトを生成する
-                //computeParticleEmitter_.SetEmitPosition(effectEmitPosition);
-                //computeParticleEmitter_.EmitParticle("HitEffect");
-                
-                // ------------------------------------------------------------
+                // ============================================================
                 // Playerの攻撃判定を無くす
-                // ------------------------------------------------------------
+                // ============================================================
                 player->SetIsAttackHit(true);
 
-                // ------------------------------------------------------------
+                // ============================================================
                 // ヒットストップ ( 弱点部位はヒットストップを長くする )
-                // ------------------------------------------------------------
+                // ============================================================
                 if (playerState != Player::STATE::RushAttack)
                 {
                     PlayerManager::Instance().SetHitStop(isWeakPoint ? PlayerManager::HitStopType::Critical : PlayerManager::HitStopType::Normal);
                 }
 
-                // ------------------------------------------------------------
+                // ============================================================
                 // カウンター攻撃時ならコントローラーを振動させる
-                // ------------------------------------------------------------
+                // ============================================================
                 if (player->GetCurrentState() == Player::STATE::CounterCombo)
                 {
                     Input::Instance().GetGamePad().Vibration(0.3f, 1.0f);
@@ -271,97 +293,297 @@ void CollisionManager::UpdatePlayerAttackVsEnemyDamage()
                     {
                         if (isWeakPoint) Input::Instance().GetGamePad().Vibration(0.2f, 0.4f);
                         else Input::Instance().GetGamePad().Vibration(0.1f, 0.3f);
-                    }                    
+                    }
                 }
 
-                // ------------------------------------------------------------
+                // ============================================================
                 // プレイヤーのルートの移動値を無くす
-                // ------------------------------------------------------------
+                // ============================================================
                 if (playerState != Player::STATE::Helmbreaker && playerState != Player::STATE::CounterCombo)
                 {
                     PlayerManager::Instance().GetPlayer()->SetRootMotionValue(0.0f);
                 }
 
-
+                // ============================================================
+                // カメラシェイクを入れる
+                // ============================================================
                 if (isWeakPoint)
                 {
                     Camera::Instance().ScreenVibrate(0.02f, 0.3f);
                 }
 
+                // ============================================================
+                // 大回転斬りの場合、兜割り可能にする
+                // ============================================================
                 if (player->GetCurrentState() == Player::STATE::CounterCombo)
                 {
                     PlayerManager::Instance().GetPlayer()->SetSwordColor({ 1,0,0 });
                     PlayerManager::Instance().GetPlayer()->SetSwordSpirit(1.0f);
                 }
 
-                // 当たったので判定をここで終了する
                 return;
             }
         }
     }
 }
 
-// ----- Playerのくらい判定と Enemyの攻撃判定をチェック -----
-void CollisionManager::UpdatePlayerDamageVsEnemyAttack()
+#pragma endregion ---------- 攻撃判定 ----------
+
+#pragma region ---------- カウンター判定 ----------
+// ----- カウンター判定 -----
+void CollisionManager::UpdatePlayerCounter()
 {
-    // 攻撃判定が無効なのでここで終了
-    if (EnemyManager::Instance().GetEnemy(0)->GetIsAttackActive() == false) return;
+    // Player VS Enemy
+    PlayerCounterVsEnemy();
+    PlayerGuardCounterVsEnemy();
+
+    // Player VS Projectile
+    PlayerCounterVsProjectile();
+    PlayerGuardCounterVsProjectile();
+}
+
+// ----- Player VS Enemy -----
+void CollisionManager::PlayerCounterVsEnemy()
+{
+    // Enemyが存在しない
+    if (EnemyManager::Instance().GetEnemyCount() <= 0) return;
 
     Player* player = PlayerManager::Instance().GetPlayer().get();
     Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
 
-    if (player->GetIsGuardCounterSuccessful()) return;
+    // Playerのステートがカウンターではない
+    if (player->GetCurrentState() != Player::STATE::Counter) return;
+    // Playerがカウンターを受け付けていない
+    if (player->GetIsCounter() == false) return;
+    // 既にカウンターが成功している
+    if (player->GetIsAbleCounterAttack()) return;
+    // Enemyの攻撃判定が無効状態
+    if (enemy->GetIsAttackActive() == false) return;
+    // 咆哮はカウンターできない
+    if (enemy->GetCurrentAttackAction() == Enemy::AttackAction::Roar) return;
 
-    // ========================================
-    //                怯み判定
-    // ========================================  
-    if (enemy->GetCurrentAttackAction() == Enemy::AttackAction::Roar)
+    const float distance = enemy->CalcDistanceToPlayer();
+    const float counterActiveRadius = player->GetCounterActiveRadius();
+
+    // カウンターが成功した
+    if (distance < counterActiveRadius)
     {
-        // 既にプレイヤーが怯んでいる
-        if (player->GetCurrentState() == Player::STATE::Flinch) return;
+        player->SetIsAbleCounterAttack(true);
+    }
+}
 
-        for (int playerDataIndex = 0; playerDataIndex < player->GetDamageDetectionDataCount(); ++playerDataIndex)
+// ----- Player VS Enemy -----
+void CollisionManager::PlayerGuardCounterVsEnemy()
+{
+    // Enemyが存在しない
+    if (EnemyManager::Instance().GetEnemyCount() <= 0) return;
+    // Playerがガードしていない
+    if (PlayerManager::Instance().GetPlayer()->GetIsGuardCounterStance() == false) return;    
+
+    Player* player = PlayerManager::Instance().GetPlayer().get();
+    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
+
+    const DirectX::XMFLOAT3 pelvisPosition = player->GetJointPosition("pelvis");
+    const int maxEnemyData = enemy->GetAttackDetectionDataCount();
+
+    for (int enemyDataIndex = 0; enemyDataIndex < maxEnemyData; ++enemyDataIndex)
+    {
+        const AttackDetectionData enemyData = enemy->GetAttackDetectionData(enemyDataIndex);
+
+        // このデータの攻撃判定が有効ではない
+        if (enemyData.GetIsActive() == false) continue;
+
+        const DirectX::XMFLOAT3 enemyDataPosition = enemyData.GetPosition();
+
+        // 当たったかチェック
+        if (IntersectSphereVsSphere(
+            pelvisPosition, player->GetGuardCounterRadius(),
+            enemyDataPosition, enemyData.GetRadius()))
         {
-            const DamageDetectionData playerData = player->GetDamageDetectionData(playerDataIndex);
-            
-            for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetAttackDetectionDataCount(); ++enemyDataIndex)
+            // ガードカウンターが成功した
+            player->SetIsGuardCounterSuccessful(true);
+
+            // ============================================================
+            //  ノックバックを入れる
+            // ============================================================
+            const DirectX::XMFLOAT3 playerPosition = player->GetTransform()->GetPosition();
+            const DirectX::XMFLOAT3 enemyPosition = enemy->GetTransform()->GetPosition();
+            // 敵のアニメーションによってノックバックの計算を変える
+            DirectX::XMFLOAT3 knockBackDirection = {};
+            Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(enemy->GetAnimationIndex());
+            if (animationIndex == Enemy::DragonAnimation::AttackSlam0)
             {
-                const AttackDetectionData enemyData = enemy->GetAttackDetectionData(enemyDataIndex);
-                // このデータは攻撃判定が有効ではない
-                if (enemyData.GetIsActive() == false) continue;
+                knockBackDirection = enemyPosition - playerPosition;
+            }
+            else
+            {
+                knockBackDirection = enemyDataPosition - playerPosition;
+            }
+            knockBackDirection.y = 0.0f;
+            player->SetKnockBackDirection(XMFloat3Normalize(knockBackDirection));
 
-                // 当たったか判定
-                if (IntersectSphereVsSphere(
-                    playerData.GetPosition(), playerData.GetRadius(),
-                    enemyData.GetPosition(), enemyData.GetRadius()))
-                {
-                    // 怯みステートに遷移
-                    player->ChangeState(Player::STATE::Flinch);
+            // ============================================================
+            //  エフェクト再生
+            // ============================================================
+            DirectX::XMFLOAT3 effectPosition = pelvisPosition + XMFloat3Normalize(enemyDataPosition - pelvisPosition) * player->GetGuardCounterRadius();
+            EffectManager::Instance().GetEffect("Counter")->Play(effectPosition, 0.1f, 4.0f);
 
-                    // 当たったので終了
-                    return;
-                }
+            
+            // ============================================================
+            //  敵を数フレーム停止させる
+            // ============================================================
+            enemy->SetHitStop();
+
+            return;
+        }
+    }
+}
+
+// ----- Player VS Projectile -----
+void CollisionManager::PlayerCounterVsProjectile()
+{
+    Player* player = PlayerManager::Instance().GetPlayer().get();
+
+    // Playerがカウンターステートではない
+    const Player::STATE playerState = player->GetCurrentState();
+    if (playerState != Player::STATE::Counter && playerState != Player::STATE::GuardCounter) return;
+    // Playerがカウンターを受け付けていない
+    if (player->GetIsCounter() == false && player->GetIsGuardCounterStance() == false) return;
+    // 既にカウンター成功している
+    if (player->GetIsAbleCounterAttack() && player->GetIsGuardCounterSuccessful()) return;
+
+    std::vector<Projectile*> projectiles = ProjectileManager::Instance().GetProjectiles();
+    const int maxProjectileData = projectiles.size();
+
+    const DirectX::XMFLOAT3 playerPosition = player->GetTransform()->GetPosition();
+
+    for (int projectileIndex = 0; projectileIndex < maxProjectileData; ++projectileIndex)
+    {
+        Projectile* projectile = projectiles.at(projectileIndex);
+        const DirectX::XMFLOAT3 projectilePosition = projectile->GetTransform()->GetPosition();
+
+        // 範囲内にいるか判定
+        if (IntersectSphereVsSphere(
+            playerPosition, 0.0f,
+            projectilePosition, projectile->GetCounterRadius()))
+        {
+            // ----- 見切カウンター -----
+            if (playerState == Player::STATE::Counter)
+            {
+                // カウンター成功
+                player->SetIsAbleCounterAttack(true);
+            }
+            // ----- ガードカウンター -----
+            else
+            {
+                // ガードカウンターが成功した
+                player->SetIsGuardCounterSuccessful(true);
+
+                // ノックバックの方向算出
+                DirectX::XMFLOAT3 playerPosition = player->GetTransform()->GetPosition();
+                DirectX::XMFLOAT3 knockBackDirection = projectile->GetTransform()->GetPosition() - playerPosition;
+                knockBackDirection.y = 0.0f;
+                knockBackDirection = XMFloat3Normalize(knockBackDirection);
+                player->SetKnockBackDirection(knockBackDirection);
+
+                // エフェクト再生
+                const DirectX::XMFLOAT3 pelvisPosition = player->GetJointPosition("pelvis");
+                DirectX::XMFLOAT3 vec = projectile->GetTransform()->GetPosition() - pelvisPosition;
+                vec = pelvisPosition + XMFloat3Normalize(vec) * player->GetGuardCounterRadius();
+
+                EffectManager::Instance().GetEffect("Counter")->Play(vec, 0.1f, 4.0f);
+            }
+
+            return;
+        }
+    }
+}
+
+// ----- Player VS Projectile -----
+void CollisionManager::PlayerGuardCounterVsProjectile()
+{
+}
+
+#pragma endregion ---------- カウンター判定 ----------
+
+#pragma region ---------- くらい判定 ----------
+// ----- くらい判定 -----
+void CollisionManager::UpdatePlayerDamage()
+{
+    // Player VS Enemy
+    PlayerFlinchVsEnemyAttack(); // 怯み判定
+    PlayerDamageVsEnemyAttack(); // くらい判定
+
+    // Player VS Projectile
+    PlayerDamageVsProjectileAttack();
+}
+
+// ----- Player VS Enemy -----
+void CollisionManager::PlayerFlinchVsEnemyAttack()
+{
+    // Enemyが存在しない
+    if (EnemyManager::Instance().GetEnemyCount() <= 0) return;
+    // Enemyの攻撃判定が無効
+    if (EnemyManager::Instance().GetEnemy(0)->GetIsAttackActive() == false) return;
+    // Enemyが咆哮していない
+    if (EnemyManager::Instance().GetEnemy(0)->GetCurrentAttackAction() != Enemy::AttackAction::Roar) return;
+    // 既にPlayerが怯んでいる
+    if (PlayerManager::Instance().GetPlayer()->GetCurrentState() == Player::STATE::Flinch) return;
+
+    Player* player = PlayerManager::Instance().GetPlayer().get();
+    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
+
+    const int maxPlayerData = player->GetDamageDetectionDataCount();
+    const int maxEnemyData = enemy->GetAttackDetectionDataCount();
+
+    for (int playerDataIndex = 0; playerDataIndex < maxPlayerData; ++playerDataIndex)
+    {
+        const DamageDetectionData playerData = player->GetDamageDetectionData(playerDataIndex);
+
+        for (int enemyDataIndex = 0; enemyDataIndex < maxEnemyData; ++enemyDataIndex)
+        {
+            const AttackDetectionData enemyData = enemy->GetAttackDetectionData(enemyDataIndex);
+            // このデータは攻撃判定が有効ではない
+            if (enemyData.GetIsActive() == false) continue;
+
+            // 当たったか判定
+            if (IntersectSphereVsSphere(
+                playerData.GetPosition(), playerData.GetRadius(),
+                enemyData.GetPosition(), enemyData.GetRadius()))
+            {
+                // 怯みステートに遷移
+                player->ChangeState(Player::STATE::Flinch);
+
+                // 当たったので終了
+                return;
             }
         }
-
-        // 怯み判定なのでこの後のダメージ判定を行わない
-        return;
     }
+}
 
-    // ========================================
-    //              ダメージ判定
-    // ========================================
+// ----- Player VS Enemy -----
+void CollisionManager::PlayerDamageVsEnemyAttack()
+{
+    // Enemyが存在しない
+    if (EnemyManager::Instance().GetEnemyCount() <= 0) return;
+    // Enemyの攻撃判定が無効
+    if (EnemyManager::Instance().GetEnemy(0)->GetIsAttackActive() == false) return;
+    // Playerが無敵状態
+    if (PlayerManager::Instance().GetPlayer()->GetIsInvincible()) return;
+    // カウンターが成功している
+    if (PlayerManager::Instance().GetPlayer()->GetIsAbleCounterAttack()) return;
 
-    // 現在無敵状態なので判定を行わない
-    if (player->GetIsInvincible()) return;
+    Player* player = PlayerManager::Instance().GetPlayer().get();
+    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
 
-    // カウンターが成功したのでダメージをくらわない
-    if (player->GetIsAbleCounterAttack()) return;
+    // 咆哮の場合ダメージは受けない
+    if (enemy->GetCurrentAttackAction() == Enemy::AttackAction::Roar) return;
 
-    // くらい判定 (吹き飛ばしなし)
+    // SuperNovaのチャージに対するくらい判定
+    if (enemy->GetCurrentAttackAction() == Enemy::AttackAction::SuperNova)
     {
-        DirectX::XMFLOAT2 playerPosition = { player->GetTransform()->GetPositionX(), player->GetTransform()->GetPositionZ() };
-        DirectX::XMFLOAT2 dragonPosition = { enemy->GetTransform()->GetPositionX(), enemy->GetTransform()->GetPositionZ() };
+        const DirectX::XMFLOAT2 playerPosition = { player->GetTransform()->GetPositionX(), player->GetTransform()->GetPositionZ() };
+        const DirectX::XMFLOAT2 dragonPosition = { enemy->GetTransform()->GetPositionX(), enemy->GetTransform()->GetPositionZ() };
         const float length = XMFloat2Length(playerPosition - dragonPosition);
         if (length < enemy->GetSuperNovaRadius())
         {
@@ -369,12 +591,14 @@ void CollisionManager::UpdatePlayerDamageVsEnemyAttack()
         }
     }
 
-    // くらい判定 (吹っ飛ばされる怯み)
-    for (int playerDataIndex = 0; playerDataIndex < player->GetDamageDetectionDataCount(); ++playerDataIndex)
+    const int maxPlayerData = player->GetDamageDetectionDataCount();
+    const int maxEnemyData = enemy->GetAttackDetectionDataCount();
+
+    for (int playerDataIndex = 0; playerDataIndex < maxPlayerData; ++playerDataIndex)
     {
         const DamageDetectionData playerData = player->GetDamageDetectionData(playerDataIndex);
 
-        for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetAttackDetectionDataCount(); ++enemyDataIndex)
+        for (int enemyDataIndex = 0; enemyDataIndex < maxEnemyData; ++enemyDataIndex)
         {
             const AttackDetectionData enemyData = enemy->GetAttackDetectionData(enemyDataIndex);
 
@@ -386,26 +610,34 @@ void CollisionManager::UpdatePlayerDamageVsEnemyAttack()
                 playerData.GetPosition(), playerData.GetRadius(),
                 enemyData.GetPosition(), enemyData.GetRadius()))
             {
+                // ==================================================
                 // カウンター状態ならカウンター成功
+                // ==================================================
                 if (player->GetIsCounter())
                 {
                     player->SetIsAbleCounterAttack(true);
                     return;
                 }
 
+                // ==================================================
                 // ダメージを与える
+                // ==================================================
                 int damage = enemy->GetAttackPower();
                 player->AddDamage(damage);
 
+                // ==================================================
                 // コントローラー振動 (ダメージ受けたリアクションとして)
+                // ==================================================
                 if (enemy->GetCurrentAttackAction() != Enemy::AttackAction::SuperNova)
                 {
                     Input::Instance().GetGamePad().Vibration(0.2f, 1.0f);
                 }
 
+                // ==================================================
                 // ダメージSE再生
+                // ==================================================
                 AudioManager::Instance().PlaySE(SE::Damage);
-                
+
                 // HPがまだあるのでDamageStateに遷移
                 if (player->GetHealth() > 0.0f)
                 {
@@ -416,29 +648,104 @@ void CollisionManager::UpdatePlayerDamageVsEnemyAttack()
                 {
                     player->ChangeDeathState();
                 }
-                
+
                 return;
             }
         }
     }
 }
 
-// ----- Playerの押し出し判定と Enemyの押し出し判定をチェック -----
-void CollisionManager::UpdatePlayerCollisionVsEnemyCollision()
+// ----- Player VS Projectile -----
+void CollisionManager::PlayerDamageVsProjectileAttack()
 {
+    // Projectileが存在していない
+    if (ProjectileManager::Instance().GetProjectileCount() <= 0) return;
+    // Playerが無敵状態
+    if (PlayerManager::Instance().GetPlayer()->GetIsInvincible()) return;
+    // カウンターが成功している
+    if (PlayerManager::Instance().GetPlayer()->GetIsAbleCounterAttack()) return;
+
+    Player* player = PlayerManager::Instance().GetPlayer().get();
+    std::vector<Projectile*> projectiles = ProjectileManager::Instance().GetProjectiles();
+
+    const int maxPlayerData = player->GetDamageDetectionDataCount();
+    const int maxProjectileData = projectiles.size();
+
+    for (int playerDataIndex = 0; playerDataIndex < maxPlayerData; ++playerDataIndex)
+    {
+        const DamageDetectionData playerData = player->GetDamageDetectionData(playerDataIndex);
+        
+        for (int projectileIndex = 0; projectileIndex < maxProjectileData; ++projectileIndex)
+        {
+            Projectile* projectile = projectiles.at(projectileIndex);
+
+            // Playerとの当たり判定を行わない
+            if (projectile->GetAttackType() == static_cast<int>(ProjectileManager::AttackType::Enemy)) continue;
+
+            // 当たったかチェック
+            if (IntersectSphereVsSphere(
+                playerData.GetPosition(), playerData.GetRadius(),
+                projectile->GetTransform()->GetPosition(), projectile->GetRadius()))
+            {
+                projectile->OnHit({});
+
+                // カウンター状態ならカウンター成功
+                if (player->GetIsCounter())
+                {
+                    player->SetIsAbleCounterAttack(true);
+                    return;
+                }
+
+                // ダメージを与える
+                player->AddDamage(projectile->GetDamage());
+
+                // HPがまだあるのでDamageStateに遷移
+                if (player->GetHealth() > 0.0f)
+                {
+                    player->ChangeDamageState();
+                }
+                // HPがもうないのでDeathStateに遷移
+                else
+                {
+                    player->ChangeDeathState();
+                }
+                return;
+            }
+        }
+    }
+}
+
+#pragma endregion ---------- くらい判定 ----------
+
+#pragma region ---------- 押し出し判定 ----------
+// ----- 押し出し判定 -----
+void CollisionManager::UpdatePlayerCollision()
+{
+    // Player VS Enemy
+    PlayerVsEnemy();
+}
+
+// ----- Player VS Enemy -----
+void CollisionManager::PlayerVsEnemy()
+{
+    // Enemyが存在しない
+    if (EnemyManager::Instance().GetEnemyCount() <= 0) return;
     // 押し出し判定が無効
     if (PlayerManager::Instance().GetUseCollisionDetection() == false) return;
+    // プレイヤーのステートが兜割り
+    if (PlayerManager::Instance().GetPlayer()->GetCurrentState() == Player::STATE::Helmbreaker) return;
 
     Player* player = PlayerManager::Instance().GetPlayer().get();
     Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
 
-    if (player->GetCurrentState() == Player::STATE::Helmbreaker) return;
+    const int maxPlayerData = player->GetCollisionDetectionDataCount();
+    const int maxEnemyData = enemy->GetCollisionDetectionDataCount();
 
-    for (int playerDataIndex = 0; playerDataIndex < player->GetCollisionDetectionDataCount(); ++playerDataIndex)
+    for (int playerDataIndex = 0; playerDataIndex < maxPlayerData; ++playerDataIndex)
     {
         const CollisionDetectionData playerData = player->GetCollisionDetectionData(playerDataIndex);
 
-        for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetCollisionDetectionDataCount(); ++enemyDataIndex)
+        for (int enemyDataIndex = 0; enemyDataIndex < maxEnemyData; ++enemyDataIndex)
         {
             const CollisionDetectionData enemyData = enemy->GetCollisionDetectionData(enemyDataIndex);
 
@@ -481,232 +788,114 @@ void CollisionManager::UpdatePlayerCollisionVsEnemyCollision()
     }
 }
 
-// ----- 敵の攻撃に対するカウンター判定 -----
-void CollisionManager::CounterCheckEnemyAttack()
+#pragma endregion ---------- 押し出し判定 ----------
+
+#pragma endregion ==================== Player VS 〇〇 ====================
+
+#pragma region ==================== Enemy VS 〇〇 ====================
+// ----- Enemy VS 〇〇 -----
+void CollisionManager::UpdateEnemyVs()
 {
-    Player* player = PlayerManager::Instance().GetPlayer().get();    
+    // くらい判定
+    UpdateEnemyDamage();
+}
 
-    // ガードカウンターとの判定
-    if (player->GetIsGuardCounterStance())
-    {
-        DirectX::XMFLOAT3 pelvisPosition = player->GetJointPosition("pelvis");
-        Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
-        for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetAttackDetectionDataCount(); ++enemyDataIndex)
-        {
-            const AttackDetectionData enemyData = enemy->GetAttackDetectionData(enemyDataIndex);
+#pragma region ---------- くらい判定 ----------
+// ----- くらい判定 -----
+void CollisionManager::UpdateEnemyDamage()
+{
+    // Enemy VS Projectile
+    EnemyDamageVsProjectileAttack();
+}
 
-            // このデータの攻撃判定が有効ではない
-            if (enemyData.GetIsActive() == false) continue;
-
-            // 当たったかチェック
-            if (IntersectSphereVsSphere(
-                pelvisPosition, player->GetGuardCounterRadius(),
-                enemyData.GetPosition(), enemyData.GetRadius()))
-            {
-                if (player->GetCurrentState() == Player::STATE::GuardCounter)
-                {
-                    // ガードカウンターが成功した
-                    player->SetIsGuardCounterSuccessful(true);
-
-                    // 敵のアニメーションによってノックバックの種類を変える
-                    Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(enemy->GetAnimationIndex());
-                    if (animationIndex == Enemy::DragonAnimation::AttackSlam0)
-                    {
-                        DirectX::XMFLOAT3 playerPosition = player->GetTransform()->GetPosition();
-                        DirectX::XMFLOAT3 enemyPosition = enemy->GetTransform()->GetPosition();
-                        DirectX::XMFLOAT3 knockBackDirection = enemyPosition - playerPosition;
-                        knockBackDirection.y = 0.0f;
-                        knockBackDirection = XMFloat3Normalize(knockBackDirection);
-                        player->SetKnockBackDirection(knockBackDirection);
-                    }
-                    else
-                    {
-                        // ノックバックの方向算出
-                        DirectX::XMFLOAT3 playerPosition = player->GetTransform()->GetPosition();
-                        DirectX::XMFLOAT3 knockBackDirection = enemyData.GetPosition() - playerPosition;
-                        knockBackDirection.y = 0.0f;
-                        knockBackDirection = XMFloat3Normalize(knockBackDirection);
-                        player->SetKnockBackDirection(knockBackDirection);
-                    }
-
-                    // TODO: エフェクト再生
-                    DirectX::XMFLOAT3 vec = enemyData.GetPosition() - pelvisPosition;
-                    vec = pelvisPosition + XMFloat3Normalize(vec) * player->GetGuardCounterRadius();
-
-                    EffectManager::Instance().GetEffect("Counter")->Play(vec, 0.1f, 4.0f);
-
-                    // TODO: 敵を数フレーム停止させる
-                    enemy->SetHitStop();
-
-                    return;
-                }
-            }
-        }
-    }
-
+// ----- Enemy VS Projectile -----
+void CollisionManager::EnemyDamageVsProjectileAttack()
+{
+    // Enemyが存在しない
+    if (EnemyManager::Instance().GetEnemyCount() <= 0) return;
+    // Projectileが存在しない
+    if (ProjectileManager::Instance().GetProjectileCount() <= 0) return;
 
     Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
-    // 現在のステートがカウンターではないのでここで終了
-    if (player->GetCurrentState() != Player::STATE::Counter) return;
+    std::vector<Projectile*> projectiles = ProjectileManager::Instance().GetProjectiles();
 
-    // カウンターを受け付けていない
-    if (player->GetIsCounter() == false) return;
+    const int maxEnemyData = enemy->GetDamageDetectionDataCount();
+    const int maxProjectileData = projectiles.size();
 
-    // 既にカウンター成功している
-    if (player->GetIsAbleCounterAttack()) return;
-
-    // 敵の攻撃判定が無効
-    if (enemy->GetIsAttackActive() == false) return;
-
-    // ドラゴンの咆哮はカウンターできない
-    if (enemy->GetCurrentAttackAction() == Enemy::AttackAction::Roar) return;
-
-    const float distance = enemy->CalcDistanceToPlayer();
-    const float counterActiveRadius = player->GetCounterActiveRadius();
-
-    // カウンターが成功した
-    if (distance < counterActiveRadius)
+    for (int enemyDataIndex = 0; enemyDataIndex < maxEnemyData; ++enemyDataIndex)
     {
-        player->SetIsAbleCounterAttack(true);
-    }
-}
+        DamageDetectionData enemyData = enemy->GetDamageDetectionData(enemyDataIndex);
 
-#pragma endregion ---------- Player VS Enemy ----------
+        // このデータは、既にダメージをくらっている
+        if (enemyData.GetIsHit()) continue;
 
-#pragma region ---------- Player VS Projectile ----------
-// ----- PlayerとProjectileの判定 -----
-void CollisionManager::UpdatePlayerVsProjectile()
-{
-    // -------------------------------------------------------
-    //   ここから下の処理はプレイヤーから見た処理になっています
-    // -------------------------------------------------------
-    // カウンター判定
-    CounterCheckProjectile();
-
-    // くらい判定
-    UpdatePlayerDamageVsProjectileAttack();
-}
-
-// ----- Playerのくらい判定と Projectileの攻撃判定をチェック -----
-void CollisionManager::UpdatePlayerDamageVsProjectileAttack()
-{
-    Player* player = PlayerManager::Instance().GetPlayer().get();
-
-    // 現在無敵状態なので判定を行わない
-    if (player->GetIsInvincible()) return;
-
-    // カウンターが成功したのでダメージをくらわない
-    if (player->GetIsAbleCounterAttack()) return;
-
-    for (int playerDataIndex = 0; playerDataIndex < player->GetDamageDetectionDataCount(); ++playerDataIndex)
-    {
-        const DamageDetectionData playerData = player->GetDamageDetectionData(playerDataIndex);
-
-        std::vector<Projectile*> projectiles = ProjectileManager::Instance().GetProjectiles();
-        
-        for(int projectileIndex = 0; projectileIndex < projectiles.size(); ++projectileIndex)
+        for (int projectileIndex = 0; projectileIndex < maxProjectileData; ++projectileIndex)
         {
             Projectile* projectile = projectiles.at(projectileIndex);
 
+            // Enemyとの当たり判定を行わない
+            if (projectile->GetAttackType() == static_cast<int>(ProjectileManager::AttackType::Player)) continue;
+
             // 当たったかチェック
             if (IntersectSphereVsSphere(
-                playerData.GetPosition(), playerData.GetRadius(),
-                projectile->GetTransform()->GetPosition(), projectile->GetRadius()))
+                projectile->GetTransform()->GetPosition(), projectile->GetRadius(),
+                enemyData.GetPosition(), enemyData.GetRadius()))
             {
-                projectile->OnHit();
+                // 当たった位置を求める
+                const DirectX::XMFLOAT3 hitPosition = projectile->GetTransform()->GetPosition() + XMFloat3Normalize(enemyData.GetPosition() - projectile->GetTransform()->GetPosition()) * projectile->GetRadius();
 
-                // カウンター状態ならカウンター成功
-                if (player->GetIsCounter())
+                // ============================================================
+                //  Hitフラグ & 関数呼び出し
+                // ============================================================
+                enemyData.SetIsHit(true);
+                enemyData.SetHitTimer(0.01f);
+                projectile->OnHit(hitPosition);
+
+                // ============================================================
+                //  当たった部位が弱点部位かの判定をする
+                // ============================================================
+                bool isWeakPoint = false;
+                const EnemyDragon::DamageData damageDataIndex = static_cast<EnemyDragon::DamageData>(enemyDataIndex);
+                if (damageDataIndex == EnemyDragon::DamageData::Head ||
+                    (damageDataIndex >= EnemyDragon::DamageData::Tail && damageDataIndex <= EnemyDragon::DamageData::TailEnd))
                 {
-                    player->SetIsAbleCounterAttack(true);
-                    return;
+                    isWeakPoint = true;
                 }
 
-                // ダメージを与える
-                player->AddDamage(projectile->GetDamage());
+                // ============================================================
+                // 敵が死んでいなかったらダメージ処理をする
+                // ============================================================
+                if (enemy->GetIsDead() == false)
+                {
+                    const float attackPower = projectile->GetDamage();
+                    const float damage = attackPower * enemyData.GetDamage();
 
-                // HPがまだあるのでDamageStateに遷移
-                if (player->GetHealth() > 0.0f)
-                {
-                    player->ChangeDamageState();
+                    enemy->AddDamage(damage, enemyDataIndex);
+
+                    const DirectX::XMFLOAT4 color = isWeakPoint ? weakPointDamageUIColor_ : damageUIColor_;
+
+                    // ダメージUIを生成する
+                    UINumber* ui = new UINumber(damage, hitPosition, color);
                 }
-                // HPがもうないのでDeathStateに遷移
-                else
-                {
-                    player->ChangeDeathState();
-                }
+
                 return;
             }
         }
-
     }
 }
 
-// ----- 発射物に対するカウンター判定 -----
-void CollisionManager::CounterCheckProjectile()
+#pragma endregion ---------- くらい判定 ----------
+
+#pragma endregion ==================== Enemy VS 〇〇 ====================
+
+
+#pragma region ==================== Projectile VS 〇〇 ====================
+void CollisionManager::UpdateProjectileVs()
 {
-    Player* player = PlayerManager::Instance().GetPlayer().get();
-
-    // 現在のステートがカウンター受け付けてないので判定しない
-    Player::STATE currentState = player->GetCurrentState();
-    if (currentState != Player::STATE::Counter &&
-        currentState != Player::STATE::GuardCounter)
-    {
-        return;
-    }
-
-    // 現在カウンターを受け付けていない
-    if (player->GetIsCounter() == false && player->GetIsGuardCounterStance() == false) return;
-
-    // 既にカウンター成功している
-    if (player->GetIsAbleCounterAttack() && player->GetIsGuardCounterSuccessful()) return;
-
-    const DirectX::XMFLOAT3 playerPosition = player->GetTransform()->GetPosition();
-    const DirectX::XMFLOAT3 pelvisPosition = player->GetJointPosition("pelvis");
-
-    std::vector<Projectile*> projectiles = ProjectileManager::Instance().GetProjectiles();
-    for (int projectileIndex = 0; projectileIndex < projectiles.size(); ++projectileIndex)
-    {
-        Projectile* projectile = projectiles.at(projectileIndex);
-        const DirectX::XMFLOAT3 projectilePosition = projectile->GetTransform()->GetPosition();
-
-        // 範囲内にいるか判定
-        if (IntersectSphereVsSphere(
-            playerPosition, 0.0f,
-            projectilePosition, projectile->GetCounterRadius()))
-        {
-            // ----- 見切カウンター -----
-            if (currentState == Player::STATE::Counter)
-            {
-                // カウンター成功
-                player->SetIsAbleCounterAttack(true);
-            }
-            // ----- ガードカウンター -----
-            else
-            {
-                // ガードカウンターが成功した
-                player->SetIsGuardCounterSuccessful(true);
-
-                // ノックバックの方向算出
-                DirectX::XMFLOAT3 playerPosition = player->GetTransform()->GetPosition();
-                DirectX::XMFLOAT3 knockBackDirection = projectile->GetTransform()->GetPosition() - playerPosition;
-                knockBackDirection.y = 0.0f;
-                knockBackDirection = XMFloat3Normalize(knockBackDirection);
-                player->SetKnockBackDirection(knockBackDirection);
-
-                // TODO: エフェクト再生
-                DirectX::XMFLOAT3 vec = projectile->GetTransform()->GetPosition() - pelvisPosition;
-                vec = pelvisPosition + XMFloat3Normalize(vec) * player->GetGuardCounterRadius();
-
-                EffectManager::Instance().GetEffect("Counter")->Play(vec, 0.1f, 4.0f);
-            }
-
-            return;
-        }
-    }
 }
 
-#pragma endregion ---------- Player VS Projectile ----------
+#pragma endregion ==================== Projectile VS 〇〇 ====================
+
 
 #pragma region ---------- Item VS 〇〇 ----------
 void CollisionManager::UpdateItemVs()

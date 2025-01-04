@@ -1,10 +1,12 @@
 #include "HailBolt.h"
 #include "MathHelper.h"
 #include "ProjectileManager.h"
+#include "AudioManager.h"
 
 // ----- コンストラクタ -----
 HailBolt::HailBolt()
-    : Projectile("./Resources/Model/Sphere.gltf", 1.0f, "HailBolt", static_cast<int>(ProjectileManager::DrawType::Normal))
+    : Projectile("./Resources/Model/Sphere.gltf", 1.0f, "HailBolt",
+        static_cast<int>(ProjectileManager::DrawType::Normal), static_cast<int>(ProjectileManager::AttackType::Enemy))
 {
 }
 
@@ -16,6 +18,7 @@ void HailBolt::Initialize()
     lifeTimer_ = 3.0f;
 
     computeParticleEmitter_.SetEmitParameter("HailBoltTrail");
+    hitEffectEmitter_.SetEmitParameter("HailBoltHitEffect");
 }
 
 // ----- 終了化 -----
@@ -65,8 +68,19 @@ void HailBolt::DrawDebug()
     }
 }
 
-void HailBolt::OnHit()
+// ----- 当たった時に呼ばれる -----
+void HailBolt::OnHit(const DirectX::XMFLOAT3& hitPosition)
 {
+    // Hitエフェクト再生
+    hitEffectEmitter_.SetEmitParameter("HailBoltHitEffect");
+    hitEffectEmitter_.SetEmitPosition(hitPosition);
+    hitEffectEmitter_.EmitParticle();
+
+    // 効果音を再生
+    //AudioManager::Instance().PlaySE()
+
+    // 自分自身を削除する
+    ProjectileManager::Instance().Remove(this);
 }
 
 // ----- 発射 -----
@@ -76,4 +90,7 @@ void HailBolt::Launch(const DirectX::XMFLOAT3& emitPosition, const DirectX::XMFL
 
     moveDirection_ = direction;
     moveSpeed_ = speed;
+
+    // 発射SEを再生
+    AudioManager::Instance().PlaySE(SE::HailBoltLaunch);
 }

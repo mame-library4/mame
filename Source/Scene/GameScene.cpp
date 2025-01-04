@@ -159,8 +159,6 @@ void GameScene::Update(const float& elapsedTime)
         SceneManager::Instance().SetCurrentSceneName(SceneManager::SceneName::Game);
     }
 
-    SystemManager::Instance().Update();
-
     // スロー処理を考慮した経過時間
     const float adjustedElapsedTime = SystemManager::Instance().GetAllSlowSpeed() * elapsedTime;
     // プレイヤー用のスロー考慮経過時間

@@ -12,7 +12,7 @@ public:
         return instance;
     }
 
-    void Update();
+    [[nodiscard]] const bool Update();
     void DrawDebug(); // ImGui用
 
 public:
@@ -26,6 +26,15 @@ public:
 #pragma endregion ---------- [Set,Get] Function ----------
 
 private:
+    // ---------- ポーズの更新処理 ----------
+    [[nodiscard]] const bool UpdatePauseState();
+
+    // ---------- Player役職変更 ----------
+    void UpdatePlayerRole();
+
+private:
+    bool isPaused_ = false; // ポーズ中か
+
     // ---------- スロー ----------
     float allSlowSpeed_     = 1.0f; // スロー速度 (プレイヤー以外)
     float playerSlowSpeed_  = 1.0f; // スロー速度 (プレイヤーのみ)

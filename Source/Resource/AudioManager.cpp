@@ -89,6 +89,10 @@ void AudioManager::LoadAudio()
             
             // SE::Down
             se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Dragon/Down/Down.wav", 2));
+
+            // SE::HailBoltLaunch, SE::AquaBulletLaunch
+            se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Player/Magic/HailBoltLaunch.wav", 3));
+            se_.emplace_back(SEData(xAudio2_.Get(), L"./Resources/Audio/SE/Player/Magic/AquaBulletLaunch.wav", 3));
         }
     }
 

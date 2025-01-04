@@ -63,7 +63,7 @@ void DarkFireball::DrawDebug()
 {
 }
 
-void DarkFireball::OnHit()
+void DarkFireball::OnHit(const DirectX::XMFLOAT3& hitPosition)
 {
 }
 

@@ -35,6 +35,7 @@ public:
         UIRush,             // |
         UITitle,            // |
         UIFlashOut,         // |
+        UISystem,           // |
         UIFader,            // |
         Max,                // Å´
     };

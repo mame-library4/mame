@@ -5,7 +5,8 @@
 class Projectile : public Object
 {
 public:
-    Projectile(const std::string filename, const float& scaleFactor, const std::string& name = "", const int drawType = 0);
+    Projectile(const std::string filename, const float& scaleFactor,
+        const std::string& name = "", const int& drawType = 0, const int& attackType = 0);
     virtual ~Projectile() {}
 
     virtual void Initialize() = 0;
@@ -14,7 +15,7 @@ public:
     virtual void Render(ID3D11PixelShader* psShader = nullptr) = 0;
     virtual void DrawDebug();
 
-    virtual void OnHit() = 0;
+    virtual void OnHit(const DirectX::XMFLOAT3& hitPosition) = 0;
 
 public:// [Get, Set] Function
     // ----- Damage -----
@@ -33,6 +34,9 @@ public:// [Get, Set] Function
 
     [[nodiscard]] const int GetDrawType() const { return drawType_; }
 
+    // ----- AttackType -----
+    [[nodiscard]] const int GetAttackType() const { return attackType_; }
+
 private:
 
     float damage_ = 0.0f;
@@ -44,6 +48,7 @@ private:
 
     std::string name_ = "";
 
-    const int drawType_;
+    const int drawType_;    // ï`âÊÇÃéÌóﬁ
+    const int attackType_;  // çUåÇÇÃîªíËéÌóﬁ
 };
 

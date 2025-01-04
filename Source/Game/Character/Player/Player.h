@@ -238,7 +238,7 @@ public:// --- æ“¾Eİ’è ---
     void ChangeDeathState();
     [[nodiscard]] const STATE GetCurrentState() const { return currentState_; }
     [[nodiscard]] const STATE GetOldState() const { return oldState_; }
-    void ChangePlayerRole(); // –ğE‚ğ•ÏX‚·‚é
+    void ChangePlayerRole(const PlayerRole& playerRole); // –ğE‚ğ•ÏX‚·‚é
 
     // ---------- ˆÚ“® ------------------------------
     void SetMoveDirection(const DirectX::XMFLOAT3 direction) { moveDirection_ = direction; } // ˆÚ“®•ûŒü

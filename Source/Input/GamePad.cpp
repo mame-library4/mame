@@ -3,8 +3,6 @@
 #include <Xinput.h>
 #include "GamePad.h"
 
-#include "../Other/Easing.h"
-
 #pragma comment (lib,"Xinput.lib")
 
 int GamePad::GAMEPAD_OR_KEYBOARD = 0;
@@ -209,7 +207,7 @@ void GamePad::Update(const float& elapsedTime)
 		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)newButtonState |= BTN_START;
 		if (GetAsyncKeyState(VK_LSHIFT) & 0x8000)newButtonState |= BTN_RIGHT_SHOULDER;
 
-#if 1
+#if 0
 		if (newButtonState & BTN_UP)    ly = 1.0f;
 		if (newButtonState & BTN_RIGHT) lx = 1.0f;
 		if (newButtonState & BTN_DOWN)  ly = -1.0f;
