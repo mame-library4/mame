@@ -6055,6 +6055,7 @@ namespace PlayerState
     MageAttack1_2::MageAttack1_2(Player* player)
         : State(player, "MageAttack1_2")
     {
+        smokeEmitter_.SetEmitParameter("AquaSmoke");
     }
 
     // ----- ‰Šú‰» -----
@@ -6079,6 +6080,14 @@ namespace PlayerState
             owner_->SetUseRootMotion(true);
             owner_->SetRootMotionValue(rootMotionMoveValue_);
         }
+
+        if (owner_->GetAnimationSeconds() >= smokeEffectStartFrame_ && owner_->GetAnimationSeconds() <= smokeEffectEndFrame_)
+        {
+            smokeEmitter_.SetEmitParameter("AquaSmoke");
+            smokeEmitter_.SetEmitPosition(owner_->GetStaffJointPosition("joint1"));
+            smokeEmitter_.EmitParticle();
+        }
+
 
         // UŒ‚I—¹”»’è
         if (owner_->IsPlayAnimation() == false)
@@ -6115,6 +6124,13 @@ namespace PlayerState
                 ImGui::DragFloat("RunStateChangeFrame", &runStateChangeFrame_, 0.01f);
                 ImGui::DragFloat("DodgeStateChangeFrame", &dodgeStateChangeFrame_, 0.01f);
                 ImGui::DragFloat("Attack1_3ChangeFrame", &attack1_3ChangeFrame_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- Effect ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("SmokeStartFrame", &smokeEffectStartFrame_, 0.01f);
+                ImGui::DragFloat("SmokeEndFrame", &smokeEffectEndFrame_, 0.01f);
 
                 ImGui::TreePop();
             }

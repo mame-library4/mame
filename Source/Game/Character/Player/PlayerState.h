@@ -1068,12 +1068,17 @@ namespace PlayerState
         float playAnimationSpeed_   = 1.0f;
         float animationStartFrame_  = 0.15f;
         float transitionAttack1_1_  = 0.3f;
-        float rootMotionMoveValue_  = 3.0f;
+        float rootMotionMoveValue_  = -3.0f;
 
         // ---------- NextInput ----------
         float runStateChangeFrame_      = 1.0f;
         float dodgeStateChangeFrame_    = 0.8f;
         float attack1_3ChangeFrame_     = 0.35f;
+
+        // ---------- Effect ----------
+        ComputeParticleEmitter smokeEmitter_ = {};
+        float smokeEffectStartFrame_ = 0.1f;
+        float smokeEffectEndFrame_  = 0.3f;
     };
 
     // ----- çUåÇ1_3 -----

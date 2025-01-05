@@ -417,6 +417,72 @@ namespace ActionDragon
 
 #pragma endregion ---------- 攻撃以外の重要行動 ----------
 
+// ----- IdleAction -----
+namespace ActionDragon
+{
+    const ActionBase::State IdleAction::Run(const float& elapsedTime)
+    {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange())
+        {
+            Finalize();
+
+            return ActionBase::State::Failed;
+        }
+
+        switch (owner_->GetStep())
+        {
+        case 0:// 初期化
+            PlayAnimation();
+
+            owner_->SetStep(1);
+            break;
+        case 1:
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                Finalize();
+
+                return ActionBase::State::Complete;
+            }
+
+            break;
+        }
+
+        return ActionBase::State::Run;
+    }
+
+    // ----- ImGui用 -----
+    void IdleAction::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx("Idle", ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- Animation ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("TransitionTurn", &transitionTurn_, 0.01f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- アニメーション再生 -----
+    void IdleAction::PlayAnimation()
+    {
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::Idle0, false);
+        
+        owner_->SetTransitionTime(transitionTurn_);
+    }
+
+    // ----- 終了化 -----
+    void IdleAction::Finalize()
+    {
+        owner_->SetStep(0);
+    }
+}
+
 #pragma region ---------- 咆哮 ----------
 // ----- RoarAction -----
 namespace ActionDragon
@@ -1393,7 +1459,18 @@ namespace ActionDragon
                 tailParticle_->UpdateJointPosition(jointPosition);
             }
 
-            if (owner_->IsPlayAnimation() == false)
+            // 攻撃終了判定
+            if (owner_->GetAttackComboType() == Enemy::AttackComboType::Turn)
+            {
+                if (owner_->GetAnimationSeconds() >= idleActionChangeFrame_)
+                {
+                    Finalize();
+
+                    owner_->SetStep(0);
+                    return ActionBase::State::Complete;
+                }
+            }
+            else if (owner_->IsPlayAnimation() == false)
             {
                 Finalize();
 
@@ -1412,6 +1489,12 @@ namespace ActionDragon
     {
         if (ImGui::TreeNodeEx("Trun", ImGuiTreeNodeFlags_Framed))
         {
+            if (ImGui::TreeNodeEx("---------- ChangeFrame ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("IdleActionChangeFrame", &idleActionChangeFrame_, 0.01f);
+
+                ImGui::TreePop();
+            }            
             if (ImGui::TreeNodeEx("---------- Turn ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::DragFloat("StartFrame", &turnStartFrame_, 0.01f);

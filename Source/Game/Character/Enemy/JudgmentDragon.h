@@ -90,6 +90,25 @@ namespace ActionDragon
     private:
         bool isFirstTime_ = true;
     };
+
+    // =========================================================
+    // ==================== Action‚Ì‚Â‚È‚¬—p ====================
+    // =========================================================
+    class TurnAttackJudgment : public JudgmentBase
+    {
+    public:
+        TurnAttackJudgment(Enemy* owner) : JudgmentBase(owner) {}
+        const bool Judgment() override;
+        void DrawDebug() override {}
+    };
+    class SlamComboAttackJudgment : public JudgmentBase
+    {
+    public:
+        SlamComboAttackJudgment(Enemy* owner) : JudgmentBase(owner) {}
+        const bool Judgment() override;
+        void DrawDebug() override {}
+    };
+
 }
 
 #if 0

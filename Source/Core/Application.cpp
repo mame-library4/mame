@@ -102,6 +102,7 @@ void Application::Update(const float& elapsedTime)
         EffectManager::Instance().Update(elapsedTime);
     }
 
+    // UI更新
     UIManager::Instance().Update(elapsedTime);
 
     if (isGameEnd_) PostMessage(hwnd_, WM_CLOSE, 0, 0);

@@ -104,6 +104,22 @@ namespace ActionDragon
         float mostSlowAnimationSpeed_   = 0.6f;
     };
 
+    class IdleAction : public ActionBase
+    {
+    public:
+        IdleAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
+
+    private:
+        void PlayAnimation(); // アニメーション再生
+        void Finalize();
+
+    private:
+        // ---------- Animation ----------
+        float transitionTurn_ = 0.2f;
+    };
+
 #pragma region ---------- 咆哮 ----------
     class RoarAction : public ActionBase
     {
@@ -171,8 +187,6 @@ namespace ActionDragon
         float               effectDeleteSpeed_  = 2.0f;
         bool                isPlayRoarEffect_   = false;
     };
-
-
 
 #pragma endregion ---------- 咆哮 ----------
 
@@ -348,6 +362,9 @@ namespace ActionDragon
         // ---------- SE ----------
         bool isPlayFlapSE_ = false;
         bool isPlayTurnSE_ = false;
+
+        // ---------- 終了フレーム -----
+        float idleActionChangeFrame_ = 3.2f;
     };
 
     // ----- GuardAction -----

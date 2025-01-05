@@ -127,6 +127,13 @@ public:// ----- 定数 -----
         Max,
     };
 
+    // 攻撃のコンボ種類
+    enum class AttackComboType
+    {
+        Turn,
+        SlamCombo,
+    };
+
     enum class PartName { Head, Chest, Body, Leg, Tail, Wings, Max };
 
 #pragma endregion ----- 定数 -----
@@ -237,6 +244,10 @@ public:// --- 取得・設定 ---
 
     [[nodiscard]] const bool GetUseEffekSeerEffect() const { return useEffekseerEffect_; }
 
+    // ---------- 攻撃のコンボの種類 ----------
+    void SetAttackComboType(const AttackComboType& attackComboType) { currentAttackComboType_ = attackComboType; }
+    [[nodiscard]] const AttackComboType GetAttackComboType() const { return currentAttackComboType_; }
+    
 private:
     // ---------- 部位破壊 ----------
     virtual void AddDamagePart(const float& damage, const int& dataIndex) = 0;
@@ -248,6 +259,8 @@ protected:
     std::unique_ptr<BehaviorData>   behaviorData_;
     NodeBase*                       activeNode_ = nullptr;
     AttackAction                    currentAttackAction_ = AttackAction::SlamAttack; // 現在の攻撃アクション
+
+    AttackComboType currentAttackComboType_ = AttackComboType::Turn;
 
     std::vector<JustDodgeDetectionData> justDodgeDetectionData_;
 
