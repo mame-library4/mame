@@ -114,10 +114,14 @@ namespace ActionDragon
     private:
         void PlayAnimation(); // アニメーション再生
         void Finalize();
+        void SetAnimationEndFrame();
 
     private:
         // ---------- Animation ----------
         float transitionTurn_ = 0.2f;
+
+        float animationEndFrame_ = 0.0f;
+        float animationEndFrameFromTurn_ = 1.0f;
     };
 
 #pragma region ---------- 咆哮 ----------

@@ -17,7 +17,7 @@
 #include "Item/Barrel.h"
 
 #include "Projectile/HailBolt.h"
-
+#include "Projectile/AquaSeeker.h"
 
 // ----- AddForceData -----
 namespace PlayerState
@@ -6066,6 +6066,11 @@ namespace PlayerState
 
         // アニメーション再生
         PlayAnimation();
+
+        // 変数初期化
+        aquaSeekerEmitter[0].Initialize(0.19f);
+        aquaSeekerEmitter[1].Initialize(0.20f);
+        aquaSeekerEmitter[2].Initialize(0.21f);
     }
 
     // ----- 更新 -----
@@ -6088,6 +6093,12 @@ namespace PlayerState
             smokeEmitter_.EmitParticle();
         }
 
+        // 弾丸発射
+        const DirectX::XMFLOAT3 emitPosition = owner_->GetStaffJointPosition("joint1");
+        for (int i = 0; i < 3; ++i)
+        {
+            aquaSeekerEmitter[i].Update(owner_->GetAnimationSeconds(), projectileMoveSpeed_, emitPosition);
+        }
 
         // 攻撃終了判定
         if (owner_->IsPlayAnimation() == false)
@@ -6110,6 +6121,18 @@ namespace PlayerState
     {
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
+            if (ImGui::TreeNodeEx("---------- AquaSeekerEmitter ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                for (int i = 0; i < 3; ++i)
+                {
+                    aquaSeekerEmitter[i].DrawDebug();
+                }
+
+                ImGui::DragFloat("ProjectileMoveSpeed", &projectileMoveSpeed_, 0.01f);
+
+                ImGui::TreePop();
+            }
+
             if (ImGui::TreeNodeEx("---------- Animation ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::DragFloat("PlayAnimationSpeed", &playAnimationSpeed_, 0.01f);
@@ -6144,6 +6167,7 @@ namespace PlayerState
     {
         owner_->PlayBlendAnimation(Player::Animation::MageAttack1_2, false, playAnimationSpeed_, animationStartFrame_);
         owner_->SetTransitionTime(transitionAttack1_1_);
+        
     }
 
     // ----- 先行入力判定 -----
@@ -6198,6 +6222,46 @@ namespace PlayerState
         // ========== これより下に何も書かない ===========
         // =============================================
         return false;
+    }
+
+    // =================================
+    // ========== メンバ構造体 ==========
+    // =================================
+    
+    // ----- 初期化 -----
+    void MageAttack1_2::AquaSeekerEmitter::Initialize(const float& frame)
+    {
+        emitFrame_ = frame;
+        isLaunched_ = false;
+
+        
+    }
+
+    // ----- 更新 -----
+    void MageAttack1_2::AquaSeekerEmitter::Update(const float& animationSeconds, const float& moveSpeed, const DirectX::XMFLOAT3& emitPosition)
+    {
+        if (isLaunched_) return;
+
+        if (animationSeconds > emitFrame_)
+        {
+            AquaSeeker* aquaSeeker = new AquaSeeker();
+            aquaSeeker->GetTransform()->SetPosition(emitPosition);
+            aquaSeeker->SetMoveSpeed(moveSpeed);
+            aquaSeeker->SetMoveType(num_);
+
+            isLaunched_ = true;
+        }
+    }
+
+    // ----- ImGui用 -----
+    void MageAttack1_2::AquaSeekerEmitter::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx(name_.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::DragFloat("EmitFrame", &emitFrame_, 0.01f);
+
+            ImGui::TreePop();
+        }
     }
 }
 

@@ -320,6 +320,9 @@
     <ClCompile Include="Source\Game\UI\UISystem.cpp">
       <Filter>Mame\Game\UI\UISystem</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\AquaSeeker.cpp">
+      <Filter>Mame\Game\Object\Projectile\AquaSeeker</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -675,6 +678,9 @@
     <ClInclude Include="Source\Game\UI\UISystem.h">
       <Filter>Mame\Game\UI\UISystem</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\AquaSeeker.h">
+      <Filter>Mame\Game\Object\Projectile\AquaSeeker</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -982,6 +988,9 @@
     </Filter>
     <Filter Include="Mame\Game\UI\UISystem">
       <UniqueIdentifier>{c8044ed4-82f0-44df-bc64-6b6f6b3e159d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\Object\Projectile\AquaSeeker">
+      <UniqueIdentifier>{690dc60f-52fd-46a1-9eac-ff1edce01d23}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

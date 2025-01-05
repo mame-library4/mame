@@ -1079,6 +1079,24 @@ namespace PlayerState
         ComputeParticleEmitter smokeEmitter_ = {};
         float smokeEffectStartFrame_ = 0.1f;
         float smokeEffectEndFrame_  = 0.3f;
+
+        // ---------- Projectile ----------
+        struct AquaSeekerEmitter
+        {
+        public:
+            AquaSeekerEmitter(const int& num) : name_("AquaSeekerEmitter" + std::to_string(num)), num_(num) {}
+            void Initialize(const float& frame);
+            void Update(const float& animationSeconds, const float& moveSpeed, const DirectX::XMFLOAT3& emitPosition);
+            void DrawDebug();
+
+        private:
+            std::string name_       = "";
+            int         num_        = 0;
+            float       emitFrame_  = 0.0f;
+            bool        isLaunched_ = false;
+        };
+        AquaSeekerEmitter aquaSeekerEmitter[3] = { 0, 1, 2 };
+        float projectileMoveSpeed_ = 30.0f;
     };
 
     // ----- çUåÇ1_3 -----

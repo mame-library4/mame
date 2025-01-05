@@ -433,13 +433,17 @@ namespace ActionDragon
         switch (owner_->GetStep())
         {
         case 0:// 初期化
+            // アニメーション終了フレームを決める
+            SetAnimationEndFrame();
+
+            // アニメーション再生
             PlayAnimation();
 
             owner_->SetStep(1);
             break;
         case 1:
 
-            if (owner_->IsPlayAnimation() == false)
+            if (owner_->GetAnimationSeconds() >= animationEndFrame_)
             {
                 Finalize();
 
@@ -480,6 +484,19 @@ namespace ActionDragon
     void IdleAction::Finalize()
     {
         owner_->SetStep(0);
+    }
+
+    // ----- アニメーション終了フレームを決める -----
+    void IdleAction::SetAnimationEndFrame()
+    {
+        animationEndFrame_ = 2.0f;
+
+        const Enemy::DragonAnimation animationIndex = static_cast<Enemy::DragonAnimation>(owner_->GetAnimationIndex());
+
+        if (animationIndex == Enemy::DragonAnimation::AttackTurn)
+        {
+            animationEndFrame_ = animationEndFrameFromTurn_;
+        }
     }
 }
 
@@ -1459,24 +1476,23 @@ namespace ActionDragon
                 tailParticle_->UpdateJointPosition(jointPosition);
             }
 
-            // 攻撃終了判定
-            if (owner_->GetAttackComboType() == Enemy::AttackComboType::Turn)
-            {
-                if (owner_->GetAnimationSeconds() >= idleActionChangeFrame_)
-                {
-                    Finalize();
-
-                    owner_->SetStep(0);
-                    return ActionBase::State::Complete;
-                }
-            }
-            else if (owner_->IsPlayAnimation() == false)
+#if 1
+            if (owner_->GetAnimationSeconds() >= idleActionChangeFrame_)
             {
                 Finalize();
 
                 owner_->SetStep(0);
                 return ActionBase::State::Complete;
             }
+#else
+            if (owner_->IsPlayAnimation() == false)
+            {
+                Finalize();
+
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+#endif
 
             break;
         }

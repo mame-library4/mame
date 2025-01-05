@@ -227,6 +227,7 @@
     <ClCompile Include="Source\Game\Item\ItemManager.cpp" />
     <ClCompile Include="Source\Game\Object.cpp" />
     <ClCompile Include="Source\Game\Projectile\AquaBullet.cpp" />
+    <ClCompile Include="Source\Game\Projectile\AquaSeeker.cpp" />
     <ClCompile Include="Source\Game\Projectile\DarkFireball.cpp" />
     <ClCompile Include="Source\Game\Projectile\DarkFireballEmitter.cpp" />
     <ClCompile Include="Source\Game\Projectile\Fireball.cpp" />
@@ -343,6 +344,7 @@
     <ClInclude Include="Source\Game\Item\ItemManager.h" />
     <ClInclude Include="Source\Game\Object.h" />
     <ClInclude Include="Source\Game\Projectile\AquaBullet.h" />
+    <ClInclude Include="Source\Game\Projectile\AquaSeeker.h" />
     <ClInclude Include="Source\Game\Projectile\DarkFireball.h" />
     <ClInclude Include="Source\Game\Projectile\DarkFireballEmitter.h" />
     <ClInclude Include="Source\Game\Projectile\Fireball.h" />

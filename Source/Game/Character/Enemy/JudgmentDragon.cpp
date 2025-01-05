@@ -161,21 +161,6 @@ namespace ActionDragon
     }
 }
 
-// ==================== Action‚Ì‚Â‚È‚¬—p ====================
-namespace ActionDragon
-{
-    const bool TurnAttackJudgment::Judgment()
-    {
-        owner_->SetAttackComboType(Enemy::AttackComboType::Turn);
-        return true;
-    }
-    const bool SlamComboAttackJudgment::Judgment()
-    {
-        owner_->SetAttackComboType(Enemy::AttackComboType::SlamCombo);
-        return true;
-    }
-}
-
 #if 0
 // ----- ‚Ð‚é‚Ý”»’è -----
 const bool FlinchJudgment::Judgment()
