@@ -21,6 +21,7 @@ public:
 
 private:
     ComputeParticleEmitter computeParticleEmitter_ = {};
+    ComputeParticleEmitter hitEffectEmitter_ = {};
 
     DirectX::XMFLOAT3 moveDirection_ = {};
 

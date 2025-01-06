@@ -17,6 +17,9 @@ void HailBolt::Initialize()
 
     lifeTimer_ = 3.0f;
 
+    // UŒ‚—Íİ’è
+    SetDamage(20.0f);
+
     computeParticleEmitter_.SetEmitParameter("HailBoltTrail");
     hitEffectEmitter_.SetEmitParameter("HailBoltHitEffect");
 }

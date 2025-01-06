@@ -1114,10 +1114,17 @@ namespace PlayerState
     private:
         void PlayAnimation(); // アニメーション再生
 
+        void UpdateChargeEffect(); // チャージエフェクト
+
     private:
         // ---------- Animation ----------
         float playAnimationSpeed_ = 1.0f;
         float animationStartFrame_ = 0.34f;
         float transitionAttack1_2_ = 0.2f;
+
+        // ---------- Effect ----------
+        ComputeParticleEmitter chargeEffectEmitter_ = {};
+        float chargeEffectStartFrame_ = 0.43f;
+        float chargeEffectEndFrame_ = 0.1f;
     };
 }

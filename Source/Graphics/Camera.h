@@ -72,6 +72,9 @@ public:// --- 取得・設定 ---
     void UseCounterCamera();        // カウンターカメラを使用する
     void UseCounterAttackCamera();  // カウンター攻撃カメラを使用する
     void UseHelmbreakerCamera();
+    void UseMageAttackCamera();
+
+    void ResetCameraFlags();
 
 private:
 #pragma region---------- 各種カメラの定数 ----------
@@ -113,6 +116,9 @@ private:
     void UpdateCounterCamera(const float& elapsedTime);
     void UpdateCounterAttackCamera(const float& elapsedTime);
     
+    // ---------- 魔法攻撃カメラ ----------
+    void UpdateMageAttackCamera(const float& elapsedTime);
+
     void UpdateHelmbreakerCamera(const float& elapsedTime);
 
     void SetState(const EnemyDeathCamera& state)    { dragonDeathState_ = static_cast<int>(state); }
@@ -211,6 +217,13 @@ private:
     int                 counterState_                   = 0;
     bool                isCounterCameraActive_          = false;
     bool                isCounterAttackCameraActive_    = false;
+
+    // ---------- 魔法攻撃カメラ ----------
+    float   mageAttackTotalFrame_   = 0.5f;
+    float   mageAttackMaxLength_    = 8.0f;
+    float   mageAttackMinRotationX_ = DirectX::XMConvertToRadians(-5.0f);
+    int     mageAttackState_            = 0;
+    bool    isMageAttackCameraAcitve_ = false;
 
     // ---------- プレイヤー死亡カメラ ----------
     DirectX::XMFLOAT3   playerDeathOffset_              = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);

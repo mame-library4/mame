@@ -62,8 +62,13 @@ void Camera::Update(const float& elapsedTime)
     // カウンター攻撃カメラ
     UpdateCounterAttackCamera(elapsedTime);
 
-    // カウンターカメラを使用していないとき
-    if (isCounterCameraActive_ == false && isCounterAttackCameraActive_ == false && isHelmbreakerCameraActive_== false)
+    UpdateHelmbreakerCamera(elapsedTime);
+
+    // 魔法攻撃カメラ
+    UpdateMageAttackCamera(elapsedTime);
+
+    // 専用カメラを使用していないとき
+    if (isCounterCameraActive_ == false && isCounterAttackCameraActive_ == false && isHelmbreakerCameraActive_ == false && isMageAttackCameraAcitve_ == false)
     {
         if (length_ != gameCameraLength_)
         {
@@ -86,8 +91,6 @@ void Camera::Update(const float& elapsedTime)
 
     // カメラリセット
     UpdateCameraReset(elapsedTime);
-
-    UpdateHelmbreakerCamera(elapsedTime);
 
     // カメラ回転処理
     Rotate(elapsedTime);
@@ -158,8 +161,6 @@ void Camera::DrawDebug()
 {
     if (ImGui::BeginMenu("Camera"))
     {
-
-
 #pragma region ---------- PlayerDeathCamera ----------
         if (ImGui::TreeNodeEx("PlayerDeathCamera", ImGuiTreeNodeFlags_Framed))
         {
@@ -269,6 +270,17 @@ void Camera::DrawDebug()
             ImGui::TreePop();
         }
 #pragma endregion ---------- CounterCamera ----------
+
+#pragma region ---------- MageAttackCamera ----------
+        if (ImGui::TreeNodeEx("MageAttackCamera", ImGuiTreeNodeFlags_Framed))
+        {
+            ImGui::DragFloat("TotalFrame", &mageAttackTotalFrame_, 0.01f);
+            ImGui::DragFloat("MaxLength", &mageAttackMaxLength_, 0.01f);
+            ImGui::DragFloat("MinRotation", &mageAttackMinRotationX_, 0.01f);
+
+            ImGui::TreePop();
+        }
+#pragma endregion ---------- MageAttackCamera ----------
 
 #pragma region ---------- TargetCamera ----------
         if (ImGui::TreeNodeEx("TargetCamera", ImGuiTreeNodeFlags_Framed))
@@ -477,6 +489,8 @@ void Camera::UseDragonDeathCamera()
 void Camera::UseCounterCamera()
 {
     counterState_          = 0;
+    ResetCameraFlags();
+
     isCounterCameraActive_ = true;
 }
 
@@ -484,18 +498,34 @@ void Camera::UseCounterCamera()
 void Camera::UseCounterAttackCamera()
 {
     counterState_                = 0;
-    isCounterCameraActive_       = false; // カウンターカメラを使用しない
+    ResetCameraFlags();
+
     isCounterAttackCameraActive_ = true;  // カウンター攻撃カメラを使用
 }
 
 void Camera::UseHelmbreakerCamera()
 {
-    isCounterCameraActive_          = false;
-    isCounterAttackCameraActive_    = false;
+    ResetCameraFlags();
 
     isHelmbreakerCameraActive_   = true;
 
     helmbreakerCameraState_ = 0;
+}
+
+void Camera::UseMageAttackCamera()
+{
+    ResetCameraFlags();
+
+    isMageAttackCameraAcitve_ = true;
+    mageAttackState_ = 0;
+}
+
+void Camera::ResetCameraFlags()
+{
+    isCounterCameraActive_          = false; // カウンターカメラ
+    isCounterAttackCameraActive_    = false; // カウンター攻撃カメラ
+    isHelmbreakerCameraActive_      = false; // 兜割りカメラ
+    isMageAttackCameraAcitve_       = false; // 魔法攻撃カメラ
 }
 
 #pragma endregion ---------- 各種カメラ使用設定 ----------
@@ -985,6 +1015,74 @@ void Camera::UpdateCounterAttackCamera(const float& elapsedTime)
 }
 
 #pragma endregion ---------- カウンターカメラ ----------
+
+// ----- 魔法攻撃カメラ -----
+void Camera::UpdateMageAttackCamera(const float& elapsedTime)
+{
+    // 魔法攻撃カメラを使わない
+    if (isMageAttackCameraAcitve_ == false) return;
+
+    switch (mageAttackState_)
+    {
+    case 0:// 初期化
+        easingTimer_ = 0.0f;
+        oldLength_ = length_;
+        oldRotate_ = GetTransform()->GetRotation();
+
+        mageAttackState_ = 1;
+
+        break;
+    case 1:
+    {
+        const float playerAnimationSeconds = PlayerManager::Instance().GetPlayer()->GetAnimationSeconds();
+        if(playerAnimationSeconds >= 0.45f)
+        {
+            mageAttackState_ = 2;
+            break;
+        }
+    }
+        break;
+    case 2:
+    {
+        const Player::Animation playerAnimationIndex = static_cast<Player::Animation>(PlayerManager::Instance().GetPlayer()->GetAnimationIndex());
+        if (playerAnimationIndex != Player::Animation::MageAttack1_3Start &&
+            playerAnimationIndex != Player::Animation::MageAttack1_3Loop &&
+            playerAnimationIndex != Player::Animation::MageAttack1_3End)
+        {
+            oldLength_ = length_;
+            oldRotate_ = GetTransform()->GetRotation();
+            easingTimer_ = 0.0f;
+            mageAttackState_ = 3;
+            break;
+        }
+
+        easingTimer_ += elapsedTime;
+        easingTimer_ = min(easingTimer_, mageAttackTotalFrame_);
+        length_ = Easing::InSine(easingTimer_, mageAttackTotalFrame_, mageAttackMaxLength_, oldLength_);
+        
+        minRotationX_ = Easing::InSine(easingTimer_, mageAttackTotalFrame_, mageAttackMinRotationX_, gameCameraMinRotationX_);
+    }
+        break;
+    case 3:// 終了化
+    {
+        const float totalFrame = 0.5f;
+        easingTimer_ += elapsedTime;
+        easingTimer_ = min(easingTimer_, totalFrame);
+
+        length_ = Easing::InSine(easingTimer_, totalFrame, gameCameraLength_, oldLength_);
+
+        minRotationX_ = Easing::InSine(easingTimer_, totalFrame, gameCameraMinRotationX_, mageAttackMinRotationX_);
+
+        if (easingTimer_ == totalFrame)
+        {
+            minRotationX_ = gameCameraMinRotationX_;
+
+            isMageAttackCameraAcitve_ = false;
+        }
+    }
+        break;
+    }
+}
 
 // ----- 兜割りカメラ -----
 void Camera::UpdateHelmbreakerCamera(const float& elapsedTime)

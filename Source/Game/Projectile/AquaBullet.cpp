@@ -25,6 +25,9 @@ void AquaBullet::Initialize()
 
     aquaBulletTrailEmitter_.SetEmitParameter("AquaBulletTrail");
 
+    // UŒ‚—Íİ’è
+    SetDamage(25.0f);
+
     SetRadius(0.5f);
 
     // HitEffect

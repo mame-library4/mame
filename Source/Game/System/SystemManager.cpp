@@ -56,6 +56,8 @@ const bool SystemManager::UpdatePauseState()
 // ----- Player役職変更 -----
 void SystemManager::UpdatePlayerRole()
 {
+    if (SceneManager::Instance().GetCurrentSceneName() != SceneManager::SceneName::Game) return;
+
     // プレイヤーの役職を "剣士" に変更
     if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_UP)
     {

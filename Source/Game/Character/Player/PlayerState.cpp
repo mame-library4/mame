@@ -6088,7 +6088,6 @@ namespace PlayerState
 
         if (owner_->GetAnimationSeconds() >= smokeEffectStartFrame_ && owner_->GetAnimationSeconds() <= smokeEffectEndFrame_)
         {
-            smokeEmitter_.SetEmitParameter("AquaSmoke");
             smokeEmitter_.SetEmitPosition(owner_->GetStaffJointPosition("joint1"));
             smokeEmitter_.EmitParticle();
         }
@@ -6232,9 +6231,7 @@ namespace PlayerState
     void MageAttack1_2::AquaSeekerEmitter::Initialize(const float& frame)
     {
         emitFrame_ = frame;
-        isLaunched_ = false;
-
-        
+        isLaunched_ = false;        
     }
 
     // ----- 更新 -----
@@ -6272,6 +6269,7 @@ namespace PlayerState
     MageAttack1_3::MageAttack1_3(Player* player)
         : State(player, "MageAttack1_3")
     {
+        chargeEffectEmitter_.SetEmitParameter("AquaCharge");
     }
 
     // ----- 初期化 -----
@@ -6282,6 +6280,8 @@ namespace PlayerState
 
         // アニメーション再生
         PlayAnimation();
+
+        Camera::Instance().UseMageAttackCamera();
     }
 
     // ----- 更新 -----
@@ -6292,6 +6292,9 @@ namespace PlayerState
         {
             owner_->SetUseRootMotion(true);
         }
+
+        // チャージエフェクト
+        UpdateChargeEffect();
 
         // 攻撃終了判定
         if (owner_->IsPlayAnimation() == false)
@@ -6336,6 +6339,18 @@ namespace PlayerState
 
                 ImGui::TreePop();
             }
+            if (ImGui::TreeNodeEx("---------- Effect ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                if (ImGui::TreeNodeEx("===== ChargeEffect =====", ImGuiTreeNodeFlags_Framed))
+                {
+                    ImGui::DragFloat("StartFrame", &chargeEffectStartFrame_, 0.01f);
+                    ImGui::DragFloat("EndFrame", &chargeEffectEndFrame_, 0.01f);
+
+                    ImGui::TreePop();
+                }
+
+                ImGui::TreePop();
+            }
 
             ImGui::TreePop();
         }
@@ -6346,6 +6361,28 @@ namespace PlayerState
     {
         owner_->PlayBlendAnimation(Player::Animation::MageAttack1_3Start, false, playAnimationSpeed_, animationStartFrame_);
         owner_->SetTransitionTime(transitionAttack1_2_);
+    }
+
+    // ----- チャージエフェクト -----
+    void MageAttack1_3::UpdateChargeEffect()
+    {
+        const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+        const float animationSeconds = owner_->GetAnimationSeconds();
+
+        // Start Animation
+        if (animationIndex == Player::Animation::MageAttack1_3Start)
+        {
+            if (animationSeconds < chargeEffectStartFrame_) return;
+        }
+        // End Animation
+        if (animationIndex == Player::Animation::MageAttack1_3End)
+        {
+            if (animationSeconds > chargeEffectEndFrame_) return;
+        }
+
+        chargeEffectEmitter_.SetEmitParameter("AquaCharge");
+        chargeEffectEmitter_.SetEmitPosition(owner_->GetStaffJointPosition("joint1"));
+        chargeEffectEmitter_.EmitParticle();
     }
 }
 

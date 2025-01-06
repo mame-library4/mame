@@ -14,6 +14,7 @@ AquaSeeker::AquaSeeker()
 // ----- ‰Šú‰» -----
 void AquaSeeker::Initialize()
 {
+    SetDamage(30.0f);
 }
 
 // ----- I—¹‰» -----
