@@ -9,9 +9,9 @@
 
 void ComputeParticleEmitter::EmitParameter::DrawDebug()
 {
-    if (ImGui::TreeNode("EmitParameter"))
-    {
-        ImGui::DragInt("Emit Num", &emitNum_);
+	if (ImGui::TreeNodeEx("Emit Parameter", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::DragInt("Emit Num", &emitNum_);
 
 		const DirectX::XMUINT2 spritCount = ComputeParticleSystem::Instance().GetTextureSplitCount();
 		ImGui::SliderInt("Texture Type", &textureType_, 0, spritCount.x * spritCount.y - 1);
@@ -24,41 +24,38 @@ void ComputeParticleEmitter::EmitParameter::DrawDebug()
 
 		ImGui::DragFloat("Brightness", &intensity_, 0.01f);
 
-		if (ImGui::TreeNode("Emit Position"))
+		if (ImGui::TreeNodeEx("----- Position -----", ImGuiTreeNodeFlags_Framed))
 		{
 			ImGui::DragFloat3("Amplitude", &positionAmplitude_.x, 0.1f, 0.0f);
-			ImGui::DragFloat3("Velo Init", &velocity_.x, 0.1f);
-			ImGui::DragFloat3("Velo Amplitude", &velocityAmplitude_.x, 0.1f, 0.0f);
+			ImGui::DragFloat3("Velocity Init", &velocity_.x, 0.1f);
+			ImGui::DragFloat3("Velocity Amplitude", &velocityAmplitude_.x, 0.1f, 0.0f);
 			ImGui::DragFloat3("Accel", &acceleration_.x, 0.1f);
 			ImGui::DragFloat3("Accel Amplitude", &accelerationAmplitud_.x, 0.1f, 0.0f);
 
 			ImGui::TreePop();
 		}
-
-		if (ImGui::TreeNode("Emit Scale"))
+		if (ImGui::TreeNodeEx("----- Scale -----", ImGuiTreeNodeFlags_Framed))
 		{
 			ImGui::DragFloat3("Init", &scaleInit_.x, 0.01f, 0.0f);
 			ImGui::DragFloat2("Amplitude", &scaleAmplitude_.x, 0.1f, 0.0f);
-			ImGui::DragFloat2("Velo Init", &scaleVelocity_.x, 0.1f);
-			ImGui::DragFloat2("Velo Amplitude", &scaleVelocityAmplitude_.x, 0.1f, 0.0f);
+			ImGui::DragFloat2("Velocity Init", &scaleVelocity_.x, 0.1f);
+			ImGui::DragFloat2("Velocity Amplitude", &scaleVelocityAmplitude_.x, 0.1f, 0.0f);
 			ImGui::DragFloat2("Accel", &scaleAcceleration_.x, 0.1f, 0.0f);
 			ImGui::DragFloat2("Accel Amplitude", &scaleAccelerationAmplitud_.x, 0.1f, 0.0f);
 
 			ImGui::TreePop();
 		}
-
-		if (ImGui::TreeNode("Emit Rotation"))
+		if (ImGui::TreeNodeEx("----- Rotation -----", ImGuiTreeNodeFlags_Framed))
 		{
 			ImGui::DragFloat3("Amplitude", &rotationAmplitude_.x, 0.1f, 0.0f);
-			ImGui::DragFloat3("Velo Init", &rotationVelocity_.x, 0.1f);
-			ImGui::DragFloat3("Velo Amplitude", &rotationVelocityAmplitude_.x, 0.1f, 0.0f);
+			ImGui::DragFloat3("Velocity Init", &rotationVelocity_.x, 0.1f);
+			ImGui::DragFloat3("Velocity Amplitude", &rotationVelocityAmplitude_.x, 0.1f, 0.0f);
 			ImGui::DragFloat3("Accel", &rotationAcceleration_.x, 0.1f, 0.0f);
 			ImGui::DragFloat3("Accel Amplitude", &rotationAccelerationAmplitud_.x, 0.1f, 0.0f);
 
 			ImGui::TreePop();
 		}
-
-		if (ImGui::TreeNode("Sphere"))
+		if (ImGui::TreeNodeEx("----- Sphere -----", ImGuiTreeNodeFlags_Framed))
 		{
 			int activeFlag = sphere_.x;
 			ImGui::DragInt("IsActive", &activeFlag, 1, 0, 1);
@@ -68,15 +65,11 @@ void ComputeParticleEmitter::EmitParameter::DrawDebug()
 			ImGui::DragFloat("Speed", &sphere_.z);
 			ImGui::DragFloat("Acceleration", &sphere_.w);
 
-			//ImGui::DragFloat4("SphereParameter", &sphereParameter_.x, 0.01f);
-			//ImGui::DragFloat("SphereSpeed", &sphereSpeed_, 0.01f);
-			//ImGui::DragFloat("SphereAcceleration", &sphereAcceleration_, 0.01f);
-
 			ImGui::TreePop();
 		}
 
-        ImGui::TreePop();
-    }
+		ImGui::TreePop();
+	}
 }
 
 void ComputeParticleEmitter::EmitParticle(const EmitParameter& param)
@@ -227,75 +220,48 @@ void ComputeParticleEmitter::EmitParticle()
 
 void ComputeParticleEmitter::DrawDebug()
 {
-	if (ImGui::BeginMenu("ComputeParticleEmitter"))
+	if (ImGui::Begin("ComputeParticleEmitter"))
 	{
-		if (ImGui::TreeNode("DebugParameter"))
+		if (ImGui::Button("Emit Particle")) EmitParticle(emitParameter_);
+		emitParameter_.DrawDebug();
+
+		if (ImGui::TreeNodeEx("========== Reset Emit Parameter ==========", ImGuiTreeNodeFlags_Framed))
 		{
-			if (ImGui::Button("Emit Particle"))
+			if (ImGui::Button("Reset")) emitParameter_ = {};
+
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNodeEx("========== Load Emit Parameter ==========", ImGuiTreeNodeFlags_Framed))
+		{
+			static std::string name;
+
+			static char filename[128] = "";
+			ImGui::InputText("Asset Name", filename, ARRAYSIZE(filename));
+			if (ImGui::Button("Set DebugParameter From SaveData")) emitParameter_ = GetJsonEmitParameter(filename);
+
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNodeEx("========== Save Emit Parameter ==========", ImGuiTreeNodeFlags_Framed))
+		{
+			static std::string name;
+
+			static char filename[128] = "";
+			ImGui::InputText("Asset Name", filename, ARRAYSIZE(filename));
+			if (ImGui::Button("Save"))
 			{
-				EmitParticle(debugParameter_);
-			}
-			debugParameter_.DrawDebug();
-			
-			if (ImGui::TreeNodeEx("-------------- Reset Button ---------------", ImGuiTreeNodeFlags_Framed))
-			{
-				if (ImGui::Button("DebugParameter Reset"))
-				{
-					debugParameter_ = {};
-				}
+				// アセット化
+				AssetCreation(emitParameter_, filename);
 
-				ImGui::TreePop();
-			}
-			if (ImGui::TreeNodeEx("-------------- Asset Load ---------------", ImGuiTreeNodeFlags_Framed))
-			{
-				static std::string name;
-
-				static char filename[128] = "";
-				ImGui::InputText("Asset Name", filename, ARRAYSIZE(filename));
-				if (ImGui::Button("Set DebugParameter From SaveData")) debugParameter_ = GetJsonEmitParameter(filename);
-
-				ImGui::TreePop();
-			}
-			if (ImGui::TreeNodeEx("-------------- Asset Save ---------------", ImGuiTreeNodeFlags_Framed))
-			{
-				static std::string name;
-
-                static char filename[128] = "";
-                ImGui::InputText("Asset Name", filename, ARRAYSIZE(filename));
-                if (ImGui::Button("Save"))
-                {
-                    // アセット化
-                    AssetCreation(debugParameter_, filename);
-
-                    // 文字列リセット
-                    memset(filename, 0, sizeof(filename));
-                }
-
-				ImGui::TreePop();
-			}
-			if (ImGui::TreeNodeEx("-------------- Asset Play ---------------", ImGuiTreeNodeFlags_Framed))
-			{
-				static std::string name;
-
-				static char filename[128] = "";
-				ImGui::InputText("Asset Name", filename, ARRAYSIZE(filename));
-				if (ImGui::Button("Play"))
-				{
-					// 再生
-					EmitParameter param = GetJsonEmitParameter(filename);
-					EmitParticle(param);  
-				}
-
-				ImGui::TreePop();
+				// 文字列リセット
+				memset(filename, 0, sizeof(filename));
 			}
 
 			ImGui::TreePop();
 		}
 
 		transform_.DrawDebug();
-		emitParameter_.DrawDebug();
 
-		ImGui::EndMenu();
+		ImGui::End();
 	}
 }
 

@@ -18,10 +18,10 @@ public:
 
         DirectX::XMFLOAT3 positionAmplitude_    = {};   // 生成位置の振れ幅
         
-        DirectX::XMFLOAT3 velocity_             = { 0.0f, 10.0f, 0.0f }; // 初速度
-        DirectX::XMFLOAT3 velocityAmplitude_    = { 3.0f, 1.0f, 3.0f };  // 初速度の振れ幅
+        DirectX::XMFLOAT3 velocity_             = { 0.0f, 0.0f, 0.0f }; // 初速度
+        DirectX::XMFLOAT3 velocityAmplitude_    = { 0.0f, 0.0f, 0.0f };  // 初速度の振れ幅
 
-        DirectX::XMFLOAT3 acceleration_         = { 0.0f, -3.0f, 0.0f };    //　初期加速度
+        DirectX::XMFLOAT3 acceleration_         = { 0.0f, 0.0f, 0.0f };    //　初期加速度
         DirectX::XMFLOAT3 accelerationAmplitud_ = {};                       //　生成加速度の振れ幅
 
         DirectX::XMFLOAT3 scaleInit_                 = { 1.0f, 1.0f, 1.0f };    // 初期スケール
@@ -47,7 +47,6 @@ public:
         // ----- Sphere -----
         DirectX::XMFLOAT4 sphere_ = { -1.0f, 1.0f, 0.0f, 0.0f }; // x:Sphereの使用フラグ, y:半径,z:速度,w:加速度
 
-        //DirectX::XMFLOAT4 sphereParameter_ = { 1, 1, 0, 0 };
 
         void DrawDebug();
     };
@@ -74,6 +73,5 @@ private:
     Transform transform_ = {};
 
     EmitParameter emitParameter_    = {};
-    EmitParameter debugParameter_   = {};
 };
 
