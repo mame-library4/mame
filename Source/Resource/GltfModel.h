@@ -405,6 +405,7 @@ public:
 
     // ---------- Outline ----------
     void SetOutlineColor(const DirectX::XMFLOAT4& color) { effectConstants_->GetData()->outlineColor_ = color; }
+    [[nodiscard]] const bool GetOutlineSize() const { return effectConstants_->GetData()->outlineSize_; }
     void SetOutlineSize(const float& size) { effectConstants_->GetData()->outlineSize_ = size; }
     [[nodiscard]] const bool GetIsOutlineActive() const { return isOutlineActive_; }
     void SetIsOutLineActive(const bool& flag) { isOutlineActive_ = flag; }

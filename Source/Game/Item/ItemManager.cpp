@@ -1,6 +1,7 @@
 #include "ItemManager.h"
 #include "Common.h"
 #include "MathHelper.h"
+#include "MagicCircle.h"
 
 // ----- ‰Šú‰» -----
 void ItemManager::Initialize()
@@ -74,6 +75,11 @@ void ItemManager::DrawDebug()
 {
     if (ImGui::BeginMenu("ItemManager"))
     {
+        if (ImGui::Button("MagicCircle"))
+        {
+            MagicCircle* m = new MagicCircle({0.0f, 1.0f, 0.0f}, { 0.0f, 0.1f, 0.0f });
+        }
+
         for (Item*& item : items_)
         {
             item->DrawDebug();

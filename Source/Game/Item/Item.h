@@ -5,7 +5,7 @@
 class Item : public Object
 {
 public:
-    Item(const std::string filename, const float& scaleFactor, const std::string& name = "");
+    Item(const std::string filename, const float& scaleFactor, const std::string& name = "", const int& itemType = 0);
     virtual ~Item() {}
 
     virtual void Initialize() = 0;
@@ -27,6 +27,8 @@ public:
     [[nodiscard]] const int GetId() const { return id_; }
     [[nodiscard]] const std::string GetName() const { return name_; }
 
+    [[nodiscard]] const bool GetIsHit() const { return isHit_; }
+
 protected:
     DirectX::XMFLOAT3   offsetPosition_ = {};
     float               damageRadius_   = 1.0f;
@@ -44,5 +46,9 @@ protected:
 
     int         id_     = 0;  // 登録番号
     std::string name_   = ""; // 名前
+
+    bool isHit_ = false;
+
+    const int itemType_; // アイテムの種類
 };
 

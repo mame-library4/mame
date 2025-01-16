@@ -50,8 +50,9 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::MageDodgeState(this));        // 回避
         GetStateMachine()->RegisterState(new PlayerState::MageDashDodgeState(this));    // ダッシュ回避
         GetStateMachine()->RegisterState(new PlayerState::MageDamageState(this));       // ダメージ
+        GetStateMachine()->RegisterState(new PlayerState::MageCounterState(this));      // カウンター
         GetStateMachine()->RegisterState(new PlayerState::MageAttackState(this));       // 攻撃
-        GetStateMachine()->RegisterState(new PlayerState::MageRainAttackState(this));   // 攻撃
+        GetStateMachine()->RegisterState(new PlayerState::MageRainAttackState(this));   // 雨魔法攻撃
         GetStateMachine()->RegisterState(new PlayerState::MageAttack1_0(this));         // 攻撃1_0
         GetStateMachine()->RegisterState(new PlayerState::MageAttack1_1(this));         // 攻撃1_1
         GetStateMachine()->RegisterState(new PlayerState::MageAttack1_2(this));         // 攻撃1_2
@@ -642,6 +643,23 @@ void Player::UseDashStamina(const float& elapsedTime)
 
     // スタミナ値によってつかれさせるか
     isStaminaDepleted = (stamina_ <= dodgeStaminaCost_) ? true : false;
+}
+
+const bool Player::IsMageCounterStanceKey() const
+{
+    GamePad& gamePad = Input::Instance().GetGamePad();
+
+    if (gamePad.GetButton() & GamePad::BTN_RIGHT_TRIGGER)
+    {
+        if (gamePad.GetButtonDown() & GamePad::BTN_B) return true;
+    }
+    if (gamePad.GetButton() & GamePad::BTN_B)
+    {
+        if (gamePad.GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER) return true;
+    }
+    if ((gamePad.GetButton() & GamePad::BTN_RIGHT_TRIGGER) && (gamePad.GetButton() & GamePad::BTN_B)) return true;
+
+    return false;
 }
 
 // ----- 回避入力判定 -----

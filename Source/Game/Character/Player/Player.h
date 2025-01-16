@@ -60,6 +60,7 @@ public:// --- íËêî ---
         MageDodge,
         MageDashDodge,
         MageDamage,
+        MageCounter,
         MageAttack,
         MageRainAttack,
         MageAttack1_0,
@@ -126,7 +127,7 @@ public:// --- íËêî ---
         MageSkillAttack0_0,
         MageSkillAttack0_1,
 
-        MageAttackDodge,
+        MageCounter,
         
         MageAttack1_2,
         MageAttack1_2_2,
@@ -339,17 +340,18 @@ public:// --- éÊìæÅEê›íË ---
     void SetIsJustDodgeSuccessful(const bool& flag) { isJustDodgeSuccessful_ = flag; }
 
     // ---------- ÉLÅ[ì¸óÕ ----------
-    [[nodiscard]] const bool IsComboAttack0KeyDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
-    [[nodiscard]] const bool IsMageAttackKeyDown()   const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
-    [[nodiscard]] const bool IsMageAttack1KeyDown()  const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y; }
-    [[nodiscard]] const bool IsDodgeKeyDown()        const;
-    [[nodiscard]] const bool IsCounterStanceKey()    const;
-    [[nodiscard]] const bool IsGetUpKeyDown()        const;
-    [[nodiscard]] const bool IsDashKey()             const;
-    [[nodiscard]] const bool IsItemKeyDown()         const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_X; }
+    [[nodiscard]] const bool IsComboAttack0KeyDown()    const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
+    [[nodiscard]] const bool IsMageAttackKeyDown()      const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
+    [[nodiscard]] const bool IsMageAttack1KeyDown()     const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y; }
+    [[nodiscard]] const bool IsMageCounterStanceKey()   const;
+    [[nodiscard]] const bool IsDodgeKeyDown()           const;
+    [[nodiscard]] const bool IsCounterStanceKey()       const;
+    [[nodiscard]] const bool IsGetUpKeyDown()           const;
+    [[nodiscard]] const bool IsDashKey()                const;
+    [[nodiscard]] const bool IsItemKeyDown()            const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_X; }
     [[nodiscard]] const bool IsGuardCounterButtonDown() const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_RIGHT_TRIGGER; }
     [[nodiscard]] const bool IsGuardCounterButton()     const { return Input::Instance().GetGamePad().GetButton() & GamePad::BTN_RIGHT_TRIGGER; }
-    [[nodiscard]] const bool IsRushAttackKeyDown()   const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
+    [[nodiscard]] const bool IsRushAttackKeyDown()      const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
 
 #pragma endregion [Get, Set] Function
 

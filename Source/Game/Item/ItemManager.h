@@ -4,10 +4,17 @@
 #include <set>
 
 class ItemManager
-{
+{   
 private:
     ItemManager() {} 
     ~ItemManager() {}
+
+public:
+    enum class ItemType
+    {
+        Barrel,
+        MagicCircle,
+    };
 
 public:
     static ItemManager& Instance()

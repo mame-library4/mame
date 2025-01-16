@@ -76,6 +76,8 @@ void Barrel::DrawDebug()
 // ----- ƒqƒbƒg‚µ‚½‚Æ‚«‚ÉŒÄ‚Î‚ê‚é -----
 void Barrel::OnHit()
 {
+    isHit_ = true;
+
     DirectX::XMFLOAT3 position = GetTransform()->GetPosition() + offsetPosition_;
     EffectManager::Instance().GetEffect("Explosion")->Play(position, effectScele_, effectSpeed_);
     isDrawModel_ = false;

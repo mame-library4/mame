@@ -61,11 +61,14 @@ public:
 
     // ---------- Outline ----------
     void SetOutlineColor(const DirectX::XMFLOAT4& color) { gltfModel_.SetOutlineColor(color); }
+    void SetOutlineColor(const DirectX::XMFLOAT3& color, const float& alpha = 1.0f) { gltfModel_.SetOutlineColor({ color.x,color.y,color.z, alpha }); }
+    [[nodiscard]] const float GetOutlineSize() const { return gltfModel_.GetOutlineSize(); }
     void SetOutlineSize(const float& size) { gltfModel_.SetOutlineSize(size); }
     void SetIsOutlineActive(const bool& flag) { gltfModel_.SetIsOutLineActive(flag); }
 
     // ---------- Emissive ----------
     void SetEmissiveColor(const DirectX::XMFLOAT3& color) { gltfModel_.SetEmissiveColor(color); }
+    void SetEmissive(const DirectX::XMFLOAT3& color, const float& intensity) { gltfModel_.SetEmissive(color, intensity); }
 
     void SetScrollDirection(const DirectX::XMFLOAT2& direction) { gltfModel_.SetScrollDirection(direction); }
     void AddScrollTimer(const float& elapsedTime) { gltfModel_.AddScrollTimer(elapsedTime); }

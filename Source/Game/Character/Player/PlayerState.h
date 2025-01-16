@@ -927,6 +927,34 @@ namespace PlayerState
         bool              isHighDamage_             = false;
     };
 
+    // ----- カウンター -----
+    class MageCounterState : public State<Player>
+    {
+    public:
+        MageCounterState(Player* player);
+        ~MageCounterState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+
+    private:
+        void PlayAnimation(); // アニメーション再生
+
+    private:
+        // ---------- Animation ----------
+        float rootMotionMoveValue_  = 2.0f;
+        float transitionIdle_       = 0.2f;
+
+        // ---------- MagicCircle ----------
+        float   magicCircleCreateFrame_     = 0.08f;
+        //float   magicCircleCreateFrame_     = 0.17f;
+        float   createForwardLength_        = 1.0f;
+        bool    isCreateMagicCircle_        = false;
+    };
+
+    // ----- 雨魔法攻撃 -----
     class MageRainAttackState : public State<Player>
     {
     public:

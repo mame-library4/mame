@@ -141,8 +141,7 @@ private:
     float               inputThreshold_          = 0.3f;  // 入力判定値    
     float               verticalRotationSpeed_   = 1.7f;  // 垂直回転速度
     float               horizontalRotationSpeed_ = 4.0f;  // 水平回転速度
-    bool                invertVertical_          = false; // 上下反転フラグ
-    //bool                invertVertical_          = true; // 上下反転フラグ
+    bool                invertVertical_          = true;  // 上下反転フラグ
 
     // ---------- 回転角制御用 ----------
     float               minRotationX_       = DirectX::XMConvertToRadians(-15.0f);

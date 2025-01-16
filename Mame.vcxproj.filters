@@ -295,7 +295,6 @@
     <ClCompile Include="Source\Game\Item\Item.cpp">
       <Filter>Mame\Game\Object\Item</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Game\Item\Barrel.cpp" />
     <ClCompile Include="Source\Graphics\ComputeParticle\ComputeParticleSystem.cpp">
       <Filter>Mame\Graphics\ComputeParticle</Filter>
     </ClCompile>
@@ -331,6 +330,12 @@
     </ClCompile>
     <ClCompile Include="Source\Game\Projectile\RainClouds.cpp">
       <Filter>Mame\Game\Object\Projectile\Rain</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Item\MagicCircle.cpp">
+      <Filter>Mame\Game\Object\Item\MagicCircle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Item\Barrel.cpp">
+      <Filter>Mame\Game\Object\Item\Barrel</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -656,7 +661,6 @@
     <ClInclude Include="Source\Game\Item\Item.h">
       <Filter>Mame\Game\Object\Item</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\Item\Barrel.h" />
     <ClInclude Include="Source\Graphics\ComputeParticle\ComputeParticleSystem.h">
       <Filter>Mame\Graphics\ComputeParticle</Filter>
     </ClInclude>
@@ -698,6 +702,12 @@
     </ClInclude>
     <ClInclude Include="Source\Game\Projectile\RainClouds.h">
       <Filter>Mame\Game\Object\Projectile\Rain</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Item\MagicCircle.h">
+      <Filter>Mame\Game\Object\Item\MagicCircle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Item\Barrel.h">
+      <Filter>Mame\Game\Object\Item\Barrel</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1015,6 +1025,12 @@
     </Filter>
     <Filter Include="Mame\Game\Object\Projectile\Rain">
       <UniqueIdentifier>{d27b4018-e91c-4db1-be91-3bf4b4c58389}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\Object\Item\MagicCircle">
+      <UniqueIdentifier>{f5cb65ee-2da4-4c1a-8787-0aa2957a7f5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\Object\Item\Barrel">
+      <UniqueIdentifier>{9fe4e899-f1d6-4218-9ae9-5879b88c7b0d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

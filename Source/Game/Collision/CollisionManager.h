@@ -52,6 +52,9 @@ private:
     // ========== Enemy VS ÅZÅZ ==========
 #pragma region ========== Enemy VS ÅZÅZ ==========
     void UpdateEnemyVs();
+    // ----- çUåÇîªíË -----
+    void UpdateEnemyAttack();
+    void EnemyAttackVsItemDamage();    
     // ----- Ç≠ÇÁÇ¢îªíË -----
     void UpdateEnemyDamage();               // EnemyDamage
     void EnemyDamageVsProjectileAttack();   // Enemy VS Proejctile

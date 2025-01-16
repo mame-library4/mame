@@ -15,6 +15,7 @@
 
 #include "AudioManager.h"
 #include "Item/Barrel.h"
+#include "Item/MagicCircle.h"
 
 #include "Projectile/HailBolt.h"
 #include "Projectile/AquaSeeker.h"
@@ -4558,6 +4559,12 @@ namespace PlayerState
             return true;
         }
 
+        if (owner_->IsMageCounterStanceKey())
+        {
+            owner_->ChangeState(Player::STATE::MageCounter);
+            return true;
+        }
+
         // ----- 攻撃に遷移 -----
         if (owner_->IsMageAttackKeyDown())
         {
@@ -4695,6 +4702,12 @@ namespace PlayerState
             {
                 owner_->ChangeState(Player::STATE::MageDodge);
             }
+            return true;
+        }
+
+        if (owner_->IsMageCounterStanceKey())
+        {
+            owner_->ChangeState(Player::STATE::MageCounter);
             return true;
         }
 
@@ -5515,6 +5528,94 @@ namespace PlayerState
                 owner_->SetAnimationSpeed(1.5f);
             }
         }
+    }
+}
+
+// ----- カウンター -----
+namespace PlayerState
+{
+    // ----- コンストラクタ -----
+    MageCounterState::MageCounterState(Player* player)
+        : State(player, "MageCounterState")
+    {
+    }
+
+    // ----- 初期化 -----
+    void MageCounterState::Initialize()
+    {
+        // アニメーション再生
+        PlayAnimation();
+
+        isCreateMagicCircle_ = false;
+    }
+
+    // ----- 更新 -----
+    void MageCounterState::Update(const float& elapsedTime)
+    {
+        // ルートモーションを使用する
+        if (owner_->GetIsBlendAnimation() == false && owner_->GetUseRootMotionMovement() == false)
+        {
+            owner_->SetUseRootMotion(true);
+            owner_->SetRootMotionValue(rootMotionMoveValue_);
+        }
+
+        // 魔法陣生成
+        if (isCreateMagicCircle_ == false && owner_->GetAnimationSeconds() >= magicCircleCreateFrame_)
+        {
+            const DirectX::XMFLOAT3 staffPosition = owner_->GetStaffJointPosition("joint1");
+            const DirectX::XMFLOAT3 playerPosition = owner_->GetTransform()->GetPosition();
+            const DirectX::XMFLOAT3 playerForward = owner_->GetTransform()->CalcForward();
+            const DirectX::XMFLOAT3 createPosition = playerPosition + XMFloat3Normalize(playerForward) * createForwardLength_;
+
+            MagicCircle* magicCircle = new MagicCircle(staffPosition, createPosition);
+
+            isCreateMagicCircle_ = true;
+        }       
+
+
+        if (owner_->IsPlayAnimation() == false)
+        {
+            owner_->ChangeState(Player::STATE::MageIdle);
+            return;
+        }
+    }
+
+    // ----- 終了化 -----
+    void MageCounterState::Finalize()
+    {
+        owner_->SetUseRootMotion(false);
+        owner_->SetRootMotionValue(1.0f);
+    }
+
+    // ----- ImGui用 -----
+    void MageCounterState::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- Animation ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("TransitionIdle", &transitionIdle_, 0.01f);
+                ImGui::DragFloat("RootMotionMoveValue", &rootMotionMoveValue_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- MagicCircle ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("CreateFrame", &magicCircleCreateFrame_, 0.01f);
+                ImGui::DragFloat("CreateForwardLength", &createForwardLength_, 0.01f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- アニメーション再生 -----
+    void MageCounterState::PlayAnimation()
+    {
+        owner_->PlayBlendAnimation(Player::Animation::MageCounter, false);
+        owner_->SetTransitionTime(transitionIdle_);
     }
 }
 

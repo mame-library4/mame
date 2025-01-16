@@ -2,8 +2,8 @@
 #include "ItemManager.h"
 
 // ----- コンストラクタ -----
-Item::Item(const std::string filename, const float& scaleFactor, const std::string& name)
-    : Object(filename, scaleFactor)
+Item::Item(const std::string filename, const float& scaleFactor, const std::string& name, const int& itemType)
+    : Object(filename, scaleFactor), itemType_(itemType)
 {
     // マネージャーに登録
     ItemManager::Instance().Register(this);

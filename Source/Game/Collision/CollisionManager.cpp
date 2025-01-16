@@ -800,9 +800,63 @@ void CollisionManager::PlayerVsEnemy()
 // ----- Enemy VS ZZ -----
 void CollisionManager::UpdateEnemyVs()
 {
+    // UŒ‚”»’è
+    UpdateEnemyAttack();
+
     // ‚­‚ç‚¢”»’è
     UpdateEnemyDamage();
 }
+
+#pragma region ---------- UŒ‚”»’è ----------
+// ----- UŒ‚”»’è -----
+void CollisionManager::UpdateEnemyAttack()
+{
+    // Enemy VS Item
+    EnemyAttackVsItemDamage();
+}
+
+// ----- Enemy VS Item -----
+void CollisionManager::EnemyAttackVsItemDamage()
+{
+    // “G‚ª‘¶İ‚µ‚È‚¢
+    if (EnemyManager::Instance().GetEnemyCount() <= 0) return;
+    // ƒAƒCƒeƒ€‚ª‘¶İ‚µ‚È‚¢
+    if (ItemManager::Instance().GetItemCount() <= 0) return;
+    // “G‚ªUŒ‚‚µ‚Ä‚¢‚È‚¢
+    if (EnemyManager::Instance().GetEnemy(0)->GetIsAttackActive() == false) return;
+    // “G‚ªŒ»İ™ôšK‚µ‚Ä‚¢‚é
+    if (EnemyManager::Instance().GetEnemy(0)->GetCurrentAttackAction() == Enemy::AttackAction::Roar) return;
+
+    Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
+
+    const int maxEnemyData = enemy->GetAttackDetectionDataCount();
+    const int maxItemData = ItemManager::Instance().GetItemCount();
+
+    for (int enemyDataIndex = 0; enemyDataIndex < maxEnemyData; ++enemyDataIndex)
+    {
+        const AttackDetectionData enemyData = enemy->GetAttackDetectionData(enemyDataIndex);
+        if (enemyData.GetIsActive() == false) continue;
+
+        for (int itemIndex = 0; itemIndex < maxItemData; ++itemIndex)
+        {
+            Item* item = ItemManager::Instance().GetItems().at(itemIndex);
+            // Šù‚É“–‚½‚Á‚Ä‚¢‚é
+            if (item->GetIsHit()) continue;
+
+            const DirectX::XMFLOAT3 itemPosition = item->GetTransform()->GetPosition() + item->GetOffsetPosition();
+
+            // “–‚½‚Á‚½‚©ƒ`ƒFƒbƒN
+            if (IntersectSphereVsSphere(
+                enemyData.GetPosition(), enemyData.GetRadius(),
+                itemPosition, item->GetDamageRadius()))
+            {
+                item->OnHit();
+            }
+        }        
+    }
+}
+
+#pragma endregion ---------- UŒ‚”»’è ----------
 
 #pragma region ---------- ‚­‚ç‚¢”»’è ----------
 // ----- ‚­‚ç‚¢”»’è -----
@@ -953,38 +1007,7 @@ void CollisionManager::UpdateItemVsAttack()
         }
     }
 
-    // ƒhƒ‰ƒSƒ“‚ÌUŒ‚‚Æ‚Ì”»’è‚ğ‚·‚é
-    // UŒ‚”»’è‚ª—LŒø & ‚Ü‚¾“–‚½‚Á‚Ä‚È‚¢‚È‚ç ˆ—‚·‚é
-    if (EnemyManager::Instance().GetEnemy(0)->GetIsAttackActive())
-    {
-        for (int itemIndex = 0; itemIndex < ItemManager::Instance().GetItemCount(); ++itemIndex)
-        {
-            Item* item = ItemManager::Instance().GetItems().at(itemIndex);
-            if (item->GetIsDrawModel() == false) continue;
-            
-            bool isHit = false;
-            Enemy* enemy = EnemyManager::Instance().GetEnemy(0);
-            // ™ôšK‚Å‚Í’M‚Í‰ó‚ê‚È‚¢
-            if (enemy->GetCurrentAttackAction() == Enemy::AttackAction::Roar) continue;
 
-            for (int enemyDataIndex = 0; enemyDataIndex < enemy->GetAttackDetectionDataCount(); ++enemyDataIndex)
-            {
-                const AttackDetectionData enemyData = enemy->GetAttackDetectionData(enemyDataIndex);
-                if (enemyData.GetIsActive() == false) continue;
-
-                const DirectX::XMFLOAT3 itemPosition = item->GetTransform()->GetPosition() + item->GetOffsetPosition();
-
-                // “–‚½‚Á‚½‚©ƒ`ƒFƒbƒN
-                if (IntersectSphereVsSphere(
-                    enemyData.GetPosition(), enemyData.GetRadius(),
-                    itemPosition, item->GetDamageRadius()))
-                {
-                    item->OnHit();
-                    isHit = true;
-                }
-            }
-        }
-    }
 }
 
 // ----- ƒAƒCƒeƒ€‚Æƒ_ƒ[ƒW”»’è -----
