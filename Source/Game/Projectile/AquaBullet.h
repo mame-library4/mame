@@ -18,7 +18,7 @@ public:
     void OnHit(const DirectX::XMFLOAT3& hitPosition)    override;
 
     // ----- ”­ŽË -----
-    void Launch(const DirectX::XMFLOAT3& moveDirection, const float& moveSpeed); 
+    void Launch(const DirectX::XMFLOAT3& moveDirection, const float& moveSpeed);
 
 private:
     struct AquaBulletConstants

@@ -152,6 +152,12 @@ void ComputeParticleEmitter::EmitParticle(const EmitParameter& param)
 		data.position_.y = p.y;
 		data.position_.z = p.z;
 
+		//const float rotationY = transform_.GetRotationY();
+		//const DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationY(rotationY);
+		//const DirectX::XMVECTOR posVec = DirectX::XMLoadFloat4(&data.position_);
+		//const DirectX::XMVECTOR rotationPos = DirectX::XMVector4Transform(posVec, rotationMatrix);
+		//DirectX::XMStoreFloat4(&data.position_, rotationPos);
+
 		//	発生方向
 		data.velocity_.x = v.x;
 		data.velocity_.y = v.y;
@@ -220,49 +226,48 @@ void ComputeParticleEmitter::EmitParticle()
 
 void ComputeParticleEmitter::DrawDebug()
 {
-	if (ImGui::Begin("ComputeParticleEmitter"))
+	ImGui::Begin("ComputeParticleEmitter");
+
+    if (ImGui::Button("Emit Particle")) EmitParticle(emitParameter_);
+	emitParameter_.DrawDebug();
+
+	if (ImGui::TreeNodeEx("========== Reset Emit Parameter ==========", ImGuiTreeNodeFlags_Framed))
 	{
-		if (ImGui::Button("Emit Particle")) EmitParticle(emitParameter_);
-		emitParameter_.DrawDebug();
+		if (ImGui::Button("Reset")) emitParameter_ = {};
 
-		if (ImGui::TreeNodeEx("========== Reset Emit Parameter ==========", ImGuiTreeNodeFlags_Framed))
-		{
-			if (ImGui::Button("Reset")) emitParameter_ = {};
-
-			ImGui::TreePop();
-		}
-		if (ImGui::TreeNodeEx("========== Load Emit Parameter ==========", ImGuiTreeNodeFlags_Framed))
-		{
-			static std::string name;
-
-			static char filename[128] = "";
-			ImGui::InputText("Asset Name", filename, ARRAYSIZE(filename));
-			if (ImGui::Button("Set DebugParameter From SaveData")) emitParameter_ = GetJsonEmitParameter(filename);
-
-			ImGui::TreePop();
-		}
-		if (ImGui::TreeNodeEx("========== Save Emit Parameter ==========", ImGuiTreeNodeFlags_Framed))
-		{
-			static std::string name;
-
-			static char filename[128] = "";
-			ImGui::InputText("Asset Name", filename, ARRAYSIZE(filename));
-			if (ImGui::Button("Save"))
-			{
-				// アセット化
-				AssetCreation(emitParameter_, filename);
-
-				// 文字列リセット
-				memset(filename, 0, sizeof(filename));
-			}
-
-			ImGui::TreePop();
-		}
-
-		transform_.DrawDebug();
-
-		ImGui::End();
+		ImGui::TreePop();
 	}
+	if (ImGui::TreeNodeEx("========== Load Emit Parameter ==========", ImGuiTreeNodeFlags_Framed))
+	{
+		static std::string name;
+
+		static char filename[128] = "";
+		ImGui::InputText("Asset Name", filename, ARRAYSIZE(filename));
+		if (ImGui::Button("Set DebugParameter From SaveData")) emitParameter_ = GetJsonEmitParameter(filename);
+
+		ImGui::TreePop();
+	}
+	if (ImGui::TreeNodeEx("========== Save Emit Parameter ==========", ImGuiTreeNodeFlags_Framed))
+	{
+		static std::string name;
+
+		static char filename[128] = "";
+		ImGui::InputText("Asset Name", filename, ARRAYSIZE(filename));
+		if (ImGui::Button("Save"))
+		{
+			// アセット化
+			AssetCreation(emitParameter_, filename);
+
+			// 文字列リセット
+			memset(filename, 0, sizeof(filename));
+		}
+
+		ImGui::TreePop();
+	}
+
+	transform_.DrawDebug();
+
+	ImGui::End();
 }
 
 void ComputeParticleEmitter::SetEmitParameter(const std::string& filename)

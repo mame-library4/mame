@@ -51,6 +51,7 @@ Player::Player()
         GetStateMachine()->RegisterState(new PlayerState::MageDashDodgeState(this));    // ƒ_ƒbƒVƒ…‰ñ”ğ
         GetStateMachine()->RegisterState(new PlayerState::MageDamageState(this));       // ƒ_ƒ[ƒW
         GetStateMachine()->RegisterState(new PlayerState::MageAttackState(this));       // UŒ‚
+        GetStateMachine()->RegisterState(new PlayerState::MageRainAttackState(this));   // UŒ‚
         GetStateMachine()->RegisterState(new PlayerState::MageAttack1_0(this));         // UŒ‚1_0
         GetStateMachine()->RegisterState(new PlayerState::MageAttack1_1(this));         // UŒ‚1_1
         GetStateMachine()->RegisterState(new PlayerState::MageAttack1_2(this));         // UŒ‚1_2

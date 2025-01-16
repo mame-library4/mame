@@ -3,6 +3,7 @@
 #include "Player.h"
 #include "ComputeParticle/ComputeParticleEmitter.h"
 #include "Projectile/AquaBullet.h"
+#include "Projectile/AquaMeteor.h"
 
 namespace PlayerState
 {
@@ -926,6 +927,31 @@ namespace PlayerState
         bool              isHighDamage_             = false;
     };
 
+    class MageRainAttackState : public State<Player>
+    {
+    public:
+        MageRainAttackState(Player* player);
+        ~MageRainAttackState() {}
+
+        void Initialize()                       override;
+        void Update(const float& elapsedTime)   override;
+        void Finalize()                         override;
+        void DrawDebug()                        override;
+
+    private:
+        void PlayAnimation(); // アニメーション再生
+
+    private:
+        // ---------- Animation ----------
+        float   transitionIdle_         = 0.3f;
+        float   transitionRun_          = 0.2f;
+        float   transitionDashDodge_    = 0.3f;
+        bool    isFirstAnimation_       = false;
+
+        // ----- Effect -----
+        ComputeParticleEmitter smokeParticleEmitter_ = {};
+    };
+
     // ----- 攻撃 -----
     class MageAttackState : public State<Player>
     {
@@ -1126,5 +1152,19 @@ namespace PlayerState
         ComputeParticleEmitter chargeEffectEmitter_ = {};
         float chargeEffectStartFrame_ = 0.43f;
         float chargeEffectEndFrame_ = 0.1f;
+
+        // ---------- AquaMeteor ----------
+        AquaMeteor* aquaMeteor_             = nullptr;
+        float       aquaMeteorCreateFrame_  = 0.48f;
+        float       aquaMeteorLaunchFrame_  = 0.3f;
+        float       aquaMeteorMoveSpeed_    = 20.0f;
+        bool        isCreateAquaMeteor_     = false; // 生成フラグ
+        bool        isLaunchedAquaMeteor_   = false; // 発射フラグ
+
+        // ----- CameraShake -----
+        float chargeCameraShakePower_   = 0.1f;
+        float chargeCameraShakeTime_    = 0.1f;
+        float launchCameraShakePower_   = 0.1f;
+        float launchCameraShakeTime_    = 0.1f;
     };
 }

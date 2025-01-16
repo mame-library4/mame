@@ -61,6 +61,7 @@ public:// --- ’è” ---
         MageDashDodge,
         MageDamage,
         MageAttack,
+        MageRainAttack,
         MageAttack1_0,
         MageAttack1_1,
         MageAttack1_2,

@@ -323,6 +323,15 @@
     <ClCompile Include="Source\Game\Projectile\AquaSeeker.cpp">
       <Filter>Mame\Game\Object\Projectile\AquaSeeker</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\AquaMeteor.cpp">
+      <Filter>Mame\Game\Object\Projectile\AquaMeteor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\Rain.cpp">
+      <Filter>Mame\Game\Object\Projectile\Rain</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Projectile\RainClouds.cpp">
+      <Filter>Mame\Game\Object\Projectile\Rain</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -681,6 +690,15 @@
     <ClInclude Include="Source\Game\Projectile\AquaSeeker.h">
       <Filter>Mame\Game\Object\Projectile\AquaSeeker</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\AquaMeteor.h">
+      <Filter>Mame\Game\Object\Projectile\AquaMeteor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\Rain.h">
+      <Filter>Mame\Game\Object\Projectile\Rain</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Projectile\RainClouds.h">
+      <Filter>Mame\Game\Object\Projectile\Rain</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Mame">
@@ -991,6 +1009,12 @@
     </Filter>
     <Filter Include="Mame\Game\Object\Projectile\AquaSeeker">
       <UniqueIdentifier>{690dc60f-52fd-46a1-9eac-ff1edce01d23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\Object\Projectile\AquaMeteor">
+      <UniqueIdentifier>{55da0b43-7337-480d-b80b-eaba68144857}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mame\Game\Object\Projectile\Rain">
+      <UniqueIdentifier>{d27b4018-e91c-4db1-be91-3bf4b4c58389}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

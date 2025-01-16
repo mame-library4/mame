@@ -65,6 +65,7 @@ public:
     static EmitParameter GetJsonEmitParameter(const std::string& filename);
 
     void SetEmitPosition(const DirectX::XMFLOAT3& position) { transform_.SetPosition(position); }
+    void SetEmitRotationY(const float& rotationY) { transform_.SetRotationY(rotationY); }
 
 private:
     void AssetCreation(const EmitParameter& param, const std::string& filename);

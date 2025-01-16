@@ -18,6 +18,7 @@
 
 #include "Projectile/HailBolt.h"
 #include "Projectile/AquaSeeker.h"
+#include "Projectile/RainClouds.h"
 
 // ----- AddForceData -----
 namespace PlayerState
@@ -4560,7 +4561,8 @@ namespace PlayerState
         // ----- 攻撃に遷移 -----
         if (owner_->IsMageAttackKeyDown())
         {
-            owner_->ChangeState(Player::STATE::MageAttack);
+            owner_->ChangeState(Player::STATE::MageRainAttack);
+            //owner_->ChangeState(Player::STATE::MageAttack);
             return true;
         }
 
@@ -4699,7 +4701,8 @@ namespace PlayerState
         // ----- 攻撃に遷移 -----
         if (owner_->IsMageAttackKeyDown())
         {
-            owner_->ChangeState(Player::STATE::MageAttack);
+            owner_->ChangeState(Player::STATE::MageRainAttack);
+            //owner_->ChangeState(Player::STATE::MageAttack);
             return true;
         }
 
@@ -5515,6 +5518,109 @@ namespace PlayerState
     }
 }
 
+// ----- 雨魔法攻撃 -----
+namespace PlayerState
+{
+    // ----- コンストラクタ -----
+    MageRainAttackState::MageRainAttackState(Player* player)
+        : State(player, "MageRainAttackState")
+    {
+        smokeParticleEmitter_.SetEmitParameter("DarkSmoke");
+    }
+
+    // ----- 初期化 -----
+    void MageRainAttackState::Initialize()
+    {
+        // フラグをリセット
+        owner_->ResetFlags();
+
+        // アニメーション再生
+        PlayAnimation();
+
+        // 変数初期化
+        isFirstAnimation_ = true;
+    }
+
+    // ----- 更新 -----
+    void MageRainAttackState::Update(const float& elapsedTime)
+    {
+        // 煙エフェクト生成
+        if (owner_->GetIsBlendAnimation() == false && isFirstAnimation_)
+        {
+            smokeParticleEmitter_.SetEmitPosition(owner_->GetStaffJointPosition("joint1"));
+            smokeParticleEmitter_.EmitParticle();
+        }
+
+        // 終了チェック & アニメーション変更チェック
+        if (owner_->IsPlayAnimation() == false)
+        {
+            if (isFirstAnimation_)
+            {
+                owner_->PlayAnimation(Player::Animation::MageSkillAttack0_1, false);
+
+                // ルートモーション使用
+                owner_->SetUseRootMotion(true);
+
+                RainClouds* rainClouds = new RainClouds();
+
+                isFirstAnimation_ = false;
+            }
+            else
+            {
+                owner_->ChangeState(Player::STATE::MageIdle);
+                return;
+            }
+        }
+    }
+
+    // ----- 終了化 -----
+    void MageRainAttackState::Finalize()
+    {
+        // ルートモーション使用終了
+        owner_->SetUseRootMotion(false);
+    }
+
+    // ----- ImGui用 -----
+    void MageRainAttackState::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- Animation ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("TransitionIdle", &transitionIdle_, 0.01f);
+                ImGui::DragFloat("TransitionRun", &transitionRun_, 0.01f);
+                ImGui::DragFloat("TransitionDashDodge", &transitionDashDodge_, 0.01f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- アニメーション再生 -----
+    void MageRainAttackState::PlayAnimation()
+    {
+        const Player::Animation animationIndex = static_cast<Player::Animation>(owner_->GetAnimationIndex());
+        float transitionTime = 0.1f;
+        if (animationIndex == Player::Animation::MageIdle)
+        {
+            transitionTime = transitionIdle_;
+        }
+        else if (animationIndex == Player::Animation::MageRun)
+        {
+            transitionTime = transitionRun_;
+        }
+        else if (animationIndex == Player::Animation::MageDush)
+        {
+            transitionTime = transitionDashDodge_;
+        }
+        owner_->SetTransitionTime(transitionTime);
+
+        owner_->PlayBlendAnimation(Player::Animation::MageSkillAttack0_0, false);
+    }
+}
+
 // ----- 攻撃 -----
 namespace PlayerState
 {
@@ -6282,6 +6388,9 @@ namespace PlayerState
         PlayAnimation();
 
         Camera::Instance().UseMageAttackCamera();
+
+        isCreateAquaMeteor_ = false;
+        isLaunchedAquaMeteor_ = false;
     }
 
     // ----- 更新 -----
@@ -6296,6 +6405,30 @@ namespace PlayerState
         // チャージエフェクト
         UpdateChargeEffect();
 
+        // 弾生成
+        if (isCreateAquaMeteor_ == false)
+        {
+            if (owner_->GetAnimationSeconds() >= aquaMeteorCreateFrame_)
+            {
+                aquaMeteor_ = new AquaMeteor();
+                isCreateAquaMeteor_ = true;
+            }
+        }
+
+        // 発射
+        if (isLaunchedAquaMeteor_ == false)
+        {
+            if (owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::MageAttack1_3End) &&
+                owner_->GetAnimationSeconds() >= aquaMeteorLaunchFrame_)
+            {
+                // カメラシェイクを入れる
+                Camera::Instance().ScreenVibrate(launchCameraShakePower_, launchCameraShakeTime_);
+
+                aquaMeteor_->Launch({}, owner_->GetTransform()->CalcForward(), aquaMeteorMoveSpeed_);
+                isLaunchedAquaMeteor_ = true;
+            }
+        }
+
         // 攻撃終了判定
         if (owner_->IsPlayAnimation() == false)
         {
@@ -6304,6 +6437,9 @@ namespace PlayerState
                 owner_->PlayBlendAnimation(Player::Animation::MageAttack1_3Loop, false);
                 owner_->SetTransitionTime(0.1f);
                 owner_->SetUseRootMotion(false);
+
+                // チャージのカメラシェイクを入れる
+                Camera::Instance().ScreenVibrate(chargeCameraShakePower_, chargeCameraShakeTime_);
             }
             else if (owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::MageAttack1_3Loop))
             {
@@ -6324,6 +6460,8 @@ namespace PlayerState
     {
         // ルートモーション使用終了
         owner_->SetUseRootMotion(false);
+
+        aquaMeteor_ = nullptr;
     }
 
     // ----- ImGui用 -----
@@ -6339,6 +6477,14 @@ namespace PlayerState
 
                 ImGui::TreePop();
             }
+            if (ImGui::TreeNodeEx("---------- AquaMeteor ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("CreateFrame", &aquaMeteorCreateFrame_, 0.01f);
+                ImGui::DragFloat("LaunchFrame", &aquaMeteorLaunchFrame_, 0.01f);
+                ImGui::DragFloat("MoveSpeed", &aquaMeteorMoveSpeed_, 0.01f);                
+
+                ImGui::TreePop();
+            }
             if (ImGui::TreeNodeEx("---------- Effect ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 if (ImGui::TreeNodeEx("===== ChargeEffect =====", ImGuiTreeNodeFlags_Framed))
@@ -6348,6 +6494,16 @@ namespace PlayerState
 
                     ImGui::TreePop();
                 }
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- Effect ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("ChargePower", &chargeCameraShakePower_, 0.01f);
+                ImGui::DragFloat("ChargeTime", &chargeCameraShakeTime_, 0.01f);
+
+                ImGui::DragFloat("launchPower", &launchCameraShakePower_, 0.01f);
+                ImGui::DragFloat("launchTime", &launchCameraShakeTime_, 0.01f);
 
                 ImGui::TreePop();
             }

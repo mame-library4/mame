@@ -680,7 +680,11 @@ void CollisionManager::PlayerDamageVsProjectileAttack()
             Projectile* projectile = projectiles.at(projectileIndex);
 
             // Playerとの当たり判定を行わない
-            if (projectile->GetAttackType() == static_cast<int>(ProjectileManager::AttackType::Enemy)) continue;
+            if (projectile->GetAttackType() == static_cast<int>(ProjectileManager::AttackType::Enemy) ||
+                projectile->GetAttackType() == static_cast<int>(ProjectileManager::AttackType::None))
+            {
+                continue;
+            }
 
             // 当たったかチェック
             if (IntersectSphereVsSphere(
@@ -834,7 +838,11 @@ void CollisionManager::EnemyDamageVsProjectileAttack()
             Projectile* projectile = projectiles.at(projectileIndex);
 
             // Enemyとの当たり判定を行わない
-            if (projectile->GetAttackType() == static_cast<int>(ProjectileManager::AttackType::Player)) continue;
+            if (projectile->GetAttackType() == static_cast<int>(ProjectileManager::AttackType::Player) ||
+                projectile->GetAttackType() == static_cast<int>(ProjectileManager::AttackType::None))
+            {
+                continue;
+            }
 
             // 当たったかチェック
             if (IntersectSphereVsSphere(

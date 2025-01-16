@@ -220,9 +220,9 @@ private:
 
     // ---------- 魔法攻撃カメラ ----------
     float   mageAttackTotalFrame_   = 0.5f;
-    float   mageAttackMaxLength_    = 8.0f;
-    float   mageAttackMinRotationX_ = DirectX::XMConvertToRadians(-5.0f);
-    int     mageAttackState_            = 0;
+    float   mageAttackMaxLength_    = 10.0f;
+    float   mageAttackMinRotationX_ = DirectX::XMConvertToRadians(5.0f);
+    int     mageAttackState_        = 0;
     bool    isMageAttackCameraAcitve_ = false;
 
     // ---------- プレイヤー死亡カメラ ----------

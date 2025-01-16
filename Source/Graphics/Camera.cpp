@@ -276,7 +276,10 @@ void Camera::DrawDebug()
         {
             ImGui::DragFloat("TotalFrame", &mageAttackTotalFrame_, 0.01f);
             ImGui::DragFloat("MaxLength", &mageAttackMaxLength_, 0.01f);
-            ImGui::DragFloat("MinRotation", &mageAttackMinRotationX_, 0.01f);
+
+            float angle = DirectX::XMConvertToDegrees(mageAttackMinRotationX_);
+            ImGui::DragFloat("MinRotation", &angle, 0.01f);
+            mageAttackMinRotationX_ = DirectX::XMConvertToRadians(angle);
 
             ImGui::TreePop();
         }

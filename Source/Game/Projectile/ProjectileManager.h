@@ -21,6 +21,7 @@ public:
         All,
         Player,
         Enemy,
+        None,
     };
 
 public:

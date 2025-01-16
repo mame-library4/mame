@@ -227,6 +227,7 @@
     <ClCompile Include="Source\Game\Item\ItemManager.cpp" />
     <ClCompile Include="Source\Game\Object.cpp" />
     <ClCompile Include="Source\Game\Projectile\AquaBullet.cpp" />
+    <ClCompile Include="Source\Game\Projectile\AquaMeteor.cpp" />
     <ClCompile Include="Source\Game\Projectile\AquaSeeker.cpp" />
     <ClCompile Include="Source\Game\Projectile\DarkFireball.cpp" />
     <ClCompile Include="Source\Game\Projectile\DarkFireballEmitter.cpp" />
@@ -234,6 +235,8 @@
     <ClCompile Include="Source\Game\Projectile\HailBolt.cpp" />
     <ClCompile Include="Source\Game\Projectile\Projectile.cpp" />
     <ClCompile Include="Source\Game\Projectile\ProjectileManager.cpp" />
+    <ClCompile Include="Source\Game\Projectile\Rain.cpp" />
+    <ClCompile Include="Source\Game\Projectile\RainClouds.cpp" />
     <ClCompile Include="Source\Game\Stage\Stage.cpp" />
     <ClCompile Include="Source\Game\Stage\StageNormal.cpp" />
     <ClCompile Include="Source\Game\Sword\Sword.cpp" />
@@ -344,6 +347,7 @@
     <ClInclude Include="Source\Game\Item\ItemManager.h" />
     <ClInclude Include="Source\Game\Object.h" />
     <ClInclude Include="Source\Game\Projectile\AquaBullet.h" />
+    <ClInclude Include="Source\Game\Projectile\AquaMeteor.h" />
     <ClInclude Include="Source\Game\Projectile\AquaSeeker.h" />
     <ClInclude Include="Source\Game\Projectile\DarkFireball.h" />
     <ClInclude Include="Source\Game\Projectile\DarkFireballEmitter.h" />
@@ -351,6 +355,8 @@
     <ClInclude Include="Source\Game\Projectile\HailBolt.h" />
     <ClInclude Include="Source\Game\Projectile\Projectile.h" />
     <ClInclude Include="Source\Game\Projectile\ProjectileManager.h" />
+    <ClInclude Include="Source\Game\Projectile\Rain.h" />
+    <ClInclude Include="Source\Game\Projectile\RainClouds.h" />
     <ClInclude Include="Source\Game\Stage\Stage.h" />
     <ClInclude Include="Source\Game\Stage\StageNormal.h" />
     <ClInclude Include="Source\Game\Sword\Sword.h" />
