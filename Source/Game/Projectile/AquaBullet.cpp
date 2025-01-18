@@ -88,7 +88,7 @@ void AquaBullet::DrawDebug()
 }
 
 // ----- 当たった時に呼ばれる -----
-void AquaBullet::OnHit(const DirectX::XMFLOAT3& hitPosition)
+const bool AquaBullet::OnHit(const DirectX::XMFLOAT3& hitPosition)
 {
     // Hitエフェクト再生
     hitEffectEmitter_.SetEmitParameter("AquaBulleHitEffect");
@@ -100,6 +100,8 @@ void AquaBullet::OnHit(const DirectX::XMFLOAT3& hitPosition)
 
     // 自分自身を削除する
     ProjectileManager::Instance().Remove(this);
+
+    return true;
 }
 
 // ----- 発射 -----

@@ -99,6 +99,15 @@ private:
 
         Finalize,
     };
+    enum class MageAttackCamera
+    {
+        Initialize, // 初期化
+        ZoomOut,    // ズームアウト
+        Idle,       // 待機
+        ZoomIn,     // ズームイン
+        Attack,     // 攻撃
+        Finalize,   // 終了化
+    };
 #pragma endregion ---------- 各種カメラの定数 ----------
 
 
@@ -218,11 +227,17 @@ private:
     bool                isCounterAttackCameraActive_    = false;
 
     // ---------- 魔法攻撃カメラ ----------
-    float   mageAttackTotalFrame_   = 0.5f;
-    float   mageAttackMaxLength_    = 10.0f;
-    float   mageAttackMinRotationX_ = DirectX::XMConvertToRadians(5.0f);
-    int     mageAttackState_        = 0;
-    bool    isMageAttackCameraAcitve_ = false;
+    MageAttackCamera    mageAttackState_        = MageAttackCamera::Initialize;
+    float               zoomOutTotalFrame_      = 0.4f;
+    float               zoomOutMaxLength_       = 9.0f;
+    float               zoomOutMinRotationX_    = DirectX::XMConvertToRadians(5.0f);
+    float               zoomInTotalFrame_       = 0.8f;
+    float               zoomInMaxLength_        = 5.0f;
+    float               mageAttackTotalFrame_   = 0.2f;
+    float               mageAttackMaxLength_    = 11.0f;
+
+    float               mageAttackMinRotationX_ = DirectX::XMConvertToRadians(5.0f);
+    bool                isMageAttackCameraAcitve_ = false;
 
     // ---------- プレイヤー死亡カメラ ----------
     DirectX::XMFLOAT3   playerDeathOffset_              = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);

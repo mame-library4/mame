@@ -72,7 +72,7 @@ void HailBolt::DrawDebug()
 }
 
 // ----- 当たった時に呼ばれる -----
-void HailBolt::OnHit(const DirectX::XMFLOAT3& hitPosition)
+const bool HailBolt::OnHit(const DirectX::XMFLOAT3& hitPosition)
 {
     // Hitエフェクト再生
     hitEffectEmitter_.SetEmitParameter("HailBoltHitEffect");
@@ -84,6 +84,8 @@ void HailBolt::OnHit(const DirectX::XMFLOAT3& hitPosition)
 
     // 自分自身を削除する
     ProjectileManager::Instance().Remove(this);
+
+    return true;
 }
 
 // ----- 発射 -----

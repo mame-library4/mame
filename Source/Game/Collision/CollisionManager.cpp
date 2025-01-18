@@ -679,6 +679,9 @@ void CollisionManager::PlayerDamageVsProjectileAttack()
         {
             Projectile* projectile = projectiles.at(projectileIndex);
 
+            // 既に当たっている
+            if (projectile->GetIsHit()) continue;
+
             // Playerとの当たり判定を行わない
             if (projectile->GetAttackType() == static_cast<int>(ProjectileManager::AttackType::Enemy) ||
                 projectile->GetAttackType() == static_cast<int>(ProjectileManager::AttackType::None))
@@ -691,7 +694,13 @@ void CollisionManager::PlayerDamageVsProjectileAttack()
                 playerData.GetPosition(), playerData.GetRadius(),
                 projectile->GetTransform()->GetPosition(), projectile->GetRadius()))
             {
-                projectile->OnHit({});
+                const bool isHit = projectile->OnHit({});
+
+                // 当たっていない
+                if (isHit == false) continue;
+
+                // 当たったのでフラグを立てる
+                projectile->SetIsHit(true);
 
                 // カウンター状態ならカウンター成功
                 if (player->GetIsCounter())
@@ -891,6 +900,9 @@ void CollisionManager::EnemyDamageVsProjectileAttack()
         {
             Projectile* projectile = projectiles.at(projectileIndex);
 
+            // 既に当たっている
+            if (projectile->GetIsHit()) continue;
+
             // Enemyとの当たり判定を行わない
             if (projectile->GetAttackType() == static_cast<int>(ProjectileManager::AttackType::Player) ||
                 projectile->GetAttackType() == static_cast<int>(ProjectileManager::AttackType::None))
@@ -911,7 +923,13 @@ void CollisionManager::EnemyDamageVsProjectileAttack()
                 // ============================================================
                 enemyData.SetIsHit(true);
                 enemyData.SetHitTimer(0.01f);
-                projectile->OnHit(hitPosition);
+                const bool isHit = projectile->OnHit(hitPosition);
+
+                // 当たっていない
+                if (isHit == false) continue;
+
+                // 当たったのでフラグを立てる
+                projectile->SetIsHit(true);
 
                 // ============================================================
                 //  当たった部位が弱点部位かの判定をする

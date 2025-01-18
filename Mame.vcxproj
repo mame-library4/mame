@@ -274,7 +274,6 @@
     <ClCompile Include="Source\Graphics\FullscreenQuad.cpp" />
     <ClCompile Include="Source\Graphics\Graphics.cpp" />
     <ClCompile Include="Source\Graphics\Particle\AfterimageParticle.cpp" />
-    <ClCompile Include="Source\Graphics\Particle\FireBallParticle.cpp" />
     <ClCompile Include="Source\Graphics\Particle\MeteorParticle.cpp" />
     <ClCompile Include="Source\Graphics\Particle\ParticleData.cpp" />
     <ClCompile Include="Source\Graphics\Particle\ParticleManager.cpp" />
@@ -395,7 +394,6 @@
     <ClInclude Include="Source\Graphics\FullscreenQuad.h" />
     <ClInclude Include="Source\Graphics\Graphics.h" />
     <ClInclude Include="Source\Graphics\Particle\AfterimageParticle.h" />
-    <ClInclude Include="Source\Graphics\Particle\FireBallParticle.h" />
     <ClInclude Include="Source\Graphics\Particle\MeteorParticle.h" />
     <ClInclude Include="Source\Graphics\Particle\ParticleData.h" />
     <ClInclude Include="Source\Graphics\Particle\ParticleManager.h" />

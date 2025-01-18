@@ -5,11 +5,13 @@
 #include "Texture.h"
 #include "Character/Player/PlayerManager.h"
 #include "Character/Enemy/EnemyManager.h"
+#include "Camera.h"
 
 // ----- コンストラクタ -----
-AquaMeteor::AquaMeteor()
+AquaMeteor::AquaMeteor(const float& cameraShakePower, const float& cameraShakeTime)
     : Projectile("./Resources/Model/Sphere.gltf", 1.0f, "AquaMeteor",
-        static_cast<int>(ProjectileManager::DrawType::Normal), static_cast<int>(ProjectileManager::AttackType::Enemy))
+        static_cast<int>(ProjectileManager::DrawType::Normal), static_cast<int>(ProjectileManager::AttackType::Enemy)),
+    cameraShakePower_(cameraShakePower), cameraShakeTime_(cameraShakeTime)
 {
     aquaConstants_ = std::make_unique<ConstantBuffer<AquaConstants>>();
 
@@ -25,7 +27,13 @@ void AquaMeteor::Initialize()
 
     GetTransform()->SetScaleFactor(0.0f);
 
+    // 攻撃判定設定
+    SetRadius(1.0f);
 
+    // エフェクト読み込み
+    computeParticleEmitter_.SetEmitParameter("AquaMeteorCharge");
+    hitEffectEmitter0_.SetEmitParameter("AquaMeteorHitEffect");
+    hitEffectEmitter1_.SetEmitParameter("AquaMeteorHitEffect2");
 }
 
 // ----- 終了化 -----
@@ -36,6 +44,29 @@ void AquaMeteor::Finalize()
 // ----- 更新 -----
 void AquaMeteor::Update(const float& elapsedTime)
 {
+    // Hit後の処理
+    if (GetIsHit())
+    {
+        hitTimer_ += elapsedTime;
+        hitEffectTimer_ += elapsedTime;
+
+        if (hitEffectTimer_ >= hitEffectCreateSpan_)
+        {
+            hitEffectEmitter1_.SetEmitPosition(GetTransform()->GetPosition());
+            hitEffectEmitter1_.EmitParticle();
+
+            hitEffectTimer_ = 0.0f;
+        }
+
+        if (hitTimer_ >= 1.0f)
+        {
+            // 自分自身を削除する
+            ProjectileManager::Instance().Remove(this);
+        }
+
+        return;
+    }
+
     // チャージ時
     if (isLaunched_ == false)
     {
@@ -60,7 +91,6 @@ void AquaMeteor::Update(const float& elapsedTime)
     // エフェクト
     if (isLaunched_ == false)
     {
-        computeParticleEmitter_.SetEmitParameter("AquaMeteorCharge");
         computeParticleEmitter_.SetEmitPosition(GetTransform()->GetPosition());
         computeParticleEmitter_.EmitParticle();
     }
@@ -69,6 +99,9 @@ void AquaMeteor::Update(const float& elapsedTime)
 // ----- 描画 -----
 void AquaMeteor::Render(ID3D11PixelShader* psShader)
 {
+    // ヒットしているため、描画しない
+    if (GetIsHit()) return;
+
     aquaConstants_->Activate(9);
     Graphics::Instance().GetDeviceContext()->PSSetShaderResources(9, 1, shaderResourceView_.GetAddressOf());
     Object::Render(aquaPS_.Get());
@@ -96,12 +129,22 @@ void AquaMeteor::DrawDebug()
 }
 
 // ----- 当たった時に呼ばれる -----
-void AquaMeteor::OnHit(const DirectX::XMFLOAT3& hitPosition)
+const bool AquaMeteor::OnHit(const DirectX::XMFLOAT3& hitPosition)
 {
-    // エフェクト再生
+    // まだ発射していない
+    if (isLaunched_ == false) return false;
+    // 既に当たっている
+    if (GetIsHit()) return false;
 
-    // 自分自身を削除する
-    ProjectileManager::Instance().Remove(this);
+    // エフェクト再生
+    hitEffectEmitter0_.SetEmitParameter("AquaMeteorHitEffect");
+    hitEffectEmitter0_.SetEmitPosition(GetTransform()->GetPosition());
+    hitEffectEmitter0_.EmitParticle();
+
+    // カメラシェイクを入れる
+    Camera::Instance().ScreenVibrate(cameraShakePower_, cameraShakeTime_);
+
+    return true;
 }
 
 // ----- 発射 -----

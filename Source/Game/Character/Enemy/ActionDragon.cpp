@@ -2784,16 +2784,128 @@ namespace ActionDragon
 
 #pragma region ---------- 未完成 ----------
 
+// ----- FireBall -----
+namespace ActionDragon
+{
+    // ----- コンストラクタ -----
+    FireballAction::FireballAction(Enemy* owner)
+        : ActionBase(owner)
+    {
+        // エフェクト読み込み
+        chargeEffectEmitter_.SetEmitParameter("FireballChargeEffect");
+    }
+
+    const ActionBase::State FireballAction::Run(const float& elapsedTime)
+    {
+        switch (owner_->GetStep())
+        {
+        case 0:// 初期化
+        {
+            // アニメーション再生
+            PlayAnimation();
+
+            // 変数初期化
+            isFireballLaunched_ = false;
+
+            chargeEffectEmitter_.SetEmitParameter("FireballChargeEffect");
+
+            owner_->SetStep(1);
+        }
+            break;
+        case 1:
+
+            if (owner_->GetAnimationSeconds() >= chargeEffectStartFrame_ && owner_->GetAnimationSeconds() <= chargeEffectEndFrame_)
+            {
+                chargeEffectEmitter_.SetEmitPosition(owner_->GetJointPosition("Dragon15_tongue2"));
+                chargeEffectEmitter_.EmitParticle();
+            }
+            
+
+            // 火球発射
+            if (isFireballLaunched_ == false && owner_->GetAnimationSeconds() >= fireballLaunchFrame_)
+            {
+                const DirectX::XMFLOAT3 position = owner_->GetJointPosition("Dragon15_spine1");
+                DirectX::XMFLOAT3 emitPosition = owner_->GetJointPosition("Dragon15_tongue2");
+                emitPosition.y = 1.5f;
+                DirectX::XMFLOAT3 moveDirection = emitPosition - position;
+                moveDirection.y = 0.0f;
+                moveDirection = XMFloat3Normalize(moveDirection);
+
+                Fireball* fireball = new Fireball();
+                fireball->Launch(emitPosition, moveDirection, fireballMoveSpeed_);
+
+                isFireballLaunched_ = true;
+            }
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+
+            break;
+        case 2:
+            break;
+        }
+
+        return ActionBase::State();
+    }
+
+    // ----- ImGui用 -----
+    void FireballAction::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx("FireballAction", ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- Effect ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("StartFrame", &chargeEffectStartFrame_, 0.01f);
+                ImGui::DragFloat("EndFrame", &chargeEffectEndFrame_, 0.01f);
+                
+                ImGui::TreePop();
+            }
+
+            ImGui::DragFloat("FireballMoveSpeed", &fireballMoveSpeed_, 0.01f);
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- アニメーション再生 -----
+    void FireballAction::PlayAnimation()
+    {
+        owner_->PlayBlendAnimation(Enemy::DragonAnimation::FireBreathFront, false);
+        owner_->SetTransitionTime(0.1f);
+    }
+}
+
 // ----- FireBreathAction -----
 namespace ActionDragon
 {
     const ActionBase::State FireBreathAction::Run(const float& elapsedTime)
     {
+        switch (owner_->GetStep())
+        {
+        case 0:
+
+            break;
+        case 1:
+            break;
+        case 2:
+            break;
+        }
+
         return ActionBase::State::Run;
     }
 
+    // ---------- ImGui用 ----------
     void FireBreathAction::DrawDebug()
     {
+        if (ImGui::TreeNodeEx("FireBreath", ImGuiTreeNodeFlags_Framed))
+        {
+            
+
+            ImGui::TreePop();
+        }
     }
 }
 #pragma endregion ---------- 未完成 ----------

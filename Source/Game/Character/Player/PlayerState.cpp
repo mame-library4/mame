@@ -6278,6 +6278,9 @@ namespace PlayerState
         aquaSeekerEmitter[0].Initialize(0.19f);
         aquaSeekerEmitter[1].Initialize(0.20f);
         aquaSeekerEmitter[2].Initialize(0.21f);
+
+        isCameraShake_      = false;
+        isGamePadVibration_ = false;
     }
 
     // ----- 更新 -----
@@ -6306,6 +6309,20 @@ namespace PlayerState
             aquaSeekerEmitter[i].Update(owner_->GetAnimationSeconds(), projectileMoveSpeed_, emitPosition);
         }
 
+        // カメラシェイク
+        if (isCameraShake_ == false && owner_->GetAnimationSeconds() >= cameraShakeFrame_)
+        {
+            Camera::Instance().ScreenVibrate(cameraShakePower_, cameraShakeTime_);
+            isCameraShake_ = true;
+        }
+
+        // コントローラー振動
+        if (isGamePadVibration_ == false && owner_->GetAnimationSeconds() >= gamePadVibrationFrame_)
+        {
+            Input::Instance().GetGamePad().Vibration(gamePadVibrationTime_, gamePadVibrationPower_.x, gamePadVibrationPower_.y);
+            isGamePadVibration_ = true;
+        }
+
         // 攻撃終了判定
         if (owner_->IsPlayAnimation() == false)
         {
@@ -6327,18 +6344,6 @@ namespace PlayerState
     {
         if (ImGui::TreeNodeEx(GetName(), ImGuiTreeNodeFlags_Framed))
         {
-            if (ImGui::TreeNodeEx("---------- AquaSeekerEmitter ----------", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                for (int i = 0; i < 3; ++i)
-                {
-                    aquaSeekerEmitter[i].DrawDebug();
-                }
-
-                ImGui::DragFloat("ProjectileMoveSpeed", &projectileMoveSpeed_, 0.01f);
-
-                ImGui::TreePop();
-            }
-
             if (ImGui::TreeNodeEx("---------- Animation ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::DragFloat("PlayAnimationSpeed", &playAnimationSpeed_, 0.01f);
@@ -6356,10 +6361,37 @@ namespace PlayerState
 
                 ImGui::TreePop();
             }
+            if (ImGui::TreeNodeEx("---------- CameraShake ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("Power", &cameraShakePower_, 0.01f);
+                ImGui::DragFloat("Time", &cameraShakeTime_, 0.01f);
+                ImGui::DragFloat("Frame", &cameraShakeFrame_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- GamePadVibration ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat2("Power", &gamePadVibrationPower_.x, 0.01f);
+                ImGui::DragFloat("Time", &gamePadVibrationTime_, 0.01f);
+                ImGui::DragFloat("Frame", &gamePadVibrationFrame_, 0.01f);
+
+                ImGui::TreePop();
+            }
             if (ImGui::TreeNodeEx("---------- Effect ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::DragFloat("SmokeStartFrame", &smokeEffectStartFrame_, 0.01f);
                 ImGui::DragFloat("SmokeEndFrame", &smokeEffectEndFrame_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- AquaSeekerEmitter ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                for (int i = 0; i < 3; ++i)
+                {
+                    aquaSeekerEmitter[i].DrawDebug();
+                }
+
+                ImGui::DragFloat("ProjectileMoveSpeed", &projectileMoveSpeed_, 0.01f);
 
                 ImGui::TreePop();
             }
@@ -6511,7 +6543,7 @@ namespace PlayerState
         {
             if (owner_->GetAnimationSeconds() >= aquaMeteorCreateFrame_)
             {
-                aquaMeteor_ = new AquaMeteor();
+                aquaMeteor_ = new AquaMeteor(aquaMeteorCameraShakePower_, aquaMeteorCameraShakeTime_);
                 isCreateAquaMeteor_ = true;
             }
         }
@@ -6524,6 +6556,8 @@ namespace PlayerState
             {
                 // カメラシェイクを入れる
                 Camera::Instance().ScreenVibrate(launchCameraShakePower_, launchCameraShakeTime_);
+                // コントローラ振動を入れる
+                Input::Instance().GetGamePad().Vibration(launchGamePadVibrationTime_, launchGamePadVibrationPower_.x, launchGamePadVibrationPower_.y);
 
                 aquaMeteor_->Launch({}, owner_->GetTransform()->CalcForward(), aquaMeteorMoveSpeed_);
                 isLaunchedAquaMeteor_ = true;
@@ -6541,6 +6575,8 @@ namespace PlayerState
 
                 // チャージのカメラシェイクを入れる
                 Camera::Instance().ScreenVibrate(chargeCameraShakePower_, chargeCameraShakeTime_);
+                // チャージのコントローラ振動を入れる
+                Input::Instance().GetGamePad().Vibration(chargeGamePadVibrationTime_, chargeGamePadVibrationPower_.x, chargeGamePadVibrationPower_.y);
             }
             else if (owner_->GetAnimationIndex() == static_cast<int>(Player::Animation::MageAttack1_3Loop))
             {
@@ -6578,11 +6614,33 @@ namespace PlayerState
 
                 ImGui::TreePop();
             }
+            if (ImGui::TreeNodeEx("---------- CameraShake ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("ChargePower", &chargeCameraShakePower_, 0.01f);
+                ImGui::DragFloat("ChargeTime", &chargeCameraShakeTime_, 0.01f);
+
+                ImGui::DragFloat("launchPower", &launchCameraShakePower_, 0.01f);
+                ImGui::DragFloat("launchTime", &launchCameraShakeTime_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- GamePadVibration ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat2("ChargePower", &chargeGamePadVibrationPower_.x, 0.01f);
+                ImGui::DragFloat("ChargeTime", &chargeGamePadVibrationTime_, 0.01f);
+
+                ImGui::DragFloat2("launchPower", &launchGamePadVibrationPower_.x, 0.01f);
+                ImGui::DragFloat("launchTime", &launchGamePadVibrationTime_, 0.01f);
+
+                ImGui::TreePop();
+            }
             if (ImGui::TreeNodeEx("---------- AquaMeteor ----------", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::DragFloat("CreateFrame", &aquaMeteorCreateFrame_, 0.01f);
                 ImGui::DragFloat("LaunchFrame", &aquaMeteorLaunchFrame_, 0.01f);
                 ImGui::DragFloat("MoveSpeed", &aquaMeteorMoveSpeed_, 0.01f);                
+                ImGui::DragFloat("CameraShakePower", &aquaMeteorCameraShakePower_, 0.01f);
+                ImGui::DragFloat("CameraShakeTime", &aquaMeteorCameraShakeTime_, 0.01f);
 
                 ImGui::TreePop();
             }
@@ -6598,16 +6656,7 @@ namespace PlayerState
 
                 ImGui::TreePop();
             }
-            if (ImGui::TreeNodeEx("---------- Effect ----------", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                ImGui::DragFloat("ChargePower", &chargeCameraShakePower_, 0.01f);
-                ImGui::DragFloat("ChargeTime", &chargeCameraShakeTime_, 0.01f);
 
-                ImGui::DragFloat("launchPower", &launchCameraShakePower_, 0.01f);
-                ImGui::DragFloat("launchTime", &launchCameraShakeTime_, 0.01f);
-
-                ImGui::TreePop();
-            }
 
             ImGui::TreePop();
         }

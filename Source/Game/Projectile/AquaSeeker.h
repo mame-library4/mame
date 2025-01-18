@@ -13,7 +13,7 @@ public:
     void Update(const float& elapsedTime)               override;
     void Render(ID3D11PixelShader* psShader = nullptr)  override;
     void DrawDebug()                                    override;
-    void OnHit(const DirectX::XMFLOAT3& hitPosition)    override;
+    [[nodiscard]] const bool OnHit(const DirectX::XMFLOAT3& hitPosition)    override;
 
 public:
     void SetMoveSpeed(const float& speed) { moveSpeed_ = speed; }

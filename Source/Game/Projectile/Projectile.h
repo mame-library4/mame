@@ -15,7 +15,7 @@ public:
     virtual void Render(ID3D11PixelShader* psShader = nullptr) = 0;
     virtual void DrawDebug();
 
-    virtual void OnHit(const DirectX::XMFLOAT3& hitPosition) = 0;
+    virtual const bool OnHit(const DirectX::XMFLOAT3& hitPosition) = 0;
 
 public:// [Get, Set] Function
     // ----- Damage -----
@@ -32,21 +32,25 @@ public:// [Get, Set] Function
 
     [[nodiscard]] const std::string GetName() const { return name_; }
 
-    [[nodiscard]] const int GetDrawType() const { return drawType_; }
+    // ----- Hitƒtƒ‰ƒO -----
+    [[nodiscard]] const bool GetIsHit() const { return isHit_; }
+    void SetIsHit(const bool& flag) { isHit_ = flag; }
 
-    // ----- AttackType -----
+    // ----- •`‰æí—Ş -----
+    [[nodiscard]] const int GetDrawType() const { return drawType_; }
+    // ----- UŒ‚í—Ş -----
     [[nodiscard]] const int GetAttackType() const { return attackType_; }
 
 private:
+    std::string name_   = ""; // “o˜^–¼
+    int         id_     = 0;  // “o˜^”Ô†
 
     float damage_ = 0.0f;
 
     float radius_ = 0.0f;
     float counterRadius_ = 0.0f; // ƒJƒEƒ“ƒ^[”ÍˆÍ‚Ì”¼Œa
 
-    int id_ = 0; // “o˜^”Ô†
-
-    std::string name_ = "";
+    bool isHit_ = false;
 
     const int drawType_;    // •`‰æ‚Ìí—Ş
     const int attackType_;  // UŒ‚‚Ì”»’èí—Ş

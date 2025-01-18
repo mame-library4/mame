@@ -5,7 +5,7 @@
 class AquaMeteor : public Projectile
 {
 public:
-    AquaMeteor();
+    AquaMeteor(const float& cameraShakePower, const float& cameraShakeTime);
     ~AquaMeteor() override {}
 
     void Initialize()                                   override;
@@ -13,7 +13,7 @@ public:
     void Update(const float& elapsedTime)               override;
     void Render(ID3D11PixelShader* psShader = nullptr)  override;
     void DrawDebug()                                    override;
-    void OnHit(const DirectX::XMFLOAT3& hitPosition)    override;
+    [[nodiscard]] const bool OnHit(const DirectX::XMFLOAT3& hitPosition)    override;
 
     void Launch(const DirectX::XMFLOAT3& emitPosition, const DirectX::XMFLOAT3& direction, const float& speed);
 
@@ -32,7 +32,7 @@ private:
 
     float scaleTimer_ = 0.0f;
     float scaleSpeed_ = 0.5f;
-    float positionY_ = 3.0f;
+    float positionY_ = 4.0f;
 
 
     DirectX::XMFLOAT3   moveDirection_  = {};
@@ -41,5 +41,15 @@ private:
 
     // ---------- Effect ----------
     ComputeParticleEmitter computeParticleEmitter_ = {};
+    ComputeParticleEmitter hitEffectEmitter0_ = {};
+    ComputeParticleEmitter hitEffectEmitter1_ = {};
+
+    // ---------- CameraShake ----------
+    float cameraShakePower_ = 0.0f;
+    float cameraShakeTime_  = 0.0f;
+
+    float hitTimer_ = 0.0f;
+    float hitEffectTimer_       = 0.0f;
+    float hitEffectCreateSpan_  = 0.1f;
 };
 

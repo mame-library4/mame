@@ -71,11 +71,13 @@ void AquaSeeker::DrawDebug()
 }
 
 // ----- “–‚½‚Á‚½‚ÉŒÄ‚Î‚ê‚é -----
-void AquaSeeker::OnHit(const DirectX::XMFLOAT3& hitPosition)
+const bool AquaSeeker::OnHit(const DirectX::XMFLOAT3& hitPosition)
 {
 
     // ©•ª©g‚ğíœ‚·‚é
     ProjectileManager::Instance().Remove(this);
+
+    return true;
 }
 
 // ----- ”­Ë•ûŒü‚ğŒˆ’è‚·‚é -----

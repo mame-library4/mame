@@ -63,8 +63,9 @@ void DarkFireball::DrawDebug()
 {
 }
 
-void DarkFireball::OnHit(const DirectX::XMFLOAT3& hitPosition)
+const bool DarkFireball::OnHit(const DirectX::XMFLOAT3& hitPosition)
 {
+    return true;
 }
 
 // ----- ”­ŽË -----

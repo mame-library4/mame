@@ -306,81 +306,44 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Down", "NormalDown", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::DownAction(this));
     
     // --------------- UŒ‚ ---------------
-#if 1
-
-#if 1
-    behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
-
-    behaviorTree_->AddNode("Attack", "PowerAttack", 0, BehaviorTree::SelectRule::Priority, new ActionDragon::PowerAttackJudgment(this), nullptr);
-    behaviorTree_->AddNode("Attack", "NormalAttack", 1, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
-
-    behaviorTree_->AddNode("PowerAttack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
-
-    behaviorTree_->AddNode("NormalAttack", "LongRangeAttack", 0, BehaviorTree::SelectRule::Random, new ActionDragon::LongRangeJudgment(this), nullptr);
-    behaviorTree_->AddNode("NormalAttack", "CloseRangeAttack", 0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
-
-    behaviorTree_->AddNode("LongRangeAttack", "Walk", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));
-    behaviorTree_->AddNode("LongRangeAttack", "TackleAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
-
-
-    //behaviorTree_->AddNode("CloseRangeAttack", "SlamCombo", 0, BehaviorTree::SelectRule::Sequence, new ActionDragon::SlamComboAttackJudgment(this), nullptr);
-    //behaviorTree_->AddNode("SlamCombo", "SlamAttack0", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
-    //behaviorTree_->AddNode("SlamCombo", "SlamAttack1", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
-    //behaviorTree_->AddNode("SlamCombo", "SlamAttack2", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
-
-    // ----- ‰ñ“]UŒ‚ -----
-    behaviorTree_->AddNode("CloseRangeAttack", "Turn", 0, BehaviorTree::SelectRule::Sequence, nullptr, nullptr);
-    behaviorTree_->AddNode("Turn", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
-    behaviorTree_->AddNode("Turn", "Idle", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::IdleAction(this));
-    // ----- ƒK[ƒhUŒ‚ -----
-    //behaviorTree_->AddNode("CloseRangeAttack", "Guard", 0, BehaviorTree::SelectRule::Sequence, nullptr, nullptr);
-    //behaviorTree_->AddNode("Guard", "GuardAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::GuardAction(this));
-    ////// ----- ’@‚«•t‚¯UŒ‚ -----
-    //behaviorTree_->AddNode("CloseRangeAttack", "Slam", 0, BehaviorTree::SelectRule::Sequence, nullptr, nullptr);
-    //behaviorTree_->AddNode("Slam", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
-
-
-    //behaviorTree_->AddNode("CloseRangeAttack", "SlamAttack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
-    //behaviorTree_->AddNode("CloseRangeAttack", "TurnAttack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
-    //behaviorTree_->AddNode("CloseRangeAttack", "Walk",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));
-    //behaviorTree_->AddNode("CloseRangeAttack", "Guard",        0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::GuardAction(this));
-    //behaviorTree_->AddNode("CloseRangeAttack", "StompAttack",  0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::StompAttackAction(this));
-    //behaviorTree_->AddNode("CloseRangeAttack", "TackleAttack", 0, BehaviorTree::SelectRule::None, new ActionDragon::TackleAttackJudgment(this), new ActionDragon::TackleAction(this));
-    //behaviorTree_->AddNode("CloseRangeAttack", "SuperNova", 0, BehaviorTree::SelectRule::None, new ActionDragon::SuperNovaJudgment(this), new ActionDragon::SuperNovaAction(this));
-    //behaviorTree_->AddNode("CloseRangeAttack", "Roar", 0, BehaviorTree::SelectRule::None, new ActionDragon::RoarJudgment(this), new ActionDragon::RoarAction(this));]
-#else
-
+#if 0 // AIì‚Á‚Ä‚¢‚­—p
     behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
 
     behaviorTree_->AddNode("Attack", "PowerAttack",  0, BehaviorTree::SelectRule::Priority, new ActionDragon::PowerAttackJudgment(this), nullptr);
     behaviorTree_->AddNode("Attack", "NormalAttack", 1, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
-    
+
     behaviorTree_->AddNode("PowerAttack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
-    
-    behaviorTree_->AddNode("NormalAttack", "LongRangeAttack", 0, BehaviorTree::SelectRule::Random, new ActionDragon::LongRangeJudgment(this), nullptr);
+
+    behaviorTree_->AddNode("NormalAttack", "LongRangeAttack",  0, BehaviorTree::SelectRule::Random, new ActionDragon::LongRangeJudgment(this), nullptr);
     behaviorTree_->AddNode("NormalAttack", "CloseRangeAttack", 0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
-    
-    behaviorTree_->AddNode("LongRangeAttack", "Walk",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));
-    behaviorTree_->AddNode("LongRangeAttack", "TackleAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
 
-    behaviorTree_->AddNode("CloseRangeAttack", "SlamAttack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
-    behaviorTree_->AddNode("CloseRangeAttack", "TurnAttack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
-    behaviorTree_->AddNode("CloseRangeAttack", "Guard",        0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::GuardAction(this));
-    behaviorTree_->AddNode("CloseRangeAttack", "Walk",         0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));
-    behaviorTree_->AddNode("CloseRangeAttack", "StompAttack",  0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::StompAttackAction(this));
-    behaviorTree_->AddNode("CloseRangeAttack", "TackleAttack", 0, BehaviorTree::SelectRule::None, new ActionDragon::TackleAttackJudgment(this), new ActionDragon::TackleAction(this));
-    behaviorTree_->AddNode("CloseRangeAttack", "SuperNova",    0, BehaviorTree::SelectRule::None, new ActionDragon::SuperNovaJudgment(this),    new ActionDragon::SuperNovaAction(this));
-    behaviorTree_->AddNode("CloseRangeAttack", "Roar",         0, BehaviorTree::SelectRule::None, new ActionDragon::RoarJudgment(this),         new ActionDragon::RoarAction(this));
-#endif
+    behaviorTree_->AddNode("LongRangeAttack", "Walk",           0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));
+    behaviorTree_->AddNode("LongRangeAttack", "TackleAttack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
+    behaviorTree_->AddNode("LongRangeAttack", "FireballAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireballAction(this));
 
-#else
+    // ----- ‰ñ“]UŒ‚ -----
+    behaviorTree_->AddNode("CloseRangeAttack", "Turn", 0, BehaviorTree::SelectRule::Sequence, nullptr, nullptr);
+    behaviorTree_->AddNode("Turn", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
+    behaviorTree_->AddNode("Turn", "Idle",       0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::IdleAction(this));
+    // ----- ƒK[ƒhUŒ‚ -----
+    behaviorTree_->AddNode("CloseRangeAttack", "Guard", 0, BehaviorTree::SelectRule::Sequence, nullptr, nullptr);
+    behaviorTree_->AddNode("Guard", "GuardAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::GuardAction(this));
+    // ----- ’@‚«•t‚¯UŒ‚ -----
+    behaviorTree_->AddNode("CloseRangeAttack", "Slam", 0, BehaviorTree::SelectRule::Sequence, nullptr, nullptr);
+    behaviorTree_->AddNode("Slam", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
+    // ----- “¥‚Ý‚Â‚¯UŒ‚ -----
+    behaviorTree_->AddNode("CloseRangeAttack", "Stomp", 0, BehaviorTree::SelectRule::Sequence, nullptr, nullptr);
+    behaviorTree_->AddNode("Stomp", "StompAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::StompAttackAction(this));
+    // ----- ™ôšK -----
+    behaviorTree_->AddNode("CloseRangeAttack", "Roar", 0, BehaviorTree::SelectRule::Sequence, new ActionDragon::RoarJudgment(this), nullptr);
+    behaviorTree_->AddNode("Roar", "RoarAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
+
+
+
+#else // ƒeƒXƒg—p
     behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
-    behaviorTree_->AddNode("Attack", "Roar", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::RoarAction(this));
-    behaviorTree_->AddNode("Attack", "SuperNova", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SuperNovaAction(this));
-    behaviorTree_->AddNode("Attack", "StompAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::StompAttackAction(this));
-    behaviorTree_->AddNode("Attack", "SlamAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::SlamAttackAction(this));
-    behaviorTree_->AddNode("Attack", "TurnAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TurnAttackAction(this));
-    behaviorTree_->AddNode("Attack", "TackleAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
+
+    behaviorTree_->AddNode("Attack", "FireballAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireballAction(this));
 
 #endif
 }

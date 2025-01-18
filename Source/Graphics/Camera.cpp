@@ -274,8 +274,14 @@ void Camera::DrawDebug()
 #pragma region ---------- MageAttackCamera ----------
         if (ImGui::TreeNodeEx("MageAttackCamera", ImGuiTreeNodeFlags_Framed))
         {
-            ImGui::DragFloat("TotalFrame", &mageAttackTotalFrame_, 0.01f);
-            ImGui::DragFloat("MaxLength", &mageAttackMaxLength_, 0.01f);
+            ImGui::DragFloat("ZoomOutTotalFrame", &zoomOutTotalFrame_, 0.01f);
+            ImGui::DragFloat("ZoomOutMaxLength", &zoomOutMaxLength_, 0.01f);
+
+            ImGui::DragFloat("ZoomInTotalFrame", &zoomInTotalFrame_, 0.01f);
+            ImGui::DragFloat("ZoomInMaxLength", &zoomInMaxLength_, 0.01f);
+
+            ImGui::DragFloat("MageAttackTotalFrame", &mageAttackTotalFrame_, 0.01f);
+            ImGui::DragFloat("MageAttackMaxLength", &mageAttackMaxLength_, 0.01f);
 
             float angle = DirectX::XMConvertToDegrees(mageAttackMinRotationX_);
             ImGui::DragFloat("MinRotation", &angle, 0.01f);
@@ -520,7 +526,7 @@ void Camera::UseMageAttackCamera()
     ResetCameraFlags();
 
     isMageAttackCameraAcitve_ = true;
-    mageAttackState_ = 0;
+    mageAttackState_ = MageAttackCamera::Initialize;
 }
 
 void Camera::ResetCameraFlags()
@@ -1027,46 +1033,82 @@ void Camera::UpdateMageAttackCamera(const float& elapsedTime)
 
     switch (mageAttackState_)
     {
-    case 0:// 初期化
-        easingTimer_ = 0.0f;
-        oldLength_ = length_;
-        oldRotate_ = GetTransform()->GetRotation();
+    case MageAttackCamera::Initialize:// 初期化
+        easingTimer_    = 0.0f;
+        oldLength_      = length_;
+        oldRotate_      = GetTransform()->GetRotation();
 
-        mageAttackState_ = 1;
+        mageAttackState_ = MageAttackCamera::ZoomOut;
 
         break;
-    case 1:
-    {
-        const float playerAnimationSeconds = PlayerManager::Instance().GetPlayer()->GetAnimationSeconds();
-        if(playerAnimationSeconds >= 0.45f)
+    case MageAttackCamera::Idle:// 待機
+
+        if (PlayerManager::Instance().GetPlayer()->GetAnimationIndex() == static_cast<int>(Player::Animation::MageAttack1_3Loop))
         {
-            mageAttackState_ = 2;
-            break;
+            mageAttackState_ = MageAttackCamera::ZoomOut;
+        }
+
+        break;
+    case MageAttackCamera::ZoomOut:// カメラを引く
+    {
+        easingTimer_ += elapsedTime;
+        easingTimer_ = min(easingTimer_, zoomOutTotalFrame_);
+
+        length_         = Easing::InSine(easingTimer_, zoomOutTotalFrame_, zoomOutMaxLength_, oldLength_);
+        minRotationX_   = Easing::InSine(easingTimer_, zoomOutTotalFrame_, zoomOutMinRotationX_, oldRotate_.x);
+
+        if (easingTimer_ == zoomOutTotalFrame_)
+        {
+            easingTimer_    = 0.0f;
+            oldLength_      = length_;
+            oldRotate_      = GetTransform()->GetRotation();
+
+            mageAttackState_ = MageAttackCamera::ZoomIn;
         }
     }
         break;
-    case 2:
+    case MageAttackCamera::ZoomIn:// カメラを近づける
     {
-        const Player::Animation playerAnimationIndex = static_cast<Player::Animation>(PlayerManager::Instance().GetPlayer()->GetAnimationIndex());
-        if (playerAnimationIndex != Player::Animation::MageAttack1_3Start &&
-            playerAnimationIndex != Player::Animation::MageAttack1_3Loop &&
-            playerAnimationIndex != Player::Animation::MageAttack1_3End)
-        {
-            oldLength_ = length_;
-            oldRotate_ = GetTransform()->GetRotation();
-            easingTimer_ = 0.0f;
-            mageAttackState_ = 3;
-            break;
-        }
+        easingTimer_ += elapsedTime;
+        easingTimer_ = min(easingTimer_, zoomInTotalFrame_);
 
+        length_ = Easing::OutSine(easingTimer_, zoomInTotalFrame_, zoomInMaxLength_, oldLength_);
+
+        const Player::Animation playerAnimationIndex = static_cast<Player::Animation>(PlayerManager::Instance().GetPlayer()->GetAnimationIndex());
+        if (playerAnimationIndex == Player::Animation::MageAttack1_3End)
+        {
+            const float animationSeconds = PlayerManager::Instance().GetPlayer()->GetAnimationSeconds();
+            if (animationSeconds >= 0.3f)
+            {
+                easingTimer_ = 0.0f;
+                oldLength_ = length_;
+                oldRotate_ = GetTransform()->GetRotation();
+
+                mageAttackState_ = MageAttackCamera::Attack;
+            }
+        }
+    }
+        break;
+    case MageAttackCamera::Attack:
+    {
         easingTimer_ += elapsedTime;
         easingTimer_ = min(easingTimer_, mageAttackTotalFrame_);
+
         length_ = Easing::InSine(easingTimer_, mageAttackTotalFrame_, mageAttackMaxLength_, oldLength_);
-        
-        minRotationX_ = Easing::InSine(easingTimer_, mageAttackTotalFrame_, mageAttackMinRotationX_, gameCameraMinRotationX_);
+
+        // アニメーション終了していたら
+        const Player::Animation playerAnimationIndex = static_cast<Player::Animation>(PlayerManager::Instance().GetPlayer()->GetAnimationIndex());
+        if (playerAnimationIndex != Player::Animation::MageAttack1_3End)
+        {
+            easingTimer_ = 0.0f;
+            oldLength_ = length_;
+            oldRotate_ = GetTransform()->GetRotation();
+
+            mageAttackState_ = MageAttackCamera::Finalize;
+        }
     }
         break;
-    case 3:// 終了化
+    case MageAttackCamera::Finalize:// 終了化
     {
         const float totalFrame = 0.5f;
         easingTimer_ += elapsedTime;

@@ -235,9 +235,6 @@
     <ClCompile Include="Source\Graphics\Particle\SuperNovaParticle.cpp">
       <Filter>Mame\Graphics\Particle\SuperNovaParticle</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graphics\Particle\FireBallParticle.cpp">
-      <Filter>Mame\Graphics\Particle\FireBallParticle</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Scene\TitleState.cpp">
       <Filter>Mame\Scene\TitleScene</Filter>
     </ClCompile>
@@ -601,9 +598,6 @@
     <ClInclude Include="Source\Graphics\Particle\SuperNovaParticle.h">
       <Filter>Mame\Graphics\Particle\SuperNovaParticle</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Graphics\Particle\FireBallParticle.h">
-      <Filter>Mame\Graphics\Particle\FireBallParticle</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Scene\TitleState.h">
       <Filter>Mame\Scene\TitleScene</Filter>
     </ClInclude>
@@ -905,9 +899,6 @@
     </Filter>
     <Filter Include="Mame\Graphics\Particle\SuperNovaParticle">
       <UniqueIdentifier>{a8ecb679-f306-4a53-b6b8-31f149e9e58e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Mame\Graphics\Particle\FireBallParticle">
-      <UniqueIdentifier>{18be484d-750f-47b1-9b7f-d3a56e5963a9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Mame\Shader\Particle\FireBallParticle">
       <UniqueIdentifier>{158cdc52-9a48-483b-821a-d4e9b802751c}</UniqueIdentifier>

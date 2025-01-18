@@ -6,8 +6,9 @@
 #include "Particle/SuperNovaParticle.h"
 #include "Particle/SlamAttackParticle.h"
 #include "Particle/MeteorParticle.h"
-
 #include "Effect/EffectManager.h"
+
+#include "ComputeParticle/ComputeParticleEmitter.h"
 
 #include "UI/UIFader.h"
 
@@ -568,6 +569,29 @@ namespace ActionDragon
 
 
 #pragma region ---------- 未完成 ----------
+    // ----- Fireball -----
+    class FireballAction : public ActionBase
+    {
+    public:
+        FireballAction(Enemy* owner);
+        const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
+
+    private:
+        void PlayAnimation(); // アニメーション再生
+
+    private:
+        // ---------- Effect ----------
+        ComputeParticleEmitter  chargeEffectEmitter_    = {};
+        float                   chargeEffectStartFrame_ = 0.23f;
+        float                   chargeEffectEndFrame_   = 0.6f;
+
+        float   fireballLaunchFrame_    = 0.95f;
+        float   fireballMoveSpeed_      = 30.0f;
+        bool    isFireballLaunched_     = false;
+
+    };
+
     // ----- FireBreath -----
     class FireBreathAction : public ActionBase
     {

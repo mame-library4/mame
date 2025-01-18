@@ -41,9 +41,11 @@ void Rain::DrawDebug()
 }
 
 // ----- “–‚½‚Á‚½Žž‚ÉŒÄ‚Î‚ê‚é -----
-void Rain::OnHit(const DirectX::XMFLOAT3& hitPosition)
+const bool Rain::OnHit(const DirectX::XMFLOAT3& hitPosition)
 {
     ProjectileManager::Instance().Remove(this);
+
+    return true;
 }
 
 // ----- ”­ŽË -----

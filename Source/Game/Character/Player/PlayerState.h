@@ -1129,6 +1129,18 @@ namespace PlayerState
         float dodgeStateChangeFrame_    = 0.8f;
         float attack1_3ChangeFrame_     = 0.35f;
 
+        // ----- CameraShake -----
+        float   cameraShakePower_   = 0.15f;
+        float   cameraShakeTime_    = 0.3f;
+        float   cameraShakeFrame_   = 0.21f;
+        bool    isCameraShake_      = false;
+
+        // ----- GamePadVibration -----
+        DirectX::XMFLOAT2   gamePadVibrationPower_  = { 1.0f, 1.0f };
+        float               gamePadVibrationTime_   = 0.3f;
+        float               gamePadVibrationFrame_  = 0.2f;
+        bool                isGamePadVibration_     = false;
+
         // ---------- Effect ----------
         ComputeParticleEmitter smokeEmitter_ = {};
         float smokeEffectStartFrame_ = 0.1f;
@@ -1176,23 +1188,31 @@ namespace PlayerState
         float animationStartFrame_ = 0.34f;
         float transitionAttack1_2_ = 0.2f;
 
+        // ---------- CameraShake ----------
+        float chargeCameraShakePower_ = 0.2f;
+        float chargeCameraShakeTime_ = 3.0f;
+        float launchCameraShakePower_ = 0.5f;
+        float launchCameraShakeTime_ = 1.0f;
+
+        // ---------- GamePadVibration ----------
+        DirectX::XMFLOAT2   chargeGamePadVibrationPower_    = { 1.0f, 0.0f };
+        DirectX::XMFLOAT2   launchGamePadVibrationPower_    = { 1.0f, 1.0f };
+        float               chargeGamePadVibrationTime_     = 3.0f;
+        float               launchGamePadVibrationTime_     = 0.5f;
+
         // ---------- Effect ----------
         ComputeParticleEmitter chargeEffectEmitter_ = {};
         float chargeEffectStartFrame_ = 0.43f;
         float chargeEffectEndFrame_ = 0.1f;
 
         // ---------- AquaMeteor ----------
-        AquaMeteor* aquaMeteor_             = nullptr;
-        float       aquaMeteorCreateFrame_  = 0.48f;
-        float       aquaMeteorLaunchFrame_  = 0.3f;
-        float       aquaMeteorMoveSpeed_    = 20.0f;
-        bool        isCreateAquaMeteor_     = false; // 生成フラグ
-        bool        isLaunchedAquaMeteor_   = false; // 発射フラグ
-
-        // ----- CameraShake -----
-        float chargeCameraShakePower_   = 0.1f;
-        float chargeCameraShakeTime_    = 0.1f;
-        float launchCameraShakePower_   = 0.1f;
-        float launchCameraShakeTime_    = 0.1f;
+        AquaMeteor* aquaMeteor_                 = nullptr;
+        float       aquaMeteorCreateFrame_      = 0.48f;
+        float       aquaMeteorLaunchFrame_      = 0.3f;
+        float       aquaMeteorMoveSpeed_        = 20.0f;
+        float       aquaMeteorCameraShakePower_ = 0.3f;
+        float       aquaMeteorCameraShakeTime_  = 0.7f;
+        bool        isCreateAquaMeteor_         = false; // 生成フラグ
+        bool        isLaunchedAquaMeteor_       = false; // 発射フラグ
     };
 }

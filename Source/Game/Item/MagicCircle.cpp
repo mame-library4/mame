@@ -77,11 +77,22 @@ void MagicCircle::Update(const float& elapsedTime)
         {
             scaleTimer_     = 0.0f;
             rotationSpeed_  = receptionRotationSpeed_;
+            receptionTimer_ = receptionTime_;
             state_          = STATE::Reception;
         }
     }
         break;
     case STATE::Reception:// カウンター受付中
+        receptionTimer_ -= elapsedTime;
+
+        if (receptionTimer_ <= 0.0f)
+        {
+            oldColor_ = baseColor_;
+            oldScale_ = GetTransform()->GetScaleFactor();
+            isUpdateColor_ = true;
+
+            state_ = STATE::Close;
+        }
 
         break;
     case STATE::Hit:// 当たった時
@@ -92,7 +103,7 @@ void MagicCircle::Update(const float& elapsedTime)
         // BaseColor, OutlineColor, Scale更新
         if (isUpdateScale_)
         {
-            const DirectX::XMFLOAT3 color = XMFloat3Lerp({ 0.0f, 1.0f, 1.0f }, hitColor_, hitTimer_);
+            const DirectX::XMFLOAT3 color = XMFloat3Lerp(baseColor_, hitColor_, hitTimer_);
             const float scale = XMFloatLerp(5.0f, hitScale_, hitTimer_);
 
             SetEmissiveColor(color);
@@ -110,7 +121,7 @@ void MagicCircle::Update(const float& elapsedTime)
         // OutlineSize の更新
         else
         {           
-            const float outlineSize = Easing::OutCubic(hitTimer_, 1.0f, hitOutlineSize_, attackOutlineSize_);
+            const float outlineSize = Easing::OutCubic(hitTimer_, 1.0f, hitOutlineSize_, preparationOutlineSize_);
             SetOutlineSize(outlineSize);
         }
 
@@ -128,29 +139,31 @@ void MagicCircle::Update(const float& elapsedTime)
         break;
     case STATE::Preparation:// 攻撃
     {
-        attackTimer_ += attackTimerSpeed_ * elapsedTime;
-        attackTimer_ = std::min(1.0f, attackTimer_);
+        preparationTimer_ += preparationTimerSpeed_ * elapsedTime;
+        preparationTimer_ = std::min(1.0f, preparationTimer_);
 
         // アウトラインのサイズを更新
         if (isUpdateOutlineSize_)
         {
-            const float outlineSize = Easing::InCubic(attackTimer_, 1.0f, attackOutlineSize_, hitOutlineSize_);
+            const float outlineSize = Easing::InCubic(preparationTimer_, 1.0f, preparationOutlineSize_, hitOutlineSize_);
             SetOutlineSize(outlineSize);
 
-            if (attackTimer_ == 1.0f)
+            if (preparationTimer_ == 1.0f)
             {
                 isUpdateOutlineSize_ = false;
-                attackTimer_ = 0.0f;
+                preparationTimer_ = 0.0f;
             }
         }
         // サイズを更新
         else
         {
-            const float scale = XMFloatLerp(hitScale_, attackScale_, attackTimer_);
+            const float scale = XMFloatLerp(hitScale_, preparationScale_, preparationTimer_);
             GetTransform()->SetScaleFactor(scale);
 
-            if (attackTimer_ == 1.0f)
+            if (preparationTimer_ == 1.0f)
             {
+                isAbleAttack_ = true;
+
                 // ステート変更
                 state_ = STATE::Attack;
             }
@@ -158,11 +171,73 @@ void MagicCircle::Update(const float& elapsedTime)
     }
         break;
     case STATE::Attack:// 攻撃
-        attackEffectEmitter_.SetEmitPosition(GetTransform()->GetPosition());
-        attackEffectEmitter_.EmitParticle();
+
+        attackTimer_ += elapsedTime;
+
+        // 攻撃
+        if (isAbleAttack_)
+        {
+            attackTimer_ = std::min(attackTimer_, attackTime_);
+
+            // エフェクト生成
+            attackEffectEmitter_.SetEmitPosition(GetTransform()->GetPosition());
+            attackEffectEmitter_.EmitParticle();
+
+            if (attackTimer_ >= attackTime_)
+            {
+                attackTimer_    = 0.0f;
+                rotationSpeed_  = attackEndRotationSpeed_;
+                isAbleAttack_   = false;
+            }
+        }
+        // 攻撃終了
+        else
+        {
+            attackTimer_ = std::min(attackTimer_, attackEndDelay_);
+            
+            if (attackTimer_ >= attackEndDelay_)
+            {
+                oldColor_ = baseColor_;
+                oldScale_ = GetTransform()->GetScaleFactor();
+                isUpdateColor_ = true;
+
+                state_ = STATE::Close;
+            }
+        }
 
         break;
     case STATE::Close:// 終了
+    {
+        closeTimer_ += closeSpeed_ * elapsedTime;
+        closeTimer_ = std::min(1.0f, closeTimer_);
+
+        // 色を黒色にする
+        if (isUpdateColor_)
+        {
+            const DirectX::XMFLOAT3 color = XMFloat3Lerp(oldColor_, closeColor_, closeTimer_);
+            SetEmissiveColor(color);
+            SetOutlineColor(color);
+
+            if (closeTimer_ == 1.0f)
+            {
+                closeTimer_ = 0.0f;
+
+                rotationSpeed_ = closeRotationSpeed_;
+
+                isUpdateColor_ = false;
+            }
+        }
+        else
+        {
+            const float scale = XMFloatLerp(oldScale_, closeScale_, closeTimer_);
+            GetTransform()->SetScaleFactor(scale);
+
+            if (closeTimer_ == 1.0f)
+            {
+                ItemManager::Instance().Remove(this);
+            }
+        }
+    }
         break;
     }
 
