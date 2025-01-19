@@ -47,6 +47,43 @@ namespace ActionDragon
 
 namespace ActionDragon
 {
+    class AppearAction : public ActionBase
+    {
+    public:
+        AppearAction(Enemy* owner) : ActionBase(owner) {}
+        const ActionBase::State Run(const float& elapsedTime) override;
+        void DrawDebug()                                      override;
+    
+    public:
+        enum class STATE
+        {
+            Initialzie, // 初期化
+            Update,
+            Update1,
+        };
+
+    private:
+        void ChangeState(const STATE& state) { owner_->SetStep(static_cast<int>(state)); }
+        void PlayAnimation(); // アニメーション再生
+
+    private:
+        // ---------- Animation ----------
+        float animationStartFrame_  = 2.6f;
+        float animationEndFrame_    = 8.3f;
+        float descentStartFrame_    = 5.6f;
+        float descentEndFrame_      = 7.0f;
+        float transitionFly_        = 0.2f;
+
+        DirectX::XMFLOAT3 initPosition_ = { 0.0f, 25.0f, -20.0f };
+        DirectX::XMFLOAT3 position_ = { 0.0f, 15.0f, -20.0f };
+
+        // ---------- CameraShake ----------
+        float   cameraShakePower_   = 0.5f;
+        float   cameraShakeTime_    = 0.5f;
+        float   cameraShakeFrame_   = 7.3f;
+        bool    isCameraShake_      = false;
+    };
+
     // ----- DeathAction -----
     class DeathAction : public ActionBase
     {
@@ -565,10 +602,6 @@ namespace ActionDragon
         float transitionTurnAttack_ = 0.2f;
     };
 
-#pragma endregion ---------- 攻撃 ----------
-
-
-#pragma region ---------- 未完成 ----------
     // ----- Fireball -----
     class FireballAction : public ActionBase
     {
@@ -579,19 +612,28 @@ namespace ActionDragon
 
     private:
         void PlayAnimation(); // アニメーション再生
+        void Finalize(); // 終了化
 
     private:
-        // ---------- Effect ----------
-        ComputeParticleEmitter  chargeEffectEmitter_    = {};
-        float                   chargeEffectStartFrame_ = 0.23f;
-        float                   chargeEffectEndFrame_   = 0.6f;
+        // ---------- Turn ----------
+        DirectX::XMFLOAT3   targetPosition_ = {};
+        float               turnEndFrame_ = 0.7f;
 
-        float   fireballLaunchFrame_    = 0.95f;
-        float   fireballMoveSpeed_      = 30.0f;
-        bool    isFireballLaunched_     = false;
+        // ---------- Effect ----------
+        ComputeParticleEmitter  chargeEffectEmitter_ = {};
+        float                   chargeEffectStartFrame_ = 0.15f;
+        float                   chargeEffectEndFrame_ = 0.6f;
+
+        float   fireballLaunchFrame_ = 0.95f;
+        float   fireballMoveSpeed_ = 30.0f;
+        bool    isFireballLaunched_ = false;
 
     };
 
+#pragma endregion ---------- 攻撃 ----------
+
+
+#pragma region ---------- 未完成 ----------
     // ----- FireBreath -----
     class FireBreathAction : public ActionBase
     {

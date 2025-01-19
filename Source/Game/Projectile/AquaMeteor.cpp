@@ -6,12 +6,15 @@
 #include "Character/Player/PlayerManager.h"
 #include "Character/Enemy/EnemyManager.h"
 #include "Camera.h"
+#include "GamePad.h"
 
 // ----- コンストラクタ -----
-AquaMeteor::AquaMeteor(const float& cameraShakePower, const float& cameraShakeTime)
+AquaMeteor::AquaMeteor(const float& cameraShakePower, const float& cameraShakeTime,
+    const DirectX::XMFLOAT2& gamePadVibrationPower, const float& gamePadVibrationTime)
     : Projectile("./Resources/Model/Sphere.gltf", 1.0f, "AquaMeteor",
         static_cast<int>(ProjectileManager::DrawType::Normal), static_cast<int>(ProjectileManager::AttackType::Enemy)),
-    cameraShakePower_(cameraShakePower), cameraShakeTime_(cameraShakeTime)
+    cameraShakePower_(cameraShakePower), cameraShakeTime_(cameraShakeTime),
+    gamePadVibrationPower_(gamePadVibrationPower), gamePadVibrationTime_(gamePadVibrationTime)
 {
     aquaConstants_ = std::make_unique<ConstantBuffer<AquaConstants>>();
 
@@ -143,6 +146,9 @@ const bool AquaMeteor::OnHit(const DirectX::XMFLOAT3& hitPosition)
 
     // カメラシェイクを入れる
     Camera::Instance().ScreenVibrate(cameraShakePower_, cameraShakeTime_);
+
+    // コントローラー振動入れる
+    Input::Instance().GetGamePad().Vibration(gamePadVibrationTime_, gamePadVibrationPower_.x, gamePadVibrationPower_.y);
 
     return true;
 }

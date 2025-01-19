@@ -5,7 +5,8 @@
 class AquaMeteor : public Projectile
 {
 public:
-    AquaMeteor(const float& cameraShakePower, const float& cameraShakeTime);
+    AquaMeteor(const float& cameraShakePower, const float& cameraShakeTime,
+        const DirectX::XMFLOAT2& gamePadVibrationPower, const float& gamePadVibrationTime);
     ~AquaMeteor() override {}
 
     void Initialize()                                   override;
@@ -47,6 +48,10 @@ private:
     // ---------- CameraShake ----------
     float cameraShakePower_ = 0.0f;
     float cameraShakeTime_  = 0.0f;
+
+    // ---------- GamePadVibration ----------
+    DirectX::XMFLOAT2   gamePadVibrationPower_  = {};
+    float               gamePadVibrationTime_   = 0.0f;
 
     float hitTimer_ = 0.0f;
     float hitEffectTimer_       = 0.0f;

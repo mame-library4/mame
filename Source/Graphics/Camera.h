@@ -76,6 +76,9 @@ public:// --- 取得・設定 ---
 
     void ResetCameraFlags();
 
+    void UseDragonAppearCamera();
+    void SetDragonAppearCameraParameter(const float& animationStartFrame, const float& animationEndFrame, const float& descentStartFrame, const float& descentEndFrame);
+
 private:
 #pragma region---------- 各種カメラの定数 ----------
     enum class EnemyDeathCamera
@@ -116,7 +119,8 @@ private:
 
     void UpdateCameraReset(const float& elapsedTime);  // カメラリセット更新
 
-
+    // ---------- ドラゴン登場演出カメラ ----------
+    [[nodiscard]] const bool UpdateDragonAppearCamera(const float& elapsedTime);    
     // ---------- プレイヤー死亡カメラ ----------
     [[nodiscard]] const bool UpdatePlayerDeathCamera(const float& elapsedTime);
     // ---------- ドラゴン死亡カメラ ----------
@@ -203,6 +207,38 @@ private:
 
     float gameCameraLengthReturnSpeed_ = 5.0f;
     float gameCameraLerpWeightReturnSpeed_ = 0.6f;
+
+    // ---------- 登場演出カメラ ----------
+    struct DragonAppearCamera
+    {
+        float animationStartFrame_  = 0.0f;
+        float animationEndFrame_    = 0.0f;
+        float descentStartFrame_    = 0.0f;
+        float descentEndFrame_      = 0.0f;
+
+        // Length
+        float initializeLength_     = 25.0f;
+        float firstTargetLength_    = 12.0f;
+        float secondTargetLength_   = 17.0f;
+
+        float secondTargetLengthTotalFrame_ = 0.4f;
+        float secondTargetLengthTimer_      = 0.0f;
+
+        // Rotation
+        float initializeRotationX_  = DirectX::XMConvertToRadians(-40.0f);        
+        float firstTargetRotationX_ = DirectX::XMConvertToRadians(0.0f);
+
+        // Offset
+        float initializeCameraOffsetY_  = 1.5f;
+        float firstCameraOffsetY_ = 3.0f;
+        float secondCameraOffsetY_ = 1.5f;
+
+
+    };
+    DragonAppearCamera dragonAppearCamera_;
+
+    int dragonAppearCameraState_ = 0;   
+    bool isDragonAppearCameraActive_ = false;
 
     // ---------- 必殺技カメラ ----------
     float   helmbreakerCameraLerpWeight_    = 0.35f;

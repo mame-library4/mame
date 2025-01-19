@@ -107,8 +107,9 @@ public:// ----- 定数 -----
         Fly,
 
         Nova1,
-        FlyTurn,
-        Nova2,
+
+        Fly1,
+        Damage1,
     };
     
     // 攻撃の種類
@@ -149,7 +150,7 @@ public:
     virtual bool CheckStatusChange() = 0;
 
     // ---------- アニメーション関連 ----------
-    void PlayAnimation(const DragonAnimation& index, const bool& loop, const float& speed = 1.0f) { Object::PlayAnimation(static_cast<int>(index), loop, speed); }
+    void PlayAnimation(const DragonAnimation& index, const bool& loop, const float& speed = 1.0f, const float& startFrame = 0.0f) { Object::PlayAnimation(static_cast<int>(index), loop, speed, startFrame); }
     void PlayBlendAnimation(const DragonAnimation& index, const bool& loop, const float& speed = 1.0f, const float& blendAnimationFrame = 0.0f) { Object::PlayBlendAnimation(static_cast<int>(index), loop, speed, blendAnimationFrame); }
 
     // ---------- プレイヤーまでの距離を算出 ----------

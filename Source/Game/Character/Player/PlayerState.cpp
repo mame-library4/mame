@@ -17,6 +17,7 @@
 #include "Item/Barrel.h"
 #include "Item/MagicCircle.h"
 
+#include "Projectile/ProjectileManager.h"
 #include "Projectile/HailBolt.h"
 #include "Projectile/AquaSeeker.h"
 #include "Projectile/RainClouds.h"
@@ -6524,6 +6525,7 @@ namespace PlayerState
 
         isCreateAquaMeteor_ = false;
         isLaunchedAquaMeteor_ = false;
+        isStateComplete_ = false;
     }
 
     // ----- 更新 -----
@@ -6543,7 +6545,7 @@ namespace PlayerState
         {
             if (owner_->GetAnimationSeconds() >= aquaMeteorCreateFrame_)
             {
-                aquaMeteor_ = new AquaMeteor(aquaMeteorCameraShakePower_, aquaMeteorCameraShakeTime_);
+                aquaMeteor_ = new AquaMeteor(aquaMeteorCameraShakePower_, aquaMeteorCameraShakeTime_, aquaMeteorGamePadVibrationPower_, aquaMeteorGamePadVibrationTime_);
                 isCreateAquaMeteor_ = true;
             }
         }
@@ -6586,6 +6588,7 @@ namespace PlayerState
             }
             else
             {
+                isStateComplete_ = true;
                 owner_->ChangeState(Player::STATE::MageIdle);
                 return;
             }
@@ -6597,7 +6600,13 @@ namespace PlayerState
     {
         // ルートモーション使用終了
         owner_->SetUseRootMotion(false);
-
+        
+        // ステートが途中で中断された
+        if (isStateComplete_ == false)
+        {
+            ProjectileManager::Instance().Remove(aquaMeteor_);
+        }
+        
         aquaMeteor_ = nullptr;
     }
 
@@ -6641,6 +6650,8 @@ namespace PlayerState
                 ImGui::DragFloat("MoveSpeed", &aquaMeteorMoveSpeed_, 0.01f);                
                 ImGui::DragFloat("CameraShakePower", &aquaMeteorCameraShakePower_, 0.01f);
                 ImGui::DragFloat("CameraShakeTime", &aquaMeteorCameraShakeTime_, 0.01f);
+                ImGui::DragFloat2("GamePadVibrationPower", &aquaMeteorGamePadVibrationPower_.x, 0.01f);
+                ImGui::DragFloat("GamePadVibrationTime", &aquaMeteorGamePadVibrationTime_, 0.01f);
 
                 ImGui::TreePop();
             }

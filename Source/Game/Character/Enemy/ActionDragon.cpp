@@ -78,6 +78,144 @@ namespace ActionDragon
     }
 }
 
+// ----- 登場演出 -----
+namespace ActionDragon
+{
+    const ActionBase::State AppearAction::Run(const float& elapsedTime)
+    {
+        switch (static_cast<STATE>(owner_->GetStep()))
+        {
+        case STATE::Initialzie:// 初期化
+            // アニメーション再生
+            PlayAnimation();
+
+
+            owner_->SetIsStageCollisionJudgement(true);
+
+            // 位置設定
+            owner_->GetTransform()->SetPosition(position_);
+
+            // Cameraに情報を送る
+            Camera::Instance().UseDragonAppearCamera();
+            Camera::Instance().SetDragonAppearCameraParameter(animationStartFrame_, animationEndFrame_, descentStartFrame_, descentEndFrame_);
+
+            // 変数初期化
+            isCameraShake_ = false;
+
+            // ステート変更
+            ChangeState(STATE::Update);
+
+            break;
+        case STATE::Update:
+        {
+            const float animationSeconds = owner_->GetAnimationSeconds();
+
+            if (animationSeconds < descentStartFrame_)
+            {
+                const float totalFrame = descentStartFrame_ - animationStartFrame_;
+                const float currentFrame = descentStartFrame_ - animationSeconds;
+
+                const float positionY = Easing::InSine(currentFrame, totalFrame, initPosition_.y, position_.y);
+                owner_->GetTransform()->SetPositionY(positionY);
+            }
+            else if (animationSeconds >= descentStartFrame_ && animationSeconds <= descentEndFrame_)
+            {
+                //const float totalFrame = descentEndFrame_ - animationStartFrame_;
+                const float totalFrame = descentEndFrame_ - descentStartFrame_;
+                const float currentFrame = descentEndFrame_ - animationSeconds;
+
+                const float positionY = Easing::OutQuint(currentFrame, totalFrame, position_.y, 0.0f);
+                //const float positionY = Easing::OutQuint(currentFrame, totalFrame, 0.0f, position_.y);
+                //const float positionY = Easing::InCirc(currentFrame, totalFrame, position_.y, 0.0f);
+                owner_->GetTransform()->SetPositionY(positionY);
+            }
+            else if (animationSeconds > descentEndFrame_)
+            {
+                owner_->GetTransform()->SetPositionY(0.0f);
+            }
+
+            // カメラシェイク
+            if (isCameraShake_ == false && owner_->GetAnimationSeconds() >= cameraShakeFrame_)
+            {
+                Camera::Instance().ScreenVibrate(cameraShakePower_, cameraShakeTime_);
+
+                isCameraShake_ = true;
+            }
+
+#if 0
+            if (owner_->GetAnimationSeconds() >= animationEndFrame_)
+            {
+                owner_->PlayBlendAnimation(Enemy::DragonAnimation::Roar, false);
+                owner_->SetTransitionTime(transitionFly_);
+                ChangeState(STATE::Update1);
+            }
+#else
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetIsStageCollisionJudgement(false);
+
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+#endif
+        }
+            break;
+        case STATE::Update1:
+
+            if (owner_->IsPlayAnimation() == false)
+            {
+                owner_->SetIsStageCollisionJudgement(false);
+
+                owner_->SetStep(0);
+                return ActionBase::State::Complete;
+            }
+
+            break;
+        }
+
+        return ActionBase::State::Run;
+    }
+
+    // ----- ImGui用 -----
+    void AppearAction::DrawDebug()
+    {
+        if (ImGui::TreeNodeEx("Appear", ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("---------- Animation ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("AnimationStartFrame", &animationStartFrame_, 0.01f, 0.0f, animationEndFrame_);
+                ImGui::DragFloat("AnimationEndFrame", &animationEndFrame_, 0.01f, animationStartFrame_, 8.5f);
+                ImGui::DragFloat("DescentStartFrame", &descentStartFrame_, 0.01f);
+                ImGui::DragFloat("DescentEndFrame", &descentEndFrame_, 0.01f);
+
+                ImGui::DragFloat("TransitionFly", &transitionFly_);
+
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("---------- CameraShake ----------", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("Power", &cameraShakePower_, 0.01f);
+                ImGui::DragFloat("Time", &cameraShakeTime_, 0.01f);
+                ImGui::DragFloat("Frame", &cameraShakeFrame_, 0.01f);
+
+                ImGui::TreePop();
+            }
+            ImGui::DragFloat3("Init Position", &initPosition_.x, 0.1f);
+            ImGui::DragFloat3("Position", &position_.x, 0.1f);
+
+            ImGui::TreePop();
+        }
+    }
+
+    // ----- アニメーション再生 -----
+    void AppearAction::PlayAnimation()
+    {
+        owner_->PlayAnimation(Enemy::DragonAnimation::Fly1, false, 1.0f, animationStartFrame_);
+
+        //owner_->PlayAnimation(Enemy::DragonAnimation::Roar, false);
+    }
+}
+
 #pragma region ---------- 攻撃以外の重要行動 ----------
 // ----- DeathAction -----
 namespace ActionDragon
@@ -2797,6 +2935,15 @@ namespace ActionDragon
 
     const ActionBase::State FireballAction::Run(const float& elapsedTime)
     {
+        // 実行中ノードを中断するか
+        if (owner_->CheckStatusChange())
+        {
+            // 終了化
+            Finalize();
+
+            return ActionBase::State::Failed;
+        }
+
         switch (owner_->GetStep())
         {
         case 0:// 初期化
@@ -2814,12 +2961,19 @@ namespace ActionDragon
             break;
         case 1:
 
+            // 旋回処理
+            if (owner_->GetAnimationSeconds() < turnEndFrame_)
+            {
+                targetPosition_ = PlayerManager::Instance().GetTransform()->GetPosition();
+            }
+            owner_->Turn(elapsedTime, targetPosition_);
+
+            // チャージエフェクトを生成
             if (owner_->GetAnimationSeconds() >= chargeEffectStartFrame_ && owner_->GetAnimationSeconds() <= chargeEffectEndFrame_)
             {
                 chargeEffectEmitter_.SetEmitPosition(owner_->GetJointPosition("Dragon15_tongue2"));
                 chargeEffectEmitter_.EmitParticle();
-            }
-            
+            }           
 
             // 火球発射
             if (isFireballLaunched_ == false && owner_->GetAnimationSeconds() >= fireballLaunchFrame_)
@@ -2839,7 +2993,7 @@ namespace ActionDragon
 
             if (owner_->IsPlayAnimation() == false)
             {
-                owner_->SetStep(0);
+                Finalize();
                 return ActionBase::State::Complete;
             }
 
@@ -2875,6 +3029,12 @@ namespace ActionDragon
     {
         owner_->PlayBlendAnimation(Enemy::DragonAnimation::FireBreathFront, false);
         owner_->SetTransitionTime(0.1f);
+    }
+
+    // ----- 終了化 -----
+    void FireballAction::Finalize()
+    {
+        owner_->SetStep(0);
     }
 }
 

@@ -4,6 +4,18 @@
 
 namespace ActionDragon
 {
+    // ----- AppearJudgment -----
+    class AppearJudgment : public JudgmentBase
+    {
+    public:
+        AppearJudgment(Enemy* owner) : JudgmentBase(owner) {}
+        const bool Judgment() override;
+        void DrawDebug() override {}
+
+    private:
+        bool isFirstTime_ = true;
+    };
+
     // ----- DeathJudgment -----
     class DeathJudgment : public JudgmentBase
     {

@@ -40,8 +40,6 @@ private:
     void SetAttackPower();
 
 private:
-    Object circle_;
-
     // ----- DebugRenderer表示用フラグ -----
     bool isCollisionSphere_ = true;
     bool isAttackSphere_    = true;

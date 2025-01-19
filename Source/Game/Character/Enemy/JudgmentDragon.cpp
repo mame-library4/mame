@@ -2,6 +2,24 @@
 #include "MathHelper.h"
 #include "Character/Player/PlayerManager.h"
 
+// ----- “oê‰‰o -----
+namespace ActionDragon
+{
+    const bool AppearJudgment::Judgment()
+    {
+        //return true;
+
+        if (isFirstTime_)
+        {
+            isFirstTime_ = false;
+
+            return true;
+        }
+
+        return false;
+    }
+}
+
 // ----- €–S”»’è -----
 namespace ActionDragon
 {

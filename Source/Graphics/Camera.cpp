@@ -16,6 +16,8 @@
 #include "GameScene.h"
 #include "AudioManager.h"
 
+#include "System/SystemManager.h"
+
 // ----- 初期化 -----
 void Camera::Initialize()
 {
@@ -52,6 +54,9 @@ void Camera::Update(const float& elapsedTime)
     {
         ScreenVibrate(0.0f, 0.0f);
     }
+
+    // 登場演出カメラ
+    if (UpdateDragonAppearCamera(elapsedTime)) return;
 
     // 死亡カメラ使用時はここで終了
     if (UpdatePlayerDeathCamera(elapsedTime)) return; // Player死亡カメラ
@@ -161,6 +166,51 @@ void Camera::DrawDebug()
 {
     if (ImGui::BeginMenu("Camera"))
     {
+        if (ImGui::TreeNodeEx("DragonAppearCamera", ImGuiTreeNodeFlags_Framed))
+        {
+            if (ImGui::TreeNodeEx("===== Animation =====", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("AnimationStartFrame", &dragonAppearCamera_.animationStartFrame_);
+                ImGui::DragFloat("AnimationEndFrame", &dragonAppearCamera_.animationEndFrame_);
+                ImGui::DragFloat("DescentStartFrame", &dragonAppearCamera_.descentStartFrame_);
+                ImGui::DragFloat("DescentEndFrame", &dragonAppearCamera_.descentEndFrame_);
+                
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("===== Length =====", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("Init Length", &dragonAppearCamera_.initializeLength_);
+                ImGui::DragFloat("1 Target Length", &dragonAppearCamera_.firstTargetLength_);
+                ImGui::DragFloat("2 Target Length", &dragonAppearCamera_.secondTargetLength_);
+                
+                ImGui::DragFloat("2 Target Length Frame", &dragonAppearCamera_.secondTargetLengthTotalFrame_, 0.01f);
+                ImGui::DragFloat("2 Target Length Timer", &dragonAppearCamera_.secondTargetLengthTimer_, 0.01f);
+
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNodeEx("===== Rotation =====", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                float rotationX = DirectX::XMConvertToDegrees(dragonAppearCamera_.initializeRotationX_);
+                ImGui::DragFloat("Init RotationY", &rotationX, 0.1f);
+                dragonAppearCamera_.initializeRotationX_ = DirectX::XMConvertToRadians(rotationX);
+                rotationX = DirectX::XMConvertToDegrees(dragonAppearCamera_.firstTargetRotationX_);
+                ImGui::DragFloat("1 Target RotationY", &rotationX, 0.1f);
+                dragonAppearCamera_.firstTargetRotationX_ = DirectX::XMConvertToRadians(rotationX);
+
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNodeEx("===== Offset =====", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("Init Offset", &dragonAppearCamera_.initializeCameraOffsetY_, 0.01f);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
+
 #pragma region ---------- PlayerDeathCamera ----------
         if (ImGui::TreeNodeEx("PlayerDeathCamera", ImGuiTreeNodeFlags_Framed))
         {
@@ -615,6 +665,109 @@ void Camera::UpdateCameraReset(const float& elapsedTime)
 
     // 終了確認
     if (resetLerpTimer_ == 1.0f) cameraResetFlag_ = false;
+}
+
+// ----- ドラゴン登場演出カメラ -----
+const bool Camera::UpdateDragonAppearCamera(const float& elapsedTime)
+{
+    if (isDragonAppearCameraActive_ == false) return false;
+    if (EnemyManager::Instance().GetEnemyCount() <= 0) return false;
+
+    target_ = EnemyManager::Instance().GetEnemy(0)->GetTransform()->GetPosition();
+
+    switch (dragonAppearCameraState_)
+    {
+    case 0:// 初期化
+        length_ = dragonAppearCamera_.initializeLength_;
+        oldRotate_ = GetTransform()->GetRotation();
+        GetTransform()->SetRotationX(dragonAppearCamera_.initializeRotationX_);
+
+        offset_.y = dragonAppearCamera_.initializeCameraOffsetY_;
+
+        dragonAppearCameraState_ = 1;
+
+        break;
+    case 1:
+    {
+        // ステート変更チェック
+        if (EnemyManager::Instance().GetEnemy(0)->GetAnimationIndex() != static_cast<int>(Enemy::DragonAnimation::Fly1))
+        {
+            dragonAppearCameraState_ = 2;
+            return true;
+        }
+
+        float dragonAnimationSeconds = EnemyManager::Instance().GetEnemy(0)->GetAnimationSeconds();
+        float totalFrame    = 0.0f;
+        float currentFrame  = 0.0f;
+        if (dragonAnimationSeconds < dragonAppearCamera_.descentStartFrame_)
+        {
+            totalFrame = dragonAppearCamera_.descentStartFrame_ - dragonAppearCamera_.animationStartFrame_;
+            currentFrame = dragonAppearCamera_.descentStartFrame_ - dragonAnimationSeconds;
+
+            // 回転
+            const float rotationX = Easing::InSine(currentFrame, totalFrame, dragonAppearCamera_.initializeRotationX_, dragonAppearCamera_.firstTargetRotationX_);
+            GetTransform()->SetRotationX(rotationX);
+
+        }
+        else if(dragonAnimationSeconds <= dragonAppearCamera_.descentEndFrame_)
+        {
+            totalFrame = dragonAppearCamera_.descentEndFrame_ - dragonAppearCamera_.descentStartFrame_;
+            currentFrame = dragonAppearCamera_.descentEndFrame_ - dragonAnimationSeconds;
+
+            //length_ = Easing::InCubic(currentFrame, totalFrame, dragonAppearCamera_.initializeLength_, dragonAppearCamera_.targetLength_);
+            length_ = Easing::InSine(currentFrame, totalFrame, dragonAppearCamera_.initializeLength_, dragonAppearCamera_.firstTargetLength_);
+
+            offset_.y = Easing::InSine(currentFrame, totalFrame, dragonAppearCamera_.initializeCameraOffsetY_, dragonAppearCamera_.firstCameraOffsetY_);
+        }
+        else
+        {
+            dragonAppearCamera_.secondTargetLengthTimer_ += elapsedTime;
+            dragonAppearCamera_.secondTargetLengthTimer_ = min(dragonAppearCamera_.secondTargetLengthTimer_, dragonAppearCamera_.secondTargetLengthTotalFrame_);
+            totalFrame = dragonAppearCamera_.secondTargetLengthTotalFrame_;
+            currentFrame = dragonAppearCamera_.secondTargetLengthTimer_;
+
+            length_ = Easing::InQuint(currentFrame, totalFrame, dragonAppearCamera_.secondTargetLength_, dragonAppearCamera_.firstTargetLength_);
+            //length_ = Easing::InQuint(currentFrame, totalFrame, dragonAppearCamera_.firstTargetLength_, dragonAppearCamera_.secondTargetLength_);
+
+            offset_.y = Easing::InSine(currentFrame, totalFrame, dragonAppearCamera_.secondCameraOffsetY_, dragonAppearCamera_.firstCameraOffsetY_);
+        }
+    }
+        break;
+    case 2:// ドラゴン登場演出カメラ使用終了
+
+        // プレイヤーを操作可にする
+        SystemManager::Instance().SetPlayerSlowSpeed(1.0f);
+        length_ = gameCameraLength_;
+        offset_ = gameCameraOffset_;
+        GetTransform()->SetRotation(oldRotate_);
+
+        isDragonAppearCameraActive_ = false;
+        break;
+    }
+
+    // カメラシェイクを使いたいのでここで処理
+    ScreenVibrationUpdate(elapsedTime);
+
+    return true;
+}
+
+void Camera::UseDragonAppearCamera()
+{
+    isDragonAppearCameraActive_ = true;
+    dragonAppearCameraState_ = 0;
+
+    dragonAppearCamera_.secondTargetLengthTimer_ = 0.0f;
+
+    // プレイヤーを操作不可にする
+    SystemManager::Instance().SetPlayerSlowSpeed(0.0f);
+}
+
+void Camera::SetDragonAppearCameraParameter(const float& animationStartFrame, const float& animationEndFrame, const float& descentStartFrame, const float& descentEndFrame)
+{
+    dragonAppearCamera_.animationStartFrame_    = animationStartFrame;
+    dragonAppearCamera_.animationEndFrame_      = animationEndFrame;
+    dragonAppearCamera_.descentStartFrame_      = descentStartFrame;
+    dragonAppearCamera_.descentEndFrame_        = descentEndFrame;
 }
 
 // ----- プレイヤー死亡カメラ -----

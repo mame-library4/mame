@@ -8,8 +8,7 @@
 
 // ----- コンストラクタ -----
 EnemyDragon::EnemyDragon()
-    : Enemy("./Resources/Model/Character/Enemy/Dragon.gltf", 1.0f),
-    circle_("./Resources/Model/Circle/circle.gltf", 5.0f)
+    : Enemy("./Resources/Model/Character/Enemy/Dragon.gltf", 1.0f)
 {
     // BehaviorTree設定
     behaviorData_ = std::make_unique<BehaviorData>();       // BehaviorData生成
@@ -79,8 +78,8 @@ void EnemyDragon::Initialize()
     SetAttackPower();
 
     // アウトラインを使用する
-    SetIsOutlineActive(true);
-    SetOutlineColor({ 0.7f, 0.0f, 0.0f, 1.0f });
+    //SetIsOutlineActive(true);
+    //SetOutlineColor({ 0.7f, 0.0f, 0.0f, 1.0f });
 }
 
 // ----- 終了化 -----
@@ -115,18 +114,12 @@ void EnemyDragon::Update(const float& elapsedTime)
 
     // ステージの外に出ないようにする
     if(GetIsStageCollisionJudgement() == false) CollisionCharacterVsStage();
-
-    DirectX::XMFLOAT3 pos = GetTransform()->GetPosition();
-    pos.y = 0.01f;
-    circle_.GetTransform()->SetPosition(pos);
 }
 
 // ----- 描画 -----
 void EnemyDragon::Render(ID3D11PixelShader* psShader)
 {
     Object::Render(psShader);
-
-    if(GetIsStageCollisionJudgement()) circle_.Render(psShader);
 }
 
 // ----- ImGui用 -----
@@ -297,6 +290,9 @@ void EnemyDragon::RegisterBehaviorNode()
     // Behavior Node追加
     behaviorTree_->AddNode("", "Root", 0, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
 
+    // --------------- 登場演出 ---------------
+    behaviorTree_->AddNode("Root", "Appear", 0, BehaviorTree::SelectRule::None, new ActionDragon::AppearJudgment(this), new ActionDragon::AppearAction(this));
+
     // --------------- 死亡 ---------------
     behaviorTree_->AddNode("Root", "Death", 0, BehaviorTree::SelectRule::None, new ActionDragon::DeathJudgment(this), new ActionDragon::DeathAction(this));
 
@@ -306,7 +302,7 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("Down", "NormalDown", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::DownAction(this));
     
     // --------------- 攻撃 ---------------
-#if 0 // AI作っていく用
+#if 1 // AI作っていく用
     behaviorTree_->AddNode("Root", "Attack", 2, BehaviorTree::SelectRule::Priority, nullptr, nullptr);
 
     behaviorTree_->AddNode("Attack", "PowerAttack",  0, BehaviorTree::SelectRule::Priority, new ActionDragon::PowerAttackJudgment(this), nullptr);

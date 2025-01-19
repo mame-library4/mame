@@ -1206,13 +1206,17 @@ namespace PlayerState
         float chargeEffectEndFrame_ = 0.1f;
 
         // ---------- AquaMeteor ----------
-        AquaMeteor* aquaMeteor_                 = nullptr;
-        float       aquaMeteorCreateFrame_      = 0.48f;
-        float       aquaMeteorLaunchFrame_      = 0.3f;
-        float       aquaMeteorMoveSpeed_        = 20.0f;
-        float       aquaMeteorCameraShakePower_ = 0.3f;
-        float       aquaMeteorCameraShakeTime_  = 0.7f;
-        bool        isCreateAquaMeteor_         = false; // 生成フラグ
-        bool        isLaunchedAquaMeteor_       = false; // 発射フラグ
+        AquaMeteor*         aquaMeteor_                         = nullptr;
+        float               aquaMeteorCreateFrame_              = 0.48f;
+        float               aquaMeteorLaunchFrame_              = 0.3f;
+        float               aquaMeteorMoveSpeed_                = 20.0f;
+        float               aquaMeteorCameraShakePower_         = 0.3f;
+        float               aquaMeteorCameraShakeTime_          = 0.7f;
+        DirectX::XMFLOAT2   aquaMeteorGamePadVibrationPower_    = { 1.0f, 0.0f };
+        float               aquaMeteorGamePadVibrationTime_     = 0.55f;
+        bool                isCreateAquaMeteor_                 = false; // 生成フラグ
+        bool                isLaunchedAquaMeteor_               = false; // 発射フラグ
+
+        bool isStateComplete_ = false;
     };
 }
