@@ -5,6 +5,10 @@
 #include "Character/Player/PlayerManager.h"
 #include "UI/UISystem.h"
 
+#include "LoadingScene.h"
+#include "TitleScene.h"
+#include "GameScene.h"
+
 // ----- 更新 -----
 const bool SystemManager::Update()
 {
@@ -50,6 +54,21 @@ const bool SystemManager::UpdatePauseState()
     }
 
     // ポーズ中の処理
+    if (Input::Instance().GetGamePad().GetButton() & GamePad::BTN_X)
+    {
+        if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_A)
+        {
+            SceneManager::Instance().ChangeScene(new LoadingScene(new GameScene));
+            UIManager::Instance().Remove(UIManager::UIType::UISystem);
+            isPaused_ = false;
+        }
+        else if (Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B)
+        {
+            SceneManager::Instance().ChangeScene(new LoadingScene(new TitleScene));
+            UIManager::Instance().Remove(UIManager::UIType::UISystem);
+            isPaused_ = false;
+        }
+    }
     
 
     // ポーズ中ならtrueを返す

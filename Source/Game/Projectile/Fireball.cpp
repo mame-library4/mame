@@ -32,7 +32,7 @@ void Fireball::Initialize()
     SetDamage(40);
 
     // エフェクト読み込み
-    //computeParticleEmitter_.SetEmitParameter("FireballTrail");
+    computeParticleEmitter_.SetEmitParameter("FireballTrail");
 
     Object::SetScrollDirection({ 1.0f, 1.0f });
 }
@@ -53,10 +53,10 @@ void Fireball::Update(const float& elapsedTime)
     if (GetIsHit() == false)
     {
         trailEffectTimer_ += elapsedTime;
-        if (trailEffectTimer_ >= 0.1f)
+        //if (trailEffectTimer_ >= 0.1f)
         {
-            //computeParticleEmitter_.SetEmitPosition(GetTransform()->GetPosition());
-            //computeParticleEmitter_.EmitParticle();
+            computeParticleEmitter_.SetEmitPosition(GetTransform()->GetPosition());
+            computeParticleEmitter_.EmitParticle();
 
             trailEffectTimer_ = 0.0f;
         }

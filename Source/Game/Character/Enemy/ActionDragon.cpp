@@ -2934,6 +2934,7 @@ namespace ActionDragon
 
 #pragma region ---------- 未完成 ----------
 
+#if 0
 // ----- FireBall -----
 namespace ActionDragon
 {
@@ -2942,7 +2943,7 @@ namespace ActionDragon
         : ActionBase(owner)
     {
         // エフェクト読み込み
-        //chargeEffectEmitter_.SetEmitParameter("FireballChargeEffect");
+        chargeEffectEmitter_.SetEmitParameter("FireballChargeEffect");
     }
 
     const ActionBase::State FireballAction::Run(const float& elapsedTime)
@@ -2983,8 +2984,8 @@ namespace ActionDragon
             // チャージエフェクトを生成
             if (owner_->GetAnimationSeconds() >= chargeEffectStartFrame_ && owner_->GetAnimationSeconds() <= chargeEffectEndFrame_)
             {
-                //chargeEffectEmitter_.SetEmitPosition(owner_->GetJointPosition("Dragon15_tongue2"));
-                //chargeEffectEmitter_.EmitParticle();
+                chargeEffectEmitter_.SetEmitPosition(owner_->GetJointPosition("Dragon15_tongue2"));
+                chargeEffectEmitter_.EmitParticle();
             }           
 
             // 火球発射
@@ -3049,6 +3050,7 @@ namespace ActionDragon
         owner_->SetStep(0);
     }
 }
+#endif
 
 // ----- FireBreathAction -----
 namespace ActionDragon
