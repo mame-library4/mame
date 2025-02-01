@@ -988,7 +988,16 @@ namespace PlayerState
         case 2:
             if (owner_->IsPlayAnimation() == false)
             {
-                owner_->ChangeState(Player::STATE::Idle);
+                if (owner_->GetPlayerRole() == Player::PlayerRole::SwordsMan)
+                {
+                    owner_->ChangeState(Player::STATE::Idle);
+                    return;
+                }
+                else
+                {
+                    owner_->ChangeState(Player::STATE::MageIdle);
+                    return;
+                }
             }
 
             break;
@@ -6604,7 +6613,11 @@ namespace PlayerState
         // ƒXƒe[ƒg‚ª“r’†‚Å’†’f‚³‚ê‚½
         if (isStateComplete_ == false)
         {
-            ProjectileManager::Instance().Remove(aquaMeteor_);
+            // ‚Ü‚¾”­ŽË‚µ‚Ä‚¢‚È‚©‚Á‚½‚çA’e‚ðíœ‚·‚é
+            if (aquaMeteor_->GetIsLaunched() == false)
+            {
+                ProjectileManager::Instance().Remove(aquaMeteor_);
+            }
         }
         
         aquaMeteor_ = nullptr;
@@ -6697,7 +6710,7 @@ namespace PlayerState
             if (animationSeconds > chargeEffectEndFrame_) return;
         }
 
-        chargeEffectEmitter_.SetEmitParameter("AquaCharge");
+        //chargeEffectEmitter_.SetEmitParameter("AquaCharge");
         chargeEffectEmitter_.SetEmitPosition(owner_->GetStaffJointPosition("joint1"));
         chargeEffectEmitter_.EmitParticle();
     }

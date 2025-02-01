@@ -18,6 +18,8 @@ public:
 
     void Launch(const DirectX::XMFLOAT3& emitPosition, const DirectX::XMFLOAT3& direction, const float& speed);
 
+    [[nodiscard]] const bool GetIsLaunched() const { return isLaunched_; }
+
 private:
     struct AquaConstants
     {
@@ -56,5 +58,7 @@ private:
     float hitTimer_ = 0.0f;
     float hitEffectTimer_       = 0.0f;
     float hitEffectCreateSpan_  = 0.1f;
+
+    float lifeTimer_ = 10.0f;
 };
 

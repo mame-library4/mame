@@ -32,9 +32,7 @@ void Fireball::Initialize()
     SetDamage(40);
 
     // エフェクト読み込み
-    computeParticleEmitter_.SetEmitParameter("FireballTrail");
-    hitEffect0Emitter_.SetEmitParameter("FireballHitEffect0");
-    hitEffect1Emitter_.SetEmitParameter("FireballHitEffect1");
+    //computeParticleEmitter_.SetEmitParameter("FireballTrail");
 
     Object::SetScrollDirection({ 1.0f, 1.0f });
 }
@@ -54,8 +52,14 @@ void Fireball::Update(const float& elapsedTime)
     // 軌跡エフェクトを生成する
     if (GetIsHit() == false)
     {
-        computeParticleEmitter_.SetEmitPosition(GetTransform()->GetPosition());
-        computeParticleEmitter_.EmitParticle();
+        trailEffectTimer_ += elapsedTime;
+        if (trailEffectTimer_ >= 0.1f)
+        {
+            //computeParticleEmitter_.SetEmitPosition(GetTransform()->GetPosition());
+            //computeParticleEmitter_.EmitParticle();
+
+            trailEffectTimer_ = 0.0f;
+        }
     }
 
     // ヒットしていたら、ヒットエフェクトを指定回数生成する
@@ -136,6 +140,9 @@ const bool Fireball::OnHit(const DirectX::XMFLOAT3& hitPosition)
 {
     // 移動速度をゼロにする
     moveSpeed_ = 0.0f;
+
+    hitEffect0Emitter_.SetEmitParameter("FireballHitEffect0");
+    hitEffect1Emitter_.SetEmitParameter("FireballHitEffect1");
 
     return true;
 }

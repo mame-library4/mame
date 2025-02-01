@@ -33,6 +33,9 @@ void AquaMeteor::Initialize()
     // 攻撃判定設定
     SetRadius(1.0f);
 
+    // 攻撃力設定
+    SetDamage(90.0f);
+
     // エフェクト読み込み
     computeParticleEmitter_.SetEmitParameter("AquaMeteorCharge");
     hitEffectEmitter0_.SetEmitParameter("AquaMeteorHitEffect");
@@ -68,6 +71,13 @@ void AquaMeteor::Update(const float& elapsedTime)
         }
 
         return;
+    }
+
+    lifeTimer_ -= elapsedTime;
+    // 寿命が尽きたら自分自身を削除する
+    if (lifeTimer_ <= 0.0f)
+    {
+        ProjectileManager::Instance().Remove(this);
     }
 
     // チャージ時
@@ -140,7 +150,6 @@ const bool AquaMeteor::OnHit(const DirectX::XMFLOAT3& hitPosition)
     if (GetIsHit()) return false;
 
     // エフェクト再生
-    hitEffectEmitter0_.SetEmitParameter("AquaMeteorHitEffect");
     hitEffectEmitter0_.SetEmitPosition(GetTransform()->GetPosition());
     hitEffectEmitter0_.EmitParticle();
 

@@ -313,8 +313,8 @@ void EnemyDragon::RegisterBehaviorNode()
     behaviorTree_->AddNode("NormalAttack", "LongRangeAttack",  0, BehaviorTree::SelectRule::Random, new ActionDragon::LongRangeJudgment(this), nullptr);
     behaviorTree_->AddNode("NormalAttack", "CloseRangeAttack", 0, BehaviorTree::SelectRule::Random, nullptr, nullptr);
 
-    behaviorTree_->AddNode("LongRangeAttack", "Walk",           0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));
-    behaviorTree_->AddNode("LongRangeAttack", "TackleAttack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
+    //behaviorTree_->AddNode("LongRangeAttack", "Walk",           0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::WalkAction(this));
+    //behaviorTree_->AddNode("LongRangeAttack", "TackleAttack",   0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::TackleAction(this));
     behaviorTree_->AddNode("LongRangeAttack", "FireballAttack", 0, BehaviorTree::SelectRule::None, nullptr, new ActionDragon::FireballAction(this));
 
     // ----- ‰ñ“]UŒ‚ -----

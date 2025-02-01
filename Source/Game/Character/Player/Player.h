@@ -241,6 +241,7 @@ public:// --- 取得・設定 ---
     [[nodiscard]] const STATE GetCurrentState() const { return currentState_; }
     [[nodiscard]] const STATE GetOldState() const { return oldState_; }
     void ChangePlayerRole(const PlayerRole& playerRole); // 役職を変更する
+    const PlayerRole GetPlayerRole() const { return playerRole_; }
 
     // ---------- 移動 ------------------------------
     void SetMoveDirection(const DirectX::XMFLOAT3 direction) { moveDirection_ = direction; } // 移動方向
@@ -341,8 +342,8 @@ public:// --- 取得・設定 ---
 
     // ---------- キー入力 ----------
     [[nodiscard]] const bool IsComboAttack0KeyDown()    const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
-    [[nodiscard]] const bool IsMageAttackKeyDown()      const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
-    [[nodiscard]] const bool IsMageAttack1KeyDown()     const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y; }
+    [[nodiscard]] const bool IsMageAttackKeyDown()      const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_Y; }
+    [[nodiscard]] const bool IsMageAttack1KeyDown()     const { return Input::Instance().GetGamePad().GetButtonDown() & GamePad::BTN_B; }
     [[nodiscard]] const bool IsMageCounterStanceKey()   const;
     [[nodiscard]] const bool IsDodgeKeyDown()           const;
     [[nodiscard]] const bool IsCounterStanceKey()       const;

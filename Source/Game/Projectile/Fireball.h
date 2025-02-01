@@ -34,6 +34,8 @@ private:
     ComputeParticleEmitter hitEffect0Emitter_ = {};
     ComputeParticleEmitter hitEffect1Emitter_ = {};
     
+    float trailEffectTimer_ = 0.0f;
+
     int     hitEffect0EmitNum_       = 3;
     int     hitEffect0EmitCounter_   = 0;
     float   hitEffect0EmitTime_      = 1.0f / 60.0f;

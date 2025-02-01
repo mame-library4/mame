@@ -970,16 +970,26 @@ void Player::ChangePlayerRole(const PlayerRole& playerRole)
     // Œ»İ‚Ì–ğE‚Æ“¯‚¶
     if (playerRole_ == playerRole) return;
 
+    const STATE currentState = GetCurrentState();
+
     // Œ•m‚Ìê‡
     if (playerRole == PlayerRole::SwordsMan)
     {
-        ChangeState(STATE::Idle);
-        playerRole_ = PlayerRole::SwordsMan;
+        if (currentState == Player::STATE::MageIdle ||
+            currentState == Player::STATE::MageRun)
+        {
+            ChangeState(STATE::Idle);
+            playerRole_ = PlayerRole::SwordsMan;
+        }
     }
     // –‚–@g‚¢‚Ìê‡
     else if(playerRole == PlayerRole::Mage)
     {
-        ChangeState(STATE::MageIdle);
-        playerRole_ = PlayerRole::Mage;
+        if (currentState == Player::STATE::Idle ||
+            currentState == Player::STATE::Run)
+        {
+            ChangeState(STATE::MageIdle);
+            playerRole_ = PlayerRole::Mage;
+        }
     }
 }

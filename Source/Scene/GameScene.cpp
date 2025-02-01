@@ -192,12 +192,6 @@ void GameScene::Update(const float& elapsedTime)
     {
         UIManager::Instance().Remove(UIManager::UIType::UIFader);
 
-        UIManager::Instance().GetUI(UIManager::UIType::UIHealth)->SetIsDraw();
-        UIManager::Instance().GetUI(UIManager::UIType::UIStamina)->SetIsDraw();
-        UIManager::Instance().GetUI(UIManager::UIType::UIGuardGauge)->SetIsDraw();
-        UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->SetIsDraw();
-        UIManager::Instance().GetUI(UIManager::UIType::UISword)->SetIsDraw();
-
         isDrawUI_ = true;
     }
 

@@ -49,6 +49,9 @@ const bool SystemManager::UpdatePauseState()
         }
     }
 
+    // ポーズ中の処理
+    
+
     // ポーズ中ならtrueを返す
     return isPaused_;
 }

@@ -120,5 +120,3 @@ private:
     float pointLightIntensity_ = 1.0f;
     float pointLightRadius_ = 10.0f;
 };
-
-

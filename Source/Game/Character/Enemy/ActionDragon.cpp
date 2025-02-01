@@ -152,6 +152,13 @@ namespace ActionDragon
 #else
             if (owner_->IsPlayAnimation() == false)
             {
+                // 終了化
+                UIManager::Instance().GetUI(UIManager::UIType::UIHealth)->SetIsDraw();
+                UIManager::Instance().GetUI(UIManager::UIType::UIStamina)->SetIsDraw();
+                UIManager::Instance().GetUI(UIManager::UIType::UIGuardGauge)->SetIsDraw();
+                UIManager::Instance().GetUI(UIManager::UIType::UIActionGuide)->SetIsDraw();
+                UIManager::Instance().GetUI(UIManager::UIType::UISword)->SetIsDraw();
+
                 owner_->SetIsStageCollisionJudgement(false);
 
                 owner_->SetStep(0);
@@ -164,6 +171,8 @@ namespace ActionDragon
 
             if (owner_->IsPlayAnimation() == false)
             {
+
+
                 owner_->SetIsStageCollisionJudgement(false);
 
                 owner_->SetStep(0);
@@ -2412,6 +2421,9 @@ namespace ActionDragon
         // ルートモーションリセット
         owner_->SetUseRootMotion(false);
 
+        // 高さを0にする
+        owner_->GetTransform()->SetPositionY(0.0f);
+
         owner_->SetStep(0);
     }
 
@@ -2930,7 +2942,7 @@ namespace ActionDragon
         : ActionBase(owner)
     {
         // エフェクト読み込み
-        chargeEffectEmitter_.SetEmitParameter("FireballChargeEffect");
+        //chargeEffectEmitter_.SetEmitParameter("FireballChargeEffect");
     }
 
     const ActionBase::State FireballAction::Run(const float& elapsedTime)
@@ -2954,7 +2966,7 @@ namespace ActionDragon
             // 変数初期化
             isFireballLaunched_ = false;
 
-            chargeEffectEmitter_.SetEmitParameter("FireballChargeEffect");
+            //chargeEffectEmitter_.SetEmitParameter("FireballChargeEffect");
 
             owner_->SetStep(1);
         }
@@ -2971,8 +2983,8 @@ namespace ActionDragon
             // チャージエフェクトを生成
             if (owner_->GetAnimationSeconds() >= chargeEffectStartFrame_ && owner_->GetAnimationSeconds() <= chargeEffectEndFrame_)
             {
-                chargeEffectEmitter_.SetEmitPosition(owner_->GetJointPosition("Dragon15_tongue2"));
-                chargeEffectEmitter_.EmitParticle();
+                //chargeEffectEmitter_.SetEmitPosition(owner_->GetJointPosition("Dragon15_tongue2"));
+                //chargeEffectEmitter_.EmitParticle();
             }           
 
             // 火球発射
